@@ -1,0 +1,53 @@
+{
+  "name": "platform-server-starter",
+  "main": "lib/index.js",
+  "scripts": {
+    "lint": "tslint --project tsconfig.json",
+    "build": "run-s format:fix fix lint tsc && cp ./src/schemas/*.{graphql, gql} ./lib/schemas",
+    "start": "npm run build && node ./lib/index.js",
+    "dev": "run-s watch",
+    "watch": "nodemon --watch 'src/**/*' -e ts,graphql,gql --exec 'ts-node' ./src/index.ts",
+    "fix": "node_modules/tslint/bin/tslint -c tslint.json -p tsconfig.json --fix --force",
+    "tsc": "node node_modules/typescript/bin/tsc",
+    "format:fix": "pretty-quick --staged",
+    "format:check": "prettier --config ./.prettierrc --list-different \"src/**/*{.ts,.js,.json}\"",
+    "format:all": "prettier --config ./.prettierrc --write \"src/**/*{.ts,.js,.json}\"",
+    "precommit": "run-s format:fix fix lint"
+  },
+  "dependencies": {
+    "@blockbrothers/firebasebb": "^0.2.6",
+    "apollo-datasource": "^0.3.1",
+    "apollo-server-express": "^2.2.6",
+    "auto-bind": "^1.2.1",
+    "dotenv": "^6.2.0",
+    "express": "^4.16.4",
+    "graphql": "^14.0.2",
+    "graphql-tools": "^4.0.3",
+    "https": "^1.0.0",
+    "merge-graphql-schemas": "^1.5.8",
+    "mongodb": "^3.1.13",
+    "mongoose": "^5.3.15",
+    "winston": "^3.1.0",
+    "winston-mongodb": "^4.0.3"
+  },
+  "devDependencies": {
+    "@types/auto-bind": "^1.2.0",
+    "@types/axios": "^0.14.0",
+    "@types/dotenv": "^6.1.0",
+    "@types/express": "^4.16.1",
+    "@types/graphql": "^14.0.3",
+    "@types/mongodb": "^3.1.19",
+    "@types/mongoose": "^5.3.4",
+    "husky": "^1.2.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^1.15.3",
+    "pretty-quick": "^1.8.0",
+    "ts-node": "^7.0.1",
+    "tslint": "~5.8.0",
+    "typescript": "^3.2.1"
+  },
+  "private": true,
+  "engines": {
+    "node": "8"
+  }
+}

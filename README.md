@@ -1,2 +1,1 @@
-# platform-server-starter
-
+# Platform Server Starter
