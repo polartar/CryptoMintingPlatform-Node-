@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2017",
+    "noImplicitAny": true,
+    "outDir": "./lib",
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": ["node_modules/*", "./src/types/modules/*"]
+    }
+  },
+  "types": ["jasmine"],
+  "include": ["./**/*.ts", "./**/*.js"],
+  "exclude": ["node_modules", "lib", "@types"]
+}
