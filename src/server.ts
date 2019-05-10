@@ -4,7 +4,7 @@ import { DocumentNode } from 'graphql';
 import * as mongoose from 'mongoose';
 import schemas from './schemas';
 import resolvers from './resolvers';
-import { UserAPI } from './data-sources';
+import { BtcAPI, Erc20API, EthAPI } from './data-sources';
 import { config, logger } from './common';
 
 class Server {
@@ -58,7 +58,9 @@ class Server {
 
   private buildDataSources() {
     return {
-      user: new UserAPI(),
+      // btc: new BtcAPI(),
+      // eth: new EthAPI(),
+      // erc20: new Erc20API()
     };
   }
 

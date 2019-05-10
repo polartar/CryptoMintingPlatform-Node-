@@ -34,3 +34,5 @@ npm-debug.log
 
 # Firebase Keys
 service-accounts.json
+jwtrsa-private.key
+jwtrsa-public.pem
