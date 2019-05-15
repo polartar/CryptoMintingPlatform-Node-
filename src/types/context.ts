@@ -1,11 +1,14 @@
 import { Request, Response } from 'express';
-import { UserAPI } from '../data-sources';
+import { Wallet } from '../data-sources';
+import { WalletBase } from '../data-sources/';
 
 export interface Context {
   req: Request;
   res: Response;
   dataSources: {
-    user: UserAPI;
+    wallet: {
+      [key: string]: WalletBase;
+    };
   };
   user: {
     permissions: string[];

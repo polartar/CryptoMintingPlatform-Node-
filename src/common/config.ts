@@ -19,7 +19,7 @@ class Config {
   public readonly apiKeyServiceUrl = process.env.API_KEY_SERVICE_URL;
   public readonly bcoinWallet = {
     network: process.env.BCOIN_NETWORK,
-    port: process.env.BCOIN_WALLET_PORT,
+    port: +process.env.BCOIN_WALLET_PORT,
     apiKey: process.env.BCOIN_WALLET_API_KEY,
   };
   public readonly ethNodeUrl =

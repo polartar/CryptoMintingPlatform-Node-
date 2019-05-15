@@ -32,7 +32,7 @@ interface SignOptions {
   encoding?: string;
 }
 
-class KeyService {
+class CredentialService {
   private readonly jwtOptions = {
     algorithm: 'RS256',
     expiresIn: '1m',
@@ -69,10 +69,10 @@ class KeyService {
     payload: string,
   ) {
     const resourceKey = `${coin}-${resource}`;
-    const apiKeyUrl = `${config.apiKeyServiceUrl}/${userId}/${resourceKey}`;
+    const apiKeyUrl = `${config.apiKeyServiceUrl}/`;
     const jwtAxios = this.getAxios({
       userId,
-      resourceKey,
+      accountId: resourceKey,
     });
     const createResponse = await jwtAxios.post(apiKeyUrl, {
       userId: userId,
@@ -85,17 +85,18 @@ class KeyService {
   public async get(userId: string, coin: string, resource: string) {
     const resourceKey = `${coin}-${resource}`;
     const apiKeyUrl = `${config.apiKeyServiceUrl}/${userId}/${resourceKey}`;
+    console.log('LOG: CredentialService -> publicget -> apiKeyUrl', apiKeyUrl);
     const jwtAxios = this.getAxios({
       userId,
-      resourceKey,
+      accountId: resourceKey,
     });
     const response = await jwtAxios.get(apiKeyUrl, {
       params: {
         userId: userId,
       },
     });
-    return response;
+    return response.data;
   }
 }
 
-export default new KeyService();
+export default new CredentialService();

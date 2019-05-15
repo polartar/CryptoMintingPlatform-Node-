@@ -1,0 +1,15 @@
+type Balance {
+  confirmed: Float!
+  unconfirmed: Float!
+}
+
+type Wallet {
+  symbol: String!
+  name: String!
+  balance: Balance!
+}
+
+type Query {
+  # If no coinSymbol is provided, all supported wallets will be returned
+  wallet(coinSymbol: String): [Wallet!]!
+}
