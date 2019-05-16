@@ -11,5 +11,5 @@ type Wallet {
 
 type Query {
   # If no coinSymbol is provided, all supported wallets will be returned
-  wallet(coinSymbol: String): [Wallet!]!
+  wallet(coinSymbol: String, accountId: String!): [Wallet!]!
 }

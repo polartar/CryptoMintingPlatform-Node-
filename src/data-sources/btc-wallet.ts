@@ -13,28 +13,28 @@ class BtcWallet extends WalletBase {
     this.walletClient = new WalletClient(config.bcoinWallet);
   }
 
-  async createWallet(userId: string) {
+  async createWallet(accountId: string) {
     try {
-      const { token } = await this.walletClient.createWallet(userId);
-      const userWallet = this.walletClient.wallet(userId, token);
+      const { token } = await this.walletClient.createWallet(accountId);
+      const userWallet = this.walletClient.wallet(accountId, token);
       const {
         key: { xprivkey },
         mnemonic: { phrase: mnemonic },
       } = await userWallet.getMaster();
       const tokenSavePromise = credentialService.create(
-        userId,
+        accountId,
         this.symbol,
         'token',
         token,
       );
       const privKeySavePromise = credentialService.create(
-        userId,
+        accountId,
         this.symbol,
         'privkey',
         xprivkey,
       );
       const mnemonicSavePromise = credentialService.create(
-        userId,
+        accountId,
         this.symbol,
         'mnemonic',
         mnemonic,
@@ -44,7 +44,7 @@ class BtcWallet extends WalletBase {
         privKeySavePromise,
         mnemonicSavePromise,
       ]);
-      const passphrase = await this.newPassphrase(userId);
+      const passphrase = await this.newPassphrase(accountId);
       console.log('LOG: BtcWallet -> createWallet -> passphrase', passphrase);
       const setPassResponse = await userWallet.setPassphrase(passphrase);
       console.log(
@@ -65,10 +65,10 @@ class BtcWallet extends WalletBase {
     };
   }
 
-  private async newPassphrase(userId: string) {
+  private async newPassphrase(accountId: string) {
     const passphrase = sha256(generateRandomId()).slice(0, 32);
     await credentialService.create(
-      userId,
+      accountId,
       this.symbol,
       'passphrase',
       passphrase,
@@ -135,8 +135,8 @@ class BtcWallet extends WalletBase {
   //   return formattedTransactions;
   // }
 
-  async getBalance(userId: string) {
-    const userWallet = await this.setWallet(userId);
+  async getBalance(accountId: string) {
+    const userWallet = await this.setWallet(accountId);
     const balanceResult = await userWallet.getAccount('default');
     console.log('LOG: BtcWallet -> getBalance -> balanceResult', balanceResult);
     const {
@@ -158,18 +158,18 @@ class BtcWallet extends WalletBase {
     };
   }
 
-  private async setWallet(userId: string) {
-    const token = await this.getToken(userId);
+  private async setWallet(accountId: string) {
+    const token = await this.getToken(accountId);
     console.log('LOG: BtcWallet -> privatesetWallet -> token', token);
-    return this.walletClient.wallet(userId, token);
+    return this.walletClient.wallet(accountId, token);
   }
 
-  private async getToken(userId: string) {
+  private async getToken(accountId: string) {
     const token = await credentialService
-      .get(userId, this.symbol, 'token')
+      .get(accountId, this.symbol, 'token')
       .catch(err => {
         if (err.response && err.response.status === 404) {
-          return this.createWallet(userId);
+          return this.createWallet(accountId);
         }
         throw err;
       });

@@ -1,22 +1,25 @@
-import { config, logger } from '../common';
+import { logger } from '../common';
 import { Context } from '../types/context';
-import { RegisterInput } from '../types/user';
-import { AuthenticationError, UserInputError } from 'apollo-server-express';
+import ResolverBase from '../common/Resolver-Base';
+import { UserInputError } from 'apollo-server-express';
+const autoBind = require('auto-bind');
 
-class Resolvers {
+class Resolvers extends ResolverBase {
+  constructor() {
+    super();
+    autoBind(this);
+  }
   async getWallet(
     parent: any,
-    { coinSymbol }: { coinSymbol: string },
-    { user, dataSources: { wallet } }: Context,
+    { coinSymbol, accountId }: { coinSymbol: string; accountId: string },
+    { user, dataSources: { wallet, accounts } }: Context,
   ) {
-    if (!user) {
-      return new AuthenticationError('User not authenticated');
-    }
+    this.requireAuth(user);
     if (coinSymbol) {
-      const walletApi = wallet[coinSymbol];
+      const walletApi = wallet.getCoinAPI(coinSymbol);
       if (!walletApi)
         return new UserInputError(`Wallet for ${coinSymbol} is not supported`);
-      const walletResult = await wallet.btc.getBalance(user.userId);
+      const walletResult = await walletApi.getBalance(accountId);
       return [walletResult];
     }
   }

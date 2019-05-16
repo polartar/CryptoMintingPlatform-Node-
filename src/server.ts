@@ -4,7 +4,7 @@ import { DocumentNode } from 'graphql';
 import * as mongoose from 'mongoose';
 import schemas from './schemas';
 import resolvers from './resolvers';
-import { Wallet } from './data-sources';
+import { Wallet, Account } from './data-sources';
 import { config, logger } from './common';
 
 class Server {
@@ -59,6 +59,7 @@ class Server {
   private buildDataSources() {
     return {
       wallet: new Wallet(),
+      accounts: new Account(),
     };
   }
 

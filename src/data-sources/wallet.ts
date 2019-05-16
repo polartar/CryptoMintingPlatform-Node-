@@ -4,11 +4,22 @@ import Btc from './btc-wallet';
 const autoBind = require('auto-bind');
 
 export default class Wallet extends DataSource {
-  btc: WalletBase;
+  private btc: WalletBase;
   constructor() {
     super();
     autoBind(this);
-    console.log('WalletBase -> constructor');
     this.btc = new Btc();
+  }
+
+  public getCoinAPI(symbol: string) {
+    const lowerSymbol = symbol.toLowerCase();
+    switch (lowerSymbol) {
+      case 'btc': {
+        return this.btc;
+      }
+      default: {
+        throw new Error('Symbol not supported');
+      }
+    }
   }
 }
