@@ -1,3 +1,5 @@
+// All of this code came from the GREEN wallet, so a bunch of it can probably be used for the ERC20 interface and maybe some for the ETH interface.
+
 // import Db from './db';
 // import { User } from '../models';
 // import Web3 from 'web3';

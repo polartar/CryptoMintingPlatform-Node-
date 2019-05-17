@@ -1,3 +1,5 @@
+// This is a base class for DataSources that allow direct access to a specified mongo model
+
 import { DataSource } from 'apollo-datasource';
 import { Model } from 'mongoose';
 import { FilterQuery } from 'mongodb';

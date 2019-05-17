@@ -1,3 +1,4 @@
+// I'm thinking a lot of this code will eventually be migrated to the ERC20 wallet interface.
 import Web3 from 'web3';
 import config from '../common/config';
 import * as ethereumUtil from 'ethereumjs-util';

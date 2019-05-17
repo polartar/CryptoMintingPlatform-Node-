@@ -8,6 +8,7 @@ export interface ContextUser {
   authorized: boolean;
   twoFaEnabled: boolean;
 }
+
 export interface Context {
   req: Request;
   res: Response;

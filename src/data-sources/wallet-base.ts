@@ -1,5 +1,4 @@
-// import { validateMnemonic, validatePin, encryptPrivateKey } from './crypto';
-
+// This abstract class is intended to provide a framework for each of the wallet interfaces to ensure they implement the same methods and return the same data shape
 export default abstract class WalletBase {
   constructor(
     protected name: string,
@@ -7,7 +6,6 @@ export default abstract class WalletBase {
     protected contract: string,
   ) {}
 
-  // web3
   // abstract getTransactions
 
   abstract getBalance(
@@ -19,6 +17,4 @@ export default abstract class WalletBase {
   }>;
 
   // abstract sendToken
-
-  // abstract getPrivateKey
 }

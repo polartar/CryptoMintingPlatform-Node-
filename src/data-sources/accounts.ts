@@ -1,3 +1,5 @@
+// Basic full crud interface for adding, editing, and deleting accounts for a specific user.
+
 import Db from './db';
 import { Account } from '../models';
 
@@ -5,6 +7,7 @@ class Accounts extends Db {
   model = Account;
 
   public async createAccount(userId: string, accountName: string) {
+    // Probably want to check to see if the accountName already exists before create
     const account = await this.create({ userId, accountName });
     return account;
   }
