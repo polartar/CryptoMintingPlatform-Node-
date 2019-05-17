@@ -24,7 +24,8 @@ Current state of my code with notes https://git.netzilla.co/bb/wallet-server/tre
 3. RUN: npm i -g bcoin
 4. RUN: bcoin
 5. You will know it is synced when the messages in the command line start moving somewhat slowly instead of at light speed
-6. MongoDB - I used a locally running mongodb instance for development since a stage DB wasn't set up when I started. https://treehouse.github.io/installation-guides/mac/mongo-mac.html
+
+### MongoDB - I used a locally running mongodb instance for development since a stage DB wasn't set up when I started. https://treehouse.github.io/installation-guides/mac/mongo-mac.html
 
 ### Redis
 
