@@ -1,6 +1,7 @@
 import { DataSource } from 'apollo-datasource';
 import { WalletBase } from './';
 import Btc from './btc-wallet';
+import { UserInputError } from 'apollo-server-express';
 const autoBind = require('auto-bind');
 
 // This class is used as a common data source to select the appropriate interface given a token symbol sent as an argument in the GQL query.
@@ -22,7 +23,7 @@ export default class Wallet extends DataSource {
   // public getAllCoinAPI(): WalletBase[]
 
   // maybe to rename to coin() so that when it is called it is just wallet.coin('btc')?
-  public getCoinAPI(symbol: string) {
+  public coin(symbol: string) {
     const lowerSymbol = symbol.toLowerCase();
     switch (lowerSymbol) {
       case 'btc': {
@@ -34,7 +35,7 @@ export default class Wallet extends DataSource {
       // }
       default: {
         // Hopefully if the previous two cases don't match the symbol, the token is ERC20 and you can return a new ERC20 interface configured with the contract address, token symbol, ABI, etc.
-        throw new Error('Symbol not supported');
+        throw new UserInputError('Symbol not supported');
       }
     }
   }

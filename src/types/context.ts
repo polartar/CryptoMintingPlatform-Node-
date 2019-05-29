@@ -14,7 +14,7 @@ export interface Context {
   res: Response;
   dataSources: {
     wallet: {
-      getCoinAPI(symbol: string): WalletBase;
+      coin(symbol: string): WalletBase;
     };
     accounts: Account;
   };

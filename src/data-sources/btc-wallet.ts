@@ -5,9 +5,26 @@ import { sha256 } from 'js-sha256';
 import { v4 as generateRandomId } from 'uuid';
 import config from '../common/config';
 import { credentialService } from '../services';
+import { ITransaction } from '../types';
 const { WalletClient } = require('bclient');
 const autoBind = require('auto-bind');
+
+interface IBtcRawOutput {
+  path: string;
+  address: string;
+  value: number;
+}
+
+interface IBcoinTx {
+  block: number;
+  confirmations: number;
+  mdate: Date;
+  fee: number;
+  outputs: IBtcRawOutput[];
+  hash: string;
+}
 class BtcWallet extends WalletBase {
+  feeRate = 20000;
   // To my knowledge, bcoin hasn't implemented types to their client.
   walletClient: any;
   constructor() {
@@ -67,11 +84,9 @@ class BtcWallet extends WalletBase {
     }
   }
 
-  async estimateFee() {
-    return {
-      // Cant remember why we used this formula to estimate the fee
-      medium: this.satToBtc(10000 / 4),
-    };
+  private estimateFee() {
+    // Cant remember why we used this formula to estimate the fee
+    return this.satToBtc(this.feeRate / 4);
   }
 
   private async newPassphrase(accountId: string) {
@@ -99,56 +114,57 @@ class BtcWallet extends WalletBase {
   }
 
   // Old code from the old front-end-only method
-  async getTransactions(account = 'default') {
-    // if (!this.wallet) throw new Error('Wallet has not been initialized');
-    // const history = await this.wallet.getHistory(account);
-    // return this.formatTransactions(history);
+  async getTransactions(accountId: string): Promise<ITransaction[]> {
+    const userWallet = await this.setWallet(accountId);
+    const history = await userWallet.getHistory('default');
+    return this.formatTransactions(history);
   }
 
-  // private formatTransactions(transactions) {
-  //   const formattedTransactions = transactions.map(transaction => {
-  //     const { block, confirmations, mdate, fee, outputs, hash } = transaction;
-  //     const formattedTx = {
-  //       status: block === null ? 'Pending' : 'Complete',
-  //       confirmations,
-  //       timestamp: new Date(mdate).getTime() / 1000,
-  //       fee: `${this.satToBtc(fee)} BTC`,
-  //       txLink: `https://live.blockcypher.com/btc-testnet/tx/${hash}/`,
-  //     };
-  //     if (fee) {
-  //       // I sent this tx
-  //       const { to, from, amount } = outputs.reduce(
-  //         (total, output) => {
-  //           if (!output.path) {
-  //             total.to = output.address;
-  //             total.amount += this.satToBtc(output.value);
-  //           } else {
-  //             total.from = output.address;
-  //           }
-  //           return total;
-  //         },
-  //         { to: '', from: '', amount: 0 },
-  //       )
-  //       return { ...formattedTx, to, from, amount, type: 'withdrawal' };
-  //     } else {
-  //       // I received this tx
-  //       const { to, from, amount } = outputs.reduce(
-  //         (total, output) => {
-  //           if (output.path) {
-  //             total.to = output.address;
-  //             total.amount += this.satToBtc(output.value);
-  //           } else {
-  //             total.from = output.address;
-  //           }
-  //           return total;
-  //         },
-  //         { to: '', from: '', amount: 0 },
-  //       );
-  //       return { ...formattedTx, to, from, amount, type: 'deposit' };
-  //     }
-  //   });
-  //   return formattedTransactions;
-  // }
+  private formatTransactions(transactions: IBcoinTx[]): ITransaction[] {
+    const formattedTransactions = transactions.map(transaction => {
+      const { block, confirmations, mdate, fee, outputs, hash } = transaction;
+      const formattedTx = {
+        id: hash,
+        status: block === null ? 'Pending' : 'Complete',
+        confirmations,
+        timestamp: new Date(mdate).getTime() / 1000,
+        fee: this.satToBtc(fee),
+        link: `https://live.blockcypher.com/btc-testnet/tx/${hash}/`,
+      };
+      if (fee) {
+        // I sent this tx
+        const { to, from, amount } = outputs.reduce(
+          (formedOutput, rawOutput) => {
+            if (!rawOutput.path) {
+              formedOutput.to = rawOutput.address;
+              formedOutput.amount += this.satToBtc(rawOutput.value);
+            } else {
+              formedOutput.from = rawOutput.address;
+            }
+            return formedOutput;
+          },
+          { to: '', from: '', amount: 0 },
+        );
+        return { ...formattedTx, to, from, amount, type: 'withdrawal' };
+      } else {
+        // I received this tx
+        const { to, from, amount } = outputs.reduce(
+          (formedOutput, rawOutput) => {
+            if (rawOutput.path) {
+              formedOutput.to = rawOutput.address;
+              formedOutput.amount += this.satToBtc(rawOutput.value);
+            } else {
+              formedOutput.from = rawOutput.address;
+            }
+            return formedOutput;
+          },
+          { to: '', from: '', amount: 0 },
+        );
+        return { ...formattedTx, to, from, amount, type: 'deposit' };
+      }
+    });
+    return formattedTransactions;
+  }
 
   async getBalance(accountId: string) {
     // retreives the bcoin wallet interface based off of the specified accountId
@@ -157,16 +173,22 @@ class BtcWallet extends WalletBase {
     const balanceResult = await userWallet.getAccount('default');
     // Pull the confirmed and unconfirmed properties off of the balance response. I'm pretty sure the unconfirmed amount included the confirmed amount for some reason. ¯\_(ツ)_/¯ so it may make more sense to subtract the confirmed from the unconfirmed to get the truely unconfirmed amount.
     const {
+      receiveAddress,
       balance: { confirmed, unconfirmed },
     } = balanceResult;
 
+    const feeEstimate = this.estimateFee();
+
     // Return the balance based on this standardized shape.
     return {
+      accountId,
       symbol: this.symbol,
       name: this.name,
+      feeEstimate,
+      receiveAddress,
       balance: {
         confirmed: this.satToBtc(confirmed),
-        unconfirmed: this.satToBtc(unconfirmed),
+        unconfirmed: this.satToBtc(unconfirmed - confirmed),
       },
     };
   }
@@ -193,21 +215,46 @@ class BtcWallet extends WalletBase {
     return token;
   }
 
-  async send(address: string, value: string) {
-    // if (!this.wallet) throw new Error('Wallet has not been initialized');
-    // const result = await this.wallet.send({
-    //   account: 'default',
-    //   passphrase: passphrase,
-    //   //10000 satoshis per kilobyte for a fee?
-    //   rate: 10000,
-    //   outputs: [
-    //     {
-    //       value: Math.round(this.btcToSat(value)),
-    //       address: address,
-    //     },
-    //   ],
-    // });
-    // return result;
+  private async getPassphrase(accountId: string) {
+    const passphrase = await credentialService.get(
+      accountId,
+      this.symbol,
+      'passphrase',
+    );
+
+    return passphrase;
+  }
+
+  async send(
+    accountId: string,
+    to: string,
+    amount: number,
+  ): Promise<{ success: boolean; id?: string; message?: string }> {
+    try {
+      const userWallet = await this.setWallet(accountId);
+      const passphrase = await this.getPassphrase(accountId);
+      const { hash } = await userWallet.send({
+        account: 'default',
+        passphrase: passphrase,
+        //10000 satoshis per kilobyte for a fee?
+        rate: this.feeRate,
+        outputs: [
+          {
+            value: Math.round(this.btcToSat(amount)),
+            address: to,
+          },
+        ],
+      });
+      return {
+        id: hash,
+        success: true,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+      };
+    }
   }
 }
 

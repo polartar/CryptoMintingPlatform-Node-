@@ -85,7 +85,6 @@ class CredentialService {
   public async get(userId: string, coin: string, resource: string) {
     const resourceKey = `${coin}-${resource}`;
     const apiKeyUrl = `${config.apiKeyServiceUrl}/${userId}/${resourceKey}`;
-    console.log('LOG: CredentialService -> publicget -> apiKeyUrl', apiKeyUrl);
     const jwtAxios = this.getAxios({
       userId,
       accountId: resourceKey,
