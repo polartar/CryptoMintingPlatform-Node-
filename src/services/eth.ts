@@ -1,5 +1,6 @@
 import axios from 'axios';
 import config from '../common/config';
+import { IEtherscanTx } from '../types';
 
 interface ITxResult {
   to: string;
@@ -9,33 +10,24 @@ interface ITxResult {
 
 class EthService {
   async getEthTransactions(accountAddress: string) {
-    const response: { data: { result: ITxResult[] } } = await axios.get(
-      config.ethNodeUrl,
-      {
+    try {
+      const transactionResponse: {
+        data: { result: IEtherscanTx[] };
+      } = await axios.get(config.etherscanUrl, {
         params: {
           module: 'account',
           action: 'txlist',
           address: accountAddress,
-          startblock: '0',
-          endblock: '99999999',
-          sort: 'asc',
-          apiket: '8D4AD9TBBK8VHIHJ78WJBWSBYNV83AHMNC',
+          apikey: config.etherScanApiKey,
         },
-      },
-    );
-
-    return response.data.result
-      .filter(tx => {
-        // only return transactions sent to the proved account address
-        return tx.to.toUpperCase() === accountAddress.toUpperCase();
-      })
-      .map(tx => {
-        return {
-          amount: tx.value * Math.pow(10, 18 * -1),
-          timestamp: tx.timeStamp,
-          type: 'deposit',
-        };
       });
+      const {
+        data: { result },
+      } = transactionResponse;
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async getEthBalance(accountAddress: string) {

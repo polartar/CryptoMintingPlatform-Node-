@@ -1,137 +1,162 @@
-// All of this code came from the GREEN wallet, so a bunch of it can probably be used for the ERC20 interface and maybe some for the ETH interface.
+import Db from './db';
+import { Account } from '../models';
+import * as bip39 from 'bip39';
+const hdKey = require('ethereumjs-wallet/hdkey');
+const Web3 = require('web3');
+import { credentialService, ethService } from '../services';
+import * as ethereumUtil from 'ethereumjs-util';
+import * as ethers from 'ethers';
+import WalletBase from './wallet-base';
+const ethereumTx = require('ethereumjs-tx');
+import config from '../common/config';
+import { IAccount } from '../models/account';
+import { ITransaction, IEtherscanTx } from '../types';
 
-// import Db from './db';
-// import { User } from '../models';
-// import Web3 from 'web3';
-// import * as ethereumUtil from 'ethereumjs-util';
-// import * as ethers from 'ethers';
-// import { WalletBase } from './wallet-base';
-// const ethereumTx = require('ethereumjs-tx');
-// import config from '../common/config';
+class EthAPI extends WalletBase {
+  WEB3_GAS_ERROR = 'Returned error: insufficient funds for gas * price + value';
+  NEW_GAS_ERROR = 'Insufficient credits';
+  web3 = new Web3(config.ethNodeUrl);
+  constructor() {
+    super('Ethereum', 'ETH', null);
+  }
 
-// class EthAPI extends WalletBase {
-//   model = User;
-//   WEB3_GAS_ERROR = 'Returned error: insufficient funds for gas * price + value';
-//   NEW_GAS_ERROR = 'Insufficient credits';
+  private async createAccount(accountId: string) {
+    const mnemonic = bip39.generateMnemonic(256);
+    const seed = await bip39.mnemonicToSeed(mnemonic);
+    const masterWallet = hdKey.fromMasterSeed(seed);
+    const privateKey = masterWallet.getWallet()._privKey.toString('hex');
+    const address = masterWallet.getWallet().getChecksumAddressString();
 
-//   // web3
-//   async getTransactions(
-//     contractAddress: string,
-//     accountAddress: string,
-//     decimalPlaces: number,
-//     abi: any,
-//   ) {
-//     const web3 = new Web3(config.ethNodeUrl);
+    const mnemonicPromise = credentialService.create(
+      accountId,
+      this.symbol,
+      'mnemonic',
+      mnemonic,
+    );
 
-//     const currentBlockNumber = await web3.eth.getBlockNumber();
-//     const contract = new web3.eth.Contract(abi, contractAddress);
-//     const transferEvents = await contract.getPastEvents('allEvents', {
-//       fromBlock: 2426642,
-//     });
+    const privateKeyPromise = credentialService.create(
+      accountId,
+      this.symbol,
+      'privkey',
+      privateKey,
+    );
 
-//     const transferObjects = transferEvents
-//       .filter(
-//         ({ returnValues }) =>
-//           returnValues._to === accountAddress ||
-//           returnValues._from === accountAddress,
-//       )
-//       .sort((evOne, evTwo) => evTwo.blockNumber - evOne.blockNumber)
-//       .map(
-//         async ({ blockNumber, transactionHash, returnValues, blockHash }) => {
-//           const { timestamp } = await web3.eth.getBlock(blockNumber, false);
-//           return {
-//             timestamp,
-//             transactionHash,
-//             confirmations: currentBlockNumber - blockNumber,
-//             amount: returnValues._value * Math.pow(10, +decimalPlaces * -1),
-//             status: blockHash ? 'success' : 'failed',
-//             blockNumber,
-//             type:
-//               returnValues._to === accountAddress ? 'deposit' : 'withdrawal',
-//             to: returnValues._to,
-//             from: returnValues._from,
-//           };
-//         },
-//       );
+    const addressSavePromise = this.saveAddress(accountId, address);
 
-//     return Promise.all(transferObjects)
-//       .then(results => {
-//         return results;
-//       })
-//       .catch(err => {
-//         throw new Error(err);
-//       });
-//   }
+    await Promise.all([mnemonicPromise, privateKeyPromise, addressSavePromise]);
 
-//   async getBalance(
-//     contractAddress: string,
-//     accountAddress: string,
-//     decimalPlaces: number,
-//     abi: any,
-//   ) {
-//     const web3 = new Web3(config.ethNodeUrl);
-//     const contract = new web3.eth.Contract(abi, contractAddress);
-//     const balance = await contract.methods.balanceOf(accountAddress).call();
-//     return balance * Math.pow(10, +decimalPlaces * -1);
-//   }
+    return address;
+  }
 
-//   async sendToken(
-//     toAddress: string,
-//     accountAddress: string,
-//     value: number,
-//     privateKey: string,
-//     contractAddress: string,
-//     decimalPlaces: number,
-//     abi: any,
-//   ) {
-//     const web3 = new Web3(config.ethNodeUrl);
-//     let count, signedTransaction;
-//     const amount = value * Math.pow(10, +decimalPlaces);
-//     const string = amount.toLocaleString();
-//     const stringNoCommas = string.replace(/,/g, '');
-//     const sendValue = ethers.utils.bigNumberify(stringNoCommas);
-//     try {
-//       count = await web3.eth.getTransactionCount(accountAddress);
-//     } catch (err) {
-//       throw err;
-//     }
+  private async saveAddress(accountId: string, ethAddress: string) {
+    const ethBlockNumAtCreation = await this.web3.eth.getBlockNumber();
+    const result = await Account.findByIdAndUpdate(accountId, {
+      ethAddress,
+      ethBlockNumAtCreation,
+    });
+    return result;
+  }
 
-//     const contract = new web3.eth.Contract(abi, contractAddress, {
-//       from: accountAddress,
-//       // FIX THESE!
-//       gas: 10,
-//       data: 'foo',
-//       gasPrice: '10',
-//     });
+  public async estimateFee() {
+    const gasPrice = await this.web3.eth.getGasPrice();
+    const feeEstimate = +gasPrice * 21001;
+    return this.toEther(feeEstimate);
+  }
 
-//     const rawTransaction = {
-//       from: accountAddress,
-//       nonce: '0x' + count.toString(16),
-//       gasPrice: '0x003B9ACA00',
-//       gasLimit: '0x250CA',
-//       to: contractAddress,
-//       value: '0x0',
-//       data: contract.methods.transfer(toAddress, sendValue).encodeABI(),
-//     };
-//     const privKey = ethereumUtil.toBuffer(`0x${privateKey}`); // Buffer not correct?
-//     const tx = new ethereumTx(rawTransaction);
+  async getBalance(userAccount: IAccount) {
+    let { ethAddress } = userAccount;
+    if (!ethAddress) {
+      ethAddress = await this.createAccount(userAccount.id);
+    }
+    const balance = await this.web3.eth.getBalance(ethAddress);
+    const feeEstimate = +(await this.estimateFee());
+    return {
+      accountId: userAccount.id,
+      symbol: this.symbol,
+      name: this.name,
+      receiveAddress: ethAddress,
+      feeEstimate,
+      balance: {
+        unconfirmed: 0,
+        confirmed: this.toEther(balance),
+      },
+    };
+  }
 
-//     tx.sign(privKey);
-//     const serializedTx = tx.serialize();
-//     try {
-//       signedTransaction = await web3.eth.sendSignedTransaction(
-//         '0x' + serializedTx.toString('hex'),
-//       );
-//     } catch (err) {
-//       if (err.message === this.WEB3_GAS_ERROR) {
-//         throw new Error(this.NEW_GAS_ERROR);
-//       }
+  async getTransactions(userAccount: IAccount): Promise<ITransaction[]> {
+    const {
+      ethAddress: address,
+      ethBlockNumAtCreation: currentBlock = 0,
+    } = userAccount;
+    const transactions = await ethService.getEthTransactions(address);
+    return this.formatTransactions(transactions, address);
+  }
 
-//       throw err;
-//     }
+  // async send() {
+  //   let gasPrice = 2;//or get with web3.eth.gasPrice
+  //   let gasLimit = 3000000;
 
-//     return signedTransaction;
-//   }
-// }
+  //   let rawTransaction = {
+  //     "from": addr,
+  //     "nonce": web3.toHex(nonce),
+  //     "gasPrice": web3.toHex(gasPrice * 1e9),
+  //     "gasLimit": web3.toHex(gasLimit),
+  //     "to": toAddress,
+  //     "value": amountToSend,
+  //     "chainId": 4 //remember to change this
+  //   };
 
-// export default EthAPI;
+  //   let privKey = new Buffer(privateKey, 'hex');
+  //   let tx = new Tx(rawTransaction);
+
+  //   tx.sign(privKey);
+  //   let serializedTx = tx.serialize();
+
+  //   web3.eth.sendRawTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+  //     if (!err) {
+  //       console.log('Txn Sent and hash is ' + hash);
+  //     }
+  //     else {
+  //       console.error(err);
+  //     }
+  //   });
+  // }
+
+  private toEther(wei: number) {
+    return +this.web3.utils.fromWei(`${wei}`);
+  }
+
+  private formatTransactions(
+    transactions: IEtherscanTx[],
+    address: string,
+  ): ITransaction[] {
+    return transactions.map(rawTx => {
+      const {
+        hash,
+        blockNumber,
+        confirmations,
+        timeStamp,
+        gasUsed,
+        gasPrice,
+        to,
+        from,
+        value,
+      } = rawTx;
+      const fee = +gasUsed * +gasPrice;
+      return {
+        id: hash,
+        status: blockNumber !== null ? 'Complete' : 'Pending',
+        confirmations: +confirmations,
+        timestamp: +timeStamp,
+        fee: this.toEther(fee),
+        link: `${config.ethTxLink}/${hash}`,
+        to: to,
+        from: from,
+        type: to === address.toLowerCase() ? 'Deposit' : 'Withdrawal',
+        amount: this.toEther(+value),
+      };
+    });
+  }
+}
+
+export default EthAPI;

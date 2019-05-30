@@ -4,6 +4,7 @@ export interface IAccount extends mongoose.Document {
   userId: string;
   accountName: string;
   ethAddress?: string;
+  ethBlockNumAtCreation?: number;
 }
 
 const accountSchema = new mongoose.Schema({
@@ -17,6 +18,7 @@ const accountSchema = new mongoose.Schema({
     required: true,
   },
   ethAddress: String,
+  ethBlockNumAtCreation: Number,
 });
 
 const Account = mongoose.model<IAccount>('account', accountSchema);

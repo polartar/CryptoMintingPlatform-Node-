@@ -17,6 +17,7 @@ class Config {
   public readonly jwtPrivateKey = keys.privateKey;
   public readonly jwtPublicKey = keys.publicKey;
   public readonly apiKeyServiceUrl = process.env.API_KEY_SERVICE_URL;
+  public readonly etherScanApiKey = process.env.ETHERSCAN_API_KEY;
   public readonly bcoinWallet = {
     network: process.env.BCOIN_NETWORK,
     port: +process.env.BCOIN_WALLET_PORT,
@@ -24,8 +25,23 @@ class Config {
   };
   public readonly ethNodeUrl =
     process.env.ETH_NETWORK === 'testnet'
-      ? 'https://ropsten.infura.io/'
+      ? 'https://ropsten.infura.io'
       : 'https://eth.share.green';
+
+  public readonly btcTxLink =
+    process.env.BCOIN_NETWORK === 'testnet'
+      ? 'https://live.blockcypher.com/btc-testnet/tx'
+      : 'https://live.blockcypher.com/btc/tx';
+
+  public readonly ethTxLink =
+    process.env.ETH_NETWORK === 'testnet'
+      ? 'https://ropsten.etherscan.io/tx'
+      : 'https://etherscan.io/tx';
+
+  public readonly etherscanUrl =
+    process.env.ETH_NETWORK === 'testnet'
+      ? 'http://api-ropsten.etherscan.io/api'
+      : 'http://api.etherscan.io/api';
 
   public auth = new ServerAuth({
     serviceAccounts: this.getServiceAccounts(),

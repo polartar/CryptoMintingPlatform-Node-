@@ -8,4 +8,5 @@ export default interface ITransaction {
   to: string;
   from: string;
   amount: number;
+  type: string;
 }

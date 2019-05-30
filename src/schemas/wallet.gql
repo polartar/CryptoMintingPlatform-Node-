@@ -23,6 +23,7 @@ type Wallet {
   balance: Balance!
   receiveAddress: String!
   transactions: [Transaction!]!
+  feeEstimate: Float!
 }
 
 type Query {

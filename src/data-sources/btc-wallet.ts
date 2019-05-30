@@ -6,6 +6,7 @@ import { v4 as generateRandomId } from 'uuid';
 import config from '../common/config';
 import { credentialService } from '../services';
 import { ITransaction } from '../types';
+import { IAccount } from '../models/account';
 const { WalletClient } = require('bclient');
 const autoBind = require('auto-bind');
 
@@ -84,9 +85,10 @@ class BtcWallet extends WalletBase {
     }
   }
 
-  private estimateFee() {
+  public estimateFee() {
     // Cant remember why we used this formula to estimate the fee
-    return this.satToBtc(this.feeRate / 4);
+    const estimate = this.satToBtc(this.feeRate / 4);
+    return Promise.resolve(estimate);
   }
 
   private async newPassphrase(accountId: string) {
@@ -114,7 +116,8 @@ class BtcWallet extends WalletBase {
   }
 
   // Old code from the old front-end-only method
-  async getTransactions(accountId: string): Promise<ITransaction[]> {
+  public async getTransactions(userAccount: IAccount): Promise<ITransaction[]> {
+    const accountId = userAccount.id;
     const userWallet = await this.setWallet(accountId);
     const history = await userWallet.getHistory('default');
     return this.formatTransactions(history);
@@ -129,7 +132,7 @@ class BtcWallet extends WalletBase {
         confirmations,
         timestamp: new Date(mdate).getTime() / 1000,
         fee: this.satToBtc(fee),
-        link: `https://live.blockcypher.com/btc-testnet/tx/${hash}/`,
+        link: `${config.btcTxLink}/${hash}/`,
       };
       if (fee) {
         // I sent this tx
@@ -166,7 +169,8 @@ class BtcWallet extends WalletBase {
     return formattedTransactions;
   }
 
-  async getBalance(accountId: string) {
+  public async getBalance(userAccount: IAccount) {
+    const accountId = userAccount.id;
     // retreives the bcoin wallet interface based off of the specified accountId
     const userWallet = await this.setWallet(accountId);
     // request the wallet balance from bcoin

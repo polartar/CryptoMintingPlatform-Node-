@@ -15,6 +15,7 @@ export interface Context {
   dataSources: {
     wallet: {
       coin(symbol: string): WalletBase;
+      allCoins(): WalletBase[];
     };
     accounts: Account;
   };
