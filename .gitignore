@@ -1,0 +1,38 @@
+# dependencies
+/node_modules
+
+# compiled output
+/lib
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+/.vscode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+#System Files
+.DS_Store
+Thumbs.db
+
+# Misc
+npm-debug.log
+
+# Envs
+.env
+.env.production
+
+# Firebase Keys
+service-accounts.json
+jwtrsa-private.key
+jwtrsa-public.pem
