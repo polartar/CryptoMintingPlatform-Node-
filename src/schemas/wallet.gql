@@ -33,7 +33,6 @@ type Query {
 
 type TransactionResponse {
   success: Boolean!
-  id: String
   message: String
 }
 

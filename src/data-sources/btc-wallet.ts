@@ -230,11 +230,12 @@ class BtcWallet extends WalletBase {
   }
 
   async send(
-    accountId: string,
+    userAccount: IAccount,
     to: string,
     amount: number,
   ): Promise<{ success: boolean; id?: string; message?: string }> {
     try {
+      const accountId = userAccount.id;
       const userWallet = await this.setWallet(accountId);
       const passphrase = await this.getPassphrase(accountId);
       const { hash } = await userWallet.send({
@@ -250,7 +251,7 @@ class BtcWallet extends WalletBase {
         ],
       });
       return {
-        id: hash,
+        message: hash,
         success: true,
       };
     } catch (error) {

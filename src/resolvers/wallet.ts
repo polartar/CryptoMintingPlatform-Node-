@@ -54,23 +54,23 @@ class Resolvers extends ResolverBase {
     return feeEstimate;
   }
 
-  // async sendTransaction(
-  //   parent: any,
-  //   {
-  //     coinSymbol,
-  //     accountId,
-  //     to,
-  //     amount,
-  //   }: { coinSymbol: string; accountId: string; to: string; amount: number },
-  //   { user, dataSources: { wallet } }: Context,
-  // ) {
-  //   this.requireAuth(user);
-  //   if (coinSymbol) {
-  //     const walletApi = wallet.coin(coinSymbol);
-  //     const result = await walletApi.send(accountId, to, amount);
-  //     return result;
-  //   }
-  // }
+  async sendTransaction(
+    parent: any,
+    {
+      coinSymbol,
+      accountId,
+      to,
+      amount,
+    }: { coinSymbol: string; accountId: string; to: string; amount: number },
+    { user, dataSources: { wallet, accounts } }: Context,
+  ) {
+    this.requireAuth(user);
+    const userAccount = (await accounts.findById(accountId)) as IAccount;
+    this.validateAccount(userAccount);
+    const walletApi = wallet.coin(coinSymbol);
+    const result = await walletApi.send(userAccount, to, amount);
+    return result;
+  }
 }
 
 const resolvers = new Resolvers();
@@ -83,7 +83,7 @@ export default {
     transactions: resolvers.getTransactions,
     feeEstimate: resolvers.estimateFee,
   },
-  // Mutation: {
-  //   sendTransaction: resolvers.sendTransaction,
-  // },
+  Mutation: {
+    sendTransaction: resolvers.sendTransaction,
+  },
 };

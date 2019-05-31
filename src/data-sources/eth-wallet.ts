@@ -57,6 +57,10 @@ class EthAPI extends WalletBase {
     return result;
   }
 
+  private getPrivateKey(accountId: string) {
+    return credentialService.get(accountId, this.symbol, 'privkey');
+  }
+
   public async estimateFee() {
     const gasPrice = await this.web3.eth.getGasPrice();
     const feeEstimate = +gasPrice * 21001;
@@ -92,38 +96,49 @@ class EthAPI extends WalletBase {
     return this.formatTransactions(transactions, address);
   }
 
-  // async send() {
-  //   let gasPrice = 2;//or get with web3.eth.gasPrice
-  //   let gasLimit = 3000000;
+  private sendSignedTransaction(rawTx: string) {
+    return new Promise((resolve, reject) => {
+      this.web3.eth.sendSignedTransaction(rawTx, (err: Error, result: any) => {
+        if (err) reject(err);
+        resolve(result);
+      });
+    });
+  }
 
-  //   let rawTransaction = {
-  //     "from": addr,
-  //     "nonce": web3.toHex(nonce),
-  //     "gasPrice": web3.toHex(gasPrice * 1e9),
-  //     "gasLimit": web3.toHex(gasLimit),
-  //     "to": toAddress,
-  //     "value": amountToSend,
-  //     "chainId": 4 //remember to change this
-  //   };
-
-  //   let privKey = new Buffer(privateKey, 'hex');
-  //   let tx = new Tx(rawTransaction);
-
-  //   tx.sign(privKey);
-  //   let serializedTx = tx.serialize();
-
-  //   web3.eth.sendRawTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
-  //     if (!err) {
-  //       console.log('Txn Sent and hash is ' + hash);
-  //     }
-  //     else {
-  //       console.error(err);
-  //     }
-  //   });
-  // }
+  async send(userAccount: IAccount, to: string, amount: number) {
+    try {
+      const privateKey = await this.getPrivateKey(userAccount.id);
+      const nonce = await this.web3.eth.getTransactionCount(
+        userAccount.ethAddress,
+      );
+      const { rawTransaction } = await this.web3.eth.accounts.signTransaction(
+        {
+          to,
+          value: this.toWei(amount),
+          gas: 21001,
+          nonce,
+        },
+        privateKey,
+      );
+      const txHash = await this.sendSignedTransaction(rawTransaction);
+      return {
+        success: true,
+        message: txHash,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+      };
+    }
+  }
 
   private toEther(wei: number) {
     return +this.web3.utils.fromWei(`${wei}`);
+  }
+
+  private toWei(ether: number) {
+    return +this.web3.utils.toWei(`${ether}`);
   }
 
   private formatTransactions(

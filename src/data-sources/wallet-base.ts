@@ -23,9 +23,9 @@ export default abstract class WalletBase {
 
   abstract estimateFee(): Promise<number>;
 
-  // abstract send(
-  //   accountId: string,
-  //   to: string,
-  //   amount: number,
-  // ): Promise<{ success: boolean; message?: string }>;
+  abstract send(
+    userAccount: IAccount,
+    to: string,
+    amount: number,
+  ): Promise<{ success: boolean; message?: string }>;
 }
