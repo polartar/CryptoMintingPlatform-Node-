@@ -1,0 +1,6 @@
+scalar Date
+
+type MutationResponse {
+  success: Boolean!
+  message: String
+}

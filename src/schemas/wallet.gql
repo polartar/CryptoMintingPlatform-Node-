@@ -1,0 +1,47 @@
+type Balance {
+  confirmed: Float!
+  unconfirmed: Float!
+}
+
+type Transaction {
+  id: ID!
+  status: String!
+  confirmations: Int!
+  timestamp: Int!
+  fee: Float!
+  link: String!
+  to: String!
+  from: String!
+  amount: Float!
+  type: String!
+}
+
+type Wallet {
+  accountId: String!
+  symbol: String!
+  name: String!
+  balance: Balance!
+  receiveAddress: String!
+  transactions: [Transaction!]!
+  feeEstimate: Float!
+}
+
+type Query {
+  # If no coinSymbol is provided, all supported wallets will be returned
+  wallet(coinSymbol: String, accountId: String!): [Wallet!]!
+}
+
+type TransactionResponse {
+  success: Boolean!
+  message: String
+}
+
+type Mutation {
+  # If no coinSymbol is provided, all supported wallets will be returned
+  sendTransaction(
+    coinSymbol: String
+    accountId: String!
+    to: String!
+    amount: Float!
+  ): TransactionResponse!
+}

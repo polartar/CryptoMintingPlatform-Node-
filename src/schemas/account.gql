@@ -1,0 +1,12 @@
+type Account {
+  _id: String!
+  accountName: String!
+}
+
+type Query {
+  accounts: [Account!]!
+}
+
+type Mutation {
+  createAccount(accountName: String!): MutationResponse!
+}
