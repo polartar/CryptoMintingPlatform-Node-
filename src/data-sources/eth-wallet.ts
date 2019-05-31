@@ -1,13 +1,9 @@
-import Db from './db';
 import { Account } from '../models';
 import * as bip39 from 'bip39';
 const hdKey = require('ethereumjs-wallet/hdkey');
 const Web3 = require('web3');
 import { credentialService, ethService } from '../services';
-import * as ethereumUtil from 'ethereumjs-util';
-import * as ethers from 'ethers';
 import WalletBase from './wallet-base';
-const ethereumTx = require('ethereumjs-tx');
 import config from '../common/config';
 import { IAccount } from '../models/account';
 import { ITransaction, IEtherscanTx } from '../types';
