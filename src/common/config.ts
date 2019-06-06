@@ -3,7 +3,8 @@ import * as dotenv from 'dotenv';
 import * as autoBind from 'auto-bind';
 import keys from './keys';
 const ServerAuth = require('@blockbrothers/firebasebb/dist/src/Server').default;
-import * as supportedCoins from './supportedCoins.json';
+import * as supportedCoinsProd from './supportedCoins.json';
+import * as supportedCoinsDev from './supportedCoins-dev.json';
 
 dotenv.config({ path: '.env' });
 
@@ -13,11 +14,15 @@ class Config {
   public readonly port = this.normalizePort(process.env.PORT);
   public readonly hostname = process.env.HOSTNAME;
   public readonly mongodbUri = process.env.MONGODB_URI;
-  public readonly supportedCoins = supportedCoins;
+  public readonly supportedCoins =
+    process.env.NODE_ENV === 'production'
+      ? supportedCoinsProd
+      : supportedCoinsDev;
   public readonly jwtPrivateKey = keys.privateKey;
   public readonly jwtPublicKey = keys.publicKey;
   public readonly apiKeyServiceUrl = process.env.API_KEY_SERVICE_URL;
   public readonly etherScanApiKey = process.env.ETHERSCAN_API_KEY;
+  public readonly erc20FeeCalcAddress = process.env.ETH_ADD_FOR_ERC20_FEE_CALC;
   public readonly bcoinWallet = {
     network: process.env.BCOIN_NETWORK,
     port: +process.env.BCOIN_WALLET_PORT,

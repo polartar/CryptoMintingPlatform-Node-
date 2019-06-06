@@ -2,29 +2,83 @@ import { DataSource } from 'apollo-datasource';
 import { WalletBase } from './';
 import Btc from './btc-wallet';
 import Eth from './eth-wallet';
+import Erc20 from './erc20-wallet';
 import { UserInputError } from 'apollo-server-express';
 const autoBind = require('auto-bind');
-
+import { config } from '../common';
+interface ISupportedCoinConfig {
+  name: string;
+  symbol: string;
+  backgroundColor: string;
+  icon: string;
+  abi: any;
+  contractAddress: string;
+  decimalPlaces: number;
+}
 // This class is used as a common data source to select the appropriate interface given a token symbol sent as an argument in the GQL query.
 export default class Wallet extends DataSource {
   // Each of the different interfaces will extend the abstract class WalletBase which will ensure that each interface implements the same methods, and returns the same data shape.
   private btc: WalletBase;
   private eth: WalletBase;
   private erc20s: WalletBase[] = [];
+
   constructor() {
     super();
     autoBind(this);
-    // There will be one interface for BTC
-    this.btc = new Btc();
-    this.eth = new Eth();
-    // TODO: implement ERC20 interface - This one will be tricky as it will likely need special arguments in the constructor like the contract address and the ABI. I really liked the idea of querying all of that data from the db as the server starts so that implementing new erc20s in the future would only require a new DB entry and a server restart.
+    config.supportedCoins.forEach(this.bootstrapInterfaces);
   }
 
-  // This method would return an array of all available wallet interfaces so you could implement iterating over this array and running a method for all available itnerfaces. i.e. to get the balance for all supported coins you could just map over this returned array and run the .getBalance method on each interface inside of a Promise.all
-  // potential alternate name could be just coins() so that it is called with wallet.coins() to return an  array of all supported interfaces.
-  // public getAllCoinAPI(): WalletBase[]
+  private bootstrapInterfaces(supportedCoinJson: ISupportedCoinConfig) {
+    const {
+      name,
+      symbol,
+      backgroundColor,
+      icon,
+      abi,
+      contractAddress,
+      decimalPlaces,
+    } = supportedCoinJson;
+    switch (supportedCoinJson.symbol.toLowerCase()) {
+      case 'btc': {
+        this.btc = new Btc(
+          name,
+          symbol,
+          contractAddress,
+          abi,
+          backgroundColor,
+          icon,
+        );
+        break;
+      }
+      case 'eth': {
+        this.eth = new Eth(
+          name,
+          symbol,
+          contractAddress,
+          abi,
+          backgroundColor,
+          icon,
+        );
+        break;
+      }
+      default: {
+        this.erc20s.push(
+          new Erc20(
+            name,
+            symbol,
+            contractAddress,
+            abi,
+            backgroundColor,
+            icon,
+            decimalPlaces,
+          ),
+        );
+      }
+    }
+  }
+
   public allCoins() {
-    return [this.btc, this.eth];
+    return [this.btc, this.eth, ...this.erc20s];
   }
 
   // maybe to rename to coin() so that when it is called it is just wallet.coin('btc')?
@@ -39,7 +93,13 @@ export default class Wallet extends DataSource {
       }
       default: {
         // Hopefully if the previous two cases don't match the symbol, the token is ERC20 and you can return a new ERC20 interface configured with the contract address, token symbol, ABI, etc.
-        throw new UserInputError('Symbol not supported');
+        const foundErc20 = this.erc20s.find(
+          token => token.symbol.toLowerCase() === lowerSymbol,
+        );
+        if (!foundErc20) {
+          throw new UserInputError('Symbol not supported');
+        }
+        return foundErc20;
       }
     }
   }

@@ -3,10 +3,10 @@ export default interface ITransaction {
   status: string;
   confirmations: number;
   timestamp: number;
-  fee: number;
+  fee: string;
   link: string;
   to: string;
   from: string;
-  amount: number;
+  amount: string;
   type: string;
 }

@@ -36,3 +36,4 @@ npm-debug.log
 service-accounts.json
 jwtrsa-private.key
 jwtrsa-public.pem
+credentials.ts

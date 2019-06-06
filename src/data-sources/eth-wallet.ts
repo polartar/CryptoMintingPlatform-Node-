@@ -12,11 +12,18 @@ class EthAPI extends WalletBase {
   WEB3_GAS_ERROR = 'Returned error: insufficient funds for gas * price + value';
   NEW_GAS_ERROR = 'Insufficient credits';
   web3 = new Web3(config.ethNodeUrl);
-  constructor() {
-    super('Ethereum', 'ETH', null);
+  constructor(
+    name: string,
+    symbol: string,
+    contract: string,
+    abi: any,
+    backgroundColor: string,
+    icon: string,
+  ) {
+    super(name, symbol, contract, abi, backgroundColor, icon);
   }
 
-  private async createAccount(accountId: string) {
+  protected async createAccount(accountId: string) {
     const mnemonic = bip39.generateMnemonic(256);
     const seed = await bip39.mnemonicToSeed(mnemonic);
     const masterWallet = hdKey.fromMasterSeed(seed);
@@ -25,14 +32,14 @@ class EthAPI extends WalletBase {
 
     const mnemonicPromise = credentialService.create(
       accountId,
-      this.symbol,
+      'ETH',
       'mnemonic',
       mnemonic,
     );
 
     const privateKeyPromise = credentialService.create(
       accountId,
-      this.symbol,
+      'ETH',
       'privkey',
       privateKey,
     );
@@ -53,8 +60,8 @@ class EthAPI extends WalletBase {
     return result;
   }
 
-  private getPrivateKey(accountId: string) {
-    return credentialService.get(accountId, this.symbol, 'privkey');
+  protected getPrivateKey(accountId: string) {
+    return credentialService.get(accountId, 'ETH', 'privkey');
   }
 
   public async estimateFee() {
@@ -75,10 +82,10 @@ class EthAPI extends WalletBase {
       symbol: this.symbol,
       name: this.name,
       receiveAddress: ethAddress,
-      feeEstimate,
+      feeEstimate: feeEstimate.toString(),
       balance: {
-        unconfirmed: 0,
-        confirmed: this.toEther(balance),
+        unconfirmed: '0',
+        confirmed: this.toEther(balance).toString(),
       },
     };
   }
@@ -92,7 +99,7 @@ class EthAPI extends WalletBase {
     return this.formatTransactions(transactions, address);
   }
 
-  private sendSignedTransaction(rawTx: string) {
+  protected sendSignedTransaction(rawTx: string): Promise<string> {
     return new Promise((resolve, reject) => {
       this.web3.eth.sendSignedTransaction(rawTx, (err: Error, result: any) => {
         if (err) reject(err);
@@ -101,20 +108,37 @@ class EthAPI extends WalletBase {
     });
   }
 
-  async send(userAccount: IAccount, to: string, amount: number) {
+  protected async signTransaction(
+    from: string,
+    to: string,
+    amount: number,
+    privateKey: string,
+    gas: number,
+    data?: any,
+  ) {
+    const nonce = await this.web3.eth.getTransactionCount(from);
+    const { rawTransaction } = await this.web3.eth.accounts.signTransaction(
+      {
+        to,
+        value: this.toWei(amount),
+        gas: gas,
+        nonce,
+        data,
+      },
+      privateKey,
+    );
+    return rawTransaction;
+  }
+
+  async send(userAccount: IAccount, to: string, amount: string) {
     try {
       const privateKey = await this.getPrivateKey(userAccount.id);
-      const nonce = await this.web3.eth.getTransactionCount(
+      const rawTransaction = await this.signTransaction(
         userAccount.ethAddress,
-      );
-      const { rawTransaction } = await this.web3.eth.accounts.signTransaction(
-        {
-          to,
-          value: this.toWei(amount),
-          gas: 21001,
-          nonce,
-        },
+        to,
+        +amount,
         privateKey,
+        21001,
       );
       const txHash = await this.sendSignedTransaction(rawTransaction);
       return {
@@ -129,11 +153,11 @@ class EthAPI extends WalletBase {
     }
   }
 
-  private toEther(wei: number) {
+  protected toEther(wei: number) {
     return +this.web3.utils.fromWei(`${wei}`);
   }
 
-  private toWei(ether: number) {
+  protected toWei(ether: number) {
     return +this.web3.utils.toWei(`${ether}`);
   }
 
@@ -159,12 +183,12 @@ class EthAPI extends WalletBase {
         status: blockNumber !== null ? 'Complete' : 'Pending',
         confirmations: +confirmations,
         timestamp: +timeStamp,
-        fee: this.toEther(fee),
+        fee: this.toEther(fee).toString(),
         link: `${config.ethTxLink}/${hash}`,
         to: to,
         from: from,
         type: to === address.toLowerCase() ? 'Deposit' : 'Withdrawal',
-        amount: this.toEther(+value),
+        amount: this.toEther(+value).toString(),
       };
     });
   }

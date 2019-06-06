@@ -1,6 +1,6 @@
 type Balance {
-  confirmed: Float!
-  unconfirmed: Float!
+  confirmed: String!
+  unconfirmed: String!
 }
 
 type Transaction {
@@ -8,11 +8,11 @@ type Transaction {
   status: String!
   confirmations: Int!
   timestamp: Int!
-  fee: Float!
+  fee: String!
   link: String!
   to: String!
   from: String!
-  amount: Float!
+  amount: String!
   type: String!
 }
 
@@ -42,6 +42,6 @@ type Mutation {
     coinSymbol: String
     accountId: String!
     to: String!
-    amount: Float!
+    amount: String!
   ): TransactionResponse!
 }

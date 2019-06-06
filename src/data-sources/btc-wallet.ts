@@ -28,8 +28,15 @@ class BtcWallet extends WalletBase {
   feeRate = 20000;
   // To my knowledge, bcoin hasn't implemented types to their client.
   walletClient: any;
-  constructor() {
-    super('Bitcoin', 'BTC', null);
+  constructor(
+    name: string,
+    symbol: string,
+    contract: string,
+    abi: any,
+    backgroundColor: string,
+    icon: string,
+  ) {
+    super(name, symbol, contract, abi, backgroundColor, icon);
     autoBind(this);
     // This is the client configured to interact with bcoin;
     this.walletClient = new WalletClient(config.bcoinWallet);
@@ -131,7 +138,7 @@ class BtcWallet extends WalletBase {
         status: block === null ? 'Pending' : 'Complete',
         confirmations,
         timestamp: new Date(mdate).getTime() / 1000,
-        fee: this.satToBtc(fee),
+        fee: this.satToBtc(fee).toString(),
         link: `${config.btcTxLink}/${hash}/`,
       };
       if (fee) {
@@ -148,7 +155,13 @@ class BtcWallet extends WalletBase {
           },
           { to: '', from: '', amount: 0 },
         );
-        return { ...formattedTx, to, from, amount, type: 'withdrawal' };
+        return {
+          ...formattedTx,
+          to,
+          from,
+          amount: amount.toString(),
+          type: 'withdrawal',
+        };
       } else {
         // I received this tx
         const { to, from, amount } = outputs.reduce(
@@ -163,7 +176,13 @@ class BtcWallet extends WalletBase {
           },
           { to: '', from: '', amount: 0 },
         );
-        return { ...formattedTx, to, from, amount, type: 'deposit' };
+        return {
+          ...formattedTx,
+          to,
+          from,
+          amount: amount.toString(),
+          type: 'deposit',
+        };
       }
     });
     return formattedTransactions;
@@ -191,8 +210,8 @@ class BtcWallet extends WalletBase {
       feeEstimate,
       receiveAddress,
       balance: {
-        confirmed: this.satToBtc(confirmed),
-        unconfirmed: this.satToBtc(unconfirmed - confirmed),
+        confirmed: this.satToBtc(confirmed).toString(),
+        unconfirmed: this.satToBtc(unconfirmed - confirmed).toString(),
       },
     };
   }
@@ -232,7 +251,7 @@ class BtcWallet extends WalletBase {
   async send(
     userAccount: IAccount,
     to: string,
-    amount: number,
+    amount: string,
   ): Promise<{ success: boolean; id?: string; message?: string }> {
     try {
       const accountId = userAccount.id;
@@ -245,7 +264,7 @@ class BtcWallet extends WalletBase {
         rate: this.feeRate,
         outputs: [
           {
-            value: Math.round(this.btcToSat(amount)),
+            value: Math.round(this.btcToSat(+amount)),
             address: to,
           },
         ],

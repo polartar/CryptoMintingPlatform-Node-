@@ -5,8 +5,11 @@ import { IAccount } from '../models/account';
 export default abstract class WalletBase {
   constructor(
     protected name: string,
-    protected symbol: string,
-    protected contract: string,
+    public symbol: string,
+    protected contractAddress: string,
+    protected abi: any,
+    protected backgroundColor: string,
+    protected icon: string,
   ) {}
 
   abstract getBalance(
@@ -15,7 +18,7 @@ export default abstract class WalletBase {
     accountId: string;
     symbol: string;
     name: string;
-    balance: { confirmed: number; unconfirmed: number };
+    balance: { confirmed: string; unconfirmed: string };
     receiveAddress: string;
   }>;
 
@@ -26,6 +29,6 @@ export default abstract class WalletBase {
   abstract send(
     userAccount: IAccount,
     to: string,
-    amount: number,
+    amount: string,
   ): Promise<{ success: boolean; message?: string }>;
 }
