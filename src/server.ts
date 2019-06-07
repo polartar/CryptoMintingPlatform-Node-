@@ -5,7 +5,7 @@ import * as mongoose from 'mongoose';
 import schemas from './schemas';
 import resolvers from './resolvers';
 import { Wallet, Account } from './data-sources';
-import { config, logger } from './common';
+import { config, logger, auth } from './common';
 
 class Server {
   public app: express.Application = express();
@@ -39,21 +39,21 @@ class Server {
     const token = req.headers.authorization
       ? req.headers.authorization.replace('Bearer ', '')
       : '';
-
+    const origin = req.get('origin');
+    const domain = origin
+      ? origin.replace(/https?:\/\//, '').replace(/:\d+/, '')
+      : 'localhost';
     let user = null;
     if (token) {
       try {
-        const decodedToken = config.auth.verifyAndDecodeToken(
-          token,
-          req.hostname,
-        );
+        const decodedToken = auth.verifyAndDecodeToken(token, domain);
         user = decodedToken.claims;
       } catch (error) {
         user = null;
       }
     }
 
-    return { req, res, user };
+    return { req, res, user, domain };
   }
 
   private buildDataSources() {
@@ -69,29 +69,27 @@ class Server {
     );
   }
 
-  private connectToMongo() {
-    return new Promise((resolve, reject) => {
-      // Suppress deprecation warning
-      mongoose.set('useCreateIndex', true);
-      mongoose.set('useFindAndModify', false);
+  // private connectToMongo() {
+  //   return new Promise((resolve, reject) => {
+  //     // Suppress deprecation warning
+  //     mongoose.set('useCreateIndex', true);
+  //     mongoose.set('useFindAndModify', false);
+  //     mongoose.connect(config.mongodbUri.connect, { useNewUrlParser: true });
 
-      mongoose.connect(config.mongodbUri, { useNewUrlParser: true });
+  //     mongoose.connection.once('open', () => {
+  //       logger.info(`Connected to mongoDb`);
+  //       resolve();
+  //     });
 
-      mongoose.connection.once('open', () => {
-        logger.info(`Connected to mongoDb`);
-        resolve();
-      });
-
-      mongoose.connection.on('error', error => {
-        logger.info('mongo error');
-        reject(error);
-      });
-    });
-  }
+  //     mongoose.connection.on('error', error => {
+  //       logger.info('mongo error');
+  //       reject(error);
+  //     });
+  //   });
+  // }
 
   public async initialize() {
     try {
-      await this.connectToMongo();
       this.listen();
     } catch (error) {
       throw error;

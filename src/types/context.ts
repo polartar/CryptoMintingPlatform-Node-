@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { WalletBase, Account } from '../data-sources/';
-
 export interface ContextUser {
   permissions: string[];
   role: string;
@@ -12,6 +11,7 @@ export interface ContextUser {
 export interface Context {
   req: Request;
   res: Response;
+  domain: string;
   dataSources: {
     wallet: {
       coin(symbol: string): WalletBase;

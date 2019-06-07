@@ -1,0 +1,7 @@
+type ReturnToken {
+  token: String!
+}
+
+type Mutation {
+  login(token: String!): ReturnToken!
+}

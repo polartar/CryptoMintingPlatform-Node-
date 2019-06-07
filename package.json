@@ -15,7 +15,7 @@
     "precommit": "run-s format:fix fix lint"
   },
   "dependencies": {
-    "@blockbrothers/firebasebb": "^0.2.6",
+    "@blockbrothers/firebasebb": "^0.2.12",
     "@types/ethereumjs-tx": "^1.0.1",
     "@types/web3": "^1.0.18",
     "apollo-datasource": "^0.3.1",
@@ -38,7 +38,7 @@
     "jsonwebtoken": "^8.5.1",
     "merge-graphql-schemas": "^1.5.8",
     "mongodb": "^3.1.13",
-    "mongoose": "^5.3.15",
+    "mongoose": "^5.5.13",
     "uuid": "^3.3.2",
     "web3": "^1.0.0-beta.55",
     "winston": "^3.1.0",

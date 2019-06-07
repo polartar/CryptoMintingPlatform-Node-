@@ -13,13 +13,19 @@ class Config {
   public readonly logLevel = process.env.LOG_LEVEL;
   public readonly port = this.normalizePort(process.env.PORT);
   public readonly hostname = process.env.HOSTNAME;
-  public readonly mongodbUri = process.env.MONGODB_URI;
+  public readonly localMongo = process.env.MONGODB_URI;
+  public readonly mongodbUri = {
+    green: process.env.MONGODB_URI_GREEN,
+    codex: process.env.MONGODB_URI_CODEX,
+    connect: process.env.MONGODB_URI_CONNECT,
+  };
   public readonly supportedCoins =
     process.env.NODE_ENV === 'production'
       ? supportedCoinsProd
       : supportedCoinsDev;
   public readonly jwtPrivateKey = keys.privateKey;
   public readonly jwtPublicKey = keys.publicKey;
+  public readonly serviceAccounts = keys.serviceAccounts;
   public readonly apiKeyServiceUrl = process.env.API_KEY_SERVICE_URL;
   public readonly etherScanApiKey = process.env.ETHERSCAN_API_KEY;
   public readonly erc20FeeCalcAddress = process.env.ETH_ADD_FOR_ERC20_FEE_CALC;
@@ -47,14 +53,6 @@ class Config {
     process.env.ETH_NETWORK === 'testnet'
       ? 'http://api-ropsten.etherscan.io/api'
       : 'http://api.etherscan.io/api';
-
-  public auth = new ServerAuth({
-    serviceAccounts: this.getServiceAccounts(),
-    mongoDbInfo: {
-      connectionString: this.mongodbUri,
-      domain: this.hostname,
-    },
-  });
 
   constructor() {
     autoBind(this);

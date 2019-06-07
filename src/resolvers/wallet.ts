@@ -61,7 +61,7 @@ class Resolvers extends ResolverBase {
       accountId,
       to,
       amount,
-    }: { coinSymbol: string; accountId: string; to: string; amount: number },
+    }: { coinSymbol: string; accountId: string; to: string; amount: string },
     { user, dataSources: { wallet, accounts } }: Context,
   ) {
     this.requireAuth(user);
