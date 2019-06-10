@@ -1,7 +1,5 @@
 import { config, logger } from '../common';
 import { Context } from '../types/context';
-import {} from '../types/user';
-import { AuthenticationError, UserInputError } from 'apollo-server-express';
 import ResolverBase from '../common/Resolver-Base';
 const autoBind = require('auto-bind');
 class Resolvers extends ResolverBase {
@@ -26,10 +24,7 @@ class Resolvers extends ResolverBase {
     { user, dataSources: { accounts } }: Context,
   ) {
     this.requireAuth(user);
-    const newAccount = await accounts.createAccount(
-      user.userId,
-      args.accountName,
-    );
+    const newAccount = await accounts.createAccount(user.userId);
     return newAccount;
   }
 }
