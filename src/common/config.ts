@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 import * as autoBind from 'auto-bind';
 import keys from './keys';
-const ServerAuth = require('@blockbrothers/firebasebb/dist/src/Server').default;
 import * as supportedCoinsProd from './supportedCoins.json';
 import * as supportedCoinsDev from './supportedCoins-dev.json';
 import { createConnection } from 'mongoose';

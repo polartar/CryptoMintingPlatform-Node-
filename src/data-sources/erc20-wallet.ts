@@ -1,16 +1,12 @@
 import Db from './db';
-import { User } from '../models';
 import config from '../common/config';
 import * as ethers from 'ethers';
 import * as ethereumUtil from 'ethereumjs-util';
-import { DataSource } from 'apollo-datasource';
-import WalletBase from './wallet-base';
 import EthApi from './eth-wallet';
 import { IWalletAccount } from '../models/walletAccount';
 const Web3 = require('web3');
 import { ITransaction } from '../types';
 import { BigNumber } from 'bignumber.js';
-import { AnyARecord } from 'dns';
 const ethereumTx = require('ethereumjs-tx');
 
 interface ITransferEvent {
