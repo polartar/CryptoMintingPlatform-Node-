@@ -2,7 +2,7 @@ import { logger } from '../common';
 import { Context } from '../types/context';
 import ResolverBase from '../common/Resolver-Base';
 import account from './account';
-import { IAccount } from '../models/account';
+import { IWalletAccount } from '../models/walletAccount';
 const autoBind = require('auto-bind');
 
 class Resolvers extends ResolverBase {
@@ -12,11 +12,13 @@ class Resolvers extends ResolverBase {
   }
   async getWallet(
     parent: any,
-    { coinSymbol, accountId }: { coinSymbol: string; accountId: string },
+    { coinSymbol }: { coinSymbol: string; accountId: string },
     { user, dataSources: { wallet, accounts } }: Context,
   ) {
     this.requireAuth(user);
-    const userAccount = (await accounts.findById(accountId)) as IAccount;
+    const userAccount = ((await accounts.findByUserId(
+      user.userId,
+    )) as unknown) as IWalletAccount;
     this.validateAccount(userAccount);
     if (coinSymbol) {
       const walletApi = wallet.coin(coinSymbol);
@@ -36,7 +38,9 @@ class Resolvers extends ResolverBase {
     { user, dataSources: { wallet, accounts } }: Context,
   ) {
     this.requireAuth(user);
-    const userAccount = (await accounts.findById(accountId)) as IAccount;
+    const userAccount = ((await accounts.findByUserId(
+      user.userId,
+    )) as unknown) as IWalletAccount;
     this.validateAccount(userAccount);
     const walletApi = wallet.coin(symbol);
     const transactions = await walletApi.getTransactions(userAccount);
@@ -65,7 +69,9 @@ class Resolvers extends ResolverBase {
     { user, dataSources: { wallet, accounts } }: Context,
   ) {
     this.requireAuth(user);
-    const userAccount = (await accounts.findById(accountId)) as IAccount;
+    const userAccount = ((await accounts.findByUserId(
+      user.userId,
+    )) as unknown) as IWalletAccount;
     this.validateAccount(userAccount);
     const walletApi = wallet.coin(coinSymbol);
     const result = await walletApi.send(userAccount, to, amount);

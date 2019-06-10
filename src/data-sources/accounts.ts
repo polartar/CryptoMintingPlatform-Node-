@@ -1,32 +1,21 @@
 // Basic full crud interface for adding, editing, and deleting accounts for a specific user.
 
 import Db from './db';
-import { Account } from '../models';
+import { WalletAccount } from '../models';
+import { Model } from 'mongoose';
+import { IWalletAccount } from '../models/walletAccount';
 
 class Accounts extends Db {
-  model = Account;
+  model: Model<IWalletAccount> = WalletAccount;
 
-  public async createAccount(userId: string, accountName: string) {
-    // Probably want to check to see if the accountName already exists before create
-    const account = await this.create({ userId, accountName });
+  public async createAccount(userId: string) {
+    const account = await this.create({ userId });
     return account;
   }
 
-  public async editAccountName(accountId: string, newAccountName: string) {
-    const result = await this.updateById(accountId, {
-      accountName: newAccountName,
-    });
-    return result;
-  }
-
-  public async deleteAccount(accountId: string) {
-    const result = await this.deleteById(accountId);
-    return result;
-  }
-
   public async findByUserId(userId: string) {
-    const accounts = await this.find({ userId });
-    return accounts;
+    const account = await this.findOne({ userId });
+    return account;
   }
 }
 

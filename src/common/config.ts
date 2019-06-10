@@ -5,6 +5,7 @@ import keys from './keys';
 const ServerAuth = require('@blockbrothers/firebasebb/dist/src/Server').default;
 import * as supportedCoinsProd from './supportedCoins.json';
 import * as supportedCoinsDev from './supportedCoins-dev.json';
+import { createConnection } from 'mongoose';
 
 dotenv.config({ path: '.env' });
 
@@ -13,7 +14,7 @@ class Config {
   public readonly logLevel = process.env.LOG_LEVEL;
   public readonly port = this.normalizePort(process.env.PORT);
   public readonly hostname = process.env.HOSTNAME;
-  public readonly localMongo = process.env.MONGODB_URI;
+  public readonly walletMongo = process.env.MONGODB_URI;
   public readonly mongodbUri = {
     green: process.env.MONGODB_URI_GREEN,
     codex: process.env.MONGODB_URI_CODEX,
@@ -29,6 +30,7 @@ class Config {
   public readonly apiKeyServiceUrl = process.env.API_KEY_SERVICE_URL;
   public readonly etherScanApiKey = process.env.ETHERSCAN_API_KEY;
   public readonly erc20FeeCalcAddress = process.env.ETH_ADD_FOR_ERC20_FEE_CALC;
+  public readonly authDbConnections = this.getAuthDbConnections();
   public readonly bcoinWallet = {
     network: process.env.BCOIN_NETWORK,
     port: +process.env.BCOIN_WALLET_PORT,
@@ -94,18 +96,17 @@ class Config {
     throw new Error('port is less than 0');
   }
 
-  private getServiceAccounts() {
-    const rawServiceAccounts = JSON.parse(
-      fs.readFileSync('service-accounts.json').toString(),
+  private getAuthDbConnections() {
+    const rawConnections = JSON.parse(
+      fs.readFileSync('authDbConnections.json').toString(),
     );
 
-    const serviceAccounts = Object.entries(rawServiceAccounts).map(entry => {
-      const [domain, serviceAccount]: any[] = entry;
-      serviceAccount.domain = domain;
-      return serviceAccount;
+    const dbConnections = Object.entries(rawConnections).map(entry => {
+      const [domain, dbConnectionString]: any[] = entry;
+      return { domain, db: createConnection(dbConnectionString) };
     });
 
-    return serviceAccounts;
+    return dbConnections;
   }
 }
 

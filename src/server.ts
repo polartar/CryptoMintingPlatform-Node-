@@ -69,27 +69,28 @@ class Server {
     );
   }
 
-  // private connectToMongo() {
-  //   return new Promise((resolve, reject) => {
-  //     // Suppress deprecation warning
-  //     mongoose.set('useCreateIndex', true);
-  //     mongoose.set('useFindAndModify', false);
-  //     mongoose.connect(config.mongodbUri.connect, { useNewUrlParser: true });
+  private connectToMongo() {
+    return new Promise((resolve, reject) => {
+      // Suppress deprecation warning
+      mongoose.set('useCreateIndex', true);
+      mongoose.set('useFindAndModify', false);
+      mongoose.connect(config.walletMongo, { useNewUrlParser: true });
 
-  //     mongoose.connection.once('open', () => {
-  //       logger.info(`Connected to mongoDb`);
-  //       resolve();
-  //     });
+      mongoose.connection.once('open', () => {
+        logger.info(`Connected to mongoDb`);
+        resolve();
+      });
 
-  //     mongoose.connection.on('error', error => {
-  //       logger.info('mongo error');
-  //       reject(error);
-  //     });
-  //   });
-  // }
+      mongoose.connection.on('error', error => {
+        logger.info('mongo error');
+        reject(error);
+      });
+    });
+  }
 
   public async initialize() {
     try {
+      await this.connectToMongo();
       this.listen();
     } catch (error) {
       throw error;

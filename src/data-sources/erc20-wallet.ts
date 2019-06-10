@@ -6,7 +6,7 @@ import * as ethereumUtil from 'ethereumjs-util';
 import { DataSource } from 'apollo-datasource';
 import WalletBase from './wallet-base';
 import EthApi from './eth-wallet';
-import { IAccount } from '../models/account';
+import { IWalletAccount } from '../models/walletAccount';
 const Web3 = require('web3');
 import { ITransaction } from '../types';
 import { BigNumber } from 'bignumber.js';
@@ -116,7 +116,7 @@ class Erc20API extends EthApi {
   }
 
   // web3
-  async getTransactions(userAccount: IAccount): Promise<ITransaction[]> {
+  async getTransactions(userAccount: IWalletAccount): Promise<ITransaction[]> {
     const { ethAddress, ethBlockNumAtCreation } = userAccount;
     const currentBlockNumber = await this.web3.eth.getBlockNumber();
     const sent = await this.contract.getPastEvents('Transfer', {
@@ -155,7 +155,7 @@ class Erc20API extends EthApi {
     return tokenBN.multipliedBy(tenToDecPlaces);
   }
 
-  async getBalance(userAccount: IAccount) {
+  async getBalance(userAccount: IWalletAccount) {
     const { ethAddress, id: accountId } = userAccount;
     let userAddress = ethAddress;
     if (!ethAddress) {
@@ -179,7 +179,7 @@ class Erc20API extends EthApi {
     };
   }
 
-  async send(userAccount: IAccount, to: string, amount: string) {
+  async send(userAccount: IWalletAccount, to: string, amount: string) {
     const { erc20FeeCalcAddress } = config;
     const { ethAddress, id: accountId } = userAccount;
     const { toHex } = this.web3.utils;

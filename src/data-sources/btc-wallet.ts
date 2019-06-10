@@ -6,7 +6,7 @@ import { v4 as generateRandomId } from 'uuid';
 import config from '../common/config';
 import { credentialService } from '../services';
 import { ITransaction } from '../types';
-import { IAccount } from '../models/account';
+import { IWalletAccount } from '../models/walletAccount';
 const { WalletClient } = require('bclient');
 const autoBind = require('auto-bind');
 
@@ -123,7 +123,9 @@ class BtcWallet extends WalletBase {
   }
 
   // Old code from the old front-end-only method
-  public async getTransactions(userAccount: IAccount): Promise<ITransaction[]> {
+  public async getTransactions(
+    userAccount: IWalletAccount,
+  ): Promise<ITransaction[]> {
     const accountId = userAccount.id;
     const userWallet = await this.setWallet(accountId);
     const history = await userWallet.getHistory('default');
@@ -188,7 +190,7 @@ class BtcWallet extends WalletBase {
     return formattedTransactions;
   }
 
-  public async getBalance(userAccount: IAccount) {
+  public async getBalance(userAccount: IWalletAccount) {
     const accountId = userAccount.id;
     // retreives the bcoin wallet interface based off of the specified accountId
     const userWallet = await this.setWallet(accountId);
@@ -249,7 +251,7 @@ class BtcWallet extends WalletBase {
   }
 
   async send(
-    userAccount: IAccount,
+    userAccount: IWalletAccount,
     to: string,
     amount: string,
   ): Promise<{ success: boolean; id?: string; message?: string }> {

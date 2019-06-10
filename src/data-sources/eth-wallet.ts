@@ -1,11 +1,11 @@
-import { Account } from '../models';
+import { WalletAccount } from '../models';
 import * as bip39 from 'bip39';
 const hdKey = require('ethereumjs-wallet/hdkey');
 const Web3 = require('web3');
 import { credentialService, ethService } from '../services';
 import WalletBase from './wallet-base';
 import config from '../common/config';
-import { IAccount } from '../models/account';
+import { IWalletAccount } from '../models/walletAccount';
 import { ITransaction, IEtherscanTx } from '../types';
 
 class EthAPI extends WalletBase {
@@ -53,7 +53,7 @@ class EthAPI extends WalletBase {
 
   private async saveAddress(accountId: string, ethAddress: string) {
     const ethBlockNumAtCreation = await this.web3.eth.getBlockNumber();
-    const result = await Account.findByIdAndUpdate(accountId, {
+    const result = await WalletAccount.findByIdAndUpdate(accountId, {
       ethAddress,
       ethBlockNumAtCreation,
     });
@@ -70,7 +70,7 @@ class EthAPI extends WalletBase {
     return this.toEther(feeEstimate);
   }
 
-  async getBalance(userAccount: IAccount) {
+  async getBalance(userAccount: IWalletAccount) {
     let { ethAddress } = userAccount;
     if (!ethAddress) {
       ethAddress = await this.createAccount(userAccount.id);
@@ -90,7 +90,7 @@ class EthAPI extends WalletBase {
     };
   }
 
-  async getTransactions(userAccount: IAccount): Promise<ITransaction[]> {
+  async getTransactions(userAccount: IWalletAccount): Promise<ITransaction[]> {
     const {
       ethAddress: address,
       ethBlockNumAtCreation: currentBlock = 0,
@@ -130,7 +130,7 @@ class EthAPI extends WalletBase {
     return rawTransaction;
   }
 
-  async send(userAccount: IAccount, to: string, amount: string) {
+  async send(userAccount: IWalletAccount, to: string, amount: string) {
     try {
       const privateKey = await this.getPrivateKey(userAccount.id);
       const rawTransaction = await this.signTransaction(

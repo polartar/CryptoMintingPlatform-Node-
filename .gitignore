@@ -38,3 +38,4 @@ jwtrsa-private.key
 jwtrsa-public.pem
 credentials.ts
 serviceAccountKey.json
+authDbConnections.json

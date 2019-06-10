@@ -1,8 +1,7 @@
 import * as mongoose from 'mongoose';
 
-export interface IAccount extends mongoose.Document {
+export interface IWalletAccount extends mongoose.Document {
   userId: string;
-  accountName: string;
   ethAddress?: string;
   ethBlockNumAtCreation?: number;
 }
@@ -13,14 +12,10 @@ const accountSchema = new mongoose.Schema({
     index: true,
     required: true,
   },
-  accountName: {
-    type: String,
-    required: true,
-  },
   ethAddress: String,
   ethBlockNumAtCreation: Number,
 });
 
-const Account = mongoose.model<IAccount>('account', accountSchema);
+const Account = mongoose.model<IWalletAccount>('walletAccount', accountSchema);
 
 export default Account;
