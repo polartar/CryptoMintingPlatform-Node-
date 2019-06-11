@@ -7,7 +7,7 @@ export interface IUser extends mongoose.Document {
   created: Date;
   permissions: string[];
   id: string;
-  wallet: {
+  wallet?: {
     ethAddress?: string;
     ethBlockNumAtCreation?: number;
   };

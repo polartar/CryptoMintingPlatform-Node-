@@ -1,12 +1,11 @@
-import Db from './db';
 import config from '../common/config';
 import * as ethers from 'ethers';
 import * as ethereumUtil from 'ethereumjs-util';
 import EthApi from './eth-wallet';
-import { IWalletAccount } from '../models/walletAccount';
 const Web3 = require('web3');
 import { ITransaction } from '../types';
 import { BigNumber } from 'bignumber.js';
+import { UserApi } from '../data-sources';
 const ethereumTx = require('ethereumjs-tx');
 
 interface ITransferEvent {
@@ -105,15 +104,15 @@ class Erc20API extends EthApi {
             to,
             from,
             type: to === userAddress ? 'Deposit' : 'Withdrawal',
-            amount: amount.toString(),
+            amount: new BigNumber(amount).toFixed(),
           };
         }),
     );
   }
 
   // web3
-  async getTransactions(userAccount: IWalletAccount): Promise<ITransaction[]> {
-    const { ethAddress, ethBlockNumAtCreation } = userAccount;
+  async getTransactions(userApi: UserApi): Promise<ITransaction[]> {
+    const ethAddress = await this.ensureEthAddress(userApi);
     const currentBlockNumber = await this.web3.eth.getBlockNumber();
     const sent = await this.contract.getPastEvents('Transfer', {
       fromBlock: 2426642,
@@ -143,7 +142,7 @@ class Erc20API extends EthApi {
     return tokenBN.multipliedBy(tenToDecPlaces);
   }
 
-  private integerIze(numOrHex: string | number) {
+  private integerize(numOrHex: string | number) {
     const tokenBN = new BigNumber(numOrHex);
     const ten = new BigNumber(10);
     const decPlaces = new BigNumber(this.decimalPlaces);
@@ -151,19 +150,13 @@ class Erc20API extends EthApi {
     return tokenBN.multipliedBy(tenToDecPlaces);
   }
 
-  async getBalance(userAccount: IWalletAccount) {
-    const { ethAddress, id: accountId } = userAccount;
-    let userAddress = ethAddress;
-    if (!ethAddress) {
-      userAddress = await this.createAccount(accountId);
-    }
-    const rawBalance = await this.contract.methods
-      .balanceOf(userAddress)
-      .call();
+  async getBalance(userApi: UserApi) {
+    const ethAddress = await this.ensureEthAddress(userApi);
+    const rawBalance = await this.contract.methods.balanceOf(ethAddress).call();
     const balance = this.decimalize(rawBalance);
     const feeEstimate = await this.estimateFee();
     return {
-      accountId,
+      accountId: userApi.userId,
       symbol: this.symbol,
       name: this.name,
       feeEstimate: feeEstimate.toString(),
@@ -175,17 +168,12 @@ class Erc20API extends EthApi {
     };
   }
 
-  async send(userAccount: IWalletAccount, to: string, amount: string) {
-    const { erc20FeeCalcAddress } = config;
-    const { ethAddress, id: accountId } = userAccount;
-    const { toHex } = this.web3.utils;
-    const value = +amount * Math.pow(10, +this.decimalPlaces);
+  async send(userApi: UserApi, to: string, amount: string) {
+    const ethAddress = await this.ensureEthAddress(userApi);
+    const value = this.integerize(amount);
     const sendValue = ethers.utils.bigNumberify(`0x${value.toString(16)}`);
     const count = await this.web3.eth.getTransactionCount(ethAddress);
-    const privateKey = await this.getPrivateKey(accountId);
-    const gasRequired = await this.contract.methods
-      .transfer(erc20FeeCalcAddress, 100000000)
-      .estimateGas({ from: erc20FeeCalcAddress });
+    const privateKey = await this.getPrivateKey(userApi.userId);
     const nonce = `0x${count.toString(16)}`;
 
     const rawTransaction = {

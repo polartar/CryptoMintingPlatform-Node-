@@ -28,7 +28,7 @@ type Wallet {
 
 type Query {
   # If no coinSymbol is provided, all supported wallets will be returned
-  wallet(coinSymbol: String, accountId: String!): [Wallet!]!
+  wallet(coinSymbol: String): [Wallet!]!
 }
 
 type TransactionResponse {
@@ -40,7 +40,6 @@ type Mutation {
   # If no coinSymbol is provided, all supported wallets will be returned
   sendTransaction(
     coinSymbol: String
-    accountId: String!
     to: String!
     amount: String!
   ): TransactionResponse!

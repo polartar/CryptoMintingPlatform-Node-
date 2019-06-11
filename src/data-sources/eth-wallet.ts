@@ -1,12 +1,12 @@
-import { WalletAccount } from '../models';
 import * as bip39 from 'bip39';
 const hdKey = require('ethereumjs-wallet/hdkey');
 const Web3 = require('web3');
 import { credentialService, ethService } from '../services';
 import WalletBase from './wallet-base';
 import config from '../common/config';
-import { IWalletAccount } from '../models/walletAccount';
 import { ITransaction, IEtherscanTx } from '../types';
+import { UserApi } from '../data-sources';
+import BigNumber from 'bignumber.js';
 
 class EthAPI extends WalletBase {
   WEB3_GAS_ERROR = 'Returned error: insufficient funds for gas * price + value';
@@ -23,7 +23,7 @@ class EthAPI extends WalletBase {
     super(name, symbol, contract, abi, backgroundColor, icon);
   }
 
-  protected async createAccount(accountId: string) {
+  protected async createAccount(userApi: UserApi) {
     const mnemonic = bip39.generateMnemonic(256);
     const seed = await bip39.mnemonicToSeed(mnemonic);
     const masterWallet = hdKey.fromMasterSeed(seed);
@@ -31,37 +31,37 @@ class EthAPI extends WalletBase {
     const address = masterWallet.getWallet().getChecksumAddressString();
 
     const mnemonicPromise = credentialService.create(
-      accountId,
+      userApi.userId,
       'ETH',
       'mnemonic',
       mnemonic,
     );
 
     const privateKeyPromise = credentialService.create(
-      accountId,
+      userApi.userId,
       'ETH',
       'privkey',
       privateKey,
     );
 
-    const addressSavePromise = this.saveAddress(accountId, address);
+    const addressSavePromise = this.saveAddress(userApi, address);
 
     await Promise.all([mnemonicPromise, privateKeyPromise, addressSavePromise]);
 
     return address;
   }
 
-  private async saveAddress(accountId: string, ethAddress: string) {
+  private async saveAddress(userApi: UserApi, ethAddress: string) {
     const ethBlockNumAtCreation = await this.web3.eth.getBlockNumber();
-    const result = await WalletAccount.findByIdAndUpdate(accountId, {
+    const updateResult = await userApi.setWalletAccountToUser(
       ethAddress,
       ethBlockNumAtCreation,
-    });
-    return result;
+    );
+    return updateResult;
   }
 
-  protected getPrivateKey(accountId: string) {
-    return credentialService.get(accountId, 'ETH', 'privkey');
+  protected getPrivateKey(userId: string) {
+    return credentialService.get(userId, 'ETH', 'privkey');
   }
 
   public async estimateFee() {
@@ -70,15 +70,12 @@ class EthAPI extends WalletBase {
     return this.toEther(feeEstimate);
   }
 
-  async getBalance(userAccount: IWalletAccount) {
-    let { ethAddress } = userAccount;
-    if (!ethAddress) {
-      ethAddress = await this.createAccount(userAccount.id);
-    }
+  async getBalance(userApi: UserApi) {
+    const ethAddress = await this.ensureEthAddress(userApi);
     const balance = await this.web3.eth.getBalance(ethAddress);
     const feeEstimate = +(await this.estimateFee());
     return {
-      accountId: userAccount.id,
+      accountId: userApi.userId,
       symbol: this.symbol,
       name: this.name,
       receiveAddress: ethAddress,
@@ -90,13 +87,32 @@ class EthAPI extends WalletBase {
     };
   }
 
-  async getTransactions(userAccount: IWalletAccount): Promise<ITransaction[]> {
-    const {
-      ethAddress: address,
-      ethBlockNumAtCreation: currentBlock = 0,
-    } = userAccount;
-    const transactions = await ethService.getEthTransactions(address);
-    return this.formatTransactions(transactions, address);
+  protected async ensureEthAddress(userApi: UserApi) {
+    const { id, wallet = {} } = await userApi.getWalletAccount();
+    let { ethAddress } = wallet;
+    if (!ethAddress) {
+      const privateKey = await this.getPrivateKey(id).catch(() => null);
+      if (privateKey) {
+        const { address } = this.web3.eth.accounts.privateKeyToAccount(
+          privateKey,
+        );
+        if (address) {
+          await this.saveAddress(userApi, address);
+          ethAddress = address;
+        } else {
+          throw new Error('Error setting/retreving address');
+        }
+      } else {
+        ethAddress = await this.createAccount(userApi);
+      }
+    }
+    return ethAddress;
+  }
+
+  async getTransactions(userApi: UserApi): Promise<ITransaction[]> {
+    const ethAddress = await this.ensureEthAddress(userApi);
+    const transactions = await ethService.getEthTransactions(ethAddress);
+    return this.formatTransactions(transactions, ethAddress);
   }
 
   protected sendSignedTransaction(rawTx: string): Promise<string> {
@@ -130,11 +146,12 @@ class EthAPI extends WalletBase {
     return rawTransaction;
   }
 
-  async send(userAccount: IWalletAccount, to: string, amount: string) {
+  async send(userApi: UserApi, to: string, amount: string) {
     try {
-      const privateKey = await this.getPrivateKey(userAccount.id);
+      const ethAddress = await this.ensureEthAddress(userApi);
+      const privateKey = await this.getPrivateKey(userApi.userId);
       const rawTransaction = await this.signTransaction(
-        userAccount.ethAddress,
+        ethAddress,
         to,
         +amount,
         privateKey,
@@ -188,7 +205,7 @@ class EthAPI extends WalletBase {
         to: to,
         from: from,
         type: to === address.toLowerCase() ? 'Deposit' : 'Withdrawal',
-        amount: this.toEther(+value).toString(),
+        amount: new BigNumber(this.toEther(+value)).toFixed(),
       };
     });
   }

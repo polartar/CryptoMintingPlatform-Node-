@@ -12,45 +12,39 @@ class Resolvers extends ResolverBase {
   }
   async getWallet(
     parent: any,
-    { coinSymbol }: { coinSymbol: string; accountId: string },
-    { user, dataSources: { wallet, accounts } }: Context,
+    { coinSymbol }: { coinSymbol: string },
+    { user, domain, dataSources: { wallet, userModel } }: Context,
   ) {
     this.requireAuth(user);
-    const userAccount = ((await accounts.findByUserId(
-      user.userId,
-    )) as unknown) as IWalletAccount;
-    this.validateAccount(userAccount);
+    const userApi = userModel.domain(domain).user(user);
     if (coinSymbol) {
       const walletApi = wallet.coin(coinSymbol);
-      const walletResult = await walletApi.getBalance(userAccount);
+      const walletResult = await walletApi.getBalance(userApi);
       return [walletResult];
     }
     const allWalletApi = wallet.allCoins();
     const walletData = await Promise.all(
-      allWalletApi.map(walletCoinApi => walletCoinApi.getBalance(userAccount)),
+      allWalletApi.map(walletCoinApi => walletCoinApi.getBalance(userApi)),
     );
     return walletData;
   }
 
   async getTransactions(
-    { accountId, symbol }: { accountId: string; symbol: string },
+    { symbol }: { accountId: string; symbol: string },
     args: any,
-    { user, dataSources: { wallet, accounts } }: Context,
+    { user, domain, dataSources: { wallet, userModel } }: Context,
   ) {
     this.requireAuth(user);
-    const userAccount = ((await accounts.findByUserId(
-      user.userId,
-    )) as unknown) as IWalletAccount;
-    this.validateAccount(userAccount);
+    const userApi = userModel.domain(domain).user(user);
     const walletApi = wallet.coin(symbol);
-    const transactions = await walletApi.getTransactions(userAccount);
+    const transactions = await walletApi.getTransactions(userApi);
     return transactions;
   }
 
   async estimateFee(
-    { accountId, symbol }: { accountId: string; symbol: string },
+    { symbol }: { symbol: string },
     args: any,
-    { user, dataSources: { wallet, accounts } }: Context,
+    { user, dataSources: { wallet } }: Context,
   ) {
     this.requireAuth(user);
     const walletApi = wallet.coin(symbol);
@@ -62,19 +56,15 @@ class Resolvers extends ResolverBase {
     parent: any,
     {
       coinSymbol,
-      accountId,
       to,
       amount,
     }: { coinSymbol: string; accountId: string; to: string; amount: string },
-    { user, dataSources: { wallet, accounts } }: Context,
+    { user, domain, dataSources: { wallet, userModel } }: Context,
   ) {
     this.requireAuth(user);
-    const userAccount = ((await accounts.findByUserId(
-      user.userId,
-    )) as unknown) as IWalletAccount;
-    this.validateAccount(userAccount);
+    const userApi = userModel.domain(domain).user(user);
     const walletApi = wallet.coin(coinSymbol);
-    const result = await walletApi.send(userAccount, to, amount);
+    const result = await walletApi.send(userApi, to, amount);
     return result;
   }
 }

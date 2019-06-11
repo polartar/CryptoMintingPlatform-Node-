@@ -1,9 +1,11 @@
 import * as mongoose from 'mongoose';
 
 export interface IWalletAccount extends mongoose.Document {
-  userId: string;
-  ethAddress?: string;
-  ethBlockNumAtCreation?: number;
+  id: string;
+  wallet?: {
+    ethAddress?: string;
+    ethBlockNumAtCreation?: number;
+  };
 }
 
 const accountSchema = new mongoose.Schema({

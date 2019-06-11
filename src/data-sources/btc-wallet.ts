@@ -6,7 +6,7 @@ import { v4 as generateRandomId } from 'uuid';
 import config from '../common/config';
 import { credentialService } from '../services';
 import { ITransaction } from '../types';
-import { IWalletAccount } from '../models/walletAccount';
+import { UserApi } from '../data-sources';
 const { WalletClient } = require('bclient');
 const autoBind = require('auto-bind');
 
@@ -42,35 +42,31 @@ class BtcWallet extends WalletBase {
     this.walletClient = new WalletClient(config.bcoinWallet);
   }
 
-  async createWallet(accountId: string) {
-    // This method is called if the getBalance method errors out with a 404 from bcoin, meaning the user doesn't have a wallet for that account yet.
+  async createWallet(userId: string) {
     try {
-      // This creates a wallet based off of the account ID. The walletId in bcoin === the accountId from mongoDB
-      const { token } = await this.walletClient.createWallet(accountId);
-      // Set the wallet  so that we can get the mnemonic and xprivkey
-      const userWallet = this.walletClient.wallet(accountId, token);
-      // Request the xPrivKey and mnemenonic from bcoin. Its necessary to request this data before we set a password to the wallet which encrypts it forever.
+      const { token } = await this.walletClient.createWallet(userId);
+      const userWallet = this.walletClient.wallet(userId, token);
       const {
         key: { xprivkey },
         mnemonic: { phrase: mnemonic },
       } = await userWallet.getMaster();
       // Sends the token to be saved in the apiKeyService
       const tokenSavePromise = credentialService.create(
-        accountId,
+        userId,
         this.symbol,
         'token',
         token,
       );
       // Sends the xprivkey to be saved in the apiKeyService
       const privKeySavePromise = credentialService.create(
-        accountId,
+        userId,
         this.symbol,
         'privkey',
         xprivkey,
       );
       // Sends the mnemonic to be saved in the apiKeyService
       const mnemonicSavePromise = credentialService.create(
-        accountId,
+        userId,
         this.symbol,
         'mnemonic',
         mnemonic,
@@ -82,7 +78,7 @@ class BtcWallet extends WalletBase {
         mnemonicSavePromise,
       ]);
       // generate a new passphrase (it also saves the passphrase to the apiKeyService inside that method)
-      const passphrase = await this.newPassphrase(accountId);
+      const passphrase = await this.newPassphrase(userId);
       // Send the generated passphrase to bcoin to encrypt the user's wallet. Success: boolean will be returned
       const { success } = await userWallet.setPassphrase(passphrase);
       if (!success) throw new Error('Passphrase set was unsuccessful');
@@ -98,12 +94,12 @@ class BtcWallet extends WalletBase {
     return Promise.resolve(estimate);
   }
 
-  private async newPassphrase(accountId: string) {
+  private async newPassphrase(userId: string) {
     // Generate a random passphrase
     const passphrase = sha256(generateRandomId()).slice(0, 32);
     // Save passphrase to the keyService
     await credentialService.create(
-      accountId,
+      userId,
       this.symbol,
       'passphrase',
       passphrase,
@@ -123,10 +119,8 @@ class BtcWallet extends WalletBase {
   }
 
   // Old code from the old front-end-only method
-  public async getTransactions(
-    userAccount: IWalletAccount,
-  ): Promise<ITransaction[]> {
-    const accountId = userAccount.id;
+  public async getTransactions(userApi: UserApi): Promise<ITransaction[]> {
+    const accountId = userApi.userId;
     const userWallet = await this.setWallet(accountId);
     const history = await userWallet.getHistory('default');
     return this.formatTransactions(history);
@@ -190,8 +184,8 @@ class BtcWallet extends WalletBase {
     return formattedTransactions;
   }
 
-  public async getBalance(userAccount: IWalletAccount) {
-    const accountId = userAccount.id;
+  public async getBalance(userApi: UserApi) {
+    const accountId = userApi.userId;
     // retreives the bcoin wallet interface based off of the specified accountId
     const userWallet = await this.setWallet(accountId);
     // request the wallet balance from bcoin
@@ -240,9 +234,9 @@ class BtcWallet extends WalletBase {
     return token;
   }
 
-  private async getPassphrase(accountId: string) {
+  private async getPassphrase(userId: string) {
     const passphrase = await credentialService.get(
-      accountId,
+      userId,
       this.symbol,
       'passphrase',
     );
@@ -251,12 +245,12 @@ class BtcWallet extends WalletBase {
   }
 
   async send(
-    userAccount: IWalletAccount,
+    userApi: UserApi,
     to: string,
     amount: string,
   ): Promise<{ success: boolean; id?: string; message?: string }> {
     try {
-      const accountId = userAccount.id;
+      const accountId = userApi.userId;
       const userWallet = await this.setWallet(accountId);
       const passphrase = await this.getPassphrase(accountId);
       const { hash } = await userWallet.send({
