@@ -5,6 +5,11 @@ import { userSchema } from '../models';
 import { IUser } from '../types';
 import { ContextUser } from '../types/context';
 
+interface IWalletAccountDefaults {
+  ethAddress?: string;
+  ethBlockNumAtCreation?: number;
+  cryptoFavorites?: string[];
+}
 export default class User extends DataSource {
   userModels: Map<string, Model<IUser>> = new Map();
   host: string;
@@ -29,7 +34,7 @@ export default class User extends DataSource {
     return this.userModels.get(domain);
   }
 
-  public async getWalletAccount(userId?: string, domain?: string) {
+  public async findById(userId?: string, domain?: string) {
     const selectedDomain = domain || this.host;
     if (!selectedDomain) {
       throw new Error('Domain required');
@@ -39,26 +44,30 @@ export default class User extends DataSource {
       throw new Error('userId required');
     }
     const userModel = this.getUserModel(selectedDomain);
-    const wallet = await userModel
-      .findById(selectedUserId)
-      .select({ wallet: 1, id: 1 })
-      .exec();
+    const wallet = await userModel.findById(selectedUserId).exec();
     return wallet;
   }
 
   public async setWalletAccountToUser(
-    ethAddress: string,
-    ethBlockNumAtCreation: number,
+    ethAddress?: string,
+    ethBlockNumAtCreation?: number,
     userId?: string,
   ) {
     const selectedUserId = userId || this.userId;
     if (!selectedUserId) throw new Error('userId required');
     if (!this.host) throw new Error('domain not set');
-
     const UserModel = this.getUserModel(this.host);
+    const user = await UserModel.findById(selectedUserId);
+    const defaults: IWalletAccountDefaults = {};
+    if (!user.wallet || !user.wallet.cryptoFavoritesSet)
+      defaults.cryptoFavorites = config.defaultCryptoFavorites;
+    else defaults.cryptoFavorites = user.wallet.cryptoFavorites;
+    if (ethAddress) defaults.ethAddress = ethAddress;
+    if (ethBlockNumAtCreation)
+      defaults.ethBlockNumAtCreation = ethBlockNumAtCreation;
     const result = await UserModel.findByIdAndUpdate(
       selectedUserId,
-      { wallet: { ethAddress, ethBlockNumAtCreation } },
+      { wallet: { ...defaults, cryptoFavoritesSet: true } },
       { new: true },
     );
     return result;

@@ -26,6 +26,9 @@ class Config {
   public readonly jwtPrivateKey = keys.privateKey;
   public readonly jwtPublicKey = keys.publicKey;
   public readonly serviceAccounts = keys.serviceAccounts;
+  public readonly cryptoFavoritesBaseUrl =
+    'https://min-api.cryptocompare.com/data';
+  public readonly defaultCryptoFavorites = ['BTC', 'ETH', 'LTC', 'XRP'];
   public readonly apiKeyServiceUrl = process.env.API_KEY_SERVICE_URL;
   public readonly etherScanApiKey = process.env.ETHERSCAN_API_KEY;
   public readonly erc20FeeCalcAddress = process.env.ETH_ADD_FOR_ERC20_FEE_CALC;
@@ -102,7 +105,10 @@ class Config {
 
     const dbConnections = Object.entries(rawConnections).map(entry => {
       const [domain, dbConnectionString]: any[] = entry;
-      return { domain, db: createConnection(dbConnectionString) };
+      return {
+        domain,
+        db: createConnection(dbConnectionString, { useNewUrlParser: true }),
+      };
     });
 
     return dbConnections;

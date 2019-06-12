@@ -1,5 +1,11 @@
 import * as mongoose from 'mongoose';
 
+interface IUserWalletDoc extends mongoose.Document {
+  ethAddress?: string;
+  ethBlockNumAtCreation?: number;
+  cryptoFavorites?: string[];
+  cryptoFavoritesSet?: boolean;
+}
 export interface IUser extends mongoose.Document {
   email: string;
   firebaseUid: string;
@@ -7,15 +13,14 @@ export interface IUser extends mongoose.Document {
   created: Date;
   permissions: string[];
   id: string;
-  wallet?: {
-    ethAddress?: string;
-    ethBlockNumAtCreation?: number;
-  };
+  wallet?: IUserWalletDoc;
 }
 
 const walletSchema = new mongoose.Schema({
   ethAddress: String,
   ethBlockNumAtCreation: Number,
+  cryptoFavorites: [String],
+  cryptoFavoritesSet: Boolean,
 });
 
 const userSchema = new mongoose.Schema({

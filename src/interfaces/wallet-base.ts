@@ -1,6 +1,6 @@
 // This abstract class is intended to provide a framework for each of the wallet interfaces to ensure they implement the same methods and return the same data shape
 import { ITransaction } from '../types';
-import { UserApi } from '../data-sources/';
+import { UserApi } from '../data-sources';
 
 export default abstract class WalletBase {
   constructor(

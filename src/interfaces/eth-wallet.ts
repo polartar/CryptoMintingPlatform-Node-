@@ -88,7 +88,7 @@ class EthAPI extends WalletBase {
   }
 
   protected async ensureEthAddress(userApi: UserApi) {
-    const { id, wallet = {} } = await userApi.getWalletAccount();
+    const { id, wallet = { ethAddress: '' } } = await userApi.findById();
     let { ethAddress } = wallet;
     if (!ethAddress) {
       const privateKey = await this.getPrivateKey(id).catch(() => null);

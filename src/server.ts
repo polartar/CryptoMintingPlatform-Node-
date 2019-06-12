@@ -4,7 +4,7 @@ import { DocumentNode } from 'graphql';
 import * as mongoose from 'mongoose';
 import schemas from './schemas';
 import resolvers from './resolvers';
-import { Wallet, Account, UserApi } from './data-sources';
+import { Wallet, Account, UserApi, CryptoFavorites } from './data-sources';
 import { config, logger, auth } from './common';
 
 class Server {
@@ -61,6 +61,7 @@ class Server {
       wallet: new Wallet(),
       accounts: new Account(),
       userModel: new UserApi(),
+      cryptoFavorites: new CryptoFavorites(),
     };
   }
 

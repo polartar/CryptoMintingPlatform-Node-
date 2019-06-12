@@ -1,8 +1,5 @@
 import { DataSource } from 'apollo-datasource';
-import { WalletBase } from './';
-import Btc from './btc-wallet';
-import Eth from './eth-wallet';
-import Erc20 from './erc20-wallet';
+import { WalletBase, BtcWallet, EthWallet, Erc20Wallet } from '../interfaces';
 import { UserInputError } from 'apollo-server-express';
 const autoBind = require('auto-bind');
 import { config } from '../common';
@@ -40,7 +37,7 @@ export default class Wallet extends DataSource {
     } = supportedCoinJson;
     switch (supportedCoinJson.symbol.toLowerCase()) {
       case 'btc': {
-        this.btc = new Btc(
+        this.btc = new BtcWallet(
           name,
           symbol,
           contractAddress,
@@ -51,7 +48,7 @@ export default class Wallet extends DataSource {
         break;
       }
       case 'eth': {
-        this.eth = new Eth(
+        this.eth = new EthWallet(
           name,
           symbol,
           contractAddress,
@@ -63,7 +60,7 @@ export default class Wallet extends DataSource {
       }
       default: {
         this.erc20s.push(
-          new Erc20(
+          new Erc20Wallet(
             name,
             symbol,
             contractAddress,
