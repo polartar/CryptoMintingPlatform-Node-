@@ -1,6 +1,8 @@
 import { Context } from '../types/context';
 import ResolverBase from '../common/Resolver-Base';
 const autoBind = require('auto-bind');
+import * as supportedCryptoFavorites from '../data/supportedFavoriteOptions.json';
+
 class Resolvers extends ResolverBase {
   constructor() {
     super();
@@ -57,6 +59,11 @@ class Resolvers extends ResolverBase {
     await foundUser.save();
     return cryptoFavorites.getUserFavorites(wallet.cryptoFavorites);
   }
+
+  getSupportedFavorites(parent: any, args: {}, { user }: Context) {
+    this.requireAuth(user);
+    return supportedCryptoFavorites;
+  }
 }
 
 const resolvers = new Resolvers();
@@ -64,6 +71,7 @@ const resolvers = new Resolvers();
 export default {
   Query: {
     favorites: resolvers.getFavorites,
+    supportedFavorites: resolvers.getSupportedFavorites,
   },
   Mutation: {
     addFavorite: resolvers.addFavorite,

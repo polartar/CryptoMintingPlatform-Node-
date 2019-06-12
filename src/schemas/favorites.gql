@@ -9,6 +9,7 @@ type FavoriteFullData {
 
 type Query {
   favorites: [FavoriteFullData!]!
+  supportedFavorites: [String!]!
 }
 
 type Mutation {
