@@ -4,7 +4,7 @@ import * as autoBind from 'auto-bind';
 import keys from './keys';
 import * as supportedCoinsProd from './supportedCoins.json';
 import * as supportedCoinsDev from './supportedCoins-dev.json';
-import { createConnection } from 'mongoose';
+import { createConnection, Connection } from 'mongoose';
 
 dotenv.config({ path: '.env' });
 
@@ -13,12 +13,7 @@ class Config {
   public readonly logLevel = process.env.LOG_LEVEL;
   public readonly port = this.normalizePort(process.env.PORT);
   public readonly hostname = process.env.HOSTNAME;
-  public readonly walletMongo = process.env.MONGODB_URI;
-  public readonly mongodbUri = {
-    green: process.env.MONGODB_URI_GREEN,
-    codex: process.env.MONGODB_URI_CODEX,
-    connect: process.env.MONGODB_URI_CONNECT,
-  };
+  public readonly mongodbUri: undefined;
   public readonly supportedCoins =
     process.env.NODE_ENV === 'production'
       ? supportedCoinsProd
@@ -32,7 +27,10 @@ class Config {
   public readonly apiKeyServiceUrl = process.env.API_KEY_SERVICE_URL;
   public readonly etherScanApiKey = process.env.ETHERSCAN_API_KEY;
   public readonly erc20FeeCalcAddress = process.env.ETH_ADD_FOR_ERC20_FEE_CALC;
-  public readonly authDbConnections = this.getAuthDbConnections();
+  public readonly authDbConnectionMap: Map<
+    string,
+    Connection
+  > = this.mapAuthDbConnections();
   public readonly bcoinWallet = {
     network: process.env.BCOIN_NETWORK,
     port: +process.env.BCOIN_WALLET_PORT,
@@ -65,21 +63,28 @@ class Config {
 
   private ensureRequiredVariables() {
     // required environment variables
-    [
+    const missingEnvVariables = [
       'NODE_ENV',
       'LOG_LEVEL',
       'PORT',
       'HOSTNAME',
-      'MONGODB_URI',
       'BCOIN_NETWORK',
       'BCOIN_WALLET_PORT',
+      'BCOIN_WALLET_API_KEY',
       'BCOIN_API_KEY',
       'API_KEY_SERVICE_URL',
-    ].forEach(name => {
-      if (!process.env[name]) {
-        throw new Error(`Environment variable ${name} is missing`);
-      }
-    });
+      'ETH_NETWORK',
+      'ETHERSCAN_API_KEY',
+      'ETH_ADD_FOR_ERC20_FEE_CALC',
+    ].filter(name => !process.env[name]);
+
+    if (missingEnvVariables.length > 0) {
+      throw new Error(
+        `Required environment variable(s) ${missingEnvVariables.join(
+          ', ',
+        )} undefined.`,
+      );
+    }
   }
 
   private normalizePort(val: string) {
@@ -98,20 +103,21 @@ class Config {
     throw new Error('port is less than 0');
   }
 
-  private getAuthDbConnections() {
+  private mapAuthDbConnections() {
     const rawConnections = JSON.parse(
       fs.readFileSync('authDbConnections.json').toString(),
     );
+    const domainDbMap = new Map();
 
-    const dbConnections = Object.entries(rawConnections).map(entry => {
+    Object.entries(rawConnections).forEach(entry => {
       const [domain, dbConnectionString]: any[] = entry;
-      return {
+      domainDbMap.set(
         domain,
-        db: createConnection(dbConnectionString, { useNewUrlParser: true }),
-      };
+        createConnection(dbConnectionString, { useNewUrlParser: true }),
+      );
     });
 
-    return dbConnections;
+    return domainDbMap;
   }
 }
 

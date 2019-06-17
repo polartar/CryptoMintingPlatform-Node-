@@ -12,15 +12,13 @@ class Resolvers extends ResolverBase {
   async getFavorites(
     parent: any,
     args: {},
-    { user, domain, dataSources: { cryptoFavorites, userModel } }: Context,
+    { user, dataSources: { cryptoFavorites } }: Context,
   ) {
     this.requireAuth(user);
-    const userApi = userModel.domain(domain).user(user);
-
-    const foundUser = await userApi.findById();
+    const foundUser = await user.findFromDb();
     const { wallet } = foundUser;
     if (!wallet) {
-      const updatedUser = await userApi.setWalletAccountToUser();
+      const updatedUser = await user.setWalletAccountToUser();
       const favoritesFullData = await cryptoFavorites.getUserFavorites(
         updatedUser.wallet.cryptoFavorites,
       );
@@ -38,8 +36,7 @@ class Resolvers extends ResolverBase {
     { user, domain, dataSources: { cryptoFavorites, userModel } }: Context,
   ) {
     this.requireAuth(user);
-    const userApi = userModel.domain(domain).user(user);
-    const foundUser = await userApi.findById();
+    const foundUser = await user.findFromDb();
     const { wallet } = <{ wallet: any }>foundUser;
     wallet.cryptoFavorites.addToSet(args.symbol);
     await foundUser.save();
@@ -52,18 +49,14 @@ class Resolvers extends ResolverBase {
     { user, domain, dataSources: { cryptoFavorites, userModel } }: Context,
   ) {
     this.requireAuth(user);
-    const userApi = userModel.domain(domain).user(user);
-    const foundUser = await userApi.findById();
+    const foundUser = await user.findFromDb();
     const { wallet } = <{ wallet: any }>foundUser;
     wallet.cryptoFavorites.remove(args.symbol);
     await foundUser.save();
     return cryptoFavorites.getUserFavorites(wallet.cryptoFavorites);
   }
 
-  getSupportedFavorites(parent: any, args: {}, { user }: Context) {
-    this.requireAuth(user);
-    return supportedCryptoFavorites;
-  }
+  getSupportedFavorites = () => supportedCryptoFavorites;
 }
 
 const resolvers = new Resolvers();

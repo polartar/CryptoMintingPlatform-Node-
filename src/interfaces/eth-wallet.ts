@@ -65,9 +65,10 @@ class EthAPI extends WalletBase {
   }
 
   public async estimateFee() {
-    const gasPrice = await this.web3.eth.getGasPrice();
-    const feeEstimate = +gasPrice * 21001;
-    return this.toEther(feeEstimate);
+    const web3GasPrice = await this.web3.eth.getGasPrice();
+    const gasPrice = new BigNumber(web3GasPrice);
+    const feeEstimate = gasPrice.multipliedBy(21001);
+    return this.toEther(feeEstimate).toFixed();
   }
 
   async getBalance(userApi: UserApi) {
@@ -82,13 +83,13 @@ class EthAPI extends WalletBase {
       feeEstimate: feeEstimate.toString(),
       balance: {
         unconfirmed: '0',
-        confirmed: this.toEther(balance).toString(),
+        confirmed: this.toEther(new BigNumber(balance)).toFixed(),
       },
     };
   }
 
   protected async ensureEthAddress(userApi: UserApi) {
-    const { id, wallet = { ethAddress: '' } } = await userApi.findById();
+    const { id, wallet = { ethAddress: '' } } = await userApi.findFromDb();
     let { ethAddress } = wallet;
     if (!ethAddress) {
       const privateKey = await this.getPrivateKey(id).catch(() => null);
@@ -136,7 +137,7 @@ class EthAPI extends WalletBase {
     const { rawTransaction } = await this.web3.eth.accounts.signTransaction(
       {
         to,
-        value: this.toWei(amount),
+        value: this.toWei(new BigNumber(amount)),
         gas: gas,
         nonce,
         data,
@@ -170,12 +171,12 @@ class EthAPI extends WalletBase {
     }
   }
 
-  protected toEther(wei: number) {
-    return +this.web3.utils.fromWei(`${wei}`);
+  protected toEther(wei: BigNumber): BigNumber {
+    return wei.multipliedBy(new BigNumber(10).pow(new BigNumber(18).negated()));
   }
 
-  protected toWei(ether: number) {
-    return +this.web3.utils.toWei(`${ether}`);
+  protected toWei(ether: BigNumber): BigNumber {
+    return ether.multipliedBy(new BigNumber(10).pow(new BigNumber(18)));
   }
 
   private formatTransactions(
@@ -188,24 +189,24 @@ class EthAPI extends WalletBase {
         blockNumber,
         confirmations,
         timeStamp,
-        gasUsed,
-        gasPrice,
         to,
         from,
         value,
       } = rawTx;
-      const fee = +gasUsed * +gasPrice;
+      const gasUsed = new BigNumber(rawTx.gasUsed);
+      const gasPrice = new BigNumber(rawTx.gasPrice);
+      const fee = gasUsed.multipliedBy(gasPrice);
       return {
         id: hash,
         status: blockNumber !== null ? 'Complete' : 'Pending',
         confirmations: +confirmations,
         timestamp: +timeStamp,
-        fee: this.toEther(fee).toString(),
+        fee: this.toEther(fee).toFixed(),
         link: `${config.ethTxLink}/${hash}`,
         to: to,
         from: from,
         type: to === address.toLowerCase() ? 'Deposit' : 'Withdrawal',
-        amount: new BigNumber(this.toEther(+value)).toFixed(),
+        amount: this.toEther(new BigNumber(value)).toFixed(),
       };
     });
   }

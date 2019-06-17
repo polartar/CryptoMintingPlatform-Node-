@@ -1,5 +1,5 @@
 type FavoriteFullData {
-  change24Hour: Float!
+  changePercent24Hour: Float!
   price: Float!
   symbol: String!
   imageUrl: String!

@@ -1,10 +1,9 @@
 import * as express from 'express';
 import { ApolloServer, gql } from 'apollo-server-express';
 import { DocumentNode } from 'graphql';
-import * as mongoose from 'mongoose';
 import schemas from './schemas';
 import resolvers from './resolvers';
-import { Wallet, Account, UserApi, CryptoFavorites } from './data-sources';
+import { Wallet, UserApi, CryptoFavorites } from './data-sources';
 import { config, logger, auth } from './common';
 
 class Server {
@@ -47,7 +46,7 @@ class Server {
     if (token) {
       try {
         const decodedToken = auth.verifyAndDecodeToken(token, domain);
-        user = decodedToken.claims;
+        user = new UserApi(domain, decodedToken.claims);
       } catch (error) {
         user = null;
       }
@@ -59,8 +58,6 @@ class Server {
   private buildDataSources() {
     return {
       wallet: new Wallet(),
-      accounts: new Account(),
-      userModel: new UserApi(),
       cryptoFavorites: new CryptoFavorites(),
     };
   }
@@ -71,28 +68,8 @@ class Server {
     );
   }
 
-  private connectToMongo() {
-    return new Promise((resolve, reject) => {
-      // Suppress deprecation warning
-      mongoose.set('useCreateIndex', true);
-      mongoose.set('useFindAndModify', false);
-      mongoose.connect(config.walletMongo, { useNewUrlParser: true });
-
-      mongoose.connection.once('open', () => {
-        logger.info(`Connected to mongoDb`);
-        resolve();
-      });
-
-      mongoose.connection.on('error', error => {
-        logger.info('mongo error');
-        reject(error);
-      });
-    });
-  }
-
   public async initialize() {
     try {
-      await this.connectToMongo();
       this.listen();
     } catch (error) {
       throw error;

@@ -6,6 +6,7 @@ const Web3 = require('web3');
 import { ITransaction } from '../types';
 import { BigNumber } from 'bignumber.js';
 import { UserApi } from '../data-sources';
+import { UserInputError } from 'apollo-server-express';
 const ethereumTx = require('ethereumjs-tx');
 
 interface ITransferEvent {
@@ -56,16 +57,16 @@ class Erc20API extends EthApi {
     const gasRequired = await this.contract.methods
       .transfer(erc20FeeCalcAddress, 100000000)
       .estimateGas({ from: erc20FeeCalcAddress });
-    const gasPrice = 0xee6b2800;
-    const feeEstimate = gasPrice * gasRequired;
-    return this.toEther(feeEstimate);
+    const gasPrice = new BigNumber(0xee6b2800);
+    const feeEstimate = gasPrice.multipliedBy(gasRequired);
+    return this.toEther(feeEstimate).toFixed();
   }
 
   private calculateFeeFromGas(gasPrice: string, gas: number) {
     const price = new BigNumber(gasPrice);
     const gasUsed = new BigNumber(gas);
     const fee = price.multipliedBy(gasUsed);
-    return this.toEther(fee.toNumber());
+    return this.toEther(fee);
   }
 
   private async transferEventsToTransactions(
@@ -134,7 +135,7 @@ class Erc20API extends EthApi {
     return transactions;
   }
 
-  private decimalize(numOrHex: string | number) {
+  private decimalize(numOrHex: string | number): BigNumber {
     const tokenBN = new BigNumber(numOrHex);
     const ten = new BigNumber(10);
     const decPlaces = new BigNumber(this.decimalPlaces);
@@ -150,10 +151,14 @@ class Erc20API extends EthApi {
     return tokenBN.multipliedBy(tenToDecPlaces);
   }
 
+  private async getBalanceFromContract(ethAddress: string) {
+    const balance = await this.contract.methods.balanceOf(ethAddress).call();
+    return this.decimalize(balance);
+  }
+
   async getBalance(userApi: UserApi) {
     const ethAddress = await this.ensureEthAddress(userApi);
-    const rawBalance = await this.contract.methods.balanceOf(ethAddress).call();
-    const balance = this.decimalize(rawBalance);
+    const balance = await this.getBalanceFromContract(ethAddress);
     const feeEstimate = await this.estimateFee();
     return {
       accountId: userApi.userId,
@@ -162,7 +167,7 @@ class Erc20API extends EthApi {
       feeEstimate: feeEstimate.toString(),
       receiveAddress: ethAddress,
       balance: {
-        confirmed: balance.toString(),
+        confirmed: balance.toFixed(),
         unconfirmed: '0',
       },
     };
@@ -170,12 +175,17 @@ class Erc20API extends EthApi {
 
   async send(userApi: UserApi, to: string, amount: string) {
     const ethAddress = await this.ensureEthAddress(userApi);
+    const balance = await this.getBalanceFromContract(ethAddress);
+    const hasEnough = new BigNumber(amount).isLessThanOrEqualTo(balance);
+    if (!hasEnough)
+      throw new UserInputError(
+        'Amount to send cannot be greater than balance.',
+      );
     const value = this.integerize(amount);
     const sendValue = ethers.utils.bigNumberify(`0x${value.toString(16)}`);
     const count = await this.web3.eth.getTransactionCount(ethAddress);
     const privateKey = await this.getPrivateKey(userApi.userId);
     const nonce = `0x${count.toString(16)}`;
-
     const rawTransaction = {
       from: ethAddress,
       nonce: nonce,

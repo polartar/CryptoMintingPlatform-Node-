@@ -1,8 +1,5 @@
-import { logger } from '../common';
 import { Context } from '../types/context';
 import ResolverBase from '../common/Resolver-Base';
-import account from './account';
-import { IWalletAccount } from '../models/walletAccount';
 const autoBind = require('auto-bind');
 
 class Resolvers extends ResolverBase {
@@ -12,19 +9,18 @@ class Resolvers extends ResolverBase {
   }
   async getWallet(
     parent: any,
-    { coinSymbol }: { coinSymbol: string },
-    { user, domain, dataSources: { wallet, userModel } }: Context,
+    { coinSymbol }: { coinSymbol?: string },
+    { user, dataSources: { wallet } }: Context,
   ) {
     this.requireAuth(user);
-    const userApi = userModel.domain(domain).user(user);
     if (coinSymbol) {
       const walletApi = wallet.coin(coinSymbol);
-      const walletResult = await walletApi.getBalance(userApi);
+      const walletResult = await walletApi.getBalance(user);
       return [walletResult];
     }
     const allWalletApi = wallet.allCoins();
     const walletData = await Promise.all(
-      allWalletApi.map(walletCoinApi => walletCoinApi.getBalance(userApi)),
+      allWalletApi.map(walletCoinApi => walletCoinApi.getBalance(user)),
     );
     return walletData;
   }
@@ -35,9 +31,8 @@ class Resolvers extends ResolverBase {
     { user, domain, dataSources: { wallet, userModel } }: Context,
   ) {
     this.requireAuth(user);
-    const userApi = userModel.domain(domain).user(user);
     const walletApi = wallet.coin(symbol);
-    const transactions = await walletApi.getTransactions(userApi);
+    const transactions = await walletApi.getTransactions(user);
     return transactions;
   }
 
@@ -62,9 +57,8 @@ class Resolvers extends ResolverBase {
     { user, domain, dataSources: { wallet, userModel } }: Context,
   ) {
     this.requireAuth(user);
-    const userApi = userModel.domain(domain).user(user);
     const walletApi = wallet.coin(coinSymbol);
-    const result = await walletApi.send(userApi, to, amount);
+    const result = await walletApi.send(user, to, amount);
     return result;
   }
 }

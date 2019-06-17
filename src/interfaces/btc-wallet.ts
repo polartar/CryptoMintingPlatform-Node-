@@ -7,6 +7,7 @@ import config from '../common/config';
 import { credentialService } from '../services';
 import { ITransaction } from '../types';
 import { UserApi } from '../data-sources';
+import { BigNumber } from 'bignumber.js';
 const { WalletClient } = require('bclient');
 const autoBind = require('auto-bind');
 
@@ -90,8 +91,9 @@ class BtcWallet extends WalletBase {
 
   public estimateFee() {
     // Cant remember why we used this formula to estimate the fee
-    const estimate = this.satToBtc(this.feeRate / 4);
-    return Promise.resolve(estimate);
+    const feeRate = new BigNumber(this.feeRate);
+    const estimate = this.satToBtc(feeRate.div(4));
+    return Promise.resolve(estimate.toFixed());
   }
 
   private async newPassphrase(userId: string) {
@@ -109,13 +111,13 @@ class BtcWallet extends WalletBase {
   }
 
   // Util function to convert satoshis to btc
-  private satToBtc(satoshis: number) {
-    return satoshis / 100000000;
+  private satToBtc(satoshis: BigNumber) {
+    return satoshis.div(100000000);
   }
 
   // Util function to convert btc to satoshis
-  private btcToSat(btc: number) {
-    return btc * 100000000;
+  private btcToSat(btc: BigNumber) {
+    return btc.multipliedBy(100000000);
   }
 
   // Old code from the old front-end-only method
@@ -134,7 +136,7 @@ class BtcWallet extends WalletBase {
         status: block === null ? 'Pending' : 'Complete',
         confirmations,
         timestamp: new Date(mdate).getTime() / 1000,
-        fee: this.satToBtc(fee).toString(),
+        fee: this.satToBtc(new BigNumber(fee)).toFixed(),
         link: `${config.btcTxLink}/${hash}/`,
       };
       if (fee) {
@@ -143,13 +145,15 @@ class BtcWallet extends WalletBase {
           (formedOutput, rawOutput) => {
             if (!rawOutput.path) {
               formedOutput.to = rawOutput.address;
-              formedOutput.amount += this.satToBtc(rawOutput.value);
+              formedOutput.amount = formedOutput.amount.plus(
+                this.satToBtc(new BigNumber(rawOutput.value)),
+              );
             } else {
               formedOutput.from = rawOutput.address;
             }
             return formedOutput;
           },
-          { to: '', from: '', amount: 0 },
+          { to: '', from: '', amount: new BigNumber(0) },
         );
         return {
           ...formattedTx,
@@ -164,19 +168,21 @@ class BtcWallet extends WalletBase {
           (formedOutput, rawOutput) => {
             if (rawOutput.path) {
               formedOutput.to = rawOutput.address;
-              formedOutput.amount += this.satToBtc(rawOutput.value);
+              formedOutput.amount = formedOutput.amount.plus(
+                this.satToBtc(new BigNumber(rawOutput.value)),
+              );
             } else {
               formedOutput.from = rawOutput.address;
             }
             return formedOutput;
           },
-          { to: '', from: '', amount: 0 },
+          { to: '', from: '', amount: new BigNumber(0) },
         );
         return {
           ...formattedTx,
           to,
           from,
-          amount: amount.toString(),
+          amount: amount.toFixed(),
           type: 'deposit',
         };
       }
@@ -197,7 +203,10 @@ class BtcWallet extends WalletBase {
     } = balanceResult;
 
     const feeEstimate = this.estimateFee();
-
+    const confirmedBalance = new BigNumber(confirmed);
+    const unconfirmedBalance = new BigNumber(unconfirmed).minus(
+      confirmedBalance,
+    );
     // Return the balance based on this standardized shape.
     return {
       accountId,
@@ -206,8 +215,8 @@ class BtcWallet extends WalletBase {
       feeEstimate,
       receiveAddress,
       balance: {
-        confirmed: this.satToBtc(confirmed).toString(),
-        unconfirmed: this.satToBtc(unconfirmed - confirmed).toString(),
+        confirmed: this.satToBtc(confirmedBalance).toFixed(),
+        unconfirmed: this.satToBtc(unconfirmedBalance).toFixed(),
       },
     };
   }
@@ -253,6 +262,7 @@ class BtcWallet extends WalletBase {
       const accountId = userApi.userId;
       const userWallet = await this.setWallet(accountId);
       const passphrase = await this.getPassphrase(accountId);
+      const amountToSend = new BigNumber(amount);
       const { hash } = await userWallet.send({
         account: 'default',
         passphrase: passphrase,
@@ -260,7 +270,7 @@ class BtcWallet extends WalletBase {
         rate: this.feeRate,
         outputs: [
           {
-            value: Math.round(this.btcToSat(+amount)),
+            value: Math.round(this.btcToSat(amountToSend).toNumber()),
             address: to,
           },
         ],

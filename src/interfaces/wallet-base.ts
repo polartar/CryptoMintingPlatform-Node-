@@ -24,7 +24,7 @@ export default abstract class WalletBase {
 
   abstract getTransactions(userApi: UserApi): Promise<ITransaction[]>;
 
-  abstract estimateFee(): Promise<number>;
+  abstract estimateFee(): Promise<string>;
 
   abstract send(
     userApi: UserApi,

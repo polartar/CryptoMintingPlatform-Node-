@@ -4,6 +4,7 @@ import { DataSource } from 'apollo-datasource';
 import { config } from '../common';
 import axios from 'axios';
 
+// TODO: Apollo datasource REST
 class CryptoFavorites extends DataSource {
   public async getUserFavorites(userFavorites: string[]) {
     const reqUrl = `${
@@ -14,7 +15,7 @@ class CryptoFavorites extends DataSource {
     } = await axios.get(reqUrl);
     return Object.values(rawFavorites).map(({ USD: fav }) => {
       const {
-        CHANGE24HOUR: change24Hour,
+        CHANGEPCT24HOUR: changePercent24Hour,
         PRICE: price,
         FROMSYMBOL: symbol,
         IMAGEURL: imageUrl,
@@ -23,7 +24,7 @@ class CryptoFavorites extends DataSource {
       } = fav;
       const fullImageUrl = 'https://cryptocompare.com' + imageUrl;
       return {
-        change24Hour,
+        changePercent24Hour,
         price,
         symbol,
         imageUrl: fullImageUrl,

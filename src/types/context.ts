@@ -1,11 +1,6 @@
 import { Request, Response } from 'express';
-import {
-  WalletBase,
-  Account,
-  UserApi,
-  CryptoFavorites,
-} from '../data-sources/';
-export interface ContextUser {
+import { WalletBase, UserApi, CryptoFavorites } from '../data-sources/';
+export interface IUserClaims {
   permissions: string[];
   role: string;
   userId: string;
@@ -26,5 +21,5 @@ export interface Context {
     userModel: UserApi;
     cryptoFavorites: CryptoFavorites;
   };
-  user: ContextUser;
+  user: UserApi | null;
 }
