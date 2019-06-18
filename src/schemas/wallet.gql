@@ -1,6 +1,6 @@
 type Balance {
-  confirmed: Float!
-  unconfirmed: Float!
+  confirmed: String!
+  unconfirmed: String!
 }
 
 type Transaction {
@@ -8,11 +8,11 @@ type Transaction {
   status: String!
   confirmations: Int!
   timestamp: Int!
-  fee: Float!
+  fee: String!
   link: String!
   to: String!
   from: String!
-  amount: Float!
+  amount: String!
   type: String!
 }
 
@@ -28,7 +28,7 @@ type Wallet {
 
 type Query {
   # If no coinSymbol is provided, all supported wallets will be returned
-  wallet(coinSymbol: String, accountId: String!): [Wallet!]!
+  wallet(coinSymbol: String): [Wallet!]!
 }
 
 type TransactionResponse {
@@ -40,8 +40,7 @@ type Mutation {
   # If no coinSymbol is provided, all supported wallets will be returned
   sendTransaction(
     coinSymbol: String
-    accountId: String!
     to: String!
-    amount: Float!
+    amount: String!
   ): TransactionResponse!
 }
