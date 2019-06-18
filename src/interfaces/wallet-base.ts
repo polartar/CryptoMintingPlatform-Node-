@@ -1,31 +1,34 @@
 // This abstract class is intended to provide a framework for each of the wallet interfaces to ensure they implement the same methods and return the same data shape
 import { ITransaction } from '../types';
-import { IAccount } from '../models/account';
+import { UserApi } from '../data-sources';
 
 export default abstract class WalletBase {
   constructor(
     protected name: string,
-    protected symbol: string,
-    protected contract: string,
+    public symbol: string,
+    protected contractAddress: string,
+    protected abi: any,
+    protected backgroundColor: string,
+    protected icon: string,
   ) {}
 
   abstract getBalance(
-    userAccount: IAccount,
+    userApi: UserApi,
   ): Promise<{
     accountId: string;
     symbol: string;
     name: string;
-    balance: { confirmed: number; unconfirmed: number };
+    balance: { confirmed: string; unconfirmed: string };
     receiveAddress: string;
   }>;
 
-  abstract getTransactions(userAccount: IAccount): Promise<ITransaction[]>;
+  abstract getTransactions(userApi: UserApi): Promise<ITransaction[]>;
 
-  abstract estimateFee(): Promise<number>;
+  abstract estimateFee(): Promise<string>;
 
   abstract send(
-    userAccount: IAccount,
+    userApi: UserApi,
     to: string,
-    amount: number,
+    amount: string,
   ): Promise<{ success: boolean; message?: string }>;
 }

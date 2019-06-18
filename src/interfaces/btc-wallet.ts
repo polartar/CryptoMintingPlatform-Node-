@@ -6,7 +6,8 @@ import { v4 as generateRandomId } from 'uuid';
 import config from '../common/config';
 import { credentialService } from '../services';
 import { ITransaction } from '../types';
-import { IAccount } from '../models/account';
+import { UserApi } from '../data-sources';
+import { BigNumber } from 'bignumber.js';
 const { WalletClient } = require('bclient');
 const autoBind = require('auto-bind');
 
@@ -28,42 +29,45 @@ class BtcWallet extends WalletBase {
   feeRate = 20000;
   // To my knowledge, bcoin hasn't implemented types to their client.
   walletClient: any;
-  constructor() {
-    super('Bitcoin', 'BTC', null);
+  constructor(
+    name: string,
+    symbol: string,
+    contract: string,
+    abi: any,
+    backgroundColor: string,
+    icon: string,
+  ) {
+    super(name, symbol, contract, abi, backgroundColor, icon);
     autoBind(this);
     // This is the client configured to interact with bcoin;
     this.walletClient = new WalletClient(config.bcoinWallet);
   }
 
-  async createWallet(accountId: string) {
-    // This method is called if the getBalance method errors out with a 404 from bcoin, meaning the user doesn't have a wallet for that account yet.
+  async createWallet(userId: string) {
     try {
-      // This creates a wallet based off of the account ID. The walletId in bcoin === the accountId from mongoDB
-      const { token } = await this.walletClient.createWallet(accountId);
-      // Set the wallet  so that we can get the mnemonic and xprivkey
-      const userWallet = this.walletClient.wallet(accountId, token);
-      // Request the xPrivKey and mnemenonic from bcoin. Its necessary to request this data before we set a password to the wallet which encrypts it forever.
+      const { token } = await this.walletClient.createWallet(userId);
+      const userWallet = this.walletClient.wallet(userId, token);
       const {
         key: { xprivkey },
         mnemonic: { phrase: mnemonic },
       } = await userWallet.getMaster();
       // Sends the token to be saved in the apiKeyService
       const tokenSavePromise = credentialService.create(
-        accountId,
+        userId,
         this.symbol,
         'token',
         token,
       );
       // Sends the xprivkey to be saved in the apiKeyService
       const privKeySavePromise = credentialService.create(
-        accountId,
+        userId,
         this.symbol,
         'privkey',
         xprivkey,
       );
       // Sends the mnemonic to be saved in the apiKeyService
       const mnemonicSavePromise = credentialService.create(
-        accountId,
+        userId,
         this.symbol,
         'mnemonic',
         mnemonic,
@@ -75,7 +79,7 @@ class BtcWallet extends WalletBase {
         mnemonicSavePromise,
       ]);
       // generate a new passphrase (it also saves the passphrase to the apiKeyService inside that method)
-      const passphrase = await this.newPassphrase(accountId);
+      const passphrase = await this.newPassphrase(userId);
       // Send the generated passphrase to bcoin to encrypt the user's wallet. Success: boolean will be returned
       const { success } = await userWallet.setPassphrase(passphrase);
       if (!success) throw new Error('Passphrase set was unsuccessful');
@@ -87,16 +91,17 @@ class BtcWallet extends WalletBase {
 
   public estimateFee() {
     // Cant remember why we used this formula to estimate the fee
-    const estimate = this.satToBtc(this.feeRate / 4);
-    return Promise.resolve(estimate);
+    const feeRate = new BigNumber(this.feeRate);
+    const estimate = this.satToBtc(feeRate.div(4));
+    return Promise.resolve(estimate.toFixed());
   }
 
-  private async newPassphrase(accountId: string) {
+  private async newPassphrase(userId: string) {
     // Generate a random passphrase
     const passphrase = sha256(generateRandomId()).slice(0, 32);
     // Save passphrase to the keyService
     await credentialService.create(
-      accountId,
+      userId,
       this.symbol,
       'passphrase',
       passphrase,
@@ -106,18 +111,18 @@ class BtcWallet extends WalletBase {
   }
 
   // Util function to convert satoshis to btc
-  private satToBtc(satoshis: number) {
-    return satoshis / 100000000;
+  private satToBtc(satoshis: BigNumber) {
+    return satoshis.div(100000000);
   }
 
   // Util function to convert btc to satoshis
-  private btcToSat(btc: number) {
-    return btc * 100000000;
+  private btcToSat(btc: BigNumber) {
+    return btc.multipliedBy(100000000);
   }
 
   // Old code from the old front-end-only method
-  public async getTransactions(userAccount: IAccount): Promise<ITransaction[]> {
-    const accountId = userAccount.id;
+  public async getTransactions(userApi: UserApi): Promise<ITransaction[]> {
+    const accountId = userApi.userId;
     const userWallet = await this.setWallet(accountId);
     const history = await userWallet.getHistory('default');
     return this.formatTransactions(history);
@@ -131,7 +136,7 @@ class BtcWallet extends WalletBase {
         status: block === null ? 'Pending' : 'Complete',
         confirmations,
         timestamp: new Date(mdate).getTime() / 1000,
-        fee: this.satToBtc(fee),
+        fee: this.satToBtc(new BigNumber(fee)).toFixed(),
         link: `${config.btcTxLink}/${hash}/`,
       };
       if (fee) {
@@ -140,37 +145,53 @@ class BtcWallet extends WalletBase {
           (formedOutput, rawOutput) => {
             if (!rawOutput.path) {
               formedOutput.to = rawOutput.address;
-              formedOutput.amount += this.satToBtc(rawOutput.value);
+              formedOutput.amount = formedOutput.amount.plus(
+                this.satToBtc(new BigNumber(rawOutput.value)),
+              );
             } else {
               formedOutput.from = rawOutput.address;
             }
             return formedOutput;
           },
-          { to: '', from: '', amount: 0 },
+          { to: '', from: '', amount: new BigNumber(0) },
         );
-        return { ...formattedTx, to, from, amount, type: 'withdrawal' };
+        return {
+          ...formattedTx,
+          to,
+          from,
+          amount: amount.toString(),
+          type: 'withdrawal',
+        };
       } else {
         // I received this tx
         const { to, from, amount } = outputs.reduce(
           (formedOutput, rawOutput) => {
             if (rawOutput.path) {
               formedOutput.to = rawOutput.address;
-              formedOutput.amount += this.satToBtc(rawOutput.value);
+              formedOutput.amount = formedOutput.amount.plus(
+                this.satToBtc(new BigNumber(rawOutput.value)),
+              );
             } else {
               formedOutput.from = rawOutput.address;
             }
             return formedOutput;
           },
-          { to: '', from: '', amount: 0 },
+          { to: '', from: '', amount: new BigNumber(0) },
         );
-        return { ...formattedTx, to, from, amount, type: 'deposit' };
+        return {
+          ...formattedTx,
+          to,
+          from,
+          amount: amount.toFixed(),
+          type: 'deposit',
+        };
       }
     });
     return formattedTransactions;
   }
 
-  public async getBalance(userAccount: IAccount) {
-    const accountId = userAccount.id;
+  public async getBalance(userApi: UserApi) {
+    const accountId = userApi.userId;
     // retreives the bcoin wallet interface based off of the specified accountId
     const userWallet = await this.setWallet(accountId);
     // request the wallet balance from bcoin
@@ -182,7 +203,10 @@ class BtcWallet extends WalletBase {
     } = balanceResult;
 
     const feeEstimate = this.estimateFee();
-
+    const confirmedBalance = new BigNumber(confirmed);
+    const unconfirmedBalance = new BigNumber(unconfirmed).minus(
+      confirmedBalance,
+    );
     // Return the balance based on this standardized shape.
     return {
       accountId,
@@ -191,8 +215,8 @@ class BtcWallet extends WalletBase {
       feeEstimate,
       receiveAddress,
       balance: {
-        confirmed: this.satToBtc(confirmed),
-        unconfirmed: this.satToBtc(unconfirmed - confirmed),
+        confirmed: this.satToBtc(confirmedBalance).toFixed(),
+        unconfirmed: this.satToBtc(unconfirmedBalance).toFixed(),
       },
     };
   }
@@ -219,9 +243,9 @@ class BtcWallet extends WalletBase {
     return token;
   }
 
-  private async getPassphrase(accountId: string) {
+  private async getPassphrase(userId: string) {
     const passphrase = await credentialService.get(
-      accountId,
+      userId,
       this.symbol,
       'passphrase',
     );
@@ -230,14 +254,15 @@ class BtcWallet extends WalletBase {
   }
 
   async send(
-    userAccount: IAccount,
+    userApi: UserApi,
     to: string,
-    amount: number,
+    amount: string,
   ): Promise<{ success: boolean; id?: string; message?: string }> {
     try {
-      const accountId = userAccount.id;
+      const accountId = userApi.userId;
       const userWallet = await this.setWallet(accountId);
       const passphrase = await this.getPassphrase(accountId);
+      const amountToSend = new BigNumber(amount);
       const { hash } = await userWallet.send({
         account: 'default',
         passphrase: passphrase,
@@ -245,7 +270,7 @@ class BtcWallet extends WalletBase {
         rate: this.feeRate,
         outputs: [
           {
-            value: Math.round(this.btcToSat(amount)),
+            value: Math.round(this.btcToSat(amountToSend).toNumber()),
             address: to,
           },
         ],
