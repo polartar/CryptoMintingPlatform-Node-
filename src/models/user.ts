@@ -1,13 +1,27 @@
 import * as mongoose from 'mongoose';
 
-export interface User extends mongoose.Document {
+interface IUserWalletDoc extends mongoose.Document {
+  ethAddress?: string;
+  ethBlockNumAtCreation?: number;
+  cryptoFavorites?: string[];
+  cryptoFavoritesSet?: boolean;
+}
+export interface IUser extends mongoose.Document {
   email: string;
   firebaseUid: string;
   role: string;
   created: Date;
   permissions: string[];
   id: string;
+  wallet?: IUserWalletDoc;
 }
+
+const walletSchema = new mongoose.Schema({
+  ethAddress: String,
+  ethBlockNumAtCreation: Number,
+  cryptoFavorites: [String],
+  cryptoFavoritesSet: Boolean,
+});
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -27,9 +41,10 @@ const userSchema = new mongoose.Schema({
   created: { type: Date, index: true },
   permissions: [String],
   id: { type: String, index: true },
+  wallet: walletSchema,
 });
 
-userSchema.post('save', function(doc: User) {
+userSchema.post('save', function(doc: IUser) {
   if (!doc._id) {
     return;
   }
@@ -40,6 +55,4 @@ userSchema.post('save', function(doc: User) {
   }
 });
 
-const User = mongoose.model<User>('users', userSchema);
-
-export default User;
+export default userSchema;

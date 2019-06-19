@@ -36,6 +36,6 @@ npm-debug.log
 service-accounts.json
 jwtrsa-private.key
 jwtrsa-public.pem
-authDbConnections.json
 credentials.ts
 serviceAccountKey.json
+authDbConnections.json

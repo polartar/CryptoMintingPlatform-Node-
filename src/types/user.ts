@@ -1,4 +1,4 @@
-export { User } from '../models/user';
+export { IUser } from '../models/user';
 
 export interface RegisterInput {
   email: string;
