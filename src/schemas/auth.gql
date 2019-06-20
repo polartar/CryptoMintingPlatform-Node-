@@ -2,6 +2,19 @@ type ReturnToken {
   token: String!
 }
 
+type TwoFaRegisterResponse {
+  qrCode: String!
+}
+
+type TwoFaValidationResponse {
+  authenticated: Boolean!
+}
+
 type Mutation {
   login(token: String!): ReturnToken!
+  twoFaRegister: TwoFaRegisterResponse!
+}
+
+type Query {
+  twoFaValidate(totpToken: String!): TwoFaValidationResponse!
 }

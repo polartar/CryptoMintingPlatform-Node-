@@ -4,12 +4,10 @@ import { Model } from 'mongoose';
 import { userSchema } from '../models';
 import { IUser } from '../types';
 import { IUserClaims } from '../types/context';
+import * as speakeasy from 'speakeasy';
+import * as QRCode from 'qrcode';
+import { ApolloError } from 'apollo-server-express';
 
-interface IWalletAccountDefaults {
-  ethAddress?: string;
-  ethBlockNumAtCreation?: number;
-  cryptoFavorites?: string[];
-}
 export default class User extends DataSource {
   Model: Model<IUser>;
   domain: string;
@@ -56,5 +54,65 @@ export default class User extends DataSource {
       { new: true },
     );
     return result;
+  }
+
+  async setTempTwoFaSecret() {
+    try {
+      const user = await this.findFromDb();
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const secret = speakeasy.generateSecret({
+        length: 20,
+      });
+
+      const otpUrl = speakeasy.otpauthURL({
+        secret: secret.base32,
+        label: user.email,
+        issuer: this.domain,
+        encoding: 'base32',
+      });
+
+      user.twoFaTempSecret = secret.base32;
+      await user.save();
+
+      const dataUrl = await QRCode.toDataURL(otpUrl);
+
+      return dataUrl;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async validateTwoFa(totpToken: string) {
+    try {
+      const user = await this.findFromDb();
+      if (!user) {
+        throw new Error('User not found');
+      }
+      const { twoFaSecret, twoFaTempSecret } = user;
+
+      if (!twoFaTempSecret && !twoFaSecret)
+        throw new ApolloError('User not registered for 2FA');
+
+      const verified = speakeasy.totp.verify({
+        secret: twoFaSecret || twoFaTempSecret,
+        encoding: 'base32',
+        token: totpToken,
+      });
+
+      if (!verified) {
+        return false;
+      }
+
+      if (!twoFaSecret) {
+        user.twoFaSecret = twoFaTempSecret;
+        await user.save();
+      }
+      return true;
+    } catch (error) {
+      throw error;
+    }
   }
 }

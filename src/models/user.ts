@@ -14,6 +14,8 @@ export interface IUser extends mongoose.Document {
   permissions: string[];
   id: string;
   wallet?: IUserWalletDoc;
+  twoFaTempSecret?: string;
+  twoFaSecret?: string;
 }
 
 const walletSchema = new mongoose.Schema({
@@ -41,6 +43,8 @@ const userSchema = new mongoose.Schema({
   created: { type: Date, index: true },
   permissions: [String],
   id: { type: String, index: true },
+  twoFaTempSecret: String,
+  twoFaSecret: String,
   wallet: walletSchema,
 });
 
