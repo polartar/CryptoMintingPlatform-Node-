@@ -1,5 +1,6 @@
 import { Context } from '../types/context';
 import ResolverBase from '../common/Resolver-Base';
+import { ApolloError } from 'apollo-server-express';
 const autoBind = require('auto-bind');
 
 class Resolvers extends ResolverBase {
@@ -53,10 +54,19 @@ class Resolvers extends ResolverBase {
       coinSymbol,
       to,
       amount,
-    }: { coinSymbol: string; accountId: string; to: string; amount: string },
-    { user, domain, dataSources: { wallet, userModel } }: Context,
+      totpToken,
+    }: {
+      coinSymbol: string;
+      accountId: string;
+      to: string;
+      amount: string;
+      totpToken: string;
+    },
+    { user, dataSources: { wallet } }: Context,
   ) {
     this.requireAuth(user);
+    const twoFaValid = await user.validateTwoFa(totpToken);
+    if (!twoFaValid) throw new ApolloError('Invalid two factor auth token');
     const walletApi = wallet.coin(coinSymbol);
     const result = await walletApi.send(user, to, amount);
     return result;

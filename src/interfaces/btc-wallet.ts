@@ -26,7 +26,7 @@ interface IBcoinTx {
   hash: string;
 }
 class BtcWallet extends WalletBase {
-  feeRate = 20000;
+  feeRate = 10000;
   // To my knowledge, bcoin hasn't implemented types to their client.
   walletClient: any;
   constructor(
