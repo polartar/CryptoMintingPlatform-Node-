@@ -7,11 +7,11 @@
     "sourceMap": true,
     "baseUrl": ".",
     "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
     "paths": {
       "*": ["node_modules/*", "./src/types/modules/*"]
     }
   },
   "types": ["jasmine"],
-  "include": ["./**/*.ts", "./**/*.js"],
-  "exclude": ["node_modules", "lib", "@types"]
+  "include": ["src/**/*"]
 }
