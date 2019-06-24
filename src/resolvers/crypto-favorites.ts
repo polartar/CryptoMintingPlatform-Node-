@@ -33,7 +33,7 @@ class Resolvers extends ResolverBase {
   async addFavorite(
     parent: any,
     args: { symbol: string },
-    { user, domain, dataSources: { cryptoFavorites, userModel } }: Context,
+    { user, dataSources: { cryptoFavorites } }: Context,
   ) {
     this.requireAuth(user);
     const foundUser = await user.findFromDb();
@@ -46,7 +46,7 @@ class Resolvers extends ResolverBase {
   async removeFavorite(
     parent: any,
     args: { symbol: string },
-    { user, domain, dataSources: { cryptoFavorites, userModel } }: Context,
+    { user, dataSources: { cryptoFavorites } }: Context,
   ) {
     this.requireAuth(user);
     const foundUser = await user.findFromDb();

@@ -4,7 +4,7 @@ const Web3 = require('web3');
 import { credentialService, ethService } from '../services';
 import WalletBase from './wallet-base';
 import config from '../common/config';
-import { ITransaction, IEtherscanTx } from '../types';
+import { ITransaction, IEtherscanTx, ICoinMetadata } from '../types';
 import { UserApi } from '../data-sources';
 import BigNumber from 'bignumber.js';
 
@@ -12,15 +12,15 @@ class EthAPI extends WalletBase {
   WEB3_GAS_ERROR = 'Returned error: insufficient funds for gas * price + value';
   NEW_GAS_ERROR = 'Insufficient credits';
   web3 = new Web3(config.ethNodeUrl);
-  constructor(
-    name: string,
-    symbol: string,
-    contract: string,
-    abi: any,
-    backgroundColor: string,
-    icon: string,
-  ) {
-    super(name, symbol, contract, abi, backgroundColor, icon);
+  constructor({
+    name,
+    symbol,
+    contractAddress,
+    abi,
+    backgroundColor,
+    icon,
+  }: ICoinMetadata) {
+    super(name, symbol, contractAddress, abi, backgroundColor, icon);
   }
 
   protected async createAccount(userApi: UserApi) {

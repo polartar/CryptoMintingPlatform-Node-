@@ -5,11 +5,13 @@ import schemas from './schemas';
 import resolvers from './resolvers';
 import { Wallet, UserApi, CryptoFavorites } from './data-sources';
 import { config, logger, auth } from './common';
+import autoBind = require('auto-bind');
 
 class Server {
   public app: express.Application = express();
 
   constructor() {
+    autoBind(this);
     const isDev = process.env.NODE_ENV === 'development';
     const typeDefs: DocumentNode = gql(schemas);
 
@@ -28,6 +30,21 @@ class Server {
     });
   }
 
+  private parseOrigin(origin: string) {
+    const { supportedOrigins: { dev, prod } } = config;
+    // Prod origins
+    if (origin === undefined || origin.includes(dev.local)) return dev.local;
+    if (origin.includes(prod.green)) return prod.green;
+    if (origin.includes(prod.connect)) return prod.connect;
+    if (origin.includes(prod.codex)) return prod.codex;
+    // Stage and dev origins
+    if (origin.includes(dev.green)) return dev.green;
+    if (origin.includes(dev.connect)) return dev.connect;
+    if (origin.includes(dev.codex)) return dev.codex;
+
+    throw new Error(`Origin:${origin} not supported`)
+  }
+
   private buildContext({
     req,
     res,
@@ -38,10 +55,7 @@ class Server {
     const token = req.headers.authorization
       ? req.headers.authorization.replace('Bearer ', '')
       : '';
-    const origin = req.get('origin');
-    const domain = origin
-      ? origin.replace(/https?:\/\//, '').replace(/:\d+/, '')
-      : 'localhost';
+    const domain = this.parseOrigin(req.get('origin'))
     let user = null;
     if (token) {
       try {
@@ -51,13 +65,13 @@ class Server {
         user = null;
       }
     }
+    const wallet = new Wallet(domain);
 
-    return { req, res, user, domain };
+    return { req, res, user, domain, wallet };
   }
 
   private buildDataSources() {
     return {
-      wallet: new Wallet(),
       cryptoFavorites: new CryptoFavorites(),
     };
   }

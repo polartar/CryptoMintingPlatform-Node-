@@ -11,7 +11,7 @@ class Resolvers extends ResolverBase {
   async getWallet(
     parent: any,
     { coinSymbol }: { coinSymbol?: string },
-    { user, dataSources: { wallet } }: Context,
+    { user, wallet }: Context,
   ) {
     this.requireAuth(user);
     if (coinSymbol) {
@@ -29,7 +29,7 @@ class Resolvers extends ResolverBase {
   async getTransactions(
     { symbol }: { accountId: string; symbol: string },
     args: any,
-    { user, domain, dataSources: { wallet, userModel } }: Context,
+    { user, wallet }: Context,
   ) {
     this.requireAuth(user);
     const walletApi = wallet.coin(symbol);
@@ -40,7 +40,7 @@ class Resolvers extends ResolverBase {
   async estimateFee(
     { symbol }: { symbol: string },
     args: any,
-    { user, dataSources: { wallet } }: Context,
+    { user, wallet }: Context,
   ) {
     this.requireAuth(user);
     const walletApi = wallet.coin(symbol);
@@ -62,7 +62,7 @@ class Resolvers extends ResolverBase {
       amount: string;
       totpToken: string;
     },
-    { user, dataSources: { wallet } }: Context,
+    { user, wallet }: Context,
   ) {
     this.requireAuth(user);
     const twoFaValid = await user.validateTwoFa(totpToken);

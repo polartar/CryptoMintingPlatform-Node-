@@ -2,9 +2,8 @@ import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 import * as autoBind from 'auto-bind';
 import keys from './keys';
-import * as supportedCoinsProd from './supportedCoins.json';
-import * as supportedCoinsDev from './supportedCoins-dev.json';
 import { createConnection, Connection } from 'mongoose';
+import SupportedCoins from './CoinsSupported';
 
 dotenv.config({ path: '.env' });
 
@@ -14,10 +13,21 @@ class Config {
   public readonly port = this.normalizePort(process.env.PORT);
   public readonly hostname = process.env.HOSTNAME;
   public readonly mongodbUri: undefined;
-  public readonly supportedCoins =
-    process.env.NODE_ENV === 'production'
-      ? supportedCoinsProd
-      : supportedCoinsDev;
+  public readonly supportedCoins = new SupportedCoins();
+
+  public readonly supportedOrigins = {
+    dev: {
+      codex: 'stage0.codexunited.com',
+      green: 'stage0.share.green',
+      connect: 'stage0.connectblockchain.net',
+      local: 'localhost'
+    },
+    prod: {
+      codex: 'codexunited.com',
+      green: 'share.green',
+      connect: 'connectblockchain.net'
+    },
+  }
   public readonly jwtPrivateKey = keys.privateKey;
   public readonly jwtPublicKey = keys.publicKey;
   public readonly serviceAccounts = keys.serviceAccounts;
