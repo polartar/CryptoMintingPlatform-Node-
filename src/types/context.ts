@@ -12,13 +12,11 @@ export interface Context {
   req: Request;
   res: Response;
   domain: string;
+  wallet: {
+    coin(symbol: string): WalletBase;
+    allCoins(): WalletBase[];
+  };
   dataSources: {
-    wallet: {
-      coin(symbol: string): WalletBase;
-      allCoins(): WalletBase[];
-    };
-    accounts: Account;
-    userModel: UserApi;
     cryptoFavorites: CryptoFavorites;
   };
   user: UserApi | null;

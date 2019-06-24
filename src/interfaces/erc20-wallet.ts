@@ -3,7 +3,7 @@ import * as ethers from 'ethers';
 import * as ethereumUtil from 'ethereumjs-util';
 import EthApi from './eth-wallet';
 const Web3 = require('web3');
-import { ITransaction } from '../types';
+import { ITransaction, ICoinMetadata } from '../types';
 import { BigNumber } from 'bignumber.js';
 import { UserApi } from '../data-sources';
 import { UserInputError } from 'apollo-server-express';
@@ -35,17 +35,10 @@ class Erc20API extends EthApi {
   contract: any;
   decimalPlaces: number;
   web3 = new Web3(config.ethNodeUrl);
-  constructor(
-    name: string,
-    symbol: string,
-    contract: string,
-    abi: any,
-    backgroundColor: string,
-    icon: string,
-    decimalPlaces: number,
-  ) {
-    super(name, symbol, contract, abi, backgroundColor, icon);
-    this.contract = new this.web3.eth.Contract(abi, contract);
+  constructor(tokenMetadata: ICoinMetadata) {
+    super(tokenMetadata);
+    const { abi, contractAddress, decimalPlaces } = tokenMetadata
+    this.contract = new this.web3.eth.Contract(abi, contractAddress);
     this.decimalPlaces = decimalPlaces;
   }
 

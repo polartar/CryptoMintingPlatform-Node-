@@ -5,7 +5,7 @@ import { sha256 } from 'js-sha256';
 import { v4 as generateRandomId } from 'uuid';
 import config from '../common/config';
 import { credentialService } from '../services';
-import { ITransaction } from '../types';
+import { ITransaction, ICoinMetadata } from '../types';
 import { UserApi } from '../data-sources';
 import { BigNumber } from 'bignumber.js';
 const { WalletClient } = require('bclient');
@@ -29,15 +29,15 @@ class BtcWallet extends WalletBase {
   feeRate = 10000;
   // To my knowledge, bcoin hasn't implemented types to their client.
   walletClient: any;
-  constructor(
-    name: string,
-    symbol: string,
-    contract: string,
-    abi: any,
-    backgroundColor: string,
-    icon: string,
-  ) {
-    super(name, symbol, contract, abi, backgroundColor, icon);
+  constructor({
+    name,
+    symbol,
+    contractAddress,
+    abi,
+    backgroundColor,
+    icon
+  }: ICoinMetadata) {
+    super(name, symbol, contractAddress, abi, backgroundColor, icon);
     autoBind(this);
     // This is the client configured to interact with bcoin;
     this.walletClient = new WalletClient(config.bcoinWallet);
