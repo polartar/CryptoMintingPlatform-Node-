@@ -12,10 +12,19 @@ class Resolvers extends ResolverBase {
   public async login(
     parent: any,
     args: { token: string },
-    { domain }: Context,
+    { domain, user }: Context,
   ) {
     const token = await auth.signIn(args.token, domain);
-    return { token };
+    const {
+      claims: { twoFaEnabled },
+    } = auth.verifyAndDecodeToken(token, domain);
+    const twoFaSetup: { twoFaQrCode?: string; twoFaSecret?: string } = {};
+    if (!twoFaEnabled) {
+      const { qrCode, secret } = await user.setTempTwoFaSecret();
+      twoFaSetup.twoFaSecret = secret;
+      twoFaSetup.twoFaQrCode = qrCode;
+    }
+    return { token, twoFaEnabled, ...twoFaSetup };
   }
 
   public async twoFaRegister(parent: any, args: {}, { user }: Context) {
@@ -24,9 +33,9 @@ class Resolvers extends ResolverBase {
     if (twoFaSecret) {
       throw new ApolloError('Two Factor Authentication is already set up.');
     }
-    const qrCode = await user.setTempTwoFaSecret();
+    const { qrCode, secret } = await user.setTempTwoFaSecret();
 
-    return { qrCode };
+    return { twoFaQrCode: qrCode, twoFaSecret: secret };
   }
 
   public async twoFaValidate(

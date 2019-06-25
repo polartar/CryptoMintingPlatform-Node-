@@ -77,9 +77,9 @@ export default class User extends DataSource {
       user.twoFaTempSecret = secret.base32;
       await user.save();
 
-      const dataUrl = await QRCode.toDataURL(otpUrl);
+      const qrCode = await QRCode.toDataURL(otpUrl);
 
-      return dataUrl;
+      return { qrCode, secret: secret.base32 };
     } catch (error) {
       throw error;
     }
