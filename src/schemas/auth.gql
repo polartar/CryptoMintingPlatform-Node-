@@ -1,13 +1,18 @@
 type ReturnToken {
   token: String!
+  twoFaEnabled: Boolean!
+  twoFaSecret: String
+  twoFaQrCode: String
 }
 
 type TwoFaRegisterResponse {
-  qrCode: String!
+  twoFaSecret: String
+  twoFaQrCode: String
 }
 
 type TwoFaValidationResponse {
   authenticated: Boolean!
+  newToken: String
 }
 
 type Mutation {
