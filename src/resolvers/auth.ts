@@ -2,6 +2,7 @@ import { auth } from '../common';
 import { Context } from '../types/context';
 import ResolverBase from '../common/Resolver-Base';
 import { ApolloError } from 'apollo-server-express';
+import { UserApi } from '../data-sources/';
 const autoBind = require('auto-bind');
 class Resolvers extends ResolverBase {
   constructor() {
@@ -15,16 +16,15 @@ class Resolvers extends ResolverBase {
     { domain, user }: Context,
   ) {
     const token = await auth.signIn(args.token, domain);
-    const {
-      claims: { twoFaEnabled },
-    } = auth.verifyAndDecodeToken(token, domain);
+    const { claims } = auth.verifyAndDecodeToken(token, domain);
+    const tempUserApi = new UserApi(domain, claims);
     const twoFaSetup: { twoFaQrCode?: string; twoFaSecret?: string } = {};
-    if (!twoFaEnabled) {
-      const { qrCode, secret } = await user.setTempTwoFaSecret();
+    if (!claims.twoFaEnabled) {
+      const { qrCode, secret } = await tempUserApi.setTempTwoFaSecret();
       twoFaSetup.twoFaSecret = secret;
       twoFaSetup.twoFaQrCode = qrCode;
     }
-    return { token, twoFaEnabled, ...twoFaSetup };
+    return { token, twoFaEnabled: claims.twoFaEnabled, ...twoFaSetup };
   }
 
   public async twoFaRegister(parent: any, args: {}, { user }: Context) {
