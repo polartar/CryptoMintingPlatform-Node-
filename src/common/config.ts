@@ -20,14 +20,14 @@ class Config {
       codex: 'stage0.codexunited.com',
       green: 'stage0.share.green',
       connect: 'stage0.connectblockchain.net',
-      local: 'localhost'
+      local: 'localhost',
     },
     prod: {
       codex: 'codexunited.com',
       green: 'share.green',
-      connect: 'connectblockchain.net'
+      connect: 'connectblockchain.net',
     },
-  }
+  };
   public readonly jwtPrivateKey = keys.privateKey;
   public readonly jwtPublicKey = keys.publicKey;
   public readonly serviceAccounts = keys.serviceAccounts;
@@ -123,7 +123,10 @@ class Config {
       const [domain, dbConnectionString]: any[] = entry;
       domainDbMap.set(
         domain,
-        createConnection(dbConnectionString, { useNewUrlParser: true }),
+        createConnection(dbConnectionString, {
+          useNewUrlParser: true,
+          useFindAndModify: false,
+        }),
       );
     });
 
