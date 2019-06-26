@@ -16,8 +16,7 @@ class Resolvers extends ResolverBase {
     { domain, user }: Context,
   ) {
     const token = await auth.signIn(args.token, domain);
-    const decodedToken = auth.verifyAndDecodeToken(token, domain);
-    const { claims } = decodedToken;
+    const { claims } = auth.verifyAndDecodeToken(token, domain);
     const tempUserApi = new UserApi(domain, claims);
     const twoFaSetup: { twoFaQrCode?: string; twoFaSecret?: string } = {};
     if (!claims.twoFaEnabled) {
