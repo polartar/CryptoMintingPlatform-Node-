@@ -42,5 +42,6 @@ type Mutation {
     coinSymbol: String
     to: String!
     amount: String!
+    totpToken: String!
   ): TransactionResponse!
 }
