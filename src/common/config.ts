@@ -20,14 +20,14 @@ class Config {
       codex: 'stage0.codexunited.com',
       green: 'stage0.share.green',
       connect: 'stage0.connectblockchain.net',
-      local: 'localhost'
+      local: 'localhost',
     },
     prod: {
       codex: 'codexunited.com',
       green: 'share.green',
-      connect: 'connectblockchain.net'
+      connect: 'connectblockchain.net',
     },
-  }
+  };
   public readonly jwtPrivateKey = keys.privateKey;
   public readonly jwtPublicKey = keys.publicKey;
   public readonly serviceAccounts = keys.serviceAccounts;
@@ -81,7 +81,6 @@ class Config {
       'BCOIN_NETWORK',
       'BCOIN_WALLET_PORT',
       'BCOIN_WALLET_API_KEY',
-      'BCOIN_API_KEY',
       'API_KEY_SERVICE_URL',
       'ETH_NETWORK',
       'ETHERSCAN_API_KEY',
