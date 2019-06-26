@@ -12,6 +12,7 @@ type TwoFaRegisterResponse {
 
 type TwoFaValidationResponse {
   authenticated: Boolean!
+  newToken: String
 }
 
 type Mutation {

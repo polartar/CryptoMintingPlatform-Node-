@@ -41,11 +41,19 @@ class Resolvers extends ResolverBase {
   public async twoFaValidate(
     parent: any,
     args: { totpToken: string },
-    { user }: Context,
+    { user, req, domain }: Context,
   ) {
     this.requireAuth(user);
-    const authenticated = await user.validateTwoFa(args.totpToken);
-    return { authenticated };
+    const token = req.headers.authorization
+      ? req.headers.authorization.replace('Bearer ', '')
+      : '';
+    const { authenticated, newToken } = await auth.validateTwoFa(
+      domain,
+      token,
+      args.totpToken,
+    );
+
+    return { authenticated, newToken };
   }
 }
 
