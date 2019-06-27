@@ -10,7 +10,24 @@ export default abstract class WalletBase {
     protected abi: any,
     protected backgroundColor: string,
     protected icon: string,
-  ) {}
+  ) {
+    if (!name)
+      throw new Error(
+        'No name provided in token configuration for wallet interface. This parameter is required.',
+      );
+    if (!symbol)
+      throw new Error(
+        'No symbol provided in token configuration for wallet interface. This parameter is required.',
+      );
+    if (!backgroundColor)
+      throw new Error(
+        'No backgroundColor provided in token configuration for wallet interface. This parameter is required.',
+      );
+    if (!icon)
+      throw new Error(
+        'No icon provided in token configuration for wallet interface. This parameter is required.',
+      );
+  }
 
   abstract getBalance(
     userApi: UserApi,
@@ -18,6 +35,8 @@ export default abstract class WalletBase {
     accountId: string;
     symbol: string;
     name: string;
+    icon: string;
+    backgroundColor: string;
     balance: { confirmed: string; unconfirmed: string };
     receiveAddress: string;
   }>;

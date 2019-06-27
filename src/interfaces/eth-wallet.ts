@@ -79,6 +79,8 @@ class EthAPI extends WalletBase {
       accountId: userApi.userId,
       symbol: this.symbol,
       name: this.name,
+      backgroundColor: this.backgroundColor,
+      icon: this.icon,
       receiveAddress: ethAddress,
       feeEstimate: feeEstimate.toString(),
       balance: {
