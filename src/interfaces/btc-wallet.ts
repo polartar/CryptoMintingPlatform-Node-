@@ -35,7 +35,7 @@ class BtcWallet extends WalletBase {
     contractAddress,
     abi,
     backgroundColor,
-    icon
+    icon,
   }: ICoinMetadata) {
     super(name, symbol, contractAddress, abi, backgroundColor, icon);
     autoBind(this);
@@ -212,6 +212,8 @@ class BtcWallet extends WalletBase {
       accountId,
       symbol: this.symbol,
       name: this.name,
+      backgroundColor: this.backgroundColor,
+      icon: this.icon,
       feeEstimate,
       receiveAddress,
       balance: {

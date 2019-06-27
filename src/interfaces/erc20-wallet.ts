@@ -37,7 +37,20 @@ class Erc20API extends EthApi {
   web3 = new Web3(config.ethNodeUrl);
   constructor(tokenMetadata: ICoinMetadata) {
     super(tokenMetadata);
-    const { abi, contractAddress, decimalPlaces } = tokenMetadata
+    const { abi, contractAddress, decimalPlaces } = tokenMetadata;
+    if (!abi)
+      throw new Error(
+        'No abi provided in token configuration for wallet interface. This parameter is required.',
+      );
+    if (!decimalPlaces || decimalPlaces < 0)
+      throw new Error(
+        'No decimalPlaces provided in token configuration for wallet interface. This parameter is required.',
+      );
+    if (!contractAddress)
+      throw new Error(
+        'No contractAddress provided in token configuration for wallet interface. This parameter is required.',
+      );
+
     this.contract = new this.web3.eth.Contract(abi, contractAddress);
     this.decimalPlaces = decimalPlaces;
   }
@@ -157,6 +170,8 @@ class Erc20API extends EthApi {
       accountId: userApi.userId,
       symbol: this.symbol,
       name: this.name,
+      backgroundColor: this.backgroundColor,
+      icon: this.icon,
       feeEstimate: feeEstimate.toString(),
       receiveAddress: ethAddress,
       balance: {

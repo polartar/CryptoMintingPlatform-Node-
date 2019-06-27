@@ -21,6 +21,8 @@ type Wallet {
   symbol: String!
   name: String!
   balance: Balance!
+  icon: String!
+  backgroundColor: String!
   receiveAddress: String!
   transactions: [Transaction!]!
   feeEstimate: Float!
