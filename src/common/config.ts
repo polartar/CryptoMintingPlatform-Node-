@@ -4,6 +4,7 @@ import * as autoBind from 'auto-bind';
 import keys from './keys';
 import { createConnection, Connection } from 'mongoose';
 import SupportedCoins from './CoinsSupported';
+import * as path from 'path';
 
 dotenv.config({ path: '.env' });
 
@@ -31,8 +32,6 @@ class Config {
   public readonly jwtPrivateKey = keys.privateKey;
   public readonly jwtPublicKey = keys.publicKey;
   public readonly serviceAccounts = keys.serviceAccounts;
-  public readonly cryptoFavoritesBaseUrl =
-    'https://min-api.cryptocompare.com/data';
   public readonly defaultCryptoFavorites = ['BTC', 'ETH', 'LTC', 'XRP'];
   public readonly apiKeyServiceUrl = process.env.API_KEY_SERVICE_URL;
   public readonly etherScanApiKey = process.env.ETHERSCAN_API_KEY;
@@ -41,6 +40,10 @@ class Config {
     string,
     Connection
   > = this.mapAuthDbConnections();
+  public readonly cryptoSymbolToNameMap: Map<
+    string,
+    string
+  > = this.mapSymbolToName();
   public readonly bcoinWallet = {
     network: process.env.BCOIN_NETWORK,
     port: +process.env.BCOIN_WALLET_PORT,
@@ -131,6 +134,24 @@ class Config {
     });
 
     return domainDbMap;
+  }
+
+  private mapSymbolToName() {
+    const symbolsWithNames = JSON.parse(
+      fs
+        .readFileSync(
+          path.join(__dirname, '../data/supportedFavoriteOptions.json'),
+        )
+        .toString(),
+    ) as { name: string; symbol: string }[];
+
+    const symbolToName = new Map();
+
+    symbolsWithNames.forEach(({ name, symbol }) => {
+      symbolToName.set(symbol, name);
+    });
+
+    return symbolToName;
   }
 }
 
