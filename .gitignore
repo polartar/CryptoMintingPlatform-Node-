@@ -36,6 +36,13 @@ npm-debug.log
 service-accounts.json
 jwtrsa-private.key
 jwtrsa-public.pem
-credentials.ts
 serviceAccountKey.json
+
+# Personal notes
+credentials.ts
+TODO.md
+
+# Firebase DB Config
 authDbConnections.json
+
+

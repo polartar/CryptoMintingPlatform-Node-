@@ -2,14 +2,20 @@ type FavoriteFullData {
   changePercent24Hour: Float!
   price: Float!
   symbol: String!
+  name: String!
   imageUrl: String!
   supply: Float!
   marketCap: Float!
 }
 
+type SupportedFavorite {
+  name: String!
+  symbol: String!
+}
+
 type Query {
   favorites: [FavoriteFullData!]!
-  supportedFavorites: [String!]!
+  supportedFavorites: [SupportedFavorite!]!
 }
 
 type Mutation {
