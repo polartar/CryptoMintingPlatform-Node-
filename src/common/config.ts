@@ -45,6 +45,13 @@ class Config {
     string
   > = this.mapSymbolToName();
   public readonly bcoinWallet = {
+    host: process.env.BCOIN_WALLET_HOST,
+    ssl:
+      process.env.BCOIN_WALLET_SSL &&
+      process.env.BCOIN_WALLET_SSL.toLowerCase() === 'true',
+    uri: process.env.BCOIN_NETWORK,
+    walletAuth: true,
+
     network: process.env.BCOIN_NETWORK,
     port: +process.env.BCOIN_WALLET_PORT,
     apiKey: process.env.BCOIN_WALLET_API_KEY,
@@ -84,7 +91,8 @@ class Config {
       'BCOIN_NETWORK',
       'BCOIN_WALLET_PORT',
       'BCOIN_WALLET_API_KEY',
-      'BCOIN_API_KEY',
+      'BCOIN_WALLET_HOST',
+      'BCOIN_WALLET_SSL',
       'API_KEY_SERVICE_URL',
       'ETH_NETWORK',
       'ETHERSCAN_API_KEY',
