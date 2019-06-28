@@ -13,7 +13,7 @@ stages:
   - build
   - deploy
 
-Build Production:
+Build:
   stage: build
   script:
     - npm config set @blockbrothers:registry https://npm.connectblockchain.net
@@ -53,7 +53,7 @@ Deploy Staging:
     - sleep 5
     - ssh -tt $PROD_USR@$STAGE_URI -p $PROD_PORT "pm2 logs --lines $LOG_LINES --timestamp --nostream"
   dependencies:
-    - Build Production
+    - Build
   only:
     - master
 
@@ -80,6 +80,6 @@ Deploy Production:
     - sleep 5
     - ssh -tt $PROD_USR@$PROD_URI -p $PROD_PORT "pm2 logs --lines $LOG_LINES --timestamp --nostream"
   dependencies:
-    - Build Production
+    - Build
   only:
     - tags
