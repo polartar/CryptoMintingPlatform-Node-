@@ -31,7 +31,9 @@ class Server {
   }
 
   private parseOrigin(origin: string) {
-    const { supportedOrigins: { dev, prod } } = config;
+    const {
+      supportedOrigins: { dev, prod },
+    } = config;
     // Prod origins
     if (origin === undefined || origin.includes(dev.local)) return dev.local;
     if (origin.includes(prod.green)) return prod.green;
@@ -41,8 +43,7 @@ class Server {
     if (origin.includes(dev.green)) return dev.green;
     if (origin.includes(dev.connect)) return dev.connect;
     if (origin.includes(dev.codex)) return dev.codex;
-
-    throw new Error(`Origin:${origin} not supported`)
+    throw new Error(`Origin:${origin} not supported`);
   }
 
   private buildContext({
@@ -55,7 +56,7 @@ class Server {
     const token = req.headers.authorization
       ? req.headers.authorization.replace('Bearer ', '')
       : '';
-    const domain = this.parseOrigin(req.get('origin'))
+    const domain = this.parseOrigin(req.get('origin'));
     let user = null;
     if (token) {
       try {

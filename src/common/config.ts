@@ -18,15 +18,15 @@ class Config {
 
   public readonly supportedOrigins = {
     dev: {
-      codex: 'stage0.codexunited.com',
-      green: 'stage0.share.green',
-      connect: 'stage0.connectblockchain.net',
+      codex: 'stage0.wallet.codexunited.com',
+      green: 'stage0.wallet.share.green',
+      connect: 'stage0.wallet.connectblockchain.net',
       local: 'localhost',
     },
     prod: {
-      codex: 'codexunited.com',
-      green: 'share.green',
-      connect: 'connectblockchain.net',
+      codex: 'wallet.codexunited.com',
+      green: 'wallet.share.green',
+      connect: 'wallet.connectblockchain.net',
     },
   };
   public readonly jwtPrivateKey = keys.privateKey;

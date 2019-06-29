@@ -30,6 +30,7 @@ npm-debug.log
 
 # Envs
 .env
+.env.stage
 .env.production
 
 # Firebase Keys
