@@ -36,13 +36,13 @@ class Server {
     } = config;
     // Prod origins
     if (origin === undefined || origin.includes(dev.local)) return dev.local;
-    if (origin.includes(prod.green)) return prod.green;
-    if (origin.includes(prod.connect)) return prod.connect;
-    if (origin.includes(prod.codex)) return prod.codex;
     // Stage and dev origins
     if (origin.includes(dev.green)) return dev.green;
     if (origin.includes(dev.connect)) return dev.connect;
     if (origin.includes(dev.codex)) return dev.codex;
+    if (origin.includes(prod.green)) return prod.green;
+    if (origin.includes(prod.connect)) return prod.connect;
+    if (origin.includes(prod.codex)) return prod.codex;
     throw new Error(`Origin:${origin} not supported`);
   }
 
