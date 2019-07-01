@@ -1,5 +1,5 @@
 import { IEnvCoin, IExportedCoinInterfaceEnv } from '../types';
-import erc20Abi from './ABI/erc20.json';
+import * as erc20Abi from './ABI/erc20.json';
 
 export default class SupportedCoins {
   public btcEnv: IEnvCoin = {
