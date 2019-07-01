@@ -59,12 +59,14 @@ class Erc20API extends EthApi {
   NEW_GAS_ERROR = 'Insufficient credits';
 
   async estimateFee() {
-    const { erc20FeeCalcAddress } = config;
-    const gasRequired = await this.contract.methods
-      .transfer(erc20FeeCalcAddress, 100000000)
-      .estimateGas({ from: erc20FeeCalcAddress });
-    const gasPrice = new BigNumber(0xee6b2800);
-    const feeEstimate = gasPrice.multipliedBy(gasRequired);
+    // This code breaks on a newer contract.
+    // const { erc20FeeCalcAddress } = config;
+    // const gasRequired = await this.contract.methods
+    //   .transfer(erc20FeeCalcAddress, 100000000)
+    //   .estimateGas({ from: erc20FeeCalcAddress });
+    // const gasPrice = new BigNumber(0xee6b2800);
+    // const feeEstimate = gasPrice.multipliedBy(gasRequired);
+    const feeEstimate = new BigNumber(0x8549cbe6b000);
     return this.toEther(feeEstimate).toFixed();
   }
 
