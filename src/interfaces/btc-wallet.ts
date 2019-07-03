@@ -131,12 +131,13 @@ class BtcWallet extends WalletBase {
   private formatTransactions(transactions: IBcoinTx[]): ITransaction[] {
     const formattedTransactions = transactions.map(transaction => {
       const { block, confirmations, mdate, fee, outputs, hash } = transaction;
+      const bnFee = this.satToBtc(new BigNumber(fee));
       const formattedTx = {
         id: hash,
         status: block === null ? 'Pending' : 'Complete',
         confirmations,
         timestamp: new Date(mdate).getTime() / 1000,
-        fee: this.satToBtc(new BigNumber(fee)).toFixed(),
+        fee: bnFee.toFixed(),
         link: `${config.btcTxLink}/${hash}/`,
       };
       if (fee) {
@@ -159,8 +160,9 @@ class BtcWallet extends WalletBase {
           ...formattedTx,
           to,
           from,
-          amount: amount.toString(),
+          amount: amount.toFixed(),
           type: 'withdrawal',
+          total: amount.plus(bnFee).toFixed(),
         };
       } else {
         // I received this tx
@@ -183,6 +185,7 @@ class BtcWallet extends WalletBase {
           to,
           from,
           amount: amount.toFixed(),
+          total: amount.toFixed(),
           type: 'deposit',
         };
       }
