@@ -113,7 +113,8 @@ class Erc20API extends EthApi {
             to,
             from,
             type: to === userAddress ? 'Deposit' : 'Withdrawal',
-            amount: new BigNumber(amount).toFixed(),
+            amount: amount.toFixed(),
+            total: amount.plus(fee).toFixed(),
           };
         }),
     );

@@ -115,7 +115,11 @@ class EthAPI extends WalletBase {
   async getTransactions(userApi: UserApi): Promise<ITransaction[]> {
     const ethAddress = await this.ensureEthAddress(userApi);
     const transactions = await ethService.getEthTransactions(ethAddress);
-    return this.formatTransactions(transactions, ethAddress);
+    const formattedTransactions = this.formatTransactions(
+      transactions,
+      ethAddress,
+    );
+    return formattedTransactions;
   }
 
   protected sendSignedTransaction(rawTx: string): Promise<string> {
@@ -135,13 +139,13 @@ class EthAPI extends WalletBase {
     gas: number,
     data?: any,
   ) {
-    const nonce = await this.web3.eth.getTransactionCount(from);
+    const txCount = await this.web3.eth.getTransactionCount(from);
     const { rawTransaction } = await this.web3.eth.accounts.signTransaction(
       {
         to,
         value: this.toWei(new BigNumber(amount)),
         gas: gas,
-        nonce,
+        nonce: txCount,
         data,
       },
       privateKey,
@@ -178,7 +182,8 @@ class EthAPI extends WalletBase {
   }
 
   protected toWei(ether: BigNumber): BigNumber {
-    return ether.multipliedBy(new BigNumber(10).pow(new BigNumber(18)));
+    const wei = ether.multipliedBy(new BigNumber(10).pow(new BigNumber(18)));
+    return wei;
   }
 
   private formatTransactions(
@@ -197,18 +202,21 @@ class EthAPI extends WalletBase {
       } = rawTx;
       const gasUsed = new BigNumber(rawTx.gasUsed);
       const gasPrice = new BigNumber(rawTx.gasPrice);
-      const fee = gasUsed.multipliedBy(gasPrice);
+      const fee = this.toEther(gasUsed.multipliedBy(gasPrice));
+      const amount = this.toEther(new BigNumber(value));
+      const total = amount.plus(fee);
       return {
         id: hash,
         status: blockNumber !== null ? 'Complete' : 'Pending',
         confirmations: +confirmations,
         timestamp: +timeStamp,
-        fee: this.toEther(fee).toFixed(),
+        fee: fee.toFixed(),
         link: `${config.ethTxLink}/${hash}`,
         to: to,
         from: from,
         type: to === address.toLowerCase() ? 'Deposit' : 'Withdrawal',
-        amount: this.toEther(new BigNumber(value)).toFixed(),
+        amount: amount.toFixed(),
+        total: total.toFixed(),
       };
     });
   }
