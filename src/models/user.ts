@@ -5,6 +5,7 @@ interface IUserWalletDoc extends mongoose.Document {
   ethBlockNumAtCreation?: number;
   cryptoFavorites?: string[];
   cryptoFavoritesSet?: boolean;
+  ethNonce: number;
 }
 export interface IUser extends mongoose.Document {
   email: string;
@@ -23,6 +24,10 @@ const walletSchema = new mongoose.Schema({
   ethBlockNumAtCreation: Number,
   cryptoFavorites: [String],
   cryptoFavoritesSet: Boolean,
+  ethNonce: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const userSchema = new mongoose.Schema({

@@ -35,8 +35,10 @@ class Erc20API extends EthApi {
   contract: any;
   decimalPlaces: number;
   web3 = new Web3(config.ethNodeUrl);
+  abi: any;
   constructor(tokenMetadata: ICoinMetadata) {
     super(tokenMetadata);
+    console.log(config.ethNodeUrl);
     const { abi, contractAddress, decimalPlaces } = tokenMetadata;
     if (!abi)
       throw new Error(
@@ -53,6 +55,7 @@ class Erc20API extends EthApi {
 
     this.contract = new this.web3.eth.Contract(abi, contractAddress);
     this.decimalPlaces = decimalPlaces;
+    this.abi = abi;
   }
 
   WEB3_GAS_ERROR = 'Returned error: insufficient funds for gas * price + value';
@@ -103,18 +106,24 @@ class Erc20API extends EthApi {
           );
           const { gasPrice, gas } = transaction;
           const fee = this.calculateFeeFromGas(gasPrice, gas);
+          const isDeposit = to === userAddress;
           return {
             id: transactionHash,
             status: blockHash ? 'Complete' : 'Pending',
             timestamp,
             confirmations: currentBlockNumber - blockNumber,
-            fee: fee.toString(),
+            fee: isDeposit ? '0' : fee.negated().toString(),
             link: `${config.ethTxLink}/${transactionHash}`,
             to,
             from,
-            type: to === userAddress ? 'Deposit' : 'Withdrawal',
-            amount: amount.toFixed(),
-            total: amount.plus(fee).toFixed(),
+            type: isDeposit ? 'Deposit' : 'Withdrawal',
+            amount: isDeposit ? amount.toFixed() : amount.negated().toFixed(),
+            total: isDeposit
+              ? amount.plus(fee).toFixed()
+              : amount
+                  .plus(fee)
+                  .negated()
+                  .toFixed(),
           };
         }),
     );
@@ -122,7 +131,7 @@ class Erc20API extends EthApi {
 
   // web3
   async getTransactions(userApi: UserApi): Promise<ITransaction[]> {
-    const ethAddress = await this.ensureEthAddress(userApi);
+    const { ethAddress } = await this.ensureEthAddress(userApi);
     const currentBlockNumber = await this.web3.eth.getBlockNumber();
     const sent = await this.contract.getPastEvents('Transfer', {
       fromBlock: 2426642,
@@ -166,7 +175,7 @@ class Erc20API extends EthApi {
   }
 
   async getBalance(userApi: UserApi) {
-    const ethAddress = await this.ensureEthAddress(userApi);
+    const { ethAddress } = await this.ensureEthAddress(userApi);
     const balance = await this.getBalanceFromContract(ethAddress);
     const feeEstimate = await this.estimateFee();
     return {
@@ -185,40 +194,39 @@ class Erc20API extends EthApi {
   }
 
   async send(userApi: UserApi, to: string, amount: string) {
-    const ethAddress = await this.ensureEthAddress(userApi);
-    const balance = await this.getBalanceFromContract(ethAddress);
-    const hasEnough = new BigNumber(amount).isLessThanOrEqualTo(balance);
-    if (!hasEnough)
-      throw new UserInputError(
-        'Amount to send cannot be greater than balance.',
-      );
-    const value = this.integerize(amount);
-    const sendValue = ethers.utils.bigNumberify(`0x${value.toString(16)}`);
-    const count = await this.web3.eth.getTransactionCount(ethAddress);
+    const nonce = 4;
+    const { ethAddress } = await this.ensureEthAddress(userApi);
+    const value = +amount * Math.pow(10, +this.decimalPlaces);
+    const string = value.toLocaleString().replace(/,/g, '');
+    const sendValue = ethers.utils.bigNumberify(string);
     const privateKey = await this.getPrivateKey(userApi.userId);
-    const nonce = `0x${count.toString(16)}`;
+    const gas = this.web3.utils.toWei('3', 'gwei');
+    const gasPrice = new BigNumber(gas).toString(16);
     const rawTransaction = {
       from: ethAddress,
-      nonce: nonce,
-      gasPrice: '0xEE6B2800',
+      nonce: `0x${nonce.toString(16)}`,
+      gasPrice: '0x' + gasPrice,
       gasLimit: '0x250CA',
       to: this.contractAddress,
       value: '0x0',
       data: this.contract.methods.transfer(to, sendValue).encodeABI(),
     };
-    const privKey = ethereumUtil.toBuffer(`0x${privateKey}`);
+    const privKey = ethereumUtil.toBuffer(`0x${privateKey}`); // Buffer not correct?
     const tx = new ethereumTx(rawTransaction);
 
     tx.sign(privKey);
     const serializedTx = tx.serialize();
-    this.send;
-    const signedTransaction = await this.sendSignedTransaction(
-      `0x${serializedTx.toString('hex')}`,
+    const hexedString = `0x${serializedTx.toString('hex')}`;
+    this.web3.eth.sendSignedTransaction(
+      hexedString,
+      (err: Error, result: any) => {
+        console.log({ err });
+        console.log({ result });
+      },
     );
-
     return {
       success: true,
-      message: signedTransaction.toString(),
+      message: 'kdkd',
     };
   }
 }

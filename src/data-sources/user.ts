@@ -115,4 +115,10 @@ export default class User extends DataSource {
       throw error;
     }
   }
+
+  incrementTxCount() {
+    return this.Model.findByIdAndUpdate(this.userId, {
+      $inc: { 'wallet.ethNonce': 1 },
+    }).exec();
+  }
 }

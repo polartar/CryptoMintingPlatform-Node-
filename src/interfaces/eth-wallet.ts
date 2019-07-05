@@ -1,7 +1,7 @@
 import * as bip39 from 'bip39';
 const hdKey = require('ethereumjs-wallet/hdkey');
 const Web3 = require('web3');
-import { credentialService, ethService } from '../services';
+import { credentialService, etherscanService } from '../services';
 import WalletBase from './wallet-base';
 import config from '../common/config';
 import { ITransaction, IEtherscanTx, ICoinMetadata } from '../types';
@@ -72,7 +72,7 @@ class EthAPI extends WalletBase {
   }
 
   async getBalance(userApi: UserApi) {
-    const ethAddress = await this.ensureEthAddress(userApi);
+    const { ethAddress } = await this.ensureEthAddress(userApi);
     const balance = await this.web3.eth.getBalance(ethAddress);
     const feeEstimate = +(await this.estimateFee());
     return {
@@ -91,8 +91,13 @@ class EthAPI extends WalletBase {
   }
 
   protected async ensureEthAddress(userApi: UserApi) {
-    const { id, wallet = { ethAddress: '' } } = await userApi.findFromDb();
-    let { ethAddress } = wallet;
+    const {
+      id,
+      wallet = { ethAddress: '', ethNonce: 0 },
+    } = await userApi.findFromDb();
+    /* tslint:disable: prefer-const */
+    let { ethAddress, ethNonce: nonce } = wallet;
+    /* tslint:enable:prefer-const */
     if (!ethAddress) {
       const privateKey = await this.getPrivateKey(id).catch(() => null);
       if (privateKey) {
@@ -109,12 +114,12 @@ class EthAPI extends WalletBase {
         ethAddress = await this.createAccount(userApi);
       }
     }
-    return ethAddress;
+    return { ethAddress, nonce };
   }
 
   async getTransactions(userApi: UserApi): Promise<ITransaction[]> {
-    const ethAddress = await this.ensureEthAddress(userApi);
-    const transactions = await ethService.getEthTransactions(ethAddress);
+    const { ethAddress } = await this.ensureEthAddress(userApi);
+    const transactions = await etherscanService.getEthTransactions(ethAddress);
     const formattedTransactions = this.formatTransactions(
       transactions,
       ethAddress,
@@ -124,28 +129,41 @@ class EthAPI extends WalletBase {
 
   protected sendSignedTransaction(rawTx: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.web3.eth.sendSignedTransaction(rawTx, (err: Error, result: any) => {
-        if (err) reject(err);
-        resolve(result);
-      });
+      this.web3.eth
+        .sendSignedTransaction(rawTx)
+        .on('error', (err: any) => {
+          console.log(err);
+          reject(err);
+        })
+        .on('transactionHash', console.log)
+        .on('receipt', (receipt: any) => {
+          console.log(receipt);
+          resolve(receipt);
+        })
+        .on('confirmation', (conf: number, receipt: any) => {
+          console.log(conf, receipt);
+        });
+      // .on('transactionHash', (hash: string) => {
+      //   console.log(hash)
+      //   resolve(hash);
+      // })
     });
   }
 
   protected async signTransaction(
-    from: string,
     to: string,
     amount: number,
     privateKey: string,
     gas: number,
+    nonce: number,
     data?: any,
   ) {
-    const txCount = await this.web3.eth.getTransactionCount(from);
     const { rawTransaction } = await this.web3.eth.accounts.signTransaction(
       {
         to,
         value: this.toWei(new BigNumber(amount)),
         gas: gas,
-        nonce: txCount,
+        nonce,
         data,
       },
       privateKey,
@@ -153,18 +171,45 @@ class EthAPI extends WalletBase {
     return rawTransaction;
   }
 
+  protected ensureEthAddressMatchesPkey(
+    privateKey: string,
+    addressFromDb: string,
+    userApi: UserApi,
+  ) {
+    return new Promise((resolve, reject) => {
+      const { address } = this.web3.eth.accounts.privateKeyToAccount(
+        privateKey,
+      );
+      if (address === addressFromDb) resolve();
+      else {
+        userApi.Model.findByIdAndUpdate(
+          userApi.userId,
+          { $set: { 'wallet.ethAddress': address } },
+          err => {
+            if (err) reject(err);
+            else {
+              resolve();
+            }
+          },
+        );
+      }
+    });
+  }
+
   async send(userApi: UserApi, to: string, amount: string) {
     try {
-      const ethAddress = await this.ensureEthAddress(userApi);
+      const { nonce, ethAddress } = await this.ensureEthAddress(userApi);
       const privateKey = await this.getPrivateKey(userApi.userId);
       const rawTransaction = await this.signTransaction(
-        ethAddress,
         to,
         +amount,
         privateKey,
         21001,
+        nonce,
       );
       const txHash = await this.sendSignedTransaction(rawTransaction);
+      await userApi.incrementTxCount();
+      this.ensureEthAddressMatchesPkey(privateKey, ethAddress, userApi);
       return {
         success: true,
         message: txHash,
@@ -205,18 +250,19 @@ class EthAPI extends WalletBase {
       const fee = this.toEther(gasUsed.multipliedBy(gasPrice));
       const amount = this.toEther(new BigNumber(value));
       const total = amount.plus(fee);
+      const isDeposit = to === address.toLowerCase();
       return {
         id: hash,
         status: blockNumber !== null ? 'Complete' : 'Pending',
         confirmations: +confirmations,
         timestamp: +timeStamp,
-        fee: fee.toFixed(),
+        fee: isDeposit ? '0' : fee.negated().toFixed(),
         link: `${config.ethTxLink}/${hash}`,
         to: to,
         from: from,
-        type: to === address.toLowerCase() ? 'Deposit' : 'Withdrawal',
-        amount: amount.toFixed(),
-        total: total.toFixed(),
+        type: isDeposit ? 'Deposit' : 'Withdrawal',
+        amount: isDeposit ? amount.toFixed() : amount.negated().toFixed(),
+        total: isDeposit ? total.toFixed() : total.negated().toFixed(),
       };
     });
   }

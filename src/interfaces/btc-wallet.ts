@@ -137,7 +137,7 @@ class BtcWallet extends WalletBase {
         status: block === null ? 'Pending' : 'Complete',
         confirmations,
         timestamp: new Date(mdate).getTime() / 1000,
-        fee: bnFee.toFixed(),
+        fee: bnFee.negated().toFixed(),
         link: `${config.btcTxLink}/${hash}/`,
       };
       if (fee) {
@@ -160,9 +160,12 @@ class BtcWallet extends WalletBase {
           ...formattedTx,
           to,
           from,
-          amount: amount.toFixed(),
-          type: 'withdrawal',
-          total: amount.plus(bnFee).toFixed(),
+          amount: amount.negated().toFixed(),
+          type: 'Withdrawal',
+          total: amount
+            .plus(bnFee)
+            .negated()
+            .toFixed(),
         };
       } else {
         // I received this tx
@@ -186,7 +189,7 @@ class BtcWallet extends WalletBase {
           from,
           amount: amount.toFixed(),
           total: amount.toFixed(),
-          type: 'deposit',
+          type: 'Deposit',
         };
       }
     });
