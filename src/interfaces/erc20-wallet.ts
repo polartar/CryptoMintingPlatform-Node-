@@ -31,6 +31,16 @@ interface ITransferEvent {
   transactionIndex: number;
 }
 
+interface IRawTx {
+  from: string;
+  nonce: string;
+  gasPrice: string;
+  gasLimit: number;
+  to: string;
+  value: string;
+  data: string;
+}
+
 class Erc20API extends EthApi {
   contract: any;
   decimalPlaces: number;
@@ -161,12 +171,15 @@ class Erc20API extends EthApi {
     return tokenBN.multipliedBy(tenToDecPlaces);
   }
 
-  private integerize(numOrHex: string | number) {
-    const tokenBN = new BigNumber(numOrHex);
-    const ten = new BigNumber(10);
-    const decPlaces = new BigNumber(this.decimalPlaces);
-    const tenToDecPlaces = ten.pow(decPlaces);
-    return tokenBN.multipliedBy(tenToDecPlaces);
+  private integerize(decimalizedString: string) {
+    const tenToPowOfDecimals = new BigNumber(10).pow(
+      new BigNumber(this.decimalPlaces),
+    );
+    const value = new BigNumber(decimalizedString).multipliedBy(
+      tenToPowOfDecimals,
+    );
+    const hexAmount = `0x${value.toString(16)}`;
+    return ethers.utils.bigNumberify(hexAmount);
   }
 
   private async getBalanceFromContract(ethAddress: string) {
@@ -193,41 +206,105 @@ class Erc20API extends EthApi {
     };
   }
 
-  async send(userApi: UserApi, to: string, amount: string) {
-    const nonce = 4;
-    const { ethAddress } = await this.ensureEthAddress(userApi);
-    const value = +amount * Math.pow(10, +this.decimalPlaces);
-    const string = value.toLocaleString().replace(/,/g, '');
-    const sendValue = ethers.utils.bigNumberify(string);
-    const privateKey = await this.getPrivateKey(userApi.userId);
-    const gas = this.web3.utils.toWei('3', 'gwei');
-    const gasPrice = new BigNumber(gas).toString(16);
-    const rawTransaction = {
-      from: ethAddress,
-      nonce: `0x${nonce.toString(16)}`,
-      gasPrice: '0x' + gasPrice,
-      gasLimit: '0x250CA',
-      to: this.contractAddress,
-      value: '0x0',
-      data: this.contract.methods.transfer(to, sendValue).encodeABI(),
-    };
-    const privKey = ethereumUtil.toBuffer(`0x${privateKey}`); // Buffer not correct?
-    const tx = new ethereumTx(rawTransaction);
+  // async send(userApi: UserApi, to: string, amount: string) {
+  //   const nonce = 4;
+  //   const { ethAddress } = await this.ensureEthAddress(userApi);
+  //   const value = +amount * Math.pow(10, +this.decimalPlaces);
+  //   const string = value.toLocaleString().replace(/,/g, '');
+  //   const sendValue = ethers.utils.bigNumberify(string);
+  //   const privateKey = await this.getPrivateKey(userApi.userId);
+  //   const gas = this.web3.utils.toWei('3', 'gwei');
+  //   const gasPrice = new BigNumber(gas).toString(16);
+  //   const rawTransaction = {
+  //     from: ethAddress,
+  //     nonce: `0x${nonce.toString(16)}`,
+  //     gasPrice: '0x' + gasPrice,
+  //     gasLimit: '0x250CA',
+  //     to: this.contractAddress,
+  //     value: '0x0',
+  //     data: this.contract.methods.transfer(to, sendValue).encodeABI(),
+  //   };
+  //   const privKey = ethereumUtil.toBuffer(`0x${privateKey}`); // Buffer not correct?
+  //   const tx = new ethereumTx(rawTransaction);
 
+  //   tx.sign(privKey);
+  //   const serializedTx = tx.serialize();
+  //   const hexedString = `0x${serializedTx.toString('hex')}`;
+  //   this.web3.eth.sendSignedTransaction(
+  //     hexedString,
+  //     (err: Error, result: any) => {
+  //       console.log({ err });
+  //       console.log({ result });
+  //     },
+  //   );
+  //   return {
+  //     success: true,
+  //     message: 'kdkd',
+  //   };
+  // }
+
+  private async sendTransaction(rawTx: IRawTx, privateKey: string) {
+    const privKey = ethereumUtil.toBuffer(`0x${privateKey}`);
+    const tx = new ethereumTx(rawTx);
     tx.sign(privKey);
-    const serializedTx = tx.serialize();
-    const hexedString = `0x${serializedTx.toString('hex')}`;
-    this.web3.eth.sendSignedTransaction(
-      hexedString,
-      (err: Error, result: any) => {
-        console.log({ err });
-        console.log({ result });
+    const serializedTx = `0x${tx.serialize().toString('hex')}`;
+    const sentTx = await this.web3.eth.sendSignedTransaction(
+      serializedTx,
+      (err: any, result: any) => {
+        console.log(err);
+        console.log(result);
       },
     );
-    return {
-      success: true,
-      message: 'kdkd',
+    return sentTx;
+  }
+
+  // public async getNonce(address: string) {
+  //   try {
+  //     const count = await this.web3.eth.getTransactionCount(address);
+  //     return count;
+  //   } catch (error) {
+  //     console.log(error);
+  //     throw new Error(error);
+  //   }
+  // }
+
+  async send(userApi: UserApi, to: string, value: string) {
+    const { ethAddress, nonce } = await this.ensureEthAddress(userApi);
+    const privateKey = await this.getPrivateKey(userApi.userId);
+    const amount = this.integerize(value);
+    const abiEncodedTxData = this.contract.methods
+      .transfer(to, amount)
+      .encodeABI();
+
+    const rawTransaction: IRawTx = {
+      from: ethAddress,
+      nonce: '0x' + new BigNumber(nonce).toString(16),
+      gasPrice: '0xBA43B7400',
+      gasLimit: 4000000,
+      to: this.contractAddress,
+      value: '0x0',
+      data: abiEncodedTxData,
     };
+    try {
+      const txHash = await this.sendTransaction(rawTransaction, privateKey);
+      await userApi.incrementTxCount();
+      return {
+        success: true,
+        message: txHash,
+      };
+    } catch (err) {
+      // if (
+      //   err &&
+      //   err.message &&
+      //   err.message
+      //     .toLowerCase()
+      //     .indexOf('be aware that it might still be mined') >= 0
+      // ) {
+      //   console.error(err.stack);
+      //   return true;
+      // }
+      throw err;
+    }
   }
 }
 
