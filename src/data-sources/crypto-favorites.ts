@@ -6,12 +6,13 @@ class CryptoFavorites extends RESTDataSource {
 
   public async getUserFavorites(userFavorites: string[]) {
     const { cryptoSymbolToNameMap } = config;
+    const currency = 'USD';
     const { RAW: rawFavorites } = await this.get('/pricemultifull', {
       fsyms: userFavorites.join(','),
-      tsyms: 'USD',
+      tsyms: currency,
     });
 
-    return Object.values(rawFavorites).map(({ USD: fav }) => {
+    return Object.values(rawFavorites).map(({ [currency]: fav }) => {
       const {
         CHANGEPCT24HOUR: changePercent24Hour,
         PRICE: price,

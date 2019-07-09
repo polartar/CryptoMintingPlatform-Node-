@@ -196,54 +196,45 @@ class BtcWallet extends WalletBase {
     return formattedTransactions;
   }
 
-  public async getBalance(userApi: UserApi) {
-    const accountId = userApi.userId;
-    // retreives the bcoin wallet interface based off of the specified accountId
-    const userWallet = await this.setWallet(accountId);
-    // request the wallet balance from bcoin
+  public async getBalance(userId: string) {
+    const userWallet = await this.setWallet(userId);
     const balanceResult = await userWallet.getAccount('default');
-    // Pull the confirmed and unconfirmed properties off of the balance response. I'm pretty sure the unconfirmed amount included the confirmed amount for some reason. ¯\_(ツ)_/¯ so it may make more sense to subtract the confirmed from the unconfirmed to get the truely unconfirmed amount.
     const {
-      receiveAddress,
       balance: { confirmed, unconfirmed },
     } = balanceResult;
-
-    const feeEstimate = this.estimateFee();
     const confirmedBalance = new BigNumber(confirmed);
     const unconfirmedBalance = new BigNumber(unconfirmed).minus(
       confirmedBalance,
     );
-    // Return the balance based on this standardized shape.
     return {
-      accountId,
+      confirmed: this.satToBtc(confirmedBalance).toFixed(),
+      unconfirmed: this.satToBtc(unconfirmedBalance).toFixed(),
+    };
+  }
+
+  public async getWalletInfo(userApi: UserApi) {
+    const userWallet = await this.setWallet(userApi.userId);
+    const { receiveAddress } = await userWallet.getAccount('default');
+
+    return {
+      receiveAddress,
       symbol: this.symbol,
       name: this.name,
       backgroundColor: this.backgroundColor,
       icon: this.icon,
-      feeEstimate,
-      receiveAddress,
-      balance: {
-        confirmed: this.satToBtc(confirmedBalance).toFixed(),
-        unconfirmed: this.satToBtc(unconfirmedBalance).toFixed(),
-      },
     };
   }
 
-  // Returns the bcoin wallet interface
   private async setWallet(accountId: string) {
-    // Get the token from the apiKeyService
     const token = await this.getToken(accountId);
-    // Return the configured wallet.
     return this.walletClient.wallet(accountId, token);
   }
 
   private async getToken(accountId: string) {
-    // request the token from the apiKeyService. This must be sent along to bcoin with each request for security
     const token = await credentialService
       .get(accountId, this.symbol, 'token')
       .catch(err => {
         if (err.response && err.response.status === 404) {
-          // If there is no token found in the service, create a new wallet. this.createWallet also returns the token so in either case, a token is returned
           return this.createWallet(accountId);
         }
         throw err;

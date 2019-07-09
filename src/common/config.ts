@@ -33,7 +33,11 @@ class Config {
   public readonly jwtPublicKey = keys.publicKey;
   public readonly serviceAccounts = keys.serviceAccounts;
   public readonly defaultCryptoFavorites = ['BTC', 'ETH', 'LTC', 'XRP'];
+  public readonly bypassTwoFaInDev =
+    process.env.BYPASS_TWOFA_IN_DEV &&
+    process.env.BYPASS_TWOFA_IN_DEV.toLowerCase() === 'true';
   public readonly apiKeyServiceUrl = process.env.API_KEY_SERVICE_URL;
+  public readonly isDev = process.env.NODE_ENV !== 'production';
   public readonly etherScanApiKey = process.env.ETHERSCAN_API_KEY;
   public readonly erc20FeeCalcAddress = process.env.ETH_ADD_FOR_ERC20_FEE_CALC;
   public readonly authDbConnectionMap: Map<
@@ -61,6 +65,9 @@ class Config {
       ? 'https://ropsten.infura.io'
       : 'https://eth.share.green';
 
+  public readonly etherscanNetwork =
+    process.env.ETH_NETWORK === 'testnet' ? 'ropsten' : 'homestead';
+
   public readonly btcTxLink =
     process.env.BCOIN_NETWORK === 'testnet'
       ? 'https://live.blockcypher.com/btc-testnet/tx'
@@ -70,11 +77,6 @@ class Config {
     process.env.ETH_NETWORK === 'testnet'
       ? 'https://ropsten.etherscan.io/tx'
       : 'https://etherscan.io/tx';
-
-  public readonly etherscanUrl =
-    process.env.ETH_NETWORK === 'testnet'
-      ? 'http://api-ropsten.etherscan.io/api'
-      : 'http://api.etherscan.io/api';
 
   constructor() {
     autoBind(this);

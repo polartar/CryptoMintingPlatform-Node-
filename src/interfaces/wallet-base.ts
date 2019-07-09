@@ -29,21 +29,26 @@ export default abstract class WalletBase {
       );
   }
 
-  abstract getBalance(
+  abstract getWalletInfo(
     userApi: UserApi,
   ): Promise<{
-    accountId: string;
+    receiveAddress: string;
     symbol: string;
     name: string;
     icon: string;
     backgroundColor: string;
-    balance: { confirmed: string; unconfirmed: string };
-    receiveAddress: string;
+  }>;
+
+  abstract getBalance(
+    addressOrUserId: string,
+  ): Promise<{
+    confirmed: string;
+    unconfirmed: string;
   }>;
 
   abstract getTransactions(userApi: UserApi): Promise<ITransaction[]>;
 
-  abstract estimateFee(): Promise<string>;
+  abstract estimateFee(userApi: UserApi): Promise<string>;
 
   abstract send(
     userApi: UserApi,

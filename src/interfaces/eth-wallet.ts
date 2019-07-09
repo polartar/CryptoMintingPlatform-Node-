@@ -1,17 +1,21 @@
-import * as bip39 from 'bip39';
-const hdKey = require('ethereumjs-wallet/hdkey');
-const Web3 = require('web3');
-import { credentialService, etherscanService } from '../services';
+import crypto from 'crypto';
+import { credentialService } from '../services';
 import WalletBase from './wallet-base';
+import { ethers, providers, utils } from 'ethers';
 import config from '../common/config';
-import { ITransaction, IEtherscanTx, ICoinMetadata } from '../types';
+import { ITransaction, ICoinMetadata } from '../types';
 import { UserApi } from '../data-sources';
-import BigNumber from 'bignumber.js';
+import { ApolloError } from 'apollo-server-express';
 
 class EthAPI extends WalletBase {
+  provider = new providers.JsonRpcProvider(config.ethNodeUrl);
+  etherscan = new providers.EtherscanProvider(
+    config.etherscanNetwork,
+    config.etherScanApiKey,
+  );
   WEB3_GAS_ERROR = 'Returned error: insufficient funds for gas * price + value';
   NEW_GAS_ERROR = 'Insufficient credits';
-  web3 = new Web3(config.ethNodeUrl);
+
   constructor({
     name,
     symbol,
@@ -23,12 +27,11 @@ class EthAPI extends WalletBase {
     super(name, symbol, contractAddress, abi, backgroundColor, icon);
   }
 
-  protected async createAccount(userApi: UserApi) {
-    const mnemonic = bip39.generateMnemonic(256);
-    const seed = await bip39.mnemonicToSeed(mnemonic);
-    const masterWallet = hdKey.fromMasterSeed(seed);
-    const privateKey = masterWallet.getWallet()._privKey.toString('hex');
-    const address = masterWallet.getWallet().getChecksumAddressString();
+  protected async createWallet(userApi: UserApi) {
+    const extraEntropy = crypto.randomBytes(10);
+    const { mnemonic, privateKey, address } = ethers.Wallet.createRandom({
+      extraEntropy,
+    });
 
     const mnemonicPromise = credentialService.create(
       userApi.userId,
@@ -52,7 +55,7 @@ class EthAPI extends WalletBase {
   }
 
   private async saveAddress(userApi: UserApi, ethAddress: string) {
-    const ethBlockNumAtCreation = await this.web3.eth.getBlockNumber();
+    const ethBlockNumAtCreation = await this.provider.getBlockNumber();
     const updateResult = await userApi.setWalletAccountToUser(
       ethAddress,
       ethBlockNumAtCreation,
@@ -64,30 +67,44 @@ class EthAPI extends WalletBase {
     return credentialService.get(userId, 'ETH', 'privkey');
   }
 
-  public async estimateFee() {
-    const web3GasPrice = await this.web3.eth.getGasPrice();
-    const gasPrice = new BigNumber(web3GasPrice);
-    const feeEstimate = gasPrice.multipliedBy(21001);
-    return this.toEther(feeEstimate).toFixed();
+  public async estimateFee(userApi: UserApi) {
+    const gasPrice = await this.provider.getGasPrice();
+    const feeEstimate = gasPrice.mul(21001);
+    return this.toEther(feeEstimate);
   }
 
-  async getBalance(userApi: UserApi) {
+  public async getWalletInfo(userApi: UserApi) {
     const { ethAddress } = await this.ensureEthAddress(userApi);
-    const balance = await this.web3.eth.getBalance(ethAddress);
-    const feeEstimate = +(await this.estimateFee());
     return {
-      accountId: userApi.userId,
+      receiveAddress: ethAddress,
       symbol: this.symbol,
       name: this.name,
       backgroundColor: this.backgroundColor,
       icon: this.icon,
-      receiveAddress: ethAddress,
-      feeEstimate: feeEstimate.toString(),
-      balance: {
-        unconfirmed: '0',
-        confirmed: this.toEther(new BigNumber(balance)).toFixed(),
-      },
     };
+  }
+
+  async getBalance(address: string) {
+    const balance = await this.provider.getBalance(address);
+    return {
+      unconfirmed: '0',
+      confirmed: this.toEther(balance),
+    };
+  }
+
+  private async requireEnoughBalanceToSendEther(
+    address: string,
+    amount: utils.BigNumber,
+  ) {
+    const { confirmed } = await this.getBalance(address);
+    const bnConfirmed = this.bigNumberify(confirmed);
+    const hasEnough = bnConfirmed.gte(this.bigNumberify(amount));
+    if (!hasEnough)
+      throw new ApolloError(
+        `Insufficient account balance. Amount: ${amount.toString()}. Balance: ${
+          bnConfirmed.toString
+        }`,
+      );
   }
 
   protected async ensureEthAddress(userApi: UserApi) {
@@ -101,9 +118,7 @@ class EthAPI extends WalletBase {
     if (!ethAddress) {
       const privateKey = await this.getPrivateKey(id).catch(() => null);
       if (privateKey) {
-        const { address } = this.web3.eth.accounts.privateKeyToAccount(
-          privateKey,
-        );
+        const { address } = new ethers.Wallet(privateKey);
         if (address) {
           await this.saveAddress(userApi, address);
           ethAddress = address;
@@ -111,7 +126,7 @@ class EthAPI extends WalletBase {
           throw new Error('Error setting/retreving address');
         }
       } else {
-        ethAddress = await this.createAccount(userApi);
+        ethAddress = await this.createWallet(userApi);
       }
     }
     return { ethAddress, nonce };
@@ -119,7 +134,7 @@ class EthAPI extends WalletBase {
 
   async getTransactions(userApi: UserApi): Promise<ITransaction[]> {
     const { ethAddress } = await this.ensureEthAddress(userApi);
-    const transactions = await etherscanService.getEthTransactions(ethAddress);
+    const transactions = await this.etherscan.getHistory(ethAddress);
     const formattedTransactions = this.formatTransactions(
       transactions,
       ethAddress,
@@ -127,59 +142,17 @@ class EthAPI extends WalletBase {
     return formattedTransactions;
   }
 
-  protected sendSignedTransaction(rawTx: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      this.web3.eth
-        .sendSignedTransaction(rawTx)
-        .on('error', (err: any) => {
-          console.log(err);
-          reject(err);
-        })
-        .on('transactionHash', console.log)
-        .on('receipt', (receipt: any) => {
-          console.log(receipt);
-          resolve(receipt);
-        })
-        .on('confirmation', (conf: number, receipt: any) => {
-          console.log(conf, receipt);
-        });
-      // .on('transactionHash', (hash: string) => {
-      //   console.log(hash)
-      //   resolve(hash);
-      // })
-    });
-  }
-
-  protected async signTransaction(
-    to: string,
-    amount: number,
-    privateKey: string,
-    gas: number,
-    nonce: number,
-    data?: any,
-  ) {
-    const { rawTransaction } = await this.web3.eth.accounts.signTransaction(
-      {
-        to,
-        value: this.toWei(new BigNumber(amount)),
-        gas: gas,
-        nonce,
-        data,
-      },
-      privateKey,
-    );
-    return rawTransaction;
+  protected bigNumberify(anyValidValue: any) {
+    return ethers.utils.bigNumberify(anyValidValue);
   }
 
   protected ensureEthAddressMatchesPkey(
-    privateKey: string,
+    userWallet: ethers.Wallet,
     addressFromDb: string,
     userApi: UserApi,
   ) {
     return new Promise((resolve, reject) => {
-      const { address } = this.web3.eth.accounts.privateKeyToAccount(
-        privateKey,
-      );
+      const { address } = userWallet;
       if (address === addressFromDb) resolve();
       else {
         userApi.Model.findByIdAndUpdate(
@@ -195,19 +168,25 @@ class EthAPI extends WalletBase {
       }
     });
   }
+  protected async requireValidAddress(maybeAddress: string) {
+    const isAddress = !!(await this.provider.resolveName(maybeAddress));
+    if (!isAddress) throw new Error(`Invalid address ${maybeAddress}`);
+  }
 
   async send(userApi: UserApi, to: string, amount: string) {
     try {
+      this.requireValidAddress(to);
+      const value = this.toWei(amount);
       const { nonce, ethAddress } = await this.ensureEthAddress(userApi);
+      await this.requireEnoughBalanceToSendEther(ethAddress, value);
       const privateKey = await this.getPrivateKey(userApi.userId);
-      const rawTransaction = await this.signTransaction(
-        to,
-        +amount,
-        privateKey,
-        21001,
+      const wallet = new ethers.Wallet(privateKey, this.provider);
+      const { hash: txHash } = await wallet.sendTransaction({
         nonce,
-      );
-      const txHash = await this.sendSignedTransaction(rawTransaction);
+        to,
+        value,
+        gasLimit: 21001,
+      });
       await userApi.incrementTxCount();
       this.ensureEthAddressMatchesPkey(privateKey, ethAddress, userApi);
       return {
@@ -222,47 +201,53 @@ class EthAPI extends WalletBase {
     }
   }
 
-  protected toEther(wei: BigNumber): BigNumber {
-    return wei.multipliedBy(new BigNumber(10).pow(new BigNumber(18).negated()));
+  protected toEther(wei: utils.BigNumber, negate: boolean = false): string {
+    return `${negate ? '-' : ''}${utils.formatEther(wei)}`;
   }
 
-  protected toWei(ether: BigNumber): BigNumber {
-    const wei = ether.multipliedBy(new BigNumber(10).pow(new BigNumber(18)));
-    return wei;
+  protected toWei(ether: string): utils.BigNumber {
+    try {
+      const amount = utils.parseEther(ether);
+      return amount;
+    } catch ({ value }) {
+      throw new Error(`Invalid amount: ${value}`);
+    }
   }
 
   private formatTransactions(
-    transactions: IEtherscanTx[],
+    transactions: ethers.providers.TransactionResponse[],
     address: string,
   ): ITransaction[] {
+    const gasUsed = this.bigNumberify(2100);
     return transactions.map(rawTx => {
       const {
         hash,
         blockNumber,
         confirmations,
-        timeStamp,
+        timestamp,
         to,
         from,
         value,
       } = rawTx;
-      const gasUsed = new BigNumber(rawTx.gasUsed);
-      const gasPrice = new BigNumber(rawTx.gasPrice);
-      const fee = this.toEther(gasUsed.multipliedBy(gasPrice));
-      const amount = this.toEther(new BigNumber(value));
-      const total = amount.plus(fee);
+      const gasPrice = this.bigNumberify(rawTx.gasPrice);
+      const subTotal = this.bigNumberify(value);
+      const fee = gasUsed.mul(gasPrice);
       const isDeposit = to === address.toLowerCase();
+      const total = subTotal.add(isDeposit ? 0 : fee);
       return {
         id: hash,
         status: blockNumber !== null ? 'Complete' : 'Pending',
         confirmations: +confirmations,
-        timestamp: +timeStamp,
-        fee: isDeposit ? '0' : fee.negated().toFixed(),
+        timestamp: +timestamp,
+        fee: isDeposit ? '0' : this.toEther(fee, true),
         link: `${config.ethTxLink}/${hash}`,
         to: to,
         from: from,
         type: isDeposit ? 'Deposit' : 'Withdrawal',
-        amount: isDeposit ? amount.toFixed() : amount.negated().toFixed(),
-        total: isDeposit ? total.toFixed() : total.negated().toFixed(),
+        amount: isDeposit
+          ? this.toEther(subTotal)
+          : this.toEther(subTotal, true),
+        total: isDeposit ? this.toEther(total) : this.toEther(total, true),
       };
     });
   }

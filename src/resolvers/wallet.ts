@@ -1,6 +1,5 @@
 import { Context } from '../types/context';
 import ResolverBase from '../common/Resolver-Base';
-import { ApolloError } from 'apollo-server-express';
 const autoBind = require('auto-bind');
 
 class Resolvers extends ResolverBase {
@@ -16,14 +15,24 @@ class Resolvers extends ResolverBase {
     this.requireAuth(user);
     if (coinSymbol) {
       const walletApi = wallet.coin(coinSymbol);
-      const walletResult = await walletApi.getBalance(user);
+      const walletResult = await walletApi.getWalletInfo(user);
       return [walletResult];
     }
     const allWalletApi = wallet.allCoins();
     const walletData = await Promise.all(
-      allWalletApi.map(walletCoinApi => walletCoinApi.getBalance(user)),
+      allWalletApi.map(walletCoinApi => walletCoinApi.getWalletInfo(user)),
     );
     return walletData;
+  }
+
+  async getBalance(parent: any, args: {}, { user, wallet }: Context) {
+    this.requireAuth(user);
+    const { symbol, receiveAddress } = parent;
+    const userIdOrAddress =
+      symbol.toLowerCase() === 'btc' ? user.userId : receiveAddress;
+    const walletApi = wallet.coin(symbol);
+    const walletResult = await walletApi.getBalance(userIdOrAddress);
+    return walletResult;
   }
 
   async getTransactions(
@@ -44,7 +53,7 @@ class Resolvers extends ResolverBase {
   ) {
     this.requireAuth(user);
     const walletApi = wallet.coin(symbol);
-    const feeEstimate = await walletApi.estimateFee();
+    const feeEstimate = await walletApi.estimateFee(user);
     return feeEstimate;
   }
 
@@ -66,7 +75,7 @@ class Resolvers extends ResolverBase {
   ) {
     this.requireAuth(user);
     const twoFaValid = await user.validateTwoFa(totpToken);
-    if (!twoFaValid) throw new ApolloError('Invalid two factor auth token');
+    this.requireTwoFa(twoFaValid);
     const walletApi = wallet.coin(coinSymbol);
     const result = await walletApi.send(user, to, amount);
     return result;
@@ -82,6 +91,7 @@ export default {
   Wallet: {
     transactions: resolvers.getTransactions,
     feeEstimate: resolvers.estimateFee,
+    balance: resolvers.getBalance,
   },
   Mutation: {
     sendTransaction: resolvers.sendTransaction,

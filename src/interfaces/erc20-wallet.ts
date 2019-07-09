@@ -1,55 +1,38 @@
-import config from '../common/config';
-import * as ethers from 'ethers';
-import * as ethereumUtil from 'ethereumjs-util';
 import EthApi from './eth-wallet';
-const Web3 = require('web3');
-import { ITransaction, ICoinMetadata } from '../types';
-import { BigNumber } from 'bignumber.js';
+import config from '../common/config';
+import { ethers, utils } from 'ethers';
+import { ITransaction, ICoinMetadata, IWeb3TransferEvent } from '../types';
 import { UserApi } from '../data-sources';
-import { UserInputError } from 'apollo-server-express';
-const ethereumTx = require('ethereumjs-tx');
-
-interface ITransferEvent {
-  address: string;
-  blockHash: string;
-  blockNumber: number;
-  event: string;
-  id: string;
-  logIndex: number;
-  raw: any;
-  removed: boolean;
-  returnValues: {
-    from: string;
-    to: string;
-    tokens: any;
-    0: number;
-    1: number;
-    2: BigNumber;
-  };
-  signature: string;
-  transactionHash: string;
-  transactionIndex: number;
-}
-
-interface IRawTx {
-  from: string;
-  nonce: string;
-  gasPrice: string;
-  gasLimit: number;
-  to: string;
-  value: string;
-  data: string;
-}
-
+import { ApolloError } from 'apollo-server-express';
+const Web3 = require('web3');
 class Erc20API extends EthApi {
-  contract: any;
+  contract: ethers.Contract;
   decimalPlaces: number;
-  web3 = new Web3(config.ethNodeUrl);
+  decimalFactor: ethers.utils.BigNumber;
+  decimalFactorNegative: ethers.utils.BigNumber;
+  provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
   abi: any;
+  WEB3_GAS_ERROR = 'Returned error: insufficient funds for gas * price + value';
+  NEW_GAS_ERROR = 'Insufficient credits';
+  FALLBACK_GAS_VALUE = this.bigNumberify(36254);
+
   constructor(tokenMetadata: ICoinMetadata) {
     super(tokenMetadata);
-    console.log(config.ethNodeUrl);
+    this.validateArguments(tokenMetadata);
     const { abi, contractAddress, decimalPlaces } = tokenMetadata;
+    this.contract = new ethers.Contract(contractAddress, abi, this.provider);
+    this.decimalPlaces = decimalPlaces;
+    this.decimalFactor = this.bigNumberify(10).pow(decimalPlaces);
+    this.decimalFactorNegative = this.bigNumberify(10).pow(
+      this.bigNumberify(this.bigNumberify(0).sub(decimalPlaces)),
+    );
+  }
+
+  private validateArguments({
+    abi,
+    decimalPlaces,
+    contractAddress,
+  }: ICoinMetadata) {
     if (!abi)
       throw new Error(
         'No abi provided in token configuration for wallet interface. This parameter is required.',
@@ -62,38 +45,62 @@ class Erc20API extends EthApi {
       throw new Error(
         'No contractAddress provided in token configuration for wallet interface. This parameter is required.',
       );
-
-    this.contract = new this.web3.eth.Contract(abi, contractAddress);
-    this.decimalPlaces = decimalPlaces;
-    this.abi = abi;
   }
 
-  WEB3_GAS_ERROR = 'Returned error: insufficient funds for gas * price + value';
-  NEW_GAS_ERROR = 'Insufficient credits';
-
-  async estimateFee() {
-    // This code breaks on a newer contract.
-    // const { erc20FeeCalcAddress } = config;
-    // const gasRequired = await this.contract.methods
-    //   .transfer(erc20FeeCalcAddress, 100000000)
-    //   .estimateGas({ from: erc20FeeCalcAddress });
-    // const gasPrice = new BigNumber(0xee6b2800);
-    // const feeEstimate = gasPrice.multipliedBy(gasRequired);
-    const feeEstimate = new BigNumber(0x8549cbe6b000);
-    return this.toEther(feeEstimate).toFixed();
+  async estimateFee(userApi: UserApi) {
+    const gasPricePromise = this.provider.getGasPrice();
+    const privateKeyPromise = this.getPrivateKey(userApi.userId);
+    const [gasPrice, privateKey] = await Promise.all([
+      gasPricePromise,
+      privateKeyPromise,
+    ]);
+    const wallet = new ethers.Wallet(privateKey, this.provider);
+    try {
+      const testValue = this.bigNumberify(10);
+      const estimate = await this.contract.estimate.transfer(
+        wallet.address,
+        testValue,
+        { gasLimit: 750000 },
+      );
+      return this.toEther(estimate.mul(gasPrice));
+    } catch (error) {
+      return this.toEther(this.FALLBACK_GAS_VALUE.mul(gasPrice));
+    }
   }
 
-  private calculateFeeFromGas(gasPrice: string, gas: number) {
-    const price = new BigNumber(gasPrice);
-    const gasUsed = new BigNumber(gas);
-    const fee = price.multipliedBy(gasUsed);
-    return this.toEther(fee);
+  private negate(numToNegate: utils.BigNumber) {
+    return this.bigNumberify(0).sub(numToNegate);
+  }
+
+  private decimalize(numOrHex: string | number): utils.BigNumber {
+    return this.bigNumberify(numOrHex).div(this.decimalFactor);
+  }
+
+  private integerize(decimalizedString: string) {
+    return this.bigNumberify(decimalizedString).mul(this.decimalFactor);
+  }
+
+  private async getBalanceFromContract(ethAddress: string) {
+    const balance = await this.contract.balanceOf(ethAddress);
+    return this.decimalize(balance);
+  }
+
+  async getWalletInfo(userApi: UserApi) {
+    const { ethAddress } = await this.ensureEthAddress(userApi);
+    return {
+      receiveAddress: ethAddress,
+      symbol: this.symbol,
+      name: this.name,
+      backgroundColor: this.backgroundColor,
+      icon: this.icon,
+    };
   }
 
   private async transferEventsToTransactions(
-    transferEvents: ITransferEvent[],
+    transferEvents: IWeb3TransferEvent[],
     currentBlockNumber: number,
     userAddress: string,
+    web3: any,
   ): Promise<ITransaction[]> {
     return Promise.all(
       transferEvents
@@ -109,47 +116,46 @@ class Erc20API extends EthApi {
           } = transferEvent;
 
           const amount = this.decimalize(tokens.toHexString());
-          const block = await this.web3.eth.getBlock(blockNumber, false);
+          const block = await web3.eth.getBlock(blockNumber, false);
           const { timestamp } = block;
-          const transaction = await this.web3.eth.getTransaction(
-            transactionHash,
-          );
+          const transaction = await web3.eth.getTransaction(transactionHash);
           const { gasPrice, gas } = transaction;
-          const fee = this.calculateFeeFromGas(gasPrice, gas);
+          const fee = this.bigNumberify(gas).mul(this.bigNumberify(gasPrice));
           const isDeposit = to === userAddress;
           return {
             id: transactionHash,
             status: blockHash ? 'Complete' : 'Pending',
             timestamp,
             confirmations: currentBlockNumber - blockNumber,
-            fee: isDeposit ? '0' : fee.negated().toString(),
+            fee: isDeposit ? '0' : this.negate(fee).toString(),
             link: `${config.ethTxLink}/${transactionHash}`,
             to,
             from,
             type: isDeposit ? 'Deposit' : 'Withdrawal',
-            amount: isDeposit ? amount.toFixed() : amount.negated().toFixed(),
+            amount: isDeposit
+              ? amount.toString()
+              : this.negate(amount).toString(),
             total: isDeposit
-              ? amount.plus(fee).toFixed()
-              : amount
-                  .plus(fee)
-                  .negated()
-                  .toFixed(),
+              ? amount.add(fee).toString()
+              : this.negate(amount.add(fee)).toString(),
           };
         }),
     );
   }
 
-  // web3
   async getTransactions(userApi: UserApi): Promise<ITransaction[]> {
+    // Ethers isn't quite there with getting past events. The new v5 release looks like serious improvements are coming.
+    const web3 = new Web3(config.ethNodeUrl);
+    const contract = new web3.eth.Contract(this.abi, this.contractAddress);
     const { ethAddress } = await this.ensureEthAddress(userApi);
-    const currentBlockNumber = await this.web3.eth.getBlockNumber();
-    const sent = await this.contract.getPastEvents('Transfer', {
+    const currentBlockNumber = await web3.eth.getBlockNumber();
+    const sent = await contract.getPastEvents('Transfer', {
       fromBlock: 2426642,
       filter: {
         from: ethAddress,
       },
     });
-    const received = await this.contract.getPastEvents('Transfer', {
+    const received = await contract.getPastEvents('Transfer', {
       fromBlock: 2426642,
       filter: {
         to: ethAddress,
@@ -159,151 +165,56 @@ class Erc20API extends EthApi {
       [...sent, ...received],
       currentBlockNumber,
       ethAddress,
+      web3,
     );
     return transactions;
   }
 
-  private decimalize(numOrHex: string | number): BigNumber {
-    const tokenBN = new BigNumber(numOrHex);
-    const ten = new BigNumber(10);
-    const decPlaces = new BigNumber(this.decimalPlaces);
-    const tenToDecPlaces = ten.pow(decPlaces.negated());
-    return tokenBN.multipliedBy(tenToDecPlaces);
-  }
-
-  private integerize(decimalizedString: string) {
-    const tenToPowOfDecimals = new BigNumber(10).pow(
-      new BigNumber(this.decimalPlaces),
-    );
-    const value = new BigNumber(decimalizedString).multipliedBy(
-      tenToPowOfDecimals,
-    );
-    const hexAmount = `0x${value.toString(16)}`;
-    return ethers.utils.bigNumberify(hexAmount);
-  }
-
-  private async getBalanceFromContract(ethAddress: string) {
-    const balance = await this.contract.methods.balanceOf(ethAddress).call();
-    return this.decimalize(balance);
-  }
-
-  async getBalance(userApi: UserApi) {
-    const { ethAddress } = await this.ensureEthAddress(userApi);
-    const balance = await this.getBalanceFromContract(ethAddress);
-    const feeEstimate = await this.estimateFee();
+  public async getBalance(address: string) {
+    const balance = await this.getBalanceFromContract(address);
     return {
-      accountId: userApi.userId,
-      symbol: this.symbol,
-      name: this.name,
-      backgroundColor: this.backgroundColor,
-      icon: this.icon,
-      feeEstimate: feeEstimate.toString(),
-      receiveAddress: ethAddress,
-      balance: {
-        confirmed: balance.toFixed(),
-        unconfirmed: '0',
-      },
+      confirmed: balance.toString(),
+      unconfirmed: '0',
     };
   }
 
-  // async send(userApi: UserApi, to: string, amount: string) {
-  //   const nonce = 4;
-  //   const { ethAddress } = await this.ensureEthAddress(userApi);
-  //   const value = +amount * Math.pow(10, +this.decimalPlaces);
-  //   const string = value.toLocaleString().replace(/,/g, '');
-  //   const sendValue = ethers.utils.bigNumberify(string);
-  //   const privateKey = await this.getPrivateKey(userApi.userId);
-  //   const gas = this.web3.utils.toWei('3', 'gwei');
-  //   const gasPrice = new BigNumber(gas).toString(16);
-  //   const rawTransaction = {
-  //     from: ethAddress,
-  //     nonce: `0x${nonce.toString(16)}`,
-  //     gasPrice: '0x' + gasPrice,
-  //     gasLimit: '0x250CA',
-  //     to: this.contractAddress,
-  //     value: '0x0',
-  //     data: this.contract.methods.transfer(to, sendValue).encodeABI(),
-  //   };
-  //   const privKey = ethereumUtil.toBuffer(`0x${privateKey}`); // Buffer not correct?
-  //   const tx = new ethereumTx(rawTransaction);
-
-  //   tx.sign(privKey);
-  //   const serializedTx = tx.serialize();
-  //   const hexedString = `0x${serializedTx.toString('hex')}`;
-  //   this.web3.eth.sendSignedTransaction(
-  //     hexedString,
-  //     (err: Error, result: any) => {
-  //       console.log({ err });
-  //       console.log({ result });
-  //     },
-  //   );
-  //   return {
-  //     success: true,
-  //     message: 'kdkd',
-  //   };
-  // }
-
-  private async sendTransaction(rawTx: IRawTx, privateKey: string) {
-    const privKey = ethereumUtil.toBuffer(`0x${privateKey}`);
-    const tx = new ethereumTx(rawTx);
-    tx.sign(privKey);
-    const serializedTx = `0x${tx.serialize().toString('hex')}`;
-    const sentTx = await this.web3.eth.sendSignedTransaction(
-      serializedTx,
-      (err: any, result: any) => {
-        console.log(err);
-        console.log(result);
-      },
-    );
-    return sentTx;
+  private async requireEnoughBalanceToSendToken(
+    address: string,
+    amount: utils.BigNumber,
+  ) {
+    const { confirmed } = await this.getBalance(address);
+    const hasEnough = this.integerize(confirmed).gte(amount);
+    if (!hasEnough)
+      throw new ApolloError(
+        `Insufficient account balance. Amount: ${this.decimalize(
+          amount.toHexString(),
+        )}. Balance: ${this.decimalize(confirmed)}`,
+      );
   }
-
-  // public async getNonce(address: string) {
-  //   try {
-  //     const count = await this.web3.eth.getTransactionCount(address);
-  //     return count;
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw new Error(error);
-  //   }
-  // }
 
   async send(userApi: UserApi, to: string, value: string) {
-    const { ethAddress, nonce } = await this.ensureEthAddress(userApi);
-    const privateKey = await this.getPrivateKey(userApi.userId);
-    const amount = this.integerize(value);
-    const abiEncodedTxData = this.contract.methods
-      .transfer(to, amount)
-      .encodeABI();
-
-    const rawTransaction: IRawTx = {
-      from: ethAddress,
-      nonce: '0x' + new BigNumber(nonce).toString(16),
-      gasPrice: '0xBA43B7400',
-      gasLimit: 4000000,
-      to: this.contractAddress,
-      value: '0x0',
-      data: abiEncodedTxData,
-    };
     try {
-      const txHash = await this.sendTransaction(rawTransaction, privateKey);
+      const { nonce } = await this.ensureEthAddress(userApi);
+      const privateKey = await this.getPrivateKey(userApi.userId);
+      const amount = this.integerize(value);
+      const wallet = new ethers.Wallet(privateKey, this.provider);
+      await this.requireEnoughBalanceToSendToken(wallet.address, amount);
+      const contract = new ethers.Contract(
+        this.contractAddress,
+        this.abi,
+        wallet,
+      );
+      const transaction = await contract.transfer(to, amount, { nonce });
       await userApi.incrementTxCount();
       return {
         success: true,
-        message: txHash,
+        message: transaction.hash,
       };
-    } catch (err) {
-      // if (
-      //   err &&
-      //   err.message &&
-      //   err.message
-      //     .toLowerCase()
-      //     .indexOf('be aware that it might still be mined') >= 0
-      // ) {
-      //   console.error(err.stack);
-      //   return true;
-      // }
-      throw err;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.stack,
+      };
     }
   }
 }
