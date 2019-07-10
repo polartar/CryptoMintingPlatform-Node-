@@ -1,12 +1,12 @@
 // The getBalance function is working in this interface. It expects an account ID as an argument (one user can have multiple accounts.) If there is no bcoin wallet for the specified account ID, one is created and all of the necessary credentials are stored in the apiKeyService
 
-import WalletBase from './wallet-base';
+import CoinWalletBase from './coin-wallet-base';
 import { sha256 } from 'js-sha256';
 import { v4 as generateRandomId } from 'uuid';
-import config from '../common/config';
-import { credentialService } from '../services';
-import { ITransaction, ICoinMetadata } from '../types';
-import { UserApi } from '../data-sources';
+import { config } from '../../common';
+import { credentialService } from '../../services';
+import { ITransaction, ICoinMetadata } from '../../types';
+import { UserApi } from '../../data-sources';
 import { BigNumber } from 'bignumber.js';
 const { WalletClient } = require('bclient');
 const autoBind = require('auto-bind');
@@ -25,7 +25,7 @@ interface IBcoinTx {
   outputs: IBtcRawOutput[];
   hash: string;
 }
-class BtcWallet extends WalletBase {
+class BtcWallet extends CoinWalletBase {
   feeRate = 10000;
   // To my knowledge, bcoin hasn't implemented types to their client.
   walletClient: any;
@@ -121,9 +121,8 @@ class BtcWallet extends WalletBase {
   }
 
   // Old code from the old front-end-only method
-  public async getTransactions(userApi: UserApi): Promise<ITransaction[]> {
-    const accountId = userApi.userId;
-    const userWallet = await this.setWallet(accountId);
+  public async getTransactions(userId: string): Promise<ITransaction[]> {
+    const userWallet = await this.setWallet(userId);
     const history = await userWallet.getHistory('default');
     return this.formatTransactions(history);
   }
@@ -215,9 +214,8 @@ class BtcWallet extends WalletBase {
   public async getWalletInfo(userApi: UserApi) {
     const userWallet = await this.setWallet(userApi.userId);
     const { receiveAddress } = await userWallet.getAccount('default');
-
     return {
-      receiveAddress,
+      receiveAddress: receiveAddress,
       symbol: this.symbol,
       name: this.name,
       backgroundColor: this.backgroundColor,

@@ -1,10 +1,8 @@
 import * as fs from 'fs';
+import * as path from 'path'
 import * as dotenv from 'dotenv';
 import * as autoBind from 'auto-bind';
 import keys from './keys';
-import { createConnection, Connection } from 'mongoose';
-import SupportedCoins from './CoinsSupported';
-import * as path from 'path';
 
 dotenv.config({ path: '.env' });
 
@@ -13,22 +11,7 @@ class Config {
   public readonly logLevel = process.env.LOG_LEVEL;
   public readonly port = this.normalizePort(process.env.PORT);
   public readonly hostname = process.env.HOSTNAME;
-  public readonly mongodbUri: undefined;
-  public readonly supportedCoins = new SupportedCoins();
-
-  public readonly supportedOrigins = {
-    dev: {
-      codex: 'stage0.wallet.codexunited.com',
-      green: 'stage0.wallet.share.green',
-      connect: 'stage0.wallet.connectblockchain.net',
-      local: 'localhost',
-    },
-    prod: {
-      codex: 'wallet.codexunited.com',
-      green: 'wallet.share.green',
-      connect: 'wallet.connectblockchain.net',
-    },
-  };
+  public readonly mongodbUri = process.env.MONGODB_URI;
   public readonly jwtPrivateKey = keys.privateKey;
   public readonly jwtPublicKey = keys.publicKey;
   public readonly serviceAccounts = keys.serviceAccounts;
@@ -40,10 +23,6 @@ class Config {
   public readonly isDev = process.env.NODE_ENV !== 'production';
   public readonly etherScanApiKey = process.env.ETHERSCAN_API_KEY;
   public readonly erc20FeeCalcAddress = process.env.ETH_ADD_FOR_ERC20_FEE_CALC;
-  public readonly authDbConnectionMap: Map<
-    string,
-    Connection
-  > = this.mapAuthDbConnections();
   public readonly cryptoSymbolToNameMap: Map<
     string,
     string
@@ -55,7 +34,6 @@ class Config {
       process.env.BCOIN_WALLET_SSL.toLowerCase() === 'true',
     uri: process.env.BCOIN_NETWORK,
     walletAuth: true,
-
     network: process.env.BCOIN_NETWORK,
     port: +process.env.BCOIN_WALLET_PORT,
     apiKey: process.env.BCOIN_WALLET_API_KEY,
@@ -126,26 +104,6 @@ class Config {
     throw new Error('port is less than 0');
   }
 
-  private mapAuthDbConnections() {
-    const rawConnections = JSON.parse(
-      fs.readFileSync('authDbConnections.json').toString(),
-    );
-    const domainDbMap = new Map();
-
-    Object.entries(rawConnections).forEach(entry => {
-      const [domain, dbConnectionString]: any[] = entry;
-      domainDbMap.set(
-        domain,
-        createConnection(dbConnectionString, {
-          useNewUrlParser: true,
-          useFindAndModify: false,
-        }),
-      );
-    });
-
-    return domainDbMap;
-  }
-
   private mapSymbolToName() {
     const symbolsWithNames = JSON.parse(
       fs
@@ -166,5 +124,4 @@ class Config {
 }
 
 const config = new Config();
-
 export default config;

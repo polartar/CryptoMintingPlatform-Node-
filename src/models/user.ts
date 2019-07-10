@@ -53,7 +53,7 @@ const userSchema = new mongoose.Schema({
   wallet: walletSchema,
 });
 
-userSchema.post('save', function(doc: IUser) {
+userSchema.post('save', function (doc: IUser) {
   if (!doc._id) {
     return;
   }
@@ -64,4 +64,6 @@ userSchema.post('save', function(doc: IUser) {
   }
 });
 
-export default userSchema;
+const User = mongoose.model<IUser>('user', userSchema);
+
+export default User

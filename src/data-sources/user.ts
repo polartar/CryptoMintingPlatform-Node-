@@ -1,15 +1,14 @@
 import { DataSource } from 'apollo-datasource';
 import { config } from '../common';
 import { Model } from 'mongoose';
-import { userSchema } from '../models';
+import { User } from '../models';
 import { IUser } from '../types';
 import { IUserClaims } from '../types/context';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
 import { ApolloError } from 'apollo-server-express';
-
-export default class User extends DataSource {
-  Model: Model<IUser>;
+export default class UserApi extends DataSource {
+  Model: Model<IUser> = User;
   domain: string;
   permissions: string[];
   role: string;
@@ -20,8 +19,6 @@ export default class User extends DataSource {
   constructor(domain: string, userClaims: IUserClaims) {
     super();
     const { permissions, role, userId, authorized, twoFaEnabled } = userClaims;
-    const connection = config.authDbConnectionMap.get(domain);
-    this.Model = connection.model('user', userSchema);
     this.domain = domain;
     this.permissions = permissions;
     this.role = role;
@@ -31,7 +28,7 @@ export default class User extends DataSource {
   }
 
   public async findFromDb() {
-    const user = await this.Model.findById(this.userId).exec();
+    const user = await User.findById(this.userId).exec();
     return user;
   }
 

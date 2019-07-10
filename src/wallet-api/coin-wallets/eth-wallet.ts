@@ -1,13 +1,13 @@
 import crypto from 'crypto';
-import { credentialService } from '../services';
-import WalletBase from './wallet-base';
+import { credentialService } from '../../services';
+import CoinWalletBase from './coin-wallet-base';
 import { ethers, providers, utils } from 'ethers';
-import config from '../common/config';
-import { ITransaction, ICoinMetadata } from '../types';
-import { UserApi } from '../data-sources';
+import config from '../../common/config';
+import { ITransaction, ICoinMetadata } from '../../types';
+import { UserApi } from '../../data-sources';
 import { ApolloError } from 'apollo-server-express';
 
-class EthAPI extends WalletBase {
+class EthWallet extends CoinWalletBase {
   provider = new providers.JsonRpcProvider(config.ethNodeUrl);
   etherscan = new providers.EtherscanProvider(
     config.etherscanNetwork,
@@ -102,7 +102,7 @@ class EthAPI extends WalletBase {
     if (!hasEnough)
       throw new ApolloError(
         `Insufficient account balance. Amount: ${amount.toString()}. Balance: ${
-          bnConfirmed.toString
+        bnConfirmed.toString
         }`,
       );
   }
@@ -110,10 +110,10 @@ class EthAPI extends WalletBase {
   protected async ensureEthAddress(userApi: UserApi) {
     const {
       id,
-      wallet = { ethAddress: '', ethNonce: 0 },
+      wallet = { ethAddress: '', ethNonce: 0, ethBlockNumAtCreation: 2426642 },
     } = await userApi.findFromDb();
     /* tslint:disable: prefer-const */
-    let { ethAddress, ethNonce: nonce } = wallet;
+    let { ethAddress, ethNonce: nonce, ethBlockNumAtCreation: blockNumAtCreation } = wallet;
     /* tslint:enable:prefer-const */
     if (!ethAddress) {
       const privateKey = await this.getPrivateKey(id).catch(() => null);
@@ -129,15 +129,14 @@ class EthAPI extends WalletBase {
         ethAddress = await this.createWallet(userApi);
       }
     }
-    return { ethAddress, nonce };
+    return { ethAddress, nonce, blockNumAtCreation };
   }
 
-  async getTransactions(userApi: UserApi): Promise<ITransaction[]> {
-    const { ethAddress } = await this.ensureEthAddress(userApi);
-    const transactions = await this.etherscan.getHistory(ethAddress);
+  async getTransactions(address: string, blockNumAtCreation: number): Promise<ITransaction[]> {
+    const transactions = await this.etherscan.getHistory(address, blockNumAtCreation);
     const formattedTransactions = this.formatTransactions(
       transactions,
-      ethAddress,
+      address,
     );
     return formattedTransactions;
   }
@@ -153,7 +152,7 @@ class EthAPI extends WalletBase {
   ) {
     return new Promise((resolve, reject) => {
       const { address } = userWallet;
-      if (address === addressFromDb) resolve();
+      if (address.toLowerCase() === addressFromDb.toLowerCase()) resolve();
       else {
         userApi.Model.findByIdAndUpdate(
           userApi.userId,
@@ -253,4 +252,4 @@ class EthAPI extends WalletBase {
   }
 }
 
-export default EthAPI;
+export default EthWallet;
