@@ -3,18 +3,20 @@ import { ApolloServer, gql } from 'apollo-server-express';
 import { DocumentNode } from 'graphql';
 import schemas from './schemas';
 import resolvers from './resolvers';
-import { Wallet, UserApi, CryptoFavorites } from './data-sources';
+import { UserApi, CryptoFavorites } from './data-sources';
+import { WalletApi } from './wallet-api'
 import { config, logger, auth } from './common';
 import autoBind = require('auto-bind');
+import { connect, set, connection } from 'mongoose';
 
 class Server {
   public app: express.Application = express();
-
+  public walletApi: WalletApi
   constructor() {
     autoBind(this);
-    const isDev = process.env.NODE_ENV === 'development';
+    const { isDev, hostname } = config
     const typeDefs: DocumentNode = gql(schemas);
-
+    this.walletApi = new WalletApi(hostname, isDev)
     const server = new ApolloServer({
       typeDefs,
       resolvers,
@@ -30,22 +32,6 @@ class Server {
     });
   }
 
-  private parseOrigin(origin: string) {
-    const {
-      supportedOrigins: { dev, prod },
-    } = config;
-    // Prod origins
-    if (origin === undefined || origin.includes(dev.local)) return dev.local;
-    // Stage and dev origins
-    if (origin.includes(dev.green)) return dev.green;
-    if (origin.includes(dev.connect)) return dev.connect;
-    if (origin.includes(dev.codex)) return dev.codex;
-    if (origin.includes(prod.green)) return prod.green;
-    if (origin.includes(prod.connect)) return prod.connect;
-    if (origin.includes(prod.codex)) return prod.codex;
-    throw new Error(`Origin:${origin} not supported`);
-  }
-
   private buildContext({
     req,
     res,
@@ -53,22 +39,21 @@ class Server {
     req: express.Request;
     res: express.Response;
   }) {
+    const { hostname } = config;
     const token = req.headers.authorization
       ? req.headers.authorization.replace('Bearer ', '')
       : '';
-    const domain = this.parseOrigin(req.get('origin'));
     let user = null;
     if (token) {
       try {
-        const decodedToken = auth.verifyAndDecodeToken(token, domain);
-        user = new UserApi(domain, decodedToken.claims);
+        const { claims } = auth.verifyAndDecodeToken(token, hostname)
+        user = new UserApi(hostname, claims);
       } catch (error) {
         user = null;
       }
     }
-    const wallet = new Wallet(domain);
 
-    return { req, res, user, domain, wallet };
+    return { req, res, user, domain: hostname, wallet: this.walletApi };
   }
 
   private buildDataSources() {
@@ -85,10 +70,28 @@ class Server {
 
   public async initialize() {
     try {
+      await this.connectToMongodb()
       this.listen();
     } catch (error) {
       throw error;
     }
+  }
+
+  private async connectToMongodb() {
+    return new Promise((resolve, reject) => {
+      set('useCreateIndex', true);
+      connect(
+        config.mongodbUri,
+        { useNewUrlParser: true },
+      );
+      connection.once('open', () => {
+        logger.info(`Connected to mongoDb`);
+        resolve();
+      });
+      connection.on('error', error => {
+        reject(error);
+      });
+    });
   }
 }
 
