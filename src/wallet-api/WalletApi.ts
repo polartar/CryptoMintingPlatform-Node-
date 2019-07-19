@@ -33,7 +33,9 @@ export default class WalletApi {
 
   // maybe to rename to coin() so that when it is called it is just wallet.coin('btc')?
   public coin(symbol: string) {
-    return this.symbolToInterface.get(symbol.toLowerCase());
+    const walletApi = this.symbolToInterface.get(symbol.toLowerCase());
+    if (!walletApi) throw new Error(`coinSymbol: ${symbol} not supported.`)
+    return walletApi;
   }
 
   private selectWalletInterface(walletApi: string, coinConfig: ICoinMetadata): CoinWalletBase {

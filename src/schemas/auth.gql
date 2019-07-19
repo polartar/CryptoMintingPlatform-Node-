@@ -22,4 +22,5 @@ type Mutation {
 
 type Query {
   twoFaValidate(totpToken: String!): TwoFaValidationResponse!
+  isClientSecretRequired: Boolean!
 }

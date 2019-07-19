@@ -5,30 +5,17 @@ import { sha256 } from 'js-sha256';
 import { v4 as generateRandomId } from 'uuid';
 import { config } from '../../common';
 import { credentialService } from '../../services';
-import { ITransaction, ICoinMetadata } from '../../types';
+import { ITransaction, ICoinMetadata, IBcoinTx } from '../../types';
 import { UserApi } from '../../data-sources';
 import { BigNumber } from 'bignumber.js';
 const { WalletClient } = require('bclient');
 const autoBind = require('auto-bind');
 
-interface IBtcRawOutput {
-  path: string;
-  address: string;
-  value: number;
-}
-
-interface IBcoinTx {
-  block: number;
-  confirmations: number;
-  mdate: Date;
-  fee: number;
-  outputs: IBtcRawOutput[];
-  hash: string;
-}
 class BtcWallet extends CoinWalletBase {
   feeRate = 10000;
   // To my knowledge, bcoin hasn't implemented types to their client.
   walletClient: any;
+
   constructor({
     name,
     symbol,

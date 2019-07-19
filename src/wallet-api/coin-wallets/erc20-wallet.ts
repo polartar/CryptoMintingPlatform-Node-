@@ -49,17 +49,11 @@ class Erc20API extends EthWallet {
   }
 
   async estimateFee(userApi: UserApi) {
-    const gasPricePromise = this.provider.getGasPrice();
-    const privateKeyPromise = this.getPrivateKey(userApi.userId);
-    const [gasPrice, privateKey] = await Promise.all([
-      gasPricePromise,
-      privateKeyPromise,
-    ]);
-    const wallet = new ethers.Wallet(privateKey, this.provider);
+    const gasPrice = await this.provider.getGasPrice();
     try {
       const testValue = this.bigNumberify(10);
       const estimate = await this.contract.estimate.transfer(
-        wallet.address,
+        config.erc20FeeCalcAddress,
         testValue,
         { gasLimit: 750000 },
       );

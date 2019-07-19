@@ -1,4 +1,4 @@
-import { auth } from '../common';
+import { auth, config } from '../common';
 import { Context } from '../types/context';
 import ResolverBase from '../common/Resolver-Base';
 import { ApolloError } from 'apollo-server-express';
@@ -26,6 +26,8 @@ class Resolvers extends ResolverBase {
     }
     return { token, twoFaEnabled: claims.twoFaEnabled, ...twoFaSetup };
   }
+
+  public isClientSecretRequired = () => config.clientSecretKeyRequired
 
   public async twoFaRegister(parent: any, args: {}, { user }: Context) {
     this.requireAuth(user);
@@ -62,6 +64,7 @@ const resolvers = new Resolvers();
 export default {
   Query: {
     twoFaValidate: resolvers.twoFaValidate,
+    isClientSecretRequired: resolvers.isClientSecretRequired
   },
   Mutation: {
     login: resolvers.login,

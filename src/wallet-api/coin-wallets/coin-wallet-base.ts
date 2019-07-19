@@ -1,6 +1,8 @@
 // This abstract class is intended to provide a framework for each of the wallet interfaces to ensure they implement the same methods and return the same data shape
 import { ITransaction } from '../../types';
 import { UserApi } from '../../data-sources';
+import SimpleCrypto from 'simple-crypto-js'
+import { config } from '../../common';
 
 export default abstract class CoinWalletBase {
   constructor(
@@ -27,6 +29,18 @@ export default abstract class CoinWalletBase {
       throw new Error(
         'No icon provided in token configuration for wallet interface. This parameter is required.',
       );
+  }
+
+  protected encrypt(plainTextValue: string, secret: string) {
+    if (!config.clientSecretKeyRequired) return plainTextValue
+    const crypto = new SimpleCrypto(secret);
+    return crypto.encrypt(plainTextValue);
+  }
+
+  protected decrypt(maybeEncryptedValue: string, secret: string) {
+    if (!config.clientSecretKeyRequired) return maybeEncryptedValue
+    const crypto = new SimpleCrypto(secret);
+    return crypto.decrypt(maybeEncryptedValue)
   }
 
   abstract getWalletInfo(

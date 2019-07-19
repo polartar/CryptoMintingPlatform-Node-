@@ -22,6 +22,9 @@ class Config {
   public readonly apiKeyServiceUrl = process.env.API_KEY_SERVICE_URL;
   public readonly isDev = process.env.NODE_ENV !== 'production';
   public readonly etherScanApiKey = process.env.ETHERSCAN_API_KEY;
+  public readonly clientSecretKeyRequired: boolean =
+    process.env.CLIENT_SECRET_KEY_REQUIRED !== undefined &&
+    process.env.CLIENT_SECRET_KEY_REQUIRED === 'true'
   public readonly erc20FeeCalcAddress = process.env.ETH_ADD_FOR_ERC20_FEE_CALC;
   public readonly cryptoSymbolToNameMap: Map<
     string,
