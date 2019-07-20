@@ -134,7 +134,7 @@ class EthWallet extends CoinWalletBase {
     return ethers.utils.bigNumberify(anyValidValue);
   }
 
-  protected getEthAddressMatchesPkey(
+  protected ensureEthAddressMatchesPkey(
     userWallet: ethers.Wallet,
     addressFromDb: string,
     userApi: UserApi,
@@ -161,13 +161,14 @@ class EthWallet extends CoinWalletBase {
     if (!isAddress) throw new Error(`Invalid address ${maybeAddress}`);
   }
 
-  async send(userApi: UserApi, to: string, amount: string) {
+  async send(userApi: UserApi, to: string, amount: string, walletPassword: string) {
     try {
       this.requireValidAddress(to);
       const value = this.toWei(amount);
       const { nonce, ethAddress } = await this.getEthAddress(userApi);
       await this.requireEnoughBalanceToSendEther(ethAddress, value);
-      const privateKey = await this.getPrivateKey(userApi.userId);
+      const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
+      const privateKey = this.decrypt(encryptedPrivateKey, walletPassword)
       const wallet = new ethers.Wallet(privateKey, this.provider);
       const { hash: txHash } = await wallet.sendTransaction({
         nonce,
@@ -176,7 +177,7 @@ class EthWallet extends CoinWalletBase {
         gasLimit: 21001,
       });
       await userApi.incrementTxCount();
-      this.getEthAddressMatchesPkey(privateKey, ethAddress, userApi);
+      this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
       return {
         success: true,
         message: txHash,

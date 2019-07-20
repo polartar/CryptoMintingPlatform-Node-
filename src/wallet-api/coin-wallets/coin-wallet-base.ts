@@ -40,7 +40,7 @@ export default abstract class CoinWalletBase {
   protected decrypt(maybeEncryptedValue: string, secret: string) {
     if (!config.clientSecretKeyRequired) return maybeEncryptedValue
     const crypto = new SimpleCrypto(secret);
-    return crypto.decrypt(maybeEncryptedValue)
+    return crypto.decrypt(maybeEncryptedValue).toString()
   }
 
   protected hash(value: string) {
@@ -74,6 +74,6 @@ export default abstract class CoinWalletBase {
     userApi: UserApi,
     to: string,
     amount: string,
-    walletPassword?: string
+    walletPassword: string
   ): Promise<{ success: boolean; message?: string }>;
 }

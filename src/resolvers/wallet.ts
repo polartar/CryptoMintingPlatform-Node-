@@ -88,20 +88,22 @@ class Resolvers extends ResolverBase {
       to,
       amount,
       totpToken,
+      walletPassword
     }: {
       coinSymbol: string;
       accountId: string;
       to: string;
       amount: string;
       totpToken: string;
+      walletPassword: string
     },
     { user, wallet }: Context,
   ) {
     this.requireAuth(user);
-    const twoFaValid = await user.validateTwoFa(totpToken);
-    this.requireTwoFa(twoFaValid);
+    // const twoFaValid = await user.validateTwoFa(totpToken);
+    // this.requireTwoFa(twoFaValid);
     const walletApi = wallet.coin(coinSymbol);
-    const result = await walletApi.send(user, to, amount);
+    const result = await walletApi.send(user, to, amount, walletPassword);
     return result;
   }
 }
