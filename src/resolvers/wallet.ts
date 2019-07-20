@@ -1,6 +1,11 @@
 import { Context } from '../types/context';
 import { mnemonic } from '../utils'
 import ResolverBase from '../common/Resolver-Base';
+import { config } from '../common';
+import { ApolloError } from 'apollo-server-express';
+import SimpleCrypto from 'simple-crypto-js';
+import CryptoJS from 'crypto-js'
+import { credentialService } from '../services';
 const autoBind = require('auto-bind');
 
 class Resolvers extends ResolverBase {
@@ -16,13 +21,21 @@ class Resolvers extends ResolverBase {
     return parent.receiveAddress;
   }
 
-  // async createWallet(
-  //   parent: any,
-  //   args: { mnemonic: },
-  //   { user, wallet }: Context,
-  // ) {
-
-  // }
+  async createWallet(
+    parent: any,
+    args: { mnemonic: string, walletPassword: string },
+    { user, wallet }: Context,
+  ) {
+    const mnemonicIsValid = mnemonic.validate(args.mnemonic);
+    if (!mnemonicIsValid) throw new ApolloError('Invalid mnemonic')
+    if (config.clientSecretKeyRequired && !args.walletPassword) {
+      throw new ApolloError('Password required')
+    }
+    const crypto = new SimpleCrypto(args.mnemonic)
+    const encryptedPass = crypto.encrypt(args.walletPassword)
+    await credentialService.create(user.userId, 'X', CryptoJS.SHA256(args.mnemonic).toString(), encryptedPass)
+    // TODO: Finish this
+  }
 
   async getWallet(
     parent: any,

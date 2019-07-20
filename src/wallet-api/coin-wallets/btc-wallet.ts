@@ -55,18 +55,10 @@ class BtcWallet extends CoinWalletBase {
         this.encrypt(xprivkey, mnemonic),
       );
 
-      const recoveryPassPromise = credentialService.create(
-        userId,
-        this.symbol,
-        this.hash(mnemonic),
-        this.encrypt(passphrase, mnemonic),
-      );
-
       // Wait for all of the requests to the apiKeyService to resolve for maximum concurrency
       await Promise.all([
         tokenSavePromise,
         privKeySavePromise,
-        recoveryPassPromise
       ]);
 
       // Send the generated passphrase to bcoin to encrypt the user's wallet. Success: boolean will be returned

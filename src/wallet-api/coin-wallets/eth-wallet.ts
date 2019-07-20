@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import { credentialService } from '../../services';
 import CoinWalletBase from './coin-wallet-base';
 import { ethers, providers, utils } from 'ethers';
@@ -38,16 +37,9 @@ class EthWallet extends CoinWalletBase {
         privateKey,
       );
 
-      const recoveryPassPromise = credentialService.create(
-        userApi.userId,
-        'ETH',
-        this.hash(mnemonic),
-        this.encrypt(walletPassword, mnemonic),
-      );
-
       const addressSavePromise = this.saveAddress(userApi, address);
 
-      await Promise.all([recoveryPassPromise, privateKeyPromise, addressSavePromise]);
+      await Promise.all([privateKeyPromise, addressSavePromise]);
       return true;
     } catch (error) {
       return false;
@@ -109,7 +101,6 @@ class EthWallet extends CoinWalletBase {
 
   protected async getEthAddress(userApi: UserApi) {
     const {
-      id,
       wallet = { ethAddress: '', ethNonce: 0, ethBlockNumAtCreation: 2426642 },
     } = await userApi.findFromDb();
     /* tslint:disable: prefer-const */
