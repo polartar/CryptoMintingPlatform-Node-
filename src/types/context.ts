@@ -13,7 +13,6 @@ export interface IUserClaims {
 export interface Context {
   req: Request;
   res: Response;
-  domain: string;
   wallet: WalletApi;
   dataSources: {
     cryptoFavorites: CryptoFavorites;

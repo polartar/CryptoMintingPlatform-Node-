@@ -47,13 +47,13 @@ class Server {
     if (token) {
       try {
         const { claims } = auth.verifyAndDecodeToken(token, hostname)
-        user = new UserApi(hostname, claims);
+        user = new UserApi(claims);
       } catch (error) {
         user = null;
       }
     }
 
-    return { req, res, user, domain: hostname, wallet: this.walletApi };
+    return { req, res, user, wallet: this.walletApi };
   }
 
   private buildDataSources() {

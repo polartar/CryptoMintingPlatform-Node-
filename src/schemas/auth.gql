@@ -3,6 +3,8 @@ type ReturnToken {
   twoFaEnabled: Boolean!
   twoFaSecret: String
   twoFaQrCode: String
+  walletExists: Boolean!
+  walletPasswordRequired: Boolean!
 }
 
 type TwoFaRegisterResponse {
@@ -15,6 +17,13 @@ type TwoFaValidationResponse {
   newToken: String
 }
 
+type ValidateExistingTokenResponse {
+  twoFaEnabled: Boolean!
+  authenticated: Boolean!
+  walletExists: Boolean!
+  walletPasswordRequired: Boolean!
+}
+
 type Mutation {
   login(token: String!): ReturnToken!
   twoFaRegister: TwoFaRegisterResponse!
@@ -22,5 +31,5 @@ type Mutation {
 
 type Query {
   twoFaValidate(totpToken: String!): TwoFaValidationResponse!
-  isClientSecretRequired: Boolean!
+  validateExistingToken: ValidateExistingTokenResponse!
 }

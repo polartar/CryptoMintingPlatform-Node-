@@ -81,7 +81,7 @@ class Erc20API extends EthWallet {
   }
 
   async getWalletInfo(userApi: UserApi) {
-    const { ethAddress, blockNumAtCreation } = await this.ensureEthAddress(userApi);
+    const { ethAddress, blockNumAtCreation } = await this.getEthAddress(userApi);
     return {
       receiveAddress: ethAddress,
       symbol: this.symbol,
@@ -192,7 +192,7 @@ class Erc20API extends EthWallet {
 
   async send(userApi: UserApi, to: string, value: string) {
     try {
-      const { nonce, ethAddress } = await this.ensureEthAddress(userApi);
+      const { nonce, ethAddress } = await this.getEthAddress(userApi);
       const privateKey = await this.getPrivateKey(userApi.userId);
       const amount = this.integerize(value);
       const wallet = new ethers.Wallet(privateKey, this.provider);
@@ -204,7 +204,7 @@ class Erc20API extends EthWallet {
       );
       const transaction = await contract.transfer(to, amount, { nonce });
       await userApi.incrementTxCount();
-      this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi)
+      this.getEthAddressMatchesPkey(wallet, ethAddress, userApi)
       return {
         success: true,
         message: transaction.hash,

@@ -3,7 +3,7 @@ import { ITransaction } from '../../types';
 import { UserApi } from '../../data-sources';
 import SimpleCrypto from 'simple-crypto-js'
 import { config } from '../../common';
-
+import { SHA256 } from 'crypto-js'
 export default abstract class CoinWalletBase {
   constructor(
     protected name: string,
@@ -43,6 +43,12 @@ export default abstract class CoinWalletBase {
     return crypto.decrypt(maybeEncryptedValue)
   }
 
+  protected hash(value: string) {
+    return SHA256(value).toString()
+  }
+
+  abstract createWallet(userApi: UserApi, passphrase: string, mnemonic: string): Promise<boolean>;
+
   abstract getWalletInfo(
     userApi: UserApi,
   ): Promise<{
@@ -68,5 +74,6 @@ export default abstract class CoinWalletBase {
     userApi: UserApi,
     to: string,
     amount: string,
+    walletPassword?: string
   ): Promise<{ success: boolean; message?: string }>;
 }

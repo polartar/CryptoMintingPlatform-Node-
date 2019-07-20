@@ -1,4 +1,5 @@
 import { Context } from '../types/context';
+import { mnemonic } from '../utils'
 import ResolverBase from '../common/Resolver-Base';
 const autoBind = require('auto-bind');
 
@@ -14,6 +15,14 @@ class Resolvers extends ResolverBase {
     if (parent.symbol.toLowerCase() === 'btc') return userId;
     return parent.receiveAddress;
   }
+
+  // async createWallet(
+  //   parent: any,
+  //   args: { mnemonic: },
+  //   { user, wallet }: Context,
+  // ) {
+
+  // }
 
   async getWallet(
     parent: any,
@@ -39,6 +48,14 @@ class Resolvers extends ResolverBase {
     const walletApi = wallet.coin(parent.symbol);
     const walletResult = await walletApi.getBalance(userIdOrAddress);
     return walletResult;
+  }
+
+  public generateMnemonic(
+    parent: any, args: { lang: string }, { user }: Context
+  ) {
+    this.requireAuth(user);
+    const lang = args.lang || 'en';
+    return mnemonic.generateRandom(lang);
   }
 
   async getTransactions(
@@ -94,6 +111,7 @@ const resolvers = new Resolvers();
 export default {
   Query: {
     wallet: resolvers.getWallet,
+    mnemonic: resolvers.generateMnemonic
   },
   Wallet: {
     transactions: resolvers.getTransactions,

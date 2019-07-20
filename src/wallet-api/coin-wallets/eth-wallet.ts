@@ -27,31 +27,31 @@ class EthWallet extends CoinWalletBase {
     super(name, symbol, contractAddress, abi, backgroundColor, icon);
   }
 
-  protected async createWallet(userApi: UserApi) {
-    const extraEntropy = crypto.randomBytes(10);
-    const { mnemonic, privateKey, address } = ethers.Wallet.createRandom({
-      extraEntropy,
-    });
+  public async createWallet(userApi: UserApi, walletPassword: string, mnemonic: string) {
+    try {
+      const { privateKey, address } = ethers.Wallet.fromMnemonic(mnemonic)
 
-    const mnemonicPromise = credentialService.create(
-      userApi.userId,
-      'ETH',
-      'mnemonic',
-      mnemonic,
-    );
+      const privateKeyPromise = credentialService.create(
+        userApi.userId,
+        'ETH',
+        'privateKey',
+        privateKey,
+      );
 
-    const privateKeyPromise = credentialService.create(
-      userApi.userId,
-      'ETH',
-      'privkey',
-      privateKey,
-    );
+      const recoveryPassPromise = credentialService.create(
+        userApi.userId,
+        'ETH',
+        this.hash(mnemonic),
+        this.encrypt(walletPassword, mnemonic),
+      );
 
-    const addressSavePromise = this.saveAddress(userApi, address);
+      const addressSavePromise = this.saveAddress(userApi, address);
 
-    await Promise.all([mnemonicPromise, privateKeyPromise, addressSavePromise]);
-
-    return address;
+      await Promise.all([recoveryPassPromise, privateKeyPromise, addressSavePromise]);
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 
   private async saveAddress(userApi: UserApi, ethAddress: string) {
@@ -74,7 +74,7 @@ class EthWallet extends CoinWalletBase {
   }
 
   public async getWalletInfo(userApi: UserApi) {
-    const { ethAddress } = await this.ensureEthAddress(userApi);
+    const { ethAddress } = await this.getEthAddress(userApi);
     return {
       receiveAddress: ethAddress,
       symbol: this.symbol,
@@ -107,7 +107,7 @@ class EthWallet extends CoinWalletBase {
       );
   }
 
-  protected async ensureEthAddress(userApi: UserApi) {
+  protected async getEthAddress(userApi: UserApi) {
     const {
       id,
       wallet = { ethAddress: '', ethNonce: 0, ethBlockNumAtCreation: 2426642 },
@@ -116,18 +116,7 @@ class EthWallet extends CoinWalletBase {
     let { ethAddress, ethNonce: nonce, ethBlockNumAtCreation: blockNumAtCreation } = wallet;
     /* tslint:enable:prefer-const */
     if (!ethAddress) {
-      const privateKey = await this.getPrivateKey(id).catch(() => null);
-      if (privateKey) {
-        const { address } = new ethers.Wallet(privateKey);
-        if (address) {
-          await this.saveAddress(userApi, address);
-          ethAddress = address;
-        } else {
-          throw new Error('Error setting/retreving address');
-        }
-      } else {
-        ethAddress = await this.createWallet(userApi);
-      }
+      throw new Error('Wallet not found')
     }
     return { ethAddress, nonce, blockNumAtCreation };
   }
@@ -145,7 +134,7 @@ class EthWallet extends CoinWalletBase {
     return ethers.utils.bigNumberify(anyValidValue);
   }
 
-  protected ensureEthAddressMatchesPkey(
+  protected getEthAddressMatchesPkey(
     userWallet: ethers.Wallet,
     addressFromDb: string,
     userApi: UserApi,
@@ -176,7 +165,7 @@ class EthWallet extends CoinWalletBase {
     try {
       this.requireValidAddress(to);
       const value = this.toWei(amount);
-      const { nonce, ethAddress } = await this.ensureEthAddress(userApi);
+      const { nonce, ethAddress } = await this.getEthAddress(userApi);
       await this.requireEnoughBalanceToSendEther(ethAddress, value);
       const privateKey = await this.getPrivateKey(userApi.userId);
       const wallet = new ethers.Wallet(privateKey, this.provider);
@@ -187,7 +176,7 @@ class EthWallet extends CoinWalletBase {
         gasLimit: 21001,
       });
       await userApi.incrementTxCount();
-      this.ensureEthAddressMatchesPkey(privateKey, ethAddress, userApi);
+      this.getEthAddressMatchesPkey(privateKey, ethAddress, userApi);
       return {
         success: true,
         message: txHash,

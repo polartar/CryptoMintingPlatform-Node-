@@ -1,6 +1,6 @@
 import config from '../common/config';
 const jwt = require('jsonwebtoken');
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 const autoBind = require('auto-bind');
 
 interface SignOptions {
@@ -95,6 +95,13 @@ class CredentialService {
       },
     });
     return response.data;
+  }
+
+  public handleErrResponse(error: AxiosError, messageIf404: string) {
+    if (error.response && error.response.status === 404) {
+      throw new Error(messageIf404)
+    }
+    throw error;
   }
 }
 

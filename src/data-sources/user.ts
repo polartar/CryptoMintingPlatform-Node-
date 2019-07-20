@@ -16,10 +16,9 @@ export default class UserApi extends DataSource {
   authorized: boolean;
   twoFaEnabled: boolean;
 
-  constructor(domain: string, userClaims: IUserClaims) {
+  constructor(userClaims: IUserClaims) {
     super();
     const { permissions, role, userId, authorized, twoFaEnabled } = userClaims;
-    this.domain = domain;
     this.permissions = permissions;
     this.role = role;
     this.authorized = authorized;
@@ -67,7 +66,7 @@ export default class UserApi extends DataSource {
       const otpUrl = speakeasy.otpauthURL({
         secret: secret.base32,
         label: user.email,
-        issuer: this.domain,
+        issuer: config.hostname,
         encoding: 'base32',
       });
 

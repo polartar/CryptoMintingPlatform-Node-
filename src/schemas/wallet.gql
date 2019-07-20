@@ -31,6 +31,7 @@ type Wallet {
 type Query {
   # If no coinSymbol is provided, all supported wallets will be returned
   wallet(coinSymbol: String): [Wallet!]!
+  mnemonic(lang: String): String!
 }
 
 type TransactionResponse {

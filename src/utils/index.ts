@@ -1,0 +1,1 @@
+export { default as mnemonic } from './mnemonic'
