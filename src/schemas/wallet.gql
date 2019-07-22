@@ -34,7 +34,7 @@ type Query {
   mnemonic(lang: String): String!
 }
 
-type TransactionResponse {
+type MutationResponse {
   success: Boolean!
   message: String
 }
@@ -47,5 +47,9 @@ type Mutation {
     amount: String!
     totpToken: String
     walletPassword: String
-  ): TransactionResponse!
+  ): MutationResponse!
+  createWallet(
+    mnemonic: String!
+    walletPassword: String
+  ): MutationResponse!
 }

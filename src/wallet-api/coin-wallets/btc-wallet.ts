@@ -10,6 +10,10 @@ import { BigNumber } from 'bignumber.js';
 const { WalletClient } = require('bclient');
 const autoBind = require('auto-bind');
 
+const XPRIVKEY = 'xprivkey';
+const TOKEN = 'token';
+const PASSPHRASE = 'passphrase'
+
 class BtcWallet extends CoinWalletBase {
   feeRate = 10000;
   // To my knowledge, bcoin hasn't implemented types to their client.
@@ -29,11 +33,21 @@ class BtcWallet extends CoinWalletBase {
     this.walletClient = new WalletClient(config.bcoinWallet);
   }
 
-  async createWallet(userApi: UserApi, userPassword: string, mnemonic: string) {
+  public async checkIfWalletExists(userApi: UserApi) {
+    try {
+      const userWallet = await this.setWallet(userApi.userId);
+      const account = await userWallet.getAccount('default');
+      return !!account;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  public async createWallet(userApi: UserApi, userPassword: string, mnemonic: string) {
     const { userId } = userApi
     const passphrase = await this.selectAndMaybeSavePassphrase(userId, userPassword)
     try {
-      const { token } = await this.walletClient.createWallet(userId, { mnemonic, passphrase });
+      const { token } = await this.walletClient.createWallet(userId, { mnemonic });
       const userWallet = this.walletClient.wallet(userId, token);
       const {
         key: { xprivkey },
@@ -43,7 +57,7 @@ class BtcWallet extends CoinWalletBase {
       const tokenSavePromise = credentialService.create(
         userId,
         this.symbol,
-        'token',
+        TOKEN,
         token,
       );
 
@@ -51,7 +65,7 @@ class BtcWallet extends CoinWalletBase {
       const privKeySavePromise = credentialService.create(
         userId,
         this.symbol,
-        'xprivkey',
+        XPRIVKEY,
         this.encrypt(xprivkey, mnemonic),
       );
 
@@ -64,7 +78,7 @@ class BtcWallet extends CoinWalletBase {
       // Send the generated passphrase to bcoin to encrypt the user's wallet. Success: boolean will be returned
       const { success } = await userWallet.setPassphrase(passphrase);
       if (!success) throw new Error('Passphrase set was unsuccessful');
-      return token;
+      return true;
     } catch (error) {
       throw error;
     }
@@ -83,7 +97,9 @@ class BtcWallet extends CoinWalletBase {
       return userPassphrase
     } else {
       // Generate a random passphrase
-      return this.hash(generateRandomId());
+      const randomPassword = this.hash(generateRandomId());
+      await credentialService.create(userId, this.symbol, PASSPHRASE, randomPassword);
+      return randomPassword;
     }
   }
 
@@ -202,14 +218,13 @@ class BtcWallet extends CoinWalletBase {
 
   private async setWallet(accountId: string) {
     const token = await this.getToken(accountId);
-
     return this.walletClient.wallet(accountId, token);
   }
 
   private async getToken(accountId: string) {
     try {
       const token = await credentialService
-        .get(accountId, this.symbol, 'token')
+        .get(accountId, this.symbol, TOKEN)
       return token;
     } catch (err) {
       credentialService.handleErrResponse(err, 'Not Found');
@@ -217,16 +232,20 @@ class BtcWallet extends CoinWalletBase {
   }
 
   private async getPassphrase(userId: string, userPassword: string) {
-    if (config.clientSecretKeyRequired && !userPassword) throw new Error('Wallet password is required')
-    try {
-      const passphrase = await credentialService.get(
-        userId,
-        this.symbol,
-        'passphrase',
-      );
-      return passphrase;
-    } catch (error) {
-      credentialService.handleErrResponse(error, 'Not Found');
+    if (config.clientSecretKeyRequired) {
+
+      return userPassword
+    } else {
+      try {
+        const passphrase = await credentialService.get(
+          userId,
+          this.symbol,
+          PASSPHRASE,
+        );
+        return passphrase;
+      } catch (error) {
+        credentialService.handleErrResponse(error, 'Not Found');
+      }
     }
   }
 

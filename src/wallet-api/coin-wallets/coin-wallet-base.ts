@@ -40,7 +40,9 @@ export default abstract class CoinWalletBase {
   protected decrypt(maybeEncryptedValue: string, secret: string) {
     if (!config.clientSecretKeyRequired) return maybeEncryptedValue
     const crypto = new SimpleCrypto(secret);
-    return crypto.decrypt(maybeEncryptedValue).toString()
+    const decryptedValue = crypto.decrypt(maybeEncryptedValue)
+    if (!decryptedValue) throw new Error('Invalid secret key')
+    return decryptedValue.toString();
   }
 
   protected hash(value: string) {
@@ -65,6 +67,8 @@ export default abstract class CoinWalletBase {
     confirmed: string;
     unconfirmed: string;
   }>;
+
+  abstract checkIfWalletExists(userApi: UserApi): Promise<boolean>
 
   abstract getTransactions(addressOrUserId: string, blockNumberAtCreation?: number): Promise<ITransaction[]>;
 

@@ -6,6 +6,8 @@ import { ITransaction, ICoinMetadata } from '../../types';
 import { UserApi } from '../../data-sources';
 import { ApolloError } from 'apollo-server-express';
 
+const PRIVATEKEY = 'privatekey'
+
 class EthWallet extends CoinWalletBase {
   provider = new providers.JsonRpcProvider(config.ethNodeUrl);
   etherscan = new providers.EtherscanProvider(
@@ -26,15 +28,25 @@ class EthWallet extends CoinWalletBase {
     super(name, symbol, contractAddress, abi, backgroundColor, icon);
   }
 
+  public async checkIfWalletExists(userApi: UserApi) {
+    try {
+      const privateKey = await this.getPrivateKey(userApi.userId);
+      return !!privateKey
+    } catch (error) {
+      return false;
+    }
+  }
+
   public async createWallet(userApi: UserApi, walletPassword: string, mnemonic: string) {
     try {
       const { privateKey, address } = ethers.Wallet.fromMnemonic(mnemonic)
 
+      const encryptedPrivateKey = this.encrypt(privateKey, walletPassword)
       const privateKeyPromise = credentialService.create(
         userApi.userId,
         'ETH',
-        'privateKey',
-        privateKey,
+        PRIVATEKEY,
+        encryptedPrivateKey,
       );
 
       const addressSavePromise = this.saveAddress(userApi, address);
@@ -56,7 +68,7 @@ class EthWallet extends CoinWalletBase {
   }
 
   protected getPrivateKey(userId: string) {
-    return credentialService.get(userId, 'ETH', 'privkey');
+    return credentialService.get(userId, 'ETH', PRIVATEKEY);
   }
 
   public async estimateFee(userApi: UserApi) {
@@ -88,14 +100,14 @@ class EthWallet extends CoinWalletBase {
     address: string,
     amount: utils.BigNumber,
   ) {
+    const { parseEther, formatEther } = utils;
     const { confirmed } = await this.getBalance(address);
-    const bnConfirmed = this.bigNumberify(confirmed);
-    const hasEnough = bnConfirmed.gte(this.bigNumberify(amount));
+    const weiConfirmed = parseEther(confirmed);
+
+    const hasEnough = weiConfirmed.gte(amount);
     if (!hasEnough)
       throw new ApolloError(
-        `Insufficient account balance. Amount: ${amount.toString()}. Balance: ${
-        bnConfirmed.toString
-        }`,
+        `Insufficient account balance. Amount: ${formatEther(amount).toString()}. Balance: ${confirmed}`,
       );
   }
 
@@ -155,7 +167,7 @@ class EthWallet extends CoinWalletBase {
   async send(userApi: UserApi, to: string, amount: string, walletPassword: string) {
     try {
       this.requireValidAddress(to);
-      const value = this.toWei(amount);
+      const value = utils.parseEther(amount);
       const { nonce, ethAddress } = await this.getEthAddress(userApi);
       await this.requireEnoughBalanceToSendEther(ethAddress, value);
       const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);

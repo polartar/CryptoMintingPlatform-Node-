@@ -1,10 +1,8 @@
 import { Context } from '../types/context';
 import { mnemonic } from '../utils'
 import ResolverBase from '../common/Resolver-Base';
-import { config } from '../common';
-import { ApolloError } from 'apollo-server-express';
 import SimpleCrypto from 'simple-crypto-js';
-import CryptoJS from 'crypto-js'
+import { SHA256 } from 'crypto-js'
 import { credentialService } from '../services';
 const autoBind = require('auto-bind');
 
@@ -26,15 +24,39 @@ class Resolvers extends ResolverBase {
     args: { mnemonic: string, walletPassword: string },
     { user, wallet }: Context,
   ) {
-    const mnemonicIsValid = mnemonic.validate(args.mnemonic);
-    if (!mnemonicIsValid) throw new ApolloError('Invalid mnemonic')
-    if (config.clientSecretKeyRequired && !args.walletPassword) {
-      throw new ApolloError('Password required')
+    this.requireAuth(user);
+    this.maybeRequireStrongWalletPassword(args.walletPassword)
+    try {
+      const { mnemonic: recoveryPhrase, walletPassword } = args;
+      this.maybeRequireStrongWalletPassword(walletPassword)
+      const mnemonicIsValid = mnemonic.validate(recoveryPhrase);
+      if (!mnemonicIsValid) throw new Error('Invalid mnemonic')
+      const btcApi = wallet.coin('btc');
+      const ethApi = wallet.coin('eth');
+      const [btcExists, ethExists] = await Promise.all([
+        btcApi.checkIfWalletExists(user),
+        ethApi.checkIfWalletExists(user)
+      ]);
+      if (btcExists || ethExists) throw new Error('Wallet already exists');
+      const [btcWalletCreated, ethWalletCreated] = await Promise.all([
+        btcApi.createWallet(user, walletPassword, recoveryPhrase),
+        ethApi.createWallet(user, walletPassword, recoveryPhrase)
+      ])
+      if (!btcWalletCreated || !ethWalletCreated) throw new Error('Error creating wallet')
+      const crypto = new SimpleCrypto(recoveryPhrase)
+      const encryptedPass = crypto.encrypt(walletPassword);
+      const hashedMnemonic = SHA256(recoveryPhrase).toString();
+      await credentialService.create(user.userId, 'X', hashedMnemonic, encryptedPass);
+      return {
+        success: true,
+        message: 'Wallet created'
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || error.stack
+      }
     }
-    const crypto = new SimpleCrypto(args.mnemonic)
-    const encryptedPass = crypto.encrypt(args.walletPassword)
-    await credentialService.create(user.userId, 'X', CryptoJS.SHA256(args.mnemonic).toString(), encryptedPass)
-    // TODO: Finish this
   }
 
   async getWallet(
@@ -113,6 +135,7 @@ class Resolvers extends ResolverBase {
     { user, wallet }: Context,
   ) {
     this.requireAuth(user);
+    this.maybeRequireStrongWalletPassword(walletPassword)
     // const twoFaValid = await user.validateTwoFa(totpToken);
     // this.requireTwoFa(twoFaValid);
     const walletApi = wallet.coin(coinSymbol);
@@ -135,5 +158,6 @@ export default {
   },
   Mutation: {
     sendTransaction: resolvers.sendTransaction,
+    createWallet: resolvers.createWallet
   },
 };
