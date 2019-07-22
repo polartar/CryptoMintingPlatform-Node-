@@ -1,9 +1,9 @@
 import { Context } from '../types/context';
 import { mnemonic } from '../utils'
 import ResolverBase from '../common/Resolver-Base';
-import SimpleCrypto from 'simple-crypto-js';
 import { SHA256 } from 'crypto-js'
 import { credentialService } from '../services';
+const SimpleCrypto = require('simple-crypto-js');
 const autoBind = require('auto-bind');
 
 class Resolvers extends ResolverBase {

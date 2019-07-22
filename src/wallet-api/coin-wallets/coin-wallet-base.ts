@@ -1,9 +1,9 @@
 // This abstract class is intended to provide a framework for each of the wallet interfaces to ensure they implement the same methods and return the same data shape
 import { ITransaction } from '../../types';
 import { UserApi } from '../../data-sources';
-import SimpleCrypto from 'simple-crypto-js'
 import { config } from '../../common';
 import { SHA256 } from 'crypto-js'
+const SimpleCrypto = require('simple-crypto-js')
 export default abstract class CoinWalletBase {
   constructor(
     protected name: string,
