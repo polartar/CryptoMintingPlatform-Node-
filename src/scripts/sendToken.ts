@@ -1,18 +1,17 @@
 // require('dotenv').config();
 // import config from '../common/config';
-// import * as ethers from 'ethers';
-// import * as ethereumUtil from 'ethereumjs-util';
+// import { ethers, utils } from 'ethers';
 // import { ICoinMetadata } from '../types';
 // import { BigNumber } from 'bignumber.js';
 // import credentials from '../../credentials';
-// const ethereumTx = require('ethereumjs-tx');
-// import CoinConfig from '../common/CoinsSupported';
 // import autoBind = require('auto-bind');
-// const Web3 = require('web3');
+// import * as erc20Abi from '../common/ABI/erc20.json'
 
 // interface IAccountKeys {
+//   contractAddress: string;
 //   owner: string;
 //   pkey: string;
+//   decimals: number
 // }
 
 // interface ISendStuff {
@@ -22,118 +21,29 @@
 // }
 
 // class TokenMinter {
-//   abi: any;
-//   contractAddress: string;
-//   ownerAddress: string;
-//   ownerPkey: string;
-//   decimals: number;
-//   web3: any = new Web3(config.ethNodeUrl);
-//   contract: any;
-
-//   constructor(metadata: ICoinMetadata, keys: IAccountKeys) {
-//     autoBind(this);
-//     const { abi, contractAddress, decimalPlaces } = metadata;
-//     const { owner, pkey } = keys;
-//     this.abi = abi;
-//     this.contractAddress = contractAddress;
-//     this.ownerAddress = owner;
-//     this.ownerPkey = pkey;
-//     this.decimals = decimalPlaces;
-//     this.contract = new this.web3.eth.Contract(abi, contractAddress, {
-//       from: owner,
-//     });
-//   }
-
-//   private async sendTransaction(
-//     ownerAddress: string,
-//     privateKey: string,
-//     contractAddress: string,
-//     abiEncodedTxData: string,
-//   ) {
-//     let signedTransaction;
-
-//     const rawTransaction = {
-//       from: ownerAddress,
-//       nonce:
-//         '0x' + new BigNumber(await this.getNonce(ownerAddress)).toString(16),
-//       gasPrice: '0xBA43B7400',
-//       gasLimit: 4000000,
-//       to: contractAddress,
-//       value: '0x0',
-//       data: abiEncodedTxData,
-//     };
-
-//     const privKey = ethereumUtil.toBuffer(`0x${privateKey}`);
-//     const tx = new ethereumTx(rawTransaction);
-
-//     tx.sign(privKey);
-//     const serializedTx = tx.serialize();
-
-//     try {
-//       signedTransaction = await this.web3.eth.sendSignedTransaction(
-//         '0x' + serializedTx.toString('hex'),
-//       );
-//       console.log(signedTransaction);
-//     } catch (err) {
-//       throw err;
-//     }
-
-//     return signedTransaction;
-//   }
-
-//   public async getNonce(address: string) {
-//     try {
-//       const count = await this.web3.eth.getTransactionCount(address);
-//       return count;
-//     } catch (error) {
-//       console.log(error);
-//       throw new Error(error);
-//     }
+//   private contract: ethers.Contract;
+//   private decimals: number;
+//   constructor({ contractAddress, pkey, decimals }: IAccountKeys) {
+//     this.decimals = decimals;
+//     const provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
+//     const signer = new ethers.Wallet(pkey, provider)
+//     this.contract = new ethers.Contract(contractAddress, erc20Abi, signer);
+//     autoBind(this)
 //   }
 
 //   private integerize(decimalizedString: string) {
-//     const tenToPowOfDecimals = new BigNumber(10).pow(
-//       new BigNumber(this.decimals),
-//     );
-//     const value = new BigNumber(decimalizedString).multipliedBy(
-//       tenToPowOfDecimals,
-//     );
-//     const hexAmount = `0x${value.toString(16)}`;
-//     return ethers.utils.bigNumberify(hexAmount);
+//     return ethers.utils.parseUnits(decimalizedString, this.decimals)
 //   }
 
-//   async distributeTokens(distValues: string[], distAddresses: string[]) {
-//     const formattedDistValues = distValues.map(this.integerize);
-
-//     const abiEncodedSendValues = this.contract.methods
-//       .distributeMinting(distAddresses, formattedDistValues)
-//       .encodeABI();
-
-//     let distributeMinting;
-//     try {
-//       distributeMinting = await this.sendTransaction(
-//         this.ownerAddress,
-//         this.ownerPkey,
-//         this.contractAddress,
-//         abiEncodedSendValues,
-//       );
-//     } catch (err) {
-//       if (
-//         err &&
-//         err.message &&
-//         err.message
-//           .toLowerCase()
-//           .indexOf('be aware that it might still be mined') >= 0
-//       ) {
-//         console.error(err.stack);
-//         return true;
-//       }
-//       throw err;
-//     }
-
-//     return distributeMinting;
+//   public sendTokens(addresses: string[], values: string[]) {
+//     const amounts = values.map(this.integerize)
+//     return this.contract.distributeMinting(
+//       addresses,
+//       amounts
+//     );
 //   }
 // }
+
 
 // function getRandomValue(numConfig: { min: number; max: number }) {
 //   const { min, max } = numConfig;
@@ -141,10 +51,8 @@
 // }
 
 // (async () => {
-//   const {
-//     erc20sEnv: [green, arcade],
-//   } = new CoinConfig();
 //   const { green: greenCredentials, arcade: arcadeCredentials } = credentials;
+//   console.log(greenCredentials, arcadeCredentials);
 
 //   // Send specific amounts
 //   const specificAmounts: string[] = [];
@@ -163,7 +71,7 @@
 //   // Send transactions to a list of specific addresses.
 //   const toAddresses: string[] = [];
 //   // OR: Send all transactions to one address;
-//   const toAddress = '';
+//   const toAddress = '0x59107980862b0C1826997D47617112eC35270C1F';
 
 //   // If specific addresses aren't specify, repeat the single address to match the length of amounts.
 //   const addresses = toAddresses.length
@@ -172,13 +80,13 @@
 //   if (addresses.length !== amounts.length)
 //     throw new Error('Address and amounts array length must match');
 
-//   const arcadeSender = new TokenMinter(arcade.dev, arcadeCredentials);
-//   const greenSender = new TokenMinter(green.dev, greenCredentials);
+//   const arcadeSender = new TokenMinter(arcadeCredentials);
+//   const greenSender = new TokenMinter(greenCredentials);
 
 //   try {
 //     const [greenResults, arcadeResults] = await Promise.all([
-//       greenSender.distributeTokens(amounts, addresses),
-//       arcadeSender.distributeTokens(amounts, addresses),
+//       greenSender.sendTokens(addresses, amounts),
+//       arcadeSender.sendTokens(addresses, amounts),
 //     ]);
 //     console.log(greenResults, arcadeResults);
 //   } catch (error) {
