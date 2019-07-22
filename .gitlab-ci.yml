@@ -26,6 +26,7 @@ Build:
 Deploy Staging:
   variables:
     DEPLOY_URI: $STAGE_URI
+    SERVER_HOSTKEYS: $STAGE_SERVER_HOSTKEYS
   extends:
     - .staging_env
     - .rsync_node
@@ -42,6 +43,7 @@ Deploy Staging:
 Deploy Production:
   variables:
     DEPLOY_URI: $PROD_URI
+    SERVER_HOSTKEYS: $SSH_SERVER_HOSTKEYS
   extends:
     - .production_env
     - .rsync_node
