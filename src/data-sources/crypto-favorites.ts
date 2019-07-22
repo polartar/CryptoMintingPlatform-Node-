@@ -1,19 +1,18 @@
-// Basic full crud interface for adding, editing, and deleting accounts for a specific user.
-
-import { DataSource } from 'apollo-datasource';
+import { RESTDataSource } from 'apollo-datasource-rest';
 import { config } from '../common';
-import axios from 'axios';
 
-// TODO: Apollo datasource REST
-class CryptoFavorites extends DataSource {
+class CryptoFavorites extends RESTDataSource {
+  baseURL = 'https://min-api.cryptocompare.com/data';
+
   public async getUserFavorites(userFavorites: string[]) {
-    const reqUrl = `${
-      config.cryptoFavoritesBaseUrl
-    }/pricemultifull?fsyms=${userFavorites.join(',')}&tsyms=USD`;
-    const {
-      data: { RAW: rawFavorites },
-    } = await axios.get(reqUrl);
-    return Object.values(rawFavorites).map(({ USD: fav }) => {
+    const { cryptoSymbolToNameMap } = config;
+    const currency = 'USD';
+    const { RAW: rawFavorites } = await this.get('/pricemultifull', {
+      fsyms: userFavorites.join(','),
+      tsyms: currency,
+    });
+
+    return Object.values(rawFavorites).map(({ [currency]: fav }) => {
       const {
         CHANGEPCT24HOUR: changePercent24Hour,
         PRICE: price,
@@ -22,14 +21,14 @@ class CryptoFavorites extends DataSource {
         SUPPLY: supply,
         MKTCAP: marketCap,
       } = fav;
-      const fullImageUrl = 'https://cryptocompare.com' + imageUrl;
       return {
         changePercent24Hour,
         price,
         symbol,
-        imageUrl: fullImageUrl,
+        imageUrl: `https://cryptocompare.com${imageUrl}`,
         supply,
         marketCap,
+        name: cryptoSymbolToNameMap.get(symbol),
       };
     });
   }

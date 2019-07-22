@@ -14,13 +14,15 @@ type Transaction {
   from: String!
   amount: String!
   type: String!
+  total: String!
 }
 
 type Wallet {
-  accountId: String!
   symbol: String!
   name: String!
   balance: Balance!
+  icon: String!
+  backgroundColor: String!
   receiveAddress: String!
   transactions: [Transaction!]!
   feeEstimate: Float!

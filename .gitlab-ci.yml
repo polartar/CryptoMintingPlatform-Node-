@@ -1,85 +1,56 @@
-image: gcr.io/netzilla-registry/angular:bb
+image: gcr.io/netzilla-registry/node
 
 variables:
-  LOG_LINES: 125 # Bump this number to view more lines in the log with each run.
-  # Remember: You can restart the deployment job for that ENV to see a fresh output and not break anything.
-  PROD_USR: ubuntu
-  PROD_PORT: 22100
   PROD_URI: 'walletsrv.connectblockchain.net'
   STAGE_URI: 'stage0.walletsrv.connectblockchain.net'
-  PROD_APP: wallet-server
+  LOG_LINES: 125  # Bump this number to view more lines in the log with each run.
+  # Remember: You can restart the deployment job for that ENV to see a fresh output and not break anything.
+  DEPLOY_USR: ubuntu
+  DEPLOY_PORT: 22100
+  DEPLOY_APP: wallet-server
 
 stages:
   - build
   - deploy
 
-Build Production:
-  stage: build
-  script:
-    - npm config set @blockbrothers:registry https://npm.connectblockchain.net
-    - npm install --silent > /dev/null
-    - npm run build
-  artifacts:
-    paths:
-      - lib/
-    expire_in: 1 week
-  cache:
-    key: '$CI_PROJECT_ID-$CI_JOB_STAGE'
-    paths:
-      - node_modules/
+include:
+    - project: 'netzilla/ci-templates'
+      file: '/bb.yml'
+
+Build:
+  extends:
+    - .build_node
+  variables:
+    ARTIFACTS: lib
 
 Deploy Staging:
-  stage: deploy
-  environment:
-    name: Staging
-    url: http://$STAGE_URI/
+  variables:
+    DEPLOY_URI: $STAGE_URI
+    SERVER_HOSTKEYS: $STAGE_SERVER_HOSTKEYS
+  extends:
+    - .staging_env
+    - .rsync_node
   before_script:
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
-    - eval $(ssh-agent -s)
-    - ssh-add <(echo "$SSH_PRIVATE_KEY")
-    - mkdir -p ~/.ssh
-    - '[[ -f /.dockerenv ]] && echo "$STAGE_SERVER_HOSTKEYS" > ~/.ssh/known_hosts'
-  script:
     - echo "$JWT_PRIVATE" > jwtrsa-private.key && echo "$JWT_PUBLIC" > jwtrsa-public.pem
     - echo "$FIREBASE_SERVICE_ACCOUNT" > serviceAccountKey.json
     - echo "$DB_CONNECTIONS" > authDbConnections.json
     - echo "$ENV" > .env
     - >
       sed -i  '/\"exec_mode\"\: \"cluster\"\,/a \ \ \ \ \ \ \ \ \"autorestart": false,' pm2.json
-    - rsync -rqz -e 'ssh -p 22100' --delete-after --exclude '.git' --exclude '.gitignore' --exclude '.gitlab-ci.yml' ./ $PROD_USR@$STAGE_URI:/home/$PROD_USR/$PROD_APP
-    - ssh -tt $PROD_USR@$STAGE_URI -p $PROD_PORT "npm config set @blockbrothers:registry https://npm.connectblockchain.net"
-    - ssh -tt $PROD_USR@$STAGE_URI -p $PROD_PORT "npm --prefix /home/$PROD_USR/$PROD_APP install --production /home/$PROD_USR/$PROD_APP"
-    - ssh -tt $PROD_USR@$STAGE_URI -p $PROD_PORT "pm2 restart /home/$PROD_USR/$PROD_APP/pm2.json --update-env --only $PROD_APP"
-    - sleep 5
-    - ssh -tt $PROD_USR@$STAGE_URI -p $PROD_PORT "pm2 logs --lines $LOG_LINES --timestamp --nostream"
   dependencies:
-    - Build Production
-  only:
-    - master
+    - Build
 
 Deploy Production:
-  stage: deploy
-  environment:
-    name: Production
-    url: http://$PROD_URI/
+  variables:
+    DEPLOY_URI: $PROD_URI
+    SERVER_HOSTKEYS: $SSH_SERVER_HOSTKEYS
+  extends:
+    - .production_env
+    - .rsync_node
   before_script:
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
-    - eval $(ssh-agent -s)
-    - ssh-add <(echo "$SSH_PRIVATE_KEY")
-    - mkdir -p ~/.ssh
-    - '[[ -f /.dockerenv ]] && echo "$SSH_SERVER_HOSTKEYS" > ~/.ssh/known_hosts'
-  script:
     - echo "$JWT_PRIVATE" > jwtrsa-private.key && echo "$JWT_PUBLIC" > jwtrsa-public.pem
     - echo "$FIREBASE_SERVICE_ACCOUNT" > serviceAccountKey.json
     - echo "$DB_PROD_CONNECTIONS" > authDbConnections.json
     - echo "$ENV_PROD" > .env
-    - rsync -rqz -e 'ssh -p 22100' --delete-after --exclude '.git' --exclude '.gitignore' --exclude '.gitlab-ci.yml' ./ $PROD_USR@$PROD_URI:/home/$PROD_USR/$PROD_APP
-    - ssh -tt $PROD_USR@$PROD_URI -p $PROD_PORT "npm config set @blockbrothers:registry https://npm.connectblockchain.net"
-    - ssh -tt $PROD_USR@$PROD_URI -p $PROD_PORT "npm --prefix /home/$PROD_USR/$PROD_APP install --production /home/$PROD_USR/$PROD_APP"
-    - ssh -tt $PROD_USR@$PROD_URI -p $PROD_PORT "pm2 restart /home/$PROD_USR/$PROD_APP/pm2.json --update-env --only $PROD_APP"
-    - sleep 5
-    - ssh -tt $PROD_USR@$PROD_URI -p $PROD_PORT "pm2 logs --lines $LOG_LINES --timestamp --nostream"
   dependencies:
-    - Build Production
-  only:
-    - tags
+    - Build

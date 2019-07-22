@@ -1,6 +1,6 @@
 import * as winston from 'winston';
 require('winston-mongodb');
-import { config } from './';
+import { config } from '../common';
 
 const logger = winston.createLogger({
   level: config.logLevel,

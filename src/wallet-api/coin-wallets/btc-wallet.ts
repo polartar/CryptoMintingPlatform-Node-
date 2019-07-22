@@ -1,12 +1,12 @@
 // The getBalance function is working in this interface. It expects an account ID as an argument (one user can have multiple accounts.) If there is no bcoin wallet for the specified account ID, one is created and all of the necessary credentials are stored in the apiKeyService
 
-import WalletBase from './wallet-base';
+import CoinWalletBase from './coin-wallet-base';
 import { sha256 } from 'js-sha256';
 import { v4 as generateRandomId } from 'uuid';
-import config from '../common/config';
-import { credentialService } from '../services';
-import { ITransaction, ICoinMetadata } from '../types';
-import { UserApi } from '../data-sources';
+import { config } from '../../common';
+import { credentialService } from '../../services';
+import { ITransaction, ICoinMetadata } from '../../types';
+import { UserApi } from '../../data-sources';
 import { BigNumber } from 'bignumber.js';
 const { WalletClient } = require('bclient');
 const autoBind = require('auto-bind');
@@ -25,7 +25,7 @@ interface IBcoinTx {
   outputs: IBtcRawOutput[];
   hash: string;
 }
-class BtcWallet extends WalletBase {
+class BtcWallet extends CoinWalletBase {
   feeRate = 10000;
   // To my knowledge, bcoin hasn't implemented types to their client.
   walletClient: any;
@@ -35,7 +35,7 @@ class BtcWallet extends WalletBase {
     contractAddress,
     abi,
     backgroundColor,
-    icon
+    icon,
   }: ICoinMetadata) {
     super(name, symbol, contractAddress, abi, backgroundColor, icon);
     autoBind(this);
@@ -121,9 +121,8 @@ class BtcWallet extends WalletBase {
   }
 
   // Old code from the old front-end-only method
-  public async getTransactions(userApi: UserApi): Promise<ITransaction[]> {
-    const accountId = userApi.userId;
-    const userWallet = await this.setWallet(accountId);
+  public async getTransactions(userId: string): Promise<ITransaction[]> {
+    const userWallet = await this.setWallet(userId);
     const history = await userWallet.getHistory('default');
     return this.formatTransactions(history);
   }
@@ -131,12 +130,13 @@ class BtcWallet extends WalletBase {
   private formatTransactions(transactions: IBcoinTx[]): ITransaction[] {
     const formattedTransactions = transactions.map(transaction => {
       const { block, confirmations, mdate, fee, outputs, hash } = transaction;
+      const bnFee = this.satToBtc(new BigNumber(fee));
       const formattedTx = {
         id: hash,
         status: block === null ? 'Pending' : 'Complete',
         confirmations,
         timestamp: new Date(mdate).getTime() / 1000,
-        fee: this.satToBtc(new BigNumber(fee)).toFixed(),
+        fee: bnFee.negated().toFixed(),
         link: `${config.btcTxLink}/${hash}/`,
       };
       if (fee) {
@@ -159,8 +159,12 @@ class BtcWallet extends WalletBase {
           ...formattedTx,
           to,
           from,
-          amount: amount.toString(),
-          type: 'withdrawal',
+          amount: amount.negated().toFixed(),
+          type: 'Withdrawal',
+          total: amount
+            .plus(bnFee)
+            .negated()
+            .toFixed(),
         };
       } else {
         // I received this tx
@@ -183,59 +187,52 @@ class BtcWallet extends WalletBase {
           to,
           from,
           amount: amount.toFixed(),
-          type: 'deposit',
+          total: amount.toFixed(),
+          type: 'Deposit',
         };
       }
     });
     return formattedTransactions;
   }
 
-  public async getBalance(userApi: UserApi) {
-    const accountId = userApi.userId;
-    // retreives the bcoin wallet interface based off of the specified accountId
-    const userWallet = await this.setWallet(accountId);
-    // request the wallet balance from bcoin
+  public async getBalance(userId: string) {
+    const userWallet = await this.setWallet(userId);
     const balanceResult = await userWallet.getAccount('default');
-    // Pull the confirmed and unconfirmed properties off of the balance response. I'm pretty sure the unconfirmed amount included the confirmed amount for some reason. ¯\_(ツ)_/¯ so it may make more sense to subtract the confirmed from the unconfirmed to get the truely unconfirmed amount.
     const {
-      receiveAddress,
       balance: { confirmed, unconfirmed },
     } = balanceResult;
-
-    const feeEstimate = this.estimateFee();
     const confirmedBalance = new BigNumber(confirmed);
     const unconfirmedBalance = new BigNumber(unconfirmed).minus(
       confirmedBalance,
     );
-    // Return the balance based on this standardized shape.
     return {
-      accountId,
-      symbol: this.symbol,
-      name: this.name,
-      feeEstimate,
-      receiveAddress,
-      balance: {
-        confirmed: this.satToBtc(confirmedBalance).toFixed(),
-        unconfirmed: this.satToBtc(unconfirmedBalance).toFixed(),
-      },
+      confirmed: this.satToBtc(confirmedBalance).toFixed(),
+      unconfirmed: this.satToBtc(unconfirmedBalance).toFixed(),
     };
   }
 
-  // Returns the bcoin wallet interface
+  public async getWalletInfo(userApi: UserApi) {
+    const userWallet = await this.setWallet(userApi.userId);
+    const { receiveAddress } = await userWallet.getAccount('default');
+    return {
+      receiveAddress: receiveAddress,
+      symbol: this.symbol,
+      name: this.name,
+      backgroundColor: this.backgroundColor,
+      icon: this.icon,
+    };
+  }
+
   private async setWallet(accountId: string) {
-    // Get the token from the apiKeyService
     const token = await this.getToken(accountId);
-    // Return the configured wallet.
     return this.walletClient.wallet(accountId, token);
   }
 
   private async getToken(accountId: string) {
-    // request the token from the apiKeyService. This must be sent along to bcoin with each request for security
     const token = await credentialService
       .get(accountId, this.symbol, 'token')
       .catch(err => {
         if (err.response && err.response.status === 404) {
-          // If there is no token found in the service, create a new wallet. this.createWallet also returns the token so in either case, a token is returned
           return this.createWallet(accountId);
         }
         throw err;

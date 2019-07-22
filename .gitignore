@@ -30,12 +30,20 @@ npm-debug.log
 
 # Envs
 .env
+.env.stage
 .env.production
 
 # Firebase Keys
 service-accounts.json
 jwtrsa-private.key
 jwtrsa-public.pem
-credentials.ts
 serviceAccountKey.json
+
+# Personal notes
+credentials.ts
+TODO.md
+
+# Firebase DB Config
 authDbConnections.json
+
+
