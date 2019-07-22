@@ -23,19 +23,6 @@ class Resolvers extends ResolverBase {
     }
   }
 
-  // public async createWallet(
-  //   parent: any,
-  //   args: {},
-  //   { user, wallet }: Context,
-  // ) {
-  //   this.requireAuth(user);
-  //   const walletExists = await this.verifyWalletCredentialsExist(user.userId);
-  //   if (walletExists) throw new ApolloError('Wallet already exists');
-  //   const btcWallet = wallet.coin('btc');
-  //   const ethWallet = wallet.coin('eth');
-
-  // }
-
   public async login(
     parent: any,
     args: { token: string },
