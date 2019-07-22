@@ -1,9 +1,7 @@
 // This abstract class is intended to provide a framework for each of the wallet interfaces to ensure they implement the same methods and return the same data shape
 import { ITransaction } from '../../types';
 import { UserApi } from '../../data-sources';
-import { config } from '../../common';
-import { SHA256 } from 'crypto-js'
-const SimpleCrypto = require('simple-crypto-js')
+
 export default abstract class CoinWalletBase {
   constructor(
     protected name: string,
@@ -31,26 +29,6 @@ export default abstract class CoinWalletBase {
       );
   }
 
-  protected encrypt(plainTextValue: string, secret: string) {
-    if (!config.clientSecretKeyRequired) return plainTextValue
-    const crypto = new SimpleCrypto(secret);
-    return crypto.encrypt(plainTextValue);
-  }
-
-  protected decrypt(maybeEncryptedValue: string, secret: string) {
-    if (!config.clientSecretKeyRequired) return maybeEncryptedValue
-    const crypto = new SimpleCrypto(secret);
-    const decryptedValue = crypto.decrypt(maybeEncryptedValue)
-    if (!decryptedValue) throw new Error('Invalid secret key')
-    return decryptedValue.toString();
-  }
-
-  protected hash(value: string) {
-    return SHA256(value).toString()
-  }
-
-  abstract createWallet(userApi: UserApi, passphrase: string, mnemonic: string): Promise<boolean>;
-
   abstract getWalletInfo(
     userApi: UserApi,
   ): Promise<{
@@ -68,8 +46,6 @@ export default abstract class CoinWalletBase {
     unconfirmed: string;
   }>;
 
-  abstract checkIfWalletExists(userApi: UserApi): Promise<boolean>
-
   abstract getTransactions(addressOrUserId: string, blockNumberAtCreation?: number): Promise<ITransaction[]>;
 
   abstract estimateFee(userApi: UserApi): Promise<string>;
@@ -78,6 +54,5 @@ export default abstract class CoinWalletBase {
     userApi: UserApi,
     to: string,
     amount: string,
-    walletPassword: string
   ): Promise<{ success: boolean; message?: string }>;
 }
