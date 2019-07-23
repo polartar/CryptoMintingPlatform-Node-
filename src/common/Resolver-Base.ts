@@ -1,6 +1,7 @@
 import { AuthenticationError, ForbiddenError, UserInputError } from 'apollo-server-express';
 import { UserApi } from '../data-sources';
 import { config } from '../common';
+import { crypto } from '../utils'
 
 export default abstract class ResolverBase {
   // Common method to throw an graphQL auth error if the user is null
@@ -28,4 +29,10 @@ export default abstract class ResolverBase {
       }
     }
   }
+
+  protected encrypt = (plainText: string, secret: string) => crypto.encrypt(plainText, secret)
+
+  protected decrypt = (encryptedText: string, secret: string) => crypto.decrypt(encryptedText, secret);
+
+  protected hash = (value: string) => crypto.hash(value)
 }
