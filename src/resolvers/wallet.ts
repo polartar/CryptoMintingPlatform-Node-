@@ -1,5 +1,5 @@
 import { Context } from '../types/context';
-import { mnemonic } from '../utils'
+import { mnemonic as mnemonicUtils, crypto } from '../utils'
 import ResolverBase from '../common/Resolver-Base';
 import { credentialService } from '../services';
 const autoBind = require('auto-bind');
@@ -8,6 +8,26 @@ class Resolvers extends ResolverBase {
   constructor() {
     super();
     autoBind(this);
+  }
+
+  private saveWalletPassword(userId: string, walletPassword: string, mnemonic: string) {
+    const lowerMnemonic = mnemonic.toLowerCase()
+    const encryptedPass = this.encrypt(walletPassword, lowerMnemonic)
+    const hashedMnemonic = this.hash(lowerMnemonic)
+    return credentialService.create(userId, 'x', hashedMnemonic, encryptedPass);
+  }
+
+  private async getAndDecryptWalletPassword(userId: string, mnemonic: string) {
+    const lowerMnemonic = mnemonic.toLowerCase()
+    const hashedMnemonic = this.hash(lowerMnemonic)
+    const encryptedPassword = await credentialService.get(userId, 'x', hashedMnemonic);
+    const password = this.decrypt(encryptedPassword, lowerMnemonic);
+    return password
+  }
+
+  private requireValidMnemonic(mnemonic: string) {
+    const isValidMnemonic = mnemonicUtils.validate(mnemonic.toLowerCase());
+    if (!isValidMnemonic) throw Error('Invalid recovery phrase')
   }
 
   private selectUserIdOrAddress(
@@ -27,7 +47,7 @@ class Resolvers extends ResolverBase {
     this.maybeRequireStrongWalletPassword(walletPassword)
     try {
       this.maybeRequireStrongWalletPassword(walletPassword)
-      const mnemonicIsValid = mnemonic.validate(recoveryPhrase);
+      const mnemonicIsValid = mnemonicUtils.validate(recoveryPhrase);
       if (!mnemonicIsValid) throw new Error('Invalid mnemonic')
       const btcApi = wallet.coin('btc');
       const ethApi = wallet.coin('eth');
@@ -41,9 +61,7 @@ class Resolvers extends ResolverBase {
         ethApi.createWallet(user, walletPassword, recoveryPhrase)
       ])
       if (!btcWalletCreated || !ethWalletCreated) throw new Error('Error creating wallet')
-      const encryptedPass = this.encrypt(walletPassword, recoveryPhrase)
-      const hashedMnemonic = this.hash(recoveryPhrase)
-      await credentialService.create(user.userId, 'x', hashedMnemonic, encryptedPass);
+      await this.saveWalletPassword(user.userId, walletPassword, recoveryPhrase)
       return {
         success: true,
         message: 'Wallet created'
@@ -87,13 +105,40 @@ class Resolvers extends ResolverBase {
   ) {
     this.requireAuth(user);
     const lang = args.lang || 'en';
-    return mnemonic.generateRandom(lang);
+    return mnemonicUtils.generateRandom(lang);
   }
 
   async recoverWallet(
-    parent: any, args: { mnemonic: string, newPassword: string }, { user }: Context
+    parent: any, args: { mnemonic: string, newPassword: string }, { user, wallet }: Context
   ) {
+    const { mnemonic, newPassword } = args
     this.requireAuth(user);
+    try {
+      this.requireValidMnemonic(mnemonic);
+      const btcApi = wallet.coin('btc');
+      const ethApi = wallet.coin('eth');
+      const oldPassword = await this.getAndDecryptWalletPassword(user.userId, mnemonic)
+      const [btcSuccess, ethSuccess] = await Promise.all([
+        btcApi.recoverWallet(user, oldPassword, newPassword),
+        ethApi.recoverWallet(user, oldPassword, newPassword)
+      ])
+      if (!btcSuccess || !ethSuccess) throw new Error('Error while recovering wallet');
+      await this.saveWalletPassword(user.userId, newPassword, mnemonic);
+      return {
+        success: true,
+        message: 'Wallet password changed successfully'
+      }
+    } catch (error) {
+      const message = error.message
+        && error.message === crypto.ERROR_INCORRECT_SECRET
+        ? 'Incorrect recovery phrase'
+        : error.message
+
+      return {
+        success: false,
+        message: message || error.stack
+      }
+    }
   }
 
   async getTransactions(
@@ -161,6 +206,7 @@ export default {
   },
   Mutation: {
     sendTransaction: resolvers.sendTransaction,
-    createWallet: resolvers.createWallet
+    createWallet: resolvers.createWallet,
+    recoverWallet: resolvers.recoverWallet
   },
 };

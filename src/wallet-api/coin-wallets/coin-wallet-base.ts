@@ -62,6 +62,8 @@ export default abstract class CoinWalletBase {
 
   abstract createWallet(user: UserApi, walletPassword: string, recoveryPhrase: string): Promise<boolean>;
 
+  abstract recoverWallet(user: UserApi, oldPassword: string, newPassword: string): Promise<boolean>;
+
   protected encrypt = (plainText: string, secret: string) => crypto.encrypt(plainText, secret)
 
   protected decrypt = (encryptedText: string, secret: string) => crypto.decrypt(encryptedText, secret);
