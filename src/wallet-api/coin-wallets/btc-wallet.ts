@@ -283,6 +283,16 @@ class BtcWallet extends CoinWalletBase {
       };
     }
   }
+
+  public async recoverWallet(userApi: UserApi, oldPassword: string, newPassword: string) {
+    try {
+      const wallet = await this.setWallet(userApi.userId);
+      const { success } = await wallet.setPassphrase(newPassword, oldPassword)
+      return success;
+    } catch (error) {
+      return false;
+    }
+  }
 }
 
 export default BtcWallet;

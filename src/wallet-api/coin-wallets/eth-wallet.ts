@@ -242,6 +242,19 @@ class EthWallet extends CoinWalletBase {
       };
     });
   }
+
+  public async recoverWallet(userApi: UserApi, oldPassword: string, newPassword: string) {
+    const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
+    const privateKey = this.decrypt(encryptedPrivateKey, oldPassword);
+    const reEncryptedPrivateKey = this.encrypt(privateKey, newPassword)
+    const response = await credentialService.create(
+      userApi.userId,
+      'ETH',
+      PRIVATEKEY,
+      reEncryptedPrivateKey,
+    );
+    return response && response.status === 200;
+  }
 }
 
 export default EthWallet;
