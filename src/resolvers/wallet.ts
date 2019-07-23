@@ -1,9 +1,7 @@
 import { Context } from '../types/context';
 import { mnemonic } from '../utils'
 import ResolverBase from '../common/Resolver-Base';
-import { SHA256 } from 'crypto-js'
 import { credentialService } from '../services';
-const SimpleCrypto = require('simple-crypto-js');
 const autoBind = require('auto-bind');
 
 class Resolvers extends ResolverBase {
@@ -24,10 +22,10 @@ class Resolvers extends ResolverBase {
     args: { mnemonic: string, walletPassword: string },
     { user, wallet }: Context,
   ) {
+    const { mnemonic: recoveryPhrase, walletPassword } = args;
     this.requireAuth(user);
-    this.maybeRequireStrongWalletPassword(args.walletPassword)
+    this.maybeRequireStrongWalletPassword(walletPassword)
     try {
-      const { mnemonic: recoveryPhrase, walletPassword } = args;
       this.maybeRequireStrongWalletPassword(walletPassword)
       const mnemonicIsValid = mnemonic.validate(recoveryPhrase);
       if (!mnemonicIsValid) throw new Error('Invalid mnemonic')
@@ -43,10 +41,9 @@ class Resolvers extends ResolverBase {
         ethApi.createWallet(user, walletPassword, recoveryPhrase)
       ])
       if (!btcWalletCreated || !ethWalletCreated) throw new Error('Error creating wallet')
-      const crypto = new SimpleCrypto(recoveryPhrase)
-      const encryptedPass = crypto.encrypt(walletPassword);
-      const hashedMnemonic = SHA256(recoveryPhrase).toString();
-      await credentialService.create(user.userId, 'X', hashedMnemonic, encryptedPass);
+      const encryptedPass = this.encrypt(walletPassword, recoveryPhrase)
+      const hashedMnemonic = this.hash(recoveryPhrase)
+      await credentialService.create(user.userId, 'x', hashedMnemonic, encryptedPass);
       return {
         success: true,
         message: 'Wallet created'
@@ -91,6 +88,12 @@ class Resolvers extends ResolverBase {
     this.requireAuth(user);
     const lang = args.lang || 'en';
     return mnemonic.generateRandom(lang);
+  }
+
+  async recoverWallet(
+    parent: any, args: { mnemonic: string, newPassword: string }, { user }: Context
+  ) {
+    this.requireAuth(user);
   }
 
   async getTransactions(

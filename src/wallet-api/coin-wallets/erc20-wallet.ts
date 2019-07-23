@@ -3,7 +3,6 @@ import config from '../../common/config';
 import { ethers, utils } from 'ethers';
 import { ITransaction, ICoinMetadata, IWeb3TransferEvent } from '../../types';
 import { UserApi } from '../../data-sources';
-import { ApolloError } from 'apollo-server-express';
 const Web3 = require('web3');
 
 class Erc20API extends EthWallet {
@@ -180,18 +179,27 @@ class Erc20API extends EthWallet {
     };
   }
 
-  private async requireEnoughBalanceToSendToken(
+  private async requireEnoughTokensAndEtherToSend(
+    userApi: UserApi,
     address: string,
     amount: string,
   ) {
-    const { confirmed } = await this.getBalance(address);
-    const hasEnough = utils.parseUnits(confirmed, this.decimalPlaces).gte(amount);
-    if (!hasEnough)
-      throw new ApolloError(
-        `Insufficient account balance. Amount: ${this.decimalize(
-          amount,
-        )}. Balance: ${this.decimalize(confirmed)}`,
+    const { parseEther, parseUnits } = utils
+    const [{ confirmed: tokenBalance }, feeEstimate, etherBalance] = await Promise.all([
+      this.getBalance(address),
+      this.estimateFee(userApi),
+      this.provider.getBalance(address)
+    ])
+    const hasEnoughEther = etherBalance.gt(parseEther(feeEstimate));
+    const hasEnoughTokens = parseUnits(tokenBalance, this.decimalPlaces).gte(amount);
+    if (!hasEnoughTokens) {
+      throw new Error(
+        `Insufficient account balance. Amount: ${this.decimalize(amount)}. Balance: ${tokenBalance}`,
       );
+    }
+    if (!hasEnoughEther) {
+      throw new Error('Insufficient ETH balance to cover transaction fee');
+    }
   }
 
   async send(userApi: UserApi, to: string, value: string, walletPassword: string) {
@@ -201,7 +209,7 @@ class Erc20API extends EthWallet {
       const privateKey = this.decrypt(encryptedPrivateKey, walletPassword)
       const amount = this.integerize(value);
       const wallet = new ethers.Wallet(privateKey, this.provider);
-      await this.requireEnoughBalanceToSendToken(wallet.address, amount.toString());
+      await this.requireEnoughTokensAndEtherToSend(userApi, wallet.address, amount.toString())
       const contract = new ethers.Contract(
         this.contractAddress,
         this.abi,

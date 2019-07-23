@@ -14,8 +14,6 @@ class EthWallet extends CoinWalletBase {
     config.etherscanNetwork,
     config.etherScanApiKey,
   );
-  WEB3_GAS_ERROR = 'Returned error: insufficient funds for gas * price + value';
-  NEW_GAS_ERROR = 'Insufficient credits';
 
   constructor({
     name,
@@ -173,12 +171,13 @@ class EthWallet extends CoinWalletBase {
       const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
       const privateKey = this.decrypt(encryptedPrivateKey, walletPassword)
       const wallet = new ethers.Wallet(privateKey, this.provider);
-      const { hash: txHash } = await wallet.sendTransaction({
+      const transaction = await wallet.sendTransaction({
         nonce,
         to,
         value,
         gasLimit: 21001,
       });
+      const { hash: txHash } = transaction;
       await userApi.incrementTxCount();
       this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
       return {
@@ -224,7 +223,7 @@ class EthWallet extends CoinWalletBase {
       const gasPrice = this.bigNumberify(rawTx.gasPrice);
       const subTotal = this.bigNumberify(value);
       const fee = gasUsed.mul(gasPrice);
-      const isDeposit = to === address.toLowerCase();
+      const isDeposit = to.toLowerCase() === address.toLowerCase();
       const total = subTotal.add(isDeposit ? 0 : fee);
       return {
         id: hash,
