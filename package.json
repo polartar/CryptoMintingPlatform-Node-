@@ -12,8 +12,7 @@
     "format:fix": "pretty-quick --staged",
     "format:check": "prettier --config ./.prettierrc --list-different \"src/**/*{.ts,.js,.json}\"",
     "format:all": "prettier --config ./.prettierrc --write \"src/**/*{.ts,.js,.json}\"",
-    "precommit": "run-s format:fix fix lint",
-    "token": "ts-node ./src/scripts/getJwt.ts"
+    "precommit": "run-s format:fix fix lint"
   },
   "dependencies": {
     "@blockbrothers/firebasebb": "^0.3.11",
