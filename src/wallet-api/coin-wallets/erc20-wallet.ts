@@ -49,17 +49,11 @@ class Erc20API extends EthWallet {
   }
 
   async estimateFee(userApi: UserApi) {
-    const gasPricePromise = this.provider.getGasPrice();
-    const privateKeyPromise = this.getPrivateKey(userApi.userId);
-    const [gasPrice, privateKey] = await Promise.all([
-      gasPricePromise,
-      privateKeyPromise,
-    ]);
-    const wallet = new ethers.Wallet(privateKey, this.provider);
+    const gasPrice = await this.provider.getGasPrice();
     try {
       const testValue = this.bigNumberify(10);
       const estimate = await this.contract.estimate.transfer(
-        wallet.address,
+        config.erc20FeeCalcAddress,
         testValue,
         { gasLimit: 750000 },
       );
@@ -69,16 +63,18 @@ class Erc20API extends EthWallet {
     }
   }
 
-  private negate(numToNegate: utils.BigNumber) {
+  private negate(numToNegate: string | utils.BigNumber) {
+    if (typeof numToNegate === 'string') return `-${numToNegate}`
     return this.bigNumberify(0).sub(numToNegate);
   }
 
-  private decimalize(numHexOrBn: string | number | utils.BigNumber): utils.BigNumber {
-    return this.bigNumberify(numHexOrBn).div(this.decimalFactor);
+  private decimalize(numHexOrBn: string | number | utils.BigNumber): string {
+    const parsedUnits = utils.formatUnits(numHexOrBn.toString(), this.decimalPlaces);
+    return parsedUnits
   }
 
   private integerize(decimalizedString: string) {
-    return this.bigNumberify(decimalizedString).mul(this.decimalFactor);
+    return utils.parseUnits(decimalizedString.toString(), this.decimalPlaces);
   }
 
   private async getBalanceFromContract(ethAddress: string) {
@@ -87,7 +83,7 @@ class Erc20API extends EthWallet {
   }
 
   async getWalletInfo(userApi: UserApi) {
-    const { ethAddress, blockNumAtCreation } = await this.ensureEthAddress(userApi);
+    const { ethAddress, blockNumAtCreation } = await this.getEthAddress(userApi);
     return {
       receiveAddress: ethAddress,
       symbol: this.symbol,
@@ -117,7 +113,7 @@ class Erc20API extends EthWallet {
             returnValues: { tokens, to, from },
           } = transferEvent;
 
-          const amount = this.decimalize(tokens.toHexString());
+          const amount = this.decimalize(tokens.toString());
           const block = await web3.eth.getBlock(blockNumber, false);
           const { timestamp } = block;
           const transaction = await web3.eth.getTransaction(transactionHash);
@@ -128,7 +124,9 @@ class Erc20API extends EthWallet {
           const formattedAmount = isDeposit
             ? amount.toString()
             : this.negate(amount).toString()
-          const formattedTotal = `${formattedAmount} ${this.symbol}, -${feeString}`;
+          const formattedTotal = isDeposit
+            ? `${formattedAmount}`
+            : `${formattedAmount} ${this.symbol}, -${feeString}`;
           return {
             id: transactionHash,
             status: blockHash ? 'Complete' : 'Pending',
@@ -184,25 +182,26 @@ class Erc20API extends EthWallet {
 
   private async requireEnoughBalanceToSendToken(
     address: string,
-    amount: utils.BigNumber,
+    amount: string,
   ) {
     const { confirmed } = await this.getBalance(address);
-    const hasEnough = this.integerize(confirmed).gte(amount);
+    const hasEnough = utils.parseUnits(confirmed, this.decimalPlaces).gte(amount);
     if (!hasEnough)
       throw new ApolloError(
         `Insufficient account balance. Amount: ${this.decimalize(
-          amount.toHexString(),
+          amount,
         )}. Balance: ${this.decimalize(confirmed)}`,
       );
   }
 
-  async send(userApi: UserApi, to: string, value: string) {
+  async send(userApi: UserApi, to: string, value: string, walletPassword: string) {
     try {
-      const { nonce, ethAddress } = await this.ensureEthAddress(userApi);
-      const privateKey = await this.getPrivateKey(userApi.userId);
+      const { nonce, ethAddress } = await this.getEthAddress(userApi);
+      const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
+      const privateKey = this.decrypt(encryptedPrivateKey, walletPassword)
       const amount = this.integerize(value);
       const wallet = new ethers.Wallet(privateKey, this.provider);
-      await this.requireEnoughBalanceToSendToken(wallet.address, amount);
+      await this.requireEnoughBalanceToSendToken(wallet.address, amount.toString());
       const contract = new ethers.Contract(
         this.contractAddress,
         this.abi,

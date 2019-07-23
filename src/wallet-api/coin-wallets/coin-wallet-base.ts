@@ -1,6 +1,8 @@
 // This abstract class is intended to provide a framework for each of the wallet interfaces to ensure they implement the same methods and return the same data shape
 import { ITransaction } from '../../types';
 import { UserApi } from '../../data-sources';
+const SimpleCrypto = require('simple-crypto-js')
+const SHA256 = require('crypto-js/sha256')
 
 export default abstract class CoinWalletBase {
   constructor(
@@ -46,6 +48,8 @@ export default abstract class CoinWalletBase {
     unconfirmed: string;
   }>;
 
+  abstract checkIfWalletExists(user: UserApi): Promise<boolean>;
+
   abstract getTransactions(addressOrUserId: string, blockNumberAtCreation?: number): Promise<ITransaction[]>;
 
   abstract estimateFee(userApi: UserApi): Promise<string>;
@@ -54,5 +58,22 @@ export default abstract class CoinWalletBase {
     userApi: UserApi,
     to: string,
     amount: string,
+    walletPassword: string
   ): Promise<{ success: boolean; message?: string }>;
+
+  abstract createWallet(user: UserApi, walletPassword: string, recoveryPhrase: string): Promise<boolean>;
+
+  protected encrypt(plainText: string, secret: string) {
+    const crypto = new SimpleCrypto(secret);
+    return crypto.encrypt(plainText).toString()
+  }
+
+  protected decrypt(encryptedText: string, secret: string) {
+    const crypto = new SimpleCrypto(secret);
+    return crypto.decrypt(encryptedText).toString()
+  }
+
+  protected hash(value: string) {
+    return SHA256(value);
+  }
 }

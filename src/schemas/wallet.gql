@@ -31,9 +31,10 @@ type Wallet {
 type Query {
   # If no coinSymbol is provided, all supported wallets will be returned
   wallet(coinSymbol: String): [Wallet!]!
+  mnemonic(lang: String): String!
 }
 
-type TransactionResponse {
+type MutationResponse {
   success: Boolean!
   message: String
 }
@@ -44,6 +45,11 @@ type Mutation {
     coinSymbol: String
     to: String!
     amount: String!
-    totpToken: String!
-  ): TransactionResponse!
+    totpToken: String
+    walletPassword: String
+  ): MutationResponse!
+  createWallet(
+    mnemonic: String!
+    walletPassword: String
+  ): MutationResponse!
 }
