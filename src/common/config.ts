@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as path from 'path'
+import * as path from 'path';
 import * as dotenv from 'dotenv';
 import * as autoBind from 'auto-bind';
 import keys from './keys';
@@ -24,8 +24,9 @@ class Config {
   public readonly etherScanApiKey = process.env.ETHERSCAN_API_KEY;
   public readonly clientSecretKeyRequired: boolean =
     process.env.CLIENT_SECRET_KEY_REQUIRED !== undefined &&
-    process.env.CLIENT_SECRET_KEY_REQUIRED === 'true'
+    process.env.CLIENT_SECRET_KEY_REQUIRED === 'true';
   public readonly erc20FeeCalcAddress = process.env.ETH_ADD_FOR_ERC20_FEE_CALC;
+  public readonly cryptoNetwork = process.env.CRYPTO_NETWORK;
   public readonly cryptoSymbolToNameMap: Map<
     string,
     string
@@ -35,29 +36,34 @@ class Config {
     ssl:
       process.env.BCOIN_WALLET_SSL &&
       process.env.BCOIN_WALLET_SSL.toLowerCase() === 'true',
-    uri: process.env.BCOIN_NETWORK,
+    uri: process.env.CRYPTO_NETWORK,
     walletAuth: true,
-    network: process.env.BCOIN_NETWORK,
+    network: process.env.CRYPTO_NETWORK,
     port: +process.env.BCOIN_WALLET_PORT,
     apiKey: process.env.BCOIN_WALLET_API_KEY,
   };
   public readonly ethNodeUrl =
-    process.env.ETH_NETWORK === 'testnet'
+    process.env.CRYPTO_NETWORK === 'testnet'
       ? 'https://ropsten.infura.io'
       : 'https://eth.share.green';
 
   public readonly etherscanNetwork =
-    process.env.ETH_NETWORK === 'testnet' ? 'ropsten' : 'homestead';
+    process.env.CRYPTO_NETWORK === 'testnet' ? 'ropsten' : 'homestead';
 
   public readonly btcTxLink =
-    process.env.BCOIN_NETWORK === 'testnet'
+    process.env.CRYPTO_NETWORK === 'testnet'
       ? 'https://live.blockcypher.com/btc-testnet/tx'
       : 'https://live.blockcypher.com/btc/tx';
 
   public readonly ethTxLink =
-    process.env.ETH_NETWORK === 'testnet'
+    process.env.CRYPTO_NETWORK === 'testnet'
       ? 'https://ropsten.etherscan.io/tx'
       : 'https://etherscan.io/tx';
+
+  public readonly contractAddresses = {
+    green: process.env.GREEN_ADDRESS,
+    arcade: process.env.ARCADE_ADDRESS,
+  };
 
   constructor() {
     autoBind(this);
@@ -71,13 +77,14 @@ class Config {
       'LOG_LEVEL',
       'PORT',
       'HOSTNAME',
-      'BCOIN_NETWORK',
+      'CRYPTO_NETWORK',
+      'ARCADE_ADDRESS',
+      'GREEN_ADDRESS',
       'BCOIN_WALLET_PORT',
       'BCOIN_WALLET_API_KEY',
       'BCOIN_WALLET_HOST',
       'BCOIN_WALLET_SSL',
       'API_KEY_SERVICE_URL',
-      'ETH_NETWORK',
       'ETHERSCAN_API_KEY',
       'ETH_ADD_FOR_ERC20_FEE_CALC',
     ].filter(name => !process.env[name]);

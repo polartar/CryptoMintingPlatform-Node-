@@ -1,3 +1,5 @@
+import { eSupportedInterfaces } from '../types';
+
 export default interface ICoinMetadata {
   name: string;
   backgroundColor: string;
@@ -6,4 +8,5 @@ export default interface ICoinMetadata {
   abi: any;
   contractAddress: string | null;
   decimalPlaces: number;
+  walletApi: eSupportedInterfaces;
 }
