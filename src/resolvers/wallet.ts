@@ -1,5 +1,7 @@
 import { Context } from '../types/context';
+import { mnemonic as mnemonicUtils, crypto } from '../utils'
 import ResolverBase from '../common/Resolver-Base';
+import { credentialService } from '../services';
 const autoBind = require('auto-bind');
 
 class Resolvers extends ResolverBase {
@@ -8,11 +10,68 @@ class Resolvers extends ResolverBase {
     autoBind(this);
   }
 
+  private saveWalletPassword(userId: string, walletPassword: string, mnemonic: string) {
+    const lowerMnemonic = mnemonic.toLowerCase()
+    const encryptedPass = this.encrypt(walletPassword, lowerMnemonic)
+    const hashedMnemonic = this.hash(lowerMnemonic)
+    return credentialService.create(userId, 'x', hashedMnemonic, encryptedPass);
+  }
+
+  private async getAndDecryptWalletPassword(userId: string, mnemonic: string) {
+    const lowerMnemonic = mnemonic.toLowerCase()
+    const hashedMnemonic = this.hash(lowerMnemonic)
+    const encryptedPassword = await credentialService.get(userId, 'x', hashedMnemonic);
+    const password = this.decrypt(encryptedPassword, lowerMnemonic);
+    return password
+  }
+
+  private requireValidMnemonic(mnemonic: string) {
+    const isValidMnemonic = mnemonicUtils.validate(mnemonic.toLowerCase());
+    if (!isValidMnemonic) throw Error('Invalid recovery phrase')
+  }
+
   private selectUserIdOrAddress(
     userId: string,
     parent: { symbol: string, receiveAddress: string }) {
     if (parent.symbol.toLowerCase() === 'btc') return userId;
     return parent.receiveAddress;
+  }
+
+  async createWallet(
+    parent: any,
+    args: { mnemonic: string, walletPassword: string },
+    { user, wallet }: Context,
+  ) {
+    const { mnemonic: recoveryPhrase, walletPassword } = args;
+    this.requireAuth(user);
+    this.maybeRequireStrongWalletPassword(walletPassword)
+    try {
+      this.maybeRequireStrongWalletPassword(walletPassword)
+      const mnemonicIsValid = mnemonicUtils.validate(recoveryPhrase);
+      if (!mnemonicIsValid) throw new Error('Invalid mnemonic')
+      const btcApi = wallet.coin('btc');
+      const ethApi = wallet.coin('eth');
+      const [btcExists, ethExists] = await Promise.all([
+        btcApi.checkIfWalletExists(user),
+        ethApi.checkIfWalletExists(user)
+      ]);
+      if (btcExists || ethExists) throw new Error('Wallet already exists');
+      const [btcWalletCreated, ethWalletCreated] = await Promise.all([
+        btcApi.createWallet(user, walletPassword, recoveryPhrase),
+        ethApi.createWallet(user, walletPassword, recoveryPhrase)
+      ])
+      if (!btcWalletCreated || !ethWalletCreated) throw new Error('Error creating wallet')
+      await this.saveWalletPassword(user.userId, walletPassword, recoveryPhrase)
+      return {
+        success: true,
+        message: 'Wallet created'
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || error.stack
+      }
+    }
   }
 
   async getWallet(
@@ -39,6 +98,47 @@ class Resolvers extends ResolverBase {
     const walletApi = wallet.coin(parent.symbol);
     const walletResult = await walletApi.getBalance(userIdOrAddress);
     return walletResult;
+  }
+
+  public generateMnemonic(
+    parent: any, args: { lang: string }, { user }: Context
+  ) {
+    this.requireAuth(user);
+    const lang = args.lang || 'en';
+    return mnemonicUtils.generateRandom(lang);
+  }
+
+  async recoverWallet(
+    parent: any, args: { mnemonic: string, newPassword: string }, { user, wallet }: Context
+  ) {
+    const { mnemonic, newPassword } = args
+    this.requireAuth(user);
+    try {
+      this.requireValidMnemonic(mnemonic);
+      const btcApi = wallet.coin('btc');
+      const ethApi = wallet.coin('eth');
+      const oldPassword = await this.getAndDecryptWalletPassword(user.userId, mnemonic)
+      const [btcSuccess, ethSuccess] = await Promise.all([
+        btcApi.recoverWallet(user, oldPassword, newPassword),
+        ethApi.recoverWallet(user, oldPassword, newPassword)
+      ])
+      if (!btcSuccess || !ethSuccess) throw new Error('Error while recovering wallet');
+      await this.saveWalletPassword(user.userId, newPassword, mnemonic);
+      return {
+        success: true,
+        message: 'Wallet password changed successfully'
+      }
+    } catch (error) {
+      const message = error.message
+        && error.message === crypto.ERROR_INCORRECT_SECRET
+        ? 'Incorrect recovery phrase'
+        : error.message
+
+      return {
+        success: false,
+        message: message || error.stack
+      }
+    }
   }
 
   async getTransactions(
@@ -71,20 +171,23 @@ class Resolvers extends ResolverBase {
       to,
       amount,
       totpToken,
+      walletPassword
     }: {
       coinSymbol: string;
       accountId: string;
       to: string;
       amount: string;
       totpToken: string;
+      walletPassword: string
     },
     { user, wallet }: Context,
   ) {
     this.requireAuth(user);
-    const twoFaValid = await user.validateTwoFa(totpToken);
-    this.requireTwoFa(twoFaValid);
+    this.maybeRequireStrongWalletPassword(walletPassword)
+    // const twoFaValid = await user.validateTwoFa(totpToken);
+    // this.requireTwoFa(twoFaValid);
     const walletApi = wallet.coin(coinSymbol);
-    const result = await walletApi.send(user, to, amount);
+    const result = await walletApi.send(user, to, amount, walletPassword);
     return result;
   }
 }
@@ -94,6 +197,7 @@ const resolvers = new Resolvers();
 export default {
   Query: {
     wallet: resolvers.getWallet,
+    mnemonic: resolvers.generateMnemonic
   },
   Wallet: {
     transactions: resolvers.getTransactions,
@@ -102,5 +206,7 @@ export default {
   },
   Mutation: {
     sendTransaction: resolvers.sendTransaction,
+    createWallet: resolvers.createWallet,
+    recoverWallet: resolvers.recoverWallet
   },
 };

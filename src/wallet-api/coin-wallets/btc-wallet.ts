@@ -1,34 +1,24 @@
 // The getBalance function is working in this interface. It expects an account ID as an argument (one user can have multiple accounts.) If there is no bcoin wallet for the specified account ID, one is created and all of the necessary credentials are stored in the apiKeyService
 
 import CoinWalletBase from './coin-wallet-base';
-import { sha256 } from 'js-sha256';
 import { v4 as generateRandomId } from 'uuid';
 import { config } from '../../common';
 import { credentialService } from '../../services';
-import { ITransaction, ICoinMetadata } from '../../types';
+import { ITransaction, ICoinMetadata, IBcoinTx } from '../../types';
 import { UserApi } from '../../data-sources';
 import { BigNumber } from 'bignumber.js';
 const { WalletClient } = require('bclient');
 const autoBind = require('auto-bind');
 
-interface IBtcRawOutput {
-  path: string;
-  address: string;
-  value: number;
-}
+const XPRIVKEY = 'xprivkey';
+const TOKEN = 'token';
+const PASSPHRASE = 'passphrase'
 
-interface IBcoinTx {
-  block: number;
-  confirmations: number;
-  mdate: Date;
-  fee: number;
-  outputs: IBtcRawOutput[];
-  hash: string;
-}
 class BtcWallet extends CoinWalletBase {
   feeRate = 10000;
   // To my knowledge, bcoin hasn't implemented types to their client.
   walletClient: any;
+
   constructor({
     name,
     symbol,
@@ -43,47 +33,52 @@ class BtcWallet extends CoinWalletBase {
     this.walletClient = new WalletClient(config.bcoinWallet);
   }
 
-  async createWallet(userId: string) {
+  public async checkIfWalletExists(userApi: UserApi) {
     try {
-      const { token } = await this.walletClient.createWallet(userId);
+      const userWallet = await this.setWallet(userApi.userId);
+      const account = await userWallet.getAccount('default');
+      return !!account;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  public async createWallet(userApi: UserApi, userPassword: string, mnemonic: string) {
+    const { userId } = userApi
+    const passphrase = await this.selectAndMaybeSavePassphrase(userId, userPassword)
+    try {
+      const { token } = await this.walletClient.createWallet(userId, { mnemonic });
       const userWallet = this.walletClient.wallet(userId, token);
       const {
         key: { xprivkey },
-        mnemonic: { phrase: mnemonic },
       } = await userWallet.getMaster();
+
       // Sends the token to be saved in the apiKeyService
       const tokenSavePromise = credentialService.create(
         userId,
         this.symbol,
-        'token',
+        TOKEN,
         token,
       );
+
       // Sends the xprivkey to be saved in the apiKeyService
       const privKeySavePromise = credentialService.create(
         userId,
         this.symbol,
-        'privkey',
-        xprivkey,
+        XPRIVKEY,
+        this.encrypt(xprivkey, mnemonic),
       );
-      // Sends the mnemonic to be saved in the apiKeyService
-      const mnemonicSavePromise = credentialService.create(
-        userId,
-        this.symbol,
-        'mnemonic',
-        mnemonic,
-      );
+
       // Wait for all of the requests to the apiKeyService to resolve for maximum concurrency
       await Promise.all([
         tokenSavePromise,
         privKeySavePromise,
-        mnemonicSavePromise,
       ]);
-      // generate a new passphrase (it also saves the passphrase to the apiKeyService inside that method)
-      const passphrase = await this.newPassphrase(userId);
+
       // Send the generated passphrase to bcoin to encrypt the user's wallet. Success: boolean will be returned
       const { success } = await userWallet.setPassphrase(passphrase);
       if (!success) throw new Error('Passphrase set was unsuccessful');
-      return token;
+      return true;
     } catch (error) {
       throw error;
     }
@@ -96,18 +91,16 @@ class BtcWallet extends CoinWalletBase {
     return Promise.resolve(estimate.toFixed());
   }
 
-  private async newPassphrase(userId: string) {
-    // Generate a random passphrase
-    const passphrase = sha256(generateRandomId()).slice(0, 32);
-    // Save passphrase to the keyService
-    await credentialService.create(
-      userId,
-      this.symbol,
-      'passphrase',
-      passphrase,
-    );
-    // Return passphrase that will be used to encrypt the bcoin wallet.
-    return passphrase;
+  private async selectAndMaybeSavePassphrase(userId: string, userPassphrase: string) {
+    if (config.clientSecretKeyRequired) {
+      if (!userPassphrase) throw new Error('Passphrase required')
+      return userPassphrase
+    } else {
+      // Generate a random passphrase
+      const randomPassword = this.hash(generateRandomId());
+      await credentialService.create(userId, this.symbol, PASSPHRASE, randomPassword);
+      return randomPassword;
+    }
   }
 
   // Util function to convert satoshis to btc
@@ -229,36 +222,43 @@ class BtcWallet extends CoinWalletBase {
   }
 
   private async getToken(accountId: string) {
-    const token = await credentialService
-      .get(accountId, this.symbol, 'token')
-      .catch(err => {
-        if (err.response && err.response.status === 404) {
-          return this.createWallet(accountId);
-        }
-        throw err;
-      });
-    return token;
+    try {
+      const token = await credentialService
+        .get(accountId, this.symbol, TOKEN)
+      return token;
+    } catch (err) {
+      credentialService.handleErrResponse(err, 'Not Found');
+    }
   }
 
-  private async getPassphrase(userId: string) {
-    const passphrase = await credentialService.get(
-      userId,
-      this.symbol,
-      'passphrase',
-    );
+  private async getPassphrase(userId: string, userPassword: string) {
+    if (config.clientSecretKeyRequired) {
 
-    return passphrase;
+      return userPassword
+    } else {
+      try {
+        const passphrase = await credentialService.get(
+          userId,
+          this.symbol,
+          PASSPHRASE,
+        );
+        return passphrase;
+      } catch (error) {
+        credentialService.handleErrResponse(error, 'Not Found');
+      }
+    }
   }
 
   async send(
     userApi: UserApi,
     to: string,
     amount: string,
+    walletPassword: string
   ): Promise<{ success: boolean; id?: string; message?: string }> {
     try {
       const accountId = userApi.userId;
       const userWallet = await this.setWallet(accountId);
-      const passphrase = await this.getPassphrase(accountId);
+      const passphrase = await this.getPassphrase(accountId, walletPassword);
       const amountToSend = new BigNumber(amount);
       const { hash } = await userWallet.send({
         account: 'default',
@@ -281,6 +281,16 @@ class BtcWallet extends CoinWalletBase {
         success: false,
         message: error.message,
       };
+    }
+  }
+
+  public async recoverWallet(userApi: UserApi, oldPassword: string, newPassword: string) {
+    try {
+      const wallet = await this.setWallet(userApi.userId);
+      const { success } = await wallet.setPassphrase(newPassword, oldPassword)
+      return success;
+    } catch (error) {
+      return false;
     }
   }
 }

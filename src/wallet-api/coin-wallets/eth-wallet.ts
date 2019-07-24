@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import { credentialService } from '../../services';
 import CoinWalletBase from './coin-wallet-base';
 import { ethers, providers, utils } from 'ethers';
@@ -7,14 +6,14 @@ import { ITransaction, ICoinMetadata } from '../../types';
 import { UserApi } from '../../data-sources';
 import { ApolloError } from 'apollo-server-express';
 
+const PRIVATEKEY = 'privatekey'
+
 class EthWallet extends CoinWalletBase {
   provider = new providers.JsonRpcProvider(config.ethNodeUrl);
   etherscan = new providers.EtherscanProvider(
     config.etherscanNetwork,
     config.etherScanApiKey,
   );
-  WEB3_GAS_ERROR = 'Returned error: insufficient funds for gas * price + value';
-  NEW_GAS_ERROR = 'Insufficient credits';
 
   constructor({
     name,
@@ -27,31 +26,34 @@ class EthWallet extends CoinWalletBase {
     super(name, symbol, contractAddress, abi, backgroundColor, icon);
   }
 
-  protected async createWallet(userApi: UserApi) {
-    const extraEntropy = crypto.randomBytes(10);
-    const { mnemonic, privateKey, address } = ethers.Wallet.createRandom({
-      extraEntropy,
-    });
+  public async checkIfWalletExists(userApi: UserApi) {
+    try {
+      const privateKey = await this.getPrivateKey(userApi.userId);
+      return !!privateKey
+    } catch (error) {
+      return false;
+    }
+  }
 
-    const mnemonicPromise = credentialService.create(
-      userApi.userId,
-      'ETH',
-      'mnemonic',
-      mnemonic,
-    );
+  public async createWallet(userApi: UserApi, walletPassword: string, mnemonic: string) {
+    try {
+      const { privateKey, address } = ethers.Wallet.fromMnemonic(mnemonic)
 
-    const privateKeyPromise = credentialService.create(
-      userApi.userId,
-      'ETH',
-      'privkey',
-      privateKey,
-    );
+      const encryptedPrivateKey = this.encrypt(privateKey, walletPassword)
+      const privateKeyPromise = credentialService.create(
+        userApi.userId,
+        'ETH',
+        PRIVATEKEY,
+        encryptedPrivateKey,
+      );
 
-    const addressSavePromise = this.saveAddress(userApi, address);
+      const addressSavePromise = this.saveAddress(userApi, address);
 
-    await Promise.all([mnemonicPromise, privateKeyPromise, addressSavePromise]);
-
-    return address;
+      await Promise.all([privateKeyPromise, addressSavePromise]);
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 
   private async saveAddress(userApi: UserApi, ethAddress: string) {
@@ -64,7 +66,7 @@ class EthWallet extends CoinWalletBase {
   }
 
   protected getPrivateKey(userId: string) {
-    return credentialService.get(userId, 'ETH', 'privkey');
+    return credentialService.get(userId, 'ETH', PRIVATEKEY);
   }
 
   public async estimateFee(userApi: UserApi) {
@@ -74,7 +76,7 @@ class EthWallet extends CoinWalletBase {
   }
 
   public async getWalletInfo(userApi: UserApi) {
-    const { ethAddress } = await this.ensureEthAddress(userApi);
+    const { ethAddress } = await this.getEthAddress(userApi);
     return {
       receiveAddress: ethAddress,
       symbol: this.symbol,
@@ -96,38 +98,26 @@ class EthWallet extends CoinWalletBase {
     address: string,
     amount: utils.BigNumber,
   ) {
+    const { parseEther, formatEther } = utils;
     const { confirmed } = await this.getBalance(address);
-    const bnConfirmed = this.bigNumberify(confirmed);
-    const hasEnough = bnConfirmed.gte(this.bigNumberify(amount));
+    const weiConfirmed = parseEther(confirmed);
+
+    const hasEnough = weiConfirmed.gte(amount);
     if (!hasEnough)
       throw new ApolloError(
-        `Insufficient account balance. Amount: ${amount.toString()}. Balance: ${
-        bnConfirmed.toString
-        }`,
+        `Insufficient account balance. Amount: ${formatEther(amount).toString()}. Balance: ${confirmed}`,
       );
   }
 
-  protected async ensureEthAddress(userApi: UserApi) {
+  protected async getEthAddress(userApi: UserApi) {
     const {
-      id,
       wallet = { ethAddress: '', ethNonce: 0, ethBlockNumAtCreation: 2426642 },
     } = await userApi.findFromDb();
     /* tslint:disable: prefer-const */
     let { ethAddress, ethNonce: nonce, ethBlockNumAtCreation: blockNumAtCreation } = wallet;
     /* tslint:enable:prefer-const */
     if (!ethAddress) {
-      const privateKey = await this.getPrivateKey(id).catch(() => null);
-      if (privateKey) {
-        const { address } = new ethers.Wallet(privateKey);
-        if (address) {
-          await this.saveAddress(userApi, address);
-          ethAddress = address;
-        } else {
-          throw new Error('Error setting/retreving address');
-        }
-      } else {
-        ethAddress = await this.createWallet(userApi);
-      }
+      throw new Error('Wallet not found')
     }
     return { ethAddress, nonce, blockNumAtCreation };
   }
@@ -172,22 +162,24 @@ class EthWallet extends CoinWalletBase {
     if (!isAddress) throw new Error(`Invalid address ${maybeAddress}`);
   }
 
-  async send(userApi: UserApi, to: string, amount: string) {
+  async send(userApi: UserApi, to: string, amount: string, walletPassword: string) {
     try {
       this.requireValidAddress(to);
-      const value = this.toWei(amount);
-      const { nonce, ethAddress } = await this.ensureEthAddress(userApi);
+      const value = utils.parseEther(amount);
+      const { nonce, ethAddress } = await this.getEthAddress(userApi);
       await this.requireEnoughBalanceToSendEther(ethAddress, value);
-      const privateKey = await this.getPrivateKey(userApi.userId);
+      const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
+      const privateKey = this.decrypt(encryptedPrivateKey, walletPassword)
       const wallet = new ethers.Wallet(privateKey, this.provider);
-      const { hash: txHash } = await wallet.sendTransaction({
+      const transaction = await wallet.sendTransaction({
         nonce,
         to,
         value,
         gasLimit: 21001,
       });
+      const { hash: txHash } = transaction;
       await userApi.incrementTxCount();
-      this.ensureEthAddressMatchesPkey(privateKey, ethAddress, userApi);
+      this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
       return {
         success: true,
         message: txHash,
@@ -231,7 +223,7 @@ class EthWallet extends CoinWalletBase {
       const gasPrice = this.bigNumberify(rawTx.gasPrice);
       const subTotal = this.bigNumberify(value);
       const fee = gasUsed.mul(gasPrice);
-      const isDeposit = to === address.toLowerCase();
+      const isDeposit = to.toLowerCase() === address.toLowerCase();
       const total = subTotal.add(isDeposit ? 0 : fee);
       return {
         id: hash,
@@ -249,6 +241,19 @@ class EthWallet extends CoinWalletBase {
         total: isDeposit ? this.toEther(total) : this.toEther(total, true),
       };
     });
+  }
+
+  public async recoverWallet(userApi: UserApi, oldPassword: string, newPassword: string) {
+    const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
+    const privateKey = this.decrypt(encryptedPrivateKey, oldPassword);
+    const reEncryptedPrivateKey = this.encrypt(privateKey, newPassword)
+    const response = await credentialService.create(
+      userApi.userId,
+      'ETH',
+      PRIVATEKEY,
+      reEncryptedPrivateKey,
+    );
+    return response && response.status === 200;
   }
 }
 
