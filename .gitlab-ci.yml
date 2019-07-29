@@ -1,12 +1,8 @@
-image: gcr.io/netzilla-registry/node
-
 variables:
   PROD_URI: 'walletsrv.connectblockchain.net'
   STAGE_URI: 'stage0.walletsrv.connectblockchain.net'
   LOG_LINES: 125  # Bump this number to view more lines in the log with each run.
   # Remember: You can restart the deployment job for that ENV to see a fresh output and not break anything.
-  DEPLOY_USR: ubuntu
-  DEPLOY_PORT: 22100
   DEPLOY_APP: wallet-server
 
 stages:
