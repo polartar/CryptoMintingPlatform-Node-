@@ -1,12 +1,8 @@
-image: gcr.io/netzilla-registry/node
-
 variables:
   PROD_URI: 'walletsrv.connectblockchain.net'
   STAGE_URI: 'stage0.walletsrv.connectblockchain.net'
   LOG_LINES: 125  # Bump this number to view more lines in the log with each run.
   # Remember: You can restart the deployment job for that ENV to see a fresh output and not break anything.
-  DEPLOY_USR: ubuntu
-  DEPLOY_PORT: 22100
   DEPLOY_APP: wallet-server
 
 stages:
@@ -17,40 +13,26 @@ include:
     - project: 'netzilla/ci-templates'
       file: '/bb.yml'
 
-Build:
-  extends:
-    - .build_node
+Build App:
   variables:
     ARTIFACTS: lib
+  extends:
+    - .build_node
 
 Deploy Staging:
-  variables:
-    DEPLOY_URI: $STAGE_URI
-    SERVER_HOSTKEYS: $STAGE_SERVER_HOSTKEYS
   extends:
-    - .staging_env
-    - .rsync_node
+    - .bb_rsync_staging
   before_script:
     - echo "$JWT_PRIVATE" > jwtrsa-private.key && echo "$JWT_PUBLIC" > jwtrsa-public.pem
     - echo "$FIREBASE_SERVICE_ACCOUNT" > serviceAccountKey.json
     - echo "$DB_CONNECTIONS" > authDbConnections.json
     - echo "$ENV" > .env
-    - >
-      sed -i  '/\"exec_mode\"\: \"cluster\"\,/a \ \ \ \ \ \ \ \ \"autorestart": false,' pm2.json
-  dependencies:
-    - Build
 
 Deploy Production:
-  variables:
-    DEPLOY_URI: $PROD_URI
-    SERVER_HOSTKEYS: $SSH_SERVER_HOSTKEYS
   extends:
-    - .production_env
-    - .rsync_node
+    - .bb_rsync_production
   before_script:
     - echo "$JWT_PRIVATE" > jwtrsa-private.key && echo "$JWT_PUBLIC" > jwtrsa-public.pem
     - echo "$FIREBASE_SERVICE_ACCOUNT" > serviceAccountKey.json
     - echo "$DB_PROD_CONNECTIONS" > authDbConnections.json
     - echo "$ENV_PROD" > .env
-  dependencies:
-    - Build
