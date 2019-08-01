@@ -1,10 +1,31 @@
+type UserProfile {
+  email: String!
+  firebaseUid: String!
+  role: String!
+  permissions: [String!]!
+  id: ID!
+  created: Date!
+  currency: String!
+}
+
 type ReturnToken {
-  token: String!
   twoFaEnabled: Boolean!
+  token: String!
   twoFaSecret: String
   twoFaQrCode: String
   walletExists: Boolean!
   walletPasswordRequired: Boolean!
+  profile: UserProfile!
+}
+
+type ValidateExistingTokenResponse {
+  twoFaEnabled: Boolean!
+  authenticated: Boolean!
+  walletExists: Boolean!
+  walletPasswordRequired: Boolean!
+  profile: UserProfile!
+  twoFaSecret: String
+  twoFaQrCode: String
 }
 
 type TwoFaRegisterResponse {
@@ -15,13 +36,6 @@ type TwoFaRegisterResponse {
 type TwoFaValidationResponse {
   authenticated: Boolean!
   newToken: String
-}
-
-type ValidateExistingTokenResponse {
-  twoFaEnabled: Boolean!
-  authenticated: Boolean!
-  walletExists: Boolean!
-  walletPasswordRequired: Boolean!
 }
 
 type Mutation {

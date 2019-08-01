@@ -2,6 +2,7 @@ import { Context } from '../types/context';
 import { mnemonic as mnemonicUtils, crypto } from '../utils'
 import ResolverBase from '../common/Resolver-Base';
 import { credentialService } from '../services';
+import { config } from '../common';
 const autoBind = require('auto-bind');
 
 class Resolvers extends ResolverBase {
@@ -61,7 +62,9 @@ class Resolvers extends ResolverBase {
         ethApi.createWallet(user, walletPassword, recoveryPhrase)
       ])
       if (!btcWalletCreated || !ethWalletCreated) throw new Error('Error creating wallet')
-      await this.saveWalletPassword(user.userId, walletPassword, recoveryPhrase)
+      if (config.clientSecretKeyRequired) {
+        await this.saveWalletPassword(user.userId, walletPassword, recoveryPhrase)
+      }
       return {
         success: true,
         message: 'Wallet created'
