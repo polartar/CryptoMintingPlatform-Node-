@@ -4,7 +4,7 @@ type Balance {
 }
 
 type Transaction {
-  id: ID!
+  id: String!
   status: String!
   confirmations: Int!
   timestamp: Int!
@@ -48,12 +48,6 @@ type Mutation {
     totpToken: String
     walletPassword: String
   ): MutationResponse!
-  createWallet(
-    mnemonic: String!
-    walletPassword: String
-  ): MutationResponse!
-  recoverWallet(
-    mnemonic: String!
-    newPassword: String!
-  ): MutationResponse!
+  createWallet(mnemonic: String!, walletPassword: String): MutationResponse!
+  recoverWallet(mnemonic: String!, newPassword: String!): MutationResponse!
 }
