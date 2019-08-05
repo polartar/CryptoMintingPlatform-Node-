@@ -132,14 +132,18 @@ class Resolvers extends ResolverBase {
         message: 'Wallet password changed successfully'
       }
     } catch (error) {
-      const message = error.message
-        && error.message === crypto.ERROR_INCORRECT_SECRET
-        ? 'Incorrect recovery phrase'
-        : error.message
+      let message;
+      if (error.message && error.message === crypto.ERROR_INCORRECT_SECRET) {
+        message = 'Incorrect recovery phrase'
+      } else if (error.response && error.response.status && error.response.status === 404) {
+        message = 'Incorrect recovery phrase'
+      }
+
+      if (!message) throw error;
 
       return {
         success: false,
-        message: message || error.stack
+        message: message
       }
     }
   }
