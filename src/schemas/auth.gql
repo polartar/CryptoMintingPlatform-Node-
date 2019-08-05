@@ -14,15 +14,13 @@ type ReturnToken {
   twoFaSecret: String
   twoFaQrCode: String
   walletExists: Boolean!
-  walletPasswordRequired: Boolean!
   profile: UserProfile!
 }
 
 type ValidateExistingTokenResponse {
   twoFaEnabled: Boolean!
-  authenticated: Boolean!
+  twoFaAuthenticated: Boolean!
   walletExists: Boolean!
-  walletPasswordRequired: Boolean!
   profile: UserProfile!
   twoFaSecret: String
   twoFaQrCode: String
@@ -46,4 +44,5 @@ type Mutation {
 type Query {
   twoFaValidate(totpToken: String!): TwoFaValidationResponse!
   validateExistingToken: ValidateExistingTokenResponse!
+  walletPasswordRequired: Boolean!
 }
