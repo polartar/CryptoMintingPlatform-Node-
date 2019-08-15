@@ -87,6 +87,3 @@ Deploy ARCADE Staging:
 Deploy Production:
   extends:
     - .bb_rsync_production_jwt_firebase
-
-
-if [ -n ${var+x} ]; then echo "var is set"; fi
