@@ -2,30 +2,20 @@ variables:
   # CONNECT
   PROD_URI_CONNECT: 'walletsrv.connectblockchain.net'
   STAGE_URI_CONNECT: 'stage0.walletsrv.connectblockchain.net'
-  STAGE_USERNAME_CONNECT: gitsrv@stage0.walletsrv.connectblockchain.net
-  PROD_USERNAME_CONNECT: gitsrv@walletsrv.connectblockchain.net
 
   # GREEN
   PROD_URI_GREEN: 'walletsrv.share.green'
   STAGE_URI_GREEN: 'stage0.walletsrv.share.green'
-  STAGE_USERNAME_GREEN: gitsrv@stage0.walletsrv.share.green
-  PROD_USERNAME_GREEN: gitsrv@walletsrv.share.green
 
   # CODEX
   PROD_URI_CODEX: 'walletsrv.codexunited.com'
   STAGE_URI_CODEX: 'stage0.walletsrv.codexunited.com'
-  STAGE_USERNAME_CODEX: gitsrv@stage0.walletsrv.codexunited.com
-  PROD_USERNAME_CODEX: gitsrv@walletsrv.codexunited.com
 
   # ARACDE
   PROD_URI_ARCADE: 'walletsrv.arcadeblockchain.com'
   STAGE_URI_ARCADE: 'stage0.walletsrv.arcadeblockchain.com'
-  STAGE_USERNAME_ARCADE: gitsrv@stage0.walletsrv.arcadeblockchain.com
-  PROD_USERNAME_ARCADE: gitsrv@walletsrv.arcadeblockchain.com
 
-  PROD_URI: 'walletsrv.connectblockchain.net'
-  STAGE_URI: 'stage0.walletsrv.connectblockchain.net'
-  LOG_LINES: 125  # Bump this number to view more lines in the log with each run.
+  LOG_LINES: 125 # Bump this number to view more lines in the log with each run.
   # Remember: You can restart the deployment job for that ENV to see a fresh output and not break anything.
   DEPLOY_APP: wallet-server
 
@@ -34,19 +24,14 @@ stages:
   - deploy
 
 include:
-    - project: 'netzilla/ci-templates'
-      file: '/bb.yml'
+  - project: 'netzilla/ci-templates'
+    file: '/bb.yml'
 
 Build App:
   variables:
     ARTIFACTS: lib
-    DEPLOY_APP_REPLACE: test
   extends:
     - .build_node
-  after_script:
-    - cat pm2.json
-    - if [ -n "$DEPLOY_APP_REPLACE" ]; then sed -i "s/$DEPLOY_APP/$DEPLOY_APP_REPLACE/g" pm2.json; fi
-    - cat pm2.json
 
 ######################################
 # STAGING DEPLOYS
@@ -56,6 +41,8 @@ Deploy CONNECT Staging:
   variables:
     DEPLOY_URI: $MASTER_STAGE_URI
     SERVER_HOSTKEYS: $MASTER_STAGE_SERVER_HOSTKEYS
+    DEPLOY_APP_REPLACE: wallet-server-connect
+    NODE_PORT_REPLACE: 3720
   extends:
     - .bb_rsync_staging_jwt_firebase
 
@@ -63,6 +50,8 @@ Deploy GREEN Staging:
   variables:
     DEPLOY_URI: $MASTER_STAGE_URI
     SERVER_HOSTKEYS: $MASTER_STAGE_SERVER_HOSTKEYS
+    DEPLOY_APP_REPLACE: wallet-server-green
+    NODE_PORT_REPLACE: 3721
   extends:
     - .bb_rsync_staging_jwt_firebase
 
@@ -70,6 +59,8 @@ Deploy CODEX Staging:
   variables:
     DEPLOY_URI: $MASTER_STAGE_URI
     SERVER_HOSTKEYS: $MASTER_STAGE_SERVER_HOSTKEYS
+    DEPLOY_APP_REPLACE: wallet-server-codex
+    NODE_PORT_REPLACE: 3722
   extends:
     - .bb_rsync_staging_jwt_firebase
 
@@ -77,6 +68,8 @@ Deploy ARCADE Staging:
   variables:
     DEPLOY_URI: $MASTER_STAGE_URI
     SERVER_HOSTKEYS: $MASTER_STAGE_SERVER_HOSTKEYS
+    DEPLOY_APP_REPLACE: wallet-server-arcade
+    NODE_PORT_REPLACE: 3723
   extends:
     - .bb_rsync_staging_jwt_firebase
 
@@ -84,6 +77,30 @@ Deploy ARCADE Staging:
 # PRODUCTION DEPLOYS
 ######################################
 
-Deploy Production:
+Deploy CONNECT Production:
+  variables:
+    DEPLOY_URI: $PROD_URI_CONNECT
+    SERVER_HOSTKEYS: $CONNECT_SERVER_HOSTKEYS
+  extends:
+    - .bb_rsync_production_jwt_firebase
+
+Deploy GREEN Production:
+  variables:
+    DEPLOY_URI: $PROD_URI_GREEN
+    SERVER_HOSTKEYS: $GREEN_SERVER_HOSTKEYS
+  extends:
+    - .bb_rsync_production_jwt_firebase
+
+Deploy CODEX Production:
+  variables:
+    DEPLOY_URI: $PROD_URI_CODEX
+    SERVER_HOSTKEYS: $CODEX_SERVER_HOSTKEYS
+  extends:
+    - .bb_rsync_production_jwt_firebase
+
+Deploy ARCADE Production:
+  variables:
+    DEPLOY_URI: $PROD_URI_ARCADE
+    SERVER_HOSTKEYS: $ARCADE_SERVER_HOSTKEYS
   extends:
     - .bb_rsync_production_jwt_firebase
