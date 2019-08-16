@@ -52,11 +52,18 @@ class Resolvers extends ResolverBase {
     args: { token: string },
     { wallet }: Context
   ) {
+    console.log('wallet', wallet)
+    console.log('auth', auth);
     const token = await auth.signIn(args.token, config.hostname);
+    console.log('token', typeof token, token.length)
     const { claims } = auth.verifyAndDecodeToken(token, config.hostname);
+    console.log('claims', typeof claims, Object.keys(claims).length)
     const tempUserApi = new UserApi(claims);
+    console.log('tempUserApi');
     const walletExists = await this.verifyWalletsExist(tempUserApi, wallet)
+    console.log("LOG: Resolvers -> walletExists", walletExists)
     const twoFaSetup = await this.setupTwoFa(claims, tempUserApi);
+    console.log('twoFaSetup', Object.keys(twoFaSetup))
     return {
       userApi: tempUserApi,
       twoFaEnabled: claims.twoFaEnabled,
