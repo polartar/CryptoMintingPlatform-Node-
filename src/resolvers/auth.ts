@@ -136,7 +136,10 @@ export default {
   Query: {
     twoFaValidate: resolvers.twoFaValidate,
     validateExistingToken: resolvers.validateExistingToken,
-    walletPasswordRequired: () => config.clientSecretKeyRequired
+    walletPasswordRequired: () => {
+      console.log("resolver -> config", config.clientSecretKeyRequired)
+      return config.clientSecretKeyRequired
+    }
   },
   Mutation: {
     login: resolvers.login,
