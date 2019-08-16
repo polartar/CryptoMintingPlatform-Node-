@@ -1,12 +1,22 @@
-image: gcr.io/netzilla-registry/node
-
 variables:
-  PROD_URI: 'walletsrv.connectblockchain.net'
-  STAGE_URI: 'stage0.walletsrv.connectblockchain.net'
-  LOG_LINES: 125  # Bump this number to view more lines in the log with each run.
+  # CONNECT
+  PROD_URI_CONNECT: 'walletsrv.connectblockchain.net'
+  STAGE_URI_CONNECT: 'stage0.walletsrv.connectblockchain.net'
+
+  # GREEN
+  PROD_URI_GREEN: 'walletsrv.share.green'
+  STAGE_URI_GREEN: 'stage0.walletsrv.share.green'
+
+  # CODEX
+  PROD_URI_CODEX: 'walletsrv.codexunited.com'
+  STAGE_URI_CODEX: 'stage0.walletsrv.codexunited.com'
+
+  # ARACDE
+  PROD_URI_ARCADE: 'walletsrv.arcadeblockchain.com'
+  STAGE_URI_ARCADE: 'stage0.walletsrv.arcadeblockchain.com'
+
+  LOG_LINES: 125 # Bump this number to view more lines in the log with each run.
   # Remember: You can restart the deployment job for that ENV to see a fresh output and not break anything.
-  DEPLOY_USR: ubuntu
-  DEPLOY_PORT: 22100
   DEPLOY_APP: wallet-server
 
 stages:
@@ -14,43 +24,91 @@ stages:
   - deploy
 
 include:
-    - project: 'netzilla/ci-templates'
-      file: '/bb.yml'
+  - project: 'netzilla/ci-templates'
+    file: '/bb.yml'
 
-Build:
-  extends:
-    - .build_node
+Build App:
   variables:
     ARTIFACTS: lib
-
-Deploy Staging:
-  variables:
-    DEPLOY_URI: $STAGE_URI
-    SERVER_HOSTKEYS: $STAGE_SERVER_HOSTKEYS
   extends:
-    - .staging_env
-    - .rsync_node
-  before_script:
-    - echo "$JWT_PRIVATE" > jwtrsa-private.key && echo "$JWT_PUBLIC" > jwtrsa-public.pem
-    - echo "$FIREBASE_SERVICE_ACCOUNT" > serviceAccountKey.json
-    - echo "$DB_CONNECTIONS" > authDbConnections.json
-    - echo "$ENV" > .env
-    - >
-      sed -i  '/\"exec_mode\"\: \"cluster\"\,/a \ \ \ \ \ \ \ \ \"autorestart": false,' pm2.json
-  dependencies:
-    - Build
+    - .build_node
 
-Deploy Production:
+######################################
+# STAGING DEPLOYS
+######################################
+
+Deploy CONNECT Staging:
   variables:
-    DEPLOY_URI: $PROD_URI
-    SERVER_HOSTKEYS: $SSH_SERVER_HOSTKEYS
+    DEPLOY_URI: $MASTER_STAGE_URI
+    SERVER_HOSTKEYS: $MASTER_STAGE_SERVER_HOSTKEYS
+    DEPLOY_APP_REPLACE: wallet-server-connect
+    NODE_PORT_REPLACE: 3720
+    ENV: $CONNECT_ENV
   extends:
-    - .production_env
-    - .rsync_node
-  before_script:
-    - echo "$JWT_PRIVATE" > jwtrsa-private.key && echo "$JWT_PUBLIC" > jwtrsa-public.pem
-    - echo "$FIREBASE_SERVICE_ACCOUNT" > serviceAccountKey.json
-    - echo "$DB_PROD_CONNECTIONS" > authDbConnections.json
-    - echo "$ENV_PROD" > .env
-  dependencies:
-    - Build
+    - .bb_rsync_staging_jwt_firebase
+
+Deploy GREEN Staging:
+  variables:
+    DEPLOY_URI: $MASTER_STAGE_URI
+    SERVER_HOSTKEYS: $MASTER_STAGE_SERVER_HOSTKEYS
+    DEPLOY_APP_REPLACE: wallet-server-green
+    NODE_PORT_REPLACE: 3721
+    ENV: $GREEN_ENV
+  extends:
+    - .bb_rsync_staging_jwt_firebase
+
+Deploy CODEX Staging:
+  variables:
+    DEPLOY_URI: $MASTER_STAGE_URI
+    SERVER_HOSTKEYS: $MASTER_STAGE_SERVER_HOSTKEYS
+    DEPLOY_APP_REPLACE: wallet-server-codex
+    NODE_PORT_REPLACE: 3722
+    ENV: $CODEX_ENV
+  extends:
+    - .bb_rsync_staging_jwt_firebase
+
+Deploy ARCADE Staging:
+  variables:
+    DEPLOY_URI: $MASTER_STAGE_URI
+    SERVER_HOSTKEYS: $MASTER_STAGE_SERVER_HOSTKEYS
+    DEPLOY_APP_REPLACE: wallet-server-arcade
+    NODE_PORT_REPLACE: 3723
+    ENV: $ARCADE_ENV
+  extends:
+    - .bb_rsync_staging_jwt_firebase
+
+######################################
+# PRODUCTION DEPLOYS
+######################################
+
+Deploy CONNECT Production:
+  variables:
+    DEPLOY_URI: $PROD_URI_CONNECT
+    SERVER_HOSTKEYS: $CONNECT_SERVER_HOSTKEYS
+    ENV: $CONNECT_ENV_PROD
+  extends:
+    - .bb_rsync_production_jwt_firebase
+
+Deploy GREEN Production:
+  variables:
+    DEPLOY_URI: $PROD_URI_GREEN
+    SERVER_HOSTKEYS: $GREEN_SERVER_HOSTKEYS
+    ENV: $GREEN_ENV_PROD
+  extends:
+    - .bb_rsync_production_jwt_firebase
+
+Deploy CODEX Production:
+  variables:
+    DEPLOY_URI: $PROD_URI_CODEX
+    SERVER_HOSTKEYS: $CODEX_SERVER_HOSTKEYS
+    ENV: $CODEX_ENV_PROD
+  extends:
+    - .bb_rsync_production_jwt_firebase
+
+Deploy ARCADE Production:
+  variables:
+    DEPLOY_URI: $PROD_URI_ARCADE
+    SERVER_HOSTKEYS: $ARCADE_SERVER_HOSTKEYS
+    ENV: $ARCADE_ENV_PROD
+  extends:
+    - .bb_rsync_production_jwt_firebase

@@ -1,8 +1,12 @@
-import ICoinMetadata from './ICoinMetadata'
+import eSupportedInterfaces from './eSupportedInterfaces';
 
 export default interface IEnvCoin {
   symbol: string;
-  walletApi: string;
-  dev: ICoinMetadata;
-  prod: ICoinMetadata;
+  name: string;
+  backgroundColor: string;
+  icon: string;
+  walletApi: eSupportedInterfaces;
+  decimalPlaces: number;
+  contractAddress: string | null;
+  abi: any;
 }

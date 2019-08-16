@@ -2,6 +2,7 @@ import { Context } from '../types/context';
 import { mnemonic as mnemonicUtils, crypto } from '../utils'
 import ResolverBase from '../common/Resolver-Base';
 import { credentialService } from '../services';
+import { config } from '../common';
 const autoBind = require('auto-bind');
 
 class Resolvers extends ResolverBase {
@@ -61,7 +62,9 @@ class Resolvers extends ResolverBase {
         ethApi.createWallet(user, walletPassword, recoveryPhrase)
       ])
       if (!btcWalletCreated || !ethWalletCreated) throw new Error('Error creating wallet')
-      await this.saveWalletPassword(user.userId, walletPassword, recoveryPhrase)
+      if (config.clientSecretKeyRequired) {
+        await this.saveWalletPassword(user.userId, walletPassword, recoveryPhrase)
+      }
       return {
         success: true,
         message: 'Wallet created'
@@ -129,14 +132,18 @@ class Resolvers extends ResolverBase {
         message: 'Wallet password changed successfully'
       }
     } catch (error) {
-      const message = error.message
-        && error.message === crypto.ERROR_INCORRECT_SECRET
-        ? 'Incorrect recovery phrase'
-        : error.message
+      let message;
+      if (error.message && error.message === crypto.ERROR_INCORRECT_SECRET) {
+        message = 'Incorrect recovery phrase'
+      } else if (error.response && error.response.status && error.response.status === 404) {
+        message = 'Incorrect recovery phrase'
+      }
+
+      if (!message) throw error;
 
       return {
         success: false,
-        message: message || error.stack
+        message: message
       }
     }
   }

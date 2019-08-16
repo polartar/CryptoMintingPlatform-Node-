@@ -16,7 +16,7 @@ class Server {
     autoBind(this);
     const { isDev, hostname } = config
     const typeDefs: DocumentNode = gql(schemas);
-    this.walletApi = new WalletApi(hostname, isDev)
+    this.walletApi = new WalletApi(hostname)
     const server = new ApolloServer({
       typeDefs,
       resolvers,

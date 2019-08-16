@@ -1,47 +1,67 @@
 import { auth, config } from '../common';
-import { Context } from '../types/context';
+import { Context, IUserClaims } from '../types/context';
+import { WalletApi } from '../wallet-api'
 import ResolverBase from '../common/Resolver-Base';
 import { ApolloError } from 'apollo-server-express';
 import { UserApi } from '../data-sources/';
-import { credentialService } from '../services';
 const autoBind = require('auto-bind');
+interface ITwoFaSetup {
+  twoFaSecret: string | null;
+  twoFaQrCode: string | null;
+}
 class Resolvers extends ResolverBase {
   constructor() {
     super();
     autoBind(this);
   }
 
-  private async verifyWalletCredentialsExist(userId: string) {
+  private async verifyWalletsExist(user: UserApi, wallet: WalletApi) {
+    const btc = wallet.coin('btc');
+    const eth = wallet.coin('eth');
     try {
       const walletCredentials = await Promise.all([
-        credentialService.get(userId, 'BTC', 'token'),
-        credentialService.get(userId, 'ETH', 'privateKey'),
+        btc.checkIfWalletExists(user),
+        eth.checkIfWalletExists(user)
       ]);
-      if (walletCredentials.length) return true;
+      return walletCredentials.every(cred => cred)
     } catch (error) {
       return false
+    }
+  }
+
+  private async setupTwoFa(claims: IUserClaims, userApi: UserApi): Promise<ITwoFaSetup> {
+    try {
+      let secret: string | null = null;
+      let qrCode: string | null
+      if (!claims.twoFaEnabled) {
+        const { qrCode: userQrCode, secret: userSecret } = await userApi.setTempTwoFaSecret();
+        secret = userSecret;
+        qrCode = userQrCode
+      }
+      return {
+        twoFaSecret: secret,
+        twoFaQrCode: qrCode
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 
   public async login(
     parent: any,
     args: { token: string },
+    { wallet }: Context
   ) {
     const token = await auth.signIn(args.token, config.hostname);
     const { claims } = auth.verifyAndDecodeToken(token, config.hostname);
     const tempUserApi = new UserApi(claims);
-    const walletExists = await this.verifyWalletCredentialsExist(claims.userId)
-    const twoFaSetup: { twoFaQrCode?: string; twoFaSecret?: string } = {};
-    if (!claims.twoFaEnabled) {
-      const { qrCode, secret } = await tempUserApi.setTempTwoFaSecret();
-      twoFaSetup.twoFaSecret = secret;
-      twoFaSetup.twoFaQrCode = qrCode;
-    }
+    const walletExists = await this.verifyWalletsExist(tempUserApi, wallet)
+    const twoFaSetup = await this.setupTwoFa(claims, tempUserApi);
     return {
+      userApi: tempUserApi,
       twoFaEnabled: claims.twoFaEnabled,
       token,
       walletExists,
-      walletPasswordRequired: config.clientSecretKeyRequired,
       ...twoFaSetup,
     };
   }
@@ -49,15 +69,21 @@ class Resolvers extends ResolverBase {
   public async validateExistingToken(
     parent: any,
     args: {},
-    { user }: Context,
+    { user, req, wallet }: Context,
   ) {
     this.requireAuth(user);
-    const walletExists = await this.verifyWalletCredentialsExist(user.userId)
+    const walletExists = await this.verifyWalletsExist(user, wallet)
+    const twoFaSetup = await this.setupTwoFa(user, user);
+    const token = req.headers.authorization
+      ? req.headers.authorization.replace('Bearer ', '')
+      : '';
+    const twoFaAuthenticated = await auth.verifyTwoFaAuthenticated(token, config.hostname)
     return {
+      userApi: user,
       twoFaEnabled: user.twoFaEnabled,
-      authenticated: true,
+      twoFaAuthenticated,
       walletExists,
-      walletPasswordRequired: config.clientSecretKeyRequired
+      ...twoFaSetup,
     }
   }
 
@@ -89,11 +115,24 @@ class Resolvers extends ResolverBase {
 
     return { authenticated, newToken };
   }
+
+  async getUserProfile(
+    { userApi }: { userApi: UserApi },
+  ) {
+    const profile = await userApi.findFromDb();
+    return profile;
+  }
 }
 
 const resolvers = new Resolvers();
 
 export default {
+  ReturnToken: {
+    profile: resolvers.getUserProfile,
+  },
+  ValidateExistingTokenResponse: {
+    profile: resolvers.getUserProfile,
+  },
   Query: {
     twoFaValidate: resolvers.twoFaValidate,
     validateExistingToken: resolvers.validateExistingToken,

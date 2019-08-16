@@ -1,1 +1,0 @@
-export { default as walletConfig } from './config-overrides'

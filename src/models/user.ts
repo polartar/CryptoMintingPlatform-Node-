@@ -17,6 +17,7 @@ export interface IUser extends mongoose.Document {
   wallet?: IUserWalletDoc;
   twoFaTempSecret?: string;
   twoFaSecret?: string;
+  currency?: string;
 }
 
 const walletSchema = new mongoose.Schema({
@@ -51,6 +52,10 @@ const userSchema = new mongoose.Schema({
   twoFaTempSecret: String,
   twoFaSecret: String,
   wallet: walletSchema,
+  currency: {
+    type: String,
+    default: 'USD'
+  }
 });
 
 userSchema.post('save', function (doc: IUser) {
