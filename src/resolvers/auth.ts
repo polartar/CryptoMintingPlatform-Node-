@@ -96,7 +96,11 @@ const resolvers = new Resolvers();
 export default {
   Query: {
     twoFaValidate: resolvers.twoFaValidate,
-    validateExistingToken: resolvers.validateExistingToken
+    validateExistingToken: resolvers.validateExistingToken,
+    walletPasswordRequired: () => {
+      console.log("resolver -> config", config.clientSecretKeyRequired)
+      return config.clientSecretKeyRequired
+    }
   },
   Mutation: {
     login: resolvers.login,
