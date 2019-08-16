@@ -62,25 +62,23 @@ export default class WalletApi {
     const BTC = 'BTC';
     const ETH = 'ETH';
 
-    switch (hostName) {
-      case 'share.green': {
-        return [GREEN, BTC];
-      }
-      case 'connectblockchain.net': {
-        return [BTC, ETH, GREEN, ARCADE];
-      }
-      case 'codexunited.com': {
-        return [BTC, ETH, GREEN, ARCADE];
-      }
-      case 'arcade': {
-        return [BTC, ARCADE];
-      }
-      case 'localhost': {
-        return [BTC, ETH, GREEN, ARCADE];
-      }
-      default: {
-        throw new Error('Host not configured for wallet selection');
-      }
+    if (hostName.includes('share.green')) {
+      console.log('selected - GREEN')
+      return [GREEN, BTC];
+    } else if (hostName.includes('connectblockchain.net')) {
+      console.log('selected - CONNECT')
+      return [BTC, ETH];
+    } else if (hostName.includes('codexunited.com')) {
+      console.log('selected - CODEX')
+      return [BTC, ETH];
+    } else if (hostName.includes('arcadeblockchain.com')) {
+      console.log('selected - ARCADE')
+      return [BTC, ARCADE];
+    } else if (hostName.includes('localhost')) {
+      console.log('selected - LOCALHOST')
+      return [BTC, ETH, GREEN, ARCADE];
+    } else {
+      throw new Error('Host not configured for wallet selection');
     }
   }
 }
