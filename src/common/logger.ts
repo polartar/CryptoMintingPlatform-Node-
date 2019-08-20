@@ -10,9 +10,9 @@ if (process.env.NODE_ENV === 'production' && config.mongodbUri) {
     // @ts-ignore
     new winston.transports.MongoDB({
       format: winston.format.json(),
-      level: process.env.LOG_LEVEL_PROD,
+      level: process.env.LOG_LEVEL,
       db: config.mongodbUri,
-      collection: process.env.LOG_COLLECTION_PROD,
+      collection: 'wallet-logs',
       storeHost: true,
     }),
   )
