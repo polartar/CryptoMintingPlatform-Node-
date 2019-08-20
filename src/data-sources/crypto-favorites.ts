@@ -1,17 +1,21 @@
 import { RESTDataSource } from 'apollo-datasource-rest';
-import { config } from '../common';
+import { config, logger } from '../common';
 
 class CryptoFavorites extends RESTDataSource {
   baseURL = 'https://min-api.cryptocompare.com/data';
 
   public async getUserFavorites(userFavorites: string[]) {
+    logger.debug(`data-sources.crypto-favorites.userFavorites: ${userFavorites.join(',')}`)
+
     const { cryptoSymbolToNameMap } = config;
     const currency = 'USD';
-    const { RAW: rawFavorites } = await this.get('/pricemultifull', {
+    const cryptoPriceResponse = await this.get('/pricemultifull', {
       fsyms: userFavorites.join(','),
       tsyms: currency,
     });
 
+    const { RAW: rawFavorites } = cryptoPriceResponse
+    logger.debug(`data-sources.crypto-favorites.getUserFavorites.cryptoPriceResponse.RAW.keys.length: ${Object.keys(rawFavorites).length}`)
     return Object.values(rawFavorites).map(({ [currency]: fav }) => {
       const {
         CHANGEPCT24HOUR: changePercent24Hour,
