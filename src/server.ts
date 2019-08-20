@@ -43,12 +43,15 @@ class Server {
     const token = req.headers.authorization
       ? req.headers.authorization.replace('Bearer ', '')
       : '';
+    logger.debug(`server.buildContext.token: ${token}`)
     let user = null;
     if (token) {
       try {
         const { claims } = auth.verifyAndDecodeToken(token, hostname)
+        logger.debug(`server.buildContext.claims: ${claims}`)
         user = new UserApi(claims);
       } catch (error) {
+        logger.warn(`server.buildContext.catch: ${error}`)
         user = null;
       }
     }

@@ -1,4 +1,4 @@
-import { auth, config } from '../common';
+import { auth, config, logger } from '../common';
 import { Context, IUserClaims } from '../types/context';
 import { WalletApi } from '../wallet-api'
 import ResolverBase from '../common/Resolver-Base';
@@ -16,15 +16,20 @@ class Resolvers extends ResolverBase {
   }
 
   private async verifyWalletsExist(user: UserApi, wallet: WalletApi) {
+    logger.debug(`resolvers.auth.verifyWalletsExist.userId:${user.userId}`)
     const btc = wallet.coin('btc');
     const eth = wallet.coin('eth');
     try {
-      const walletCredentials = await Promise.all([
+      const [btcWalletExists, ethWalletExists] = await Promise.all([
         btc.checkIfWalletExists(user),
         eth.checkIfWalletExists(user)
       ]);
-      return walletCredentials.every(cred => cred)
+      logger.debug(`resolvers.auth.verifyWalletsExist.btcWalletExists:${btcWalletExists}`)
+      logger.debug(`resolvers.auth.verifyWalletsExist.ethWalletExists:${ethWalletExists}`)
+      const bothWalletsExist = btcWalletExists && ethWalletExists
+      return bothWalletsExist
     } catch (error) {
+      logger.warn(`resolvers.auth.verifyWalletsExist.catch:${error}`)
       return false
     }
   }
@@ -33,17 +38,22 @@ class Resolvers extends ResolverBase {
     try {
       let secret: string | null = null;
       let qrCode: string | null
+      logger.debug(`resolvers.auth.setupTwoFa.claims.twoFaEnabled:${claims.twoFaEnabled}`)
+
       if (!claims.twoFaEnabled) {
         const { qrCode: userQrCode, secret: userSecret } = await userApi.setTempTwoFaSecret();
         secret = userSecret;
         qrCode = userQrCode
+        logger.debug(`resolvers.auth.setupTwoFa.claims.!!secret:${!!secret}`)
+        logger.debug(`resolvers.auth.setupTwoFa.claims.!!secret:${!!userQrCode}`)
       }
       return {
         twoFaSecret: secret,
         twoFaQrCode: qrCode
       }
     } catch (error) {
-      console.log(error);
+      logger.debug(`resolvers.auth.setupTwoFa.catch:${error}`)
+      throw error;
     }
   }
 
@@ -52,25 +62,29 @@ class Resolvers extends ResolverBase {
     args: { token: string },
     { wallet }: Context
   ) {
-    console.log('wallet', wallet)
-    console.log('auth', auth);
-    const token = await auth.signIn(args.token, config.hostname);
-    console.log('token', typeof token, token.length)
-    const { claims } = auth.verifyAndDecodeToken(token, config.hostname);
-    console.log('claims', typeof claims, Object.keys(claims).length)
-    const tempUserApi = new UserApi(claims);
-    console.log('tempUserApi');
-    const walletExists = await this.verifyWalletsExist(tempUserApi, wallet)
-    console.log("LOG: Resolvers -> walletExists", walletExists)
-    const twoFaSetup = await this.setupTwoFa(claims, tempUserApi);
-    console.log('twoFaSetup', Object.keys(twoFaSetup))
-    return {
-      userApi: tempUserApi,
-      twoFaEnabled: claims.twoFaEnabled,
-      token,
-      walletExists,
-      ...twoFaSetup,
-    };
+    try {
+      logger.debug(`resolvers.auth.login.!!args.token:${!!args.token}`)
+      const token = await auth.signIn(args.token, config.hostname);
+      logger.debug(`resolvers.auth.login.!!token:${!!token}`)
+      const { claims } = auth.verifyAndDecodeToken(token, config.hostname);
+      logger.debug(`resolvers.auth.login.claims.userId:${claims.userId}`)
+      const tempUserApi = new UserApi(claims);
+      const walletExists = await this.verifyWalletsExist(tempUserApi, wallet)
+      logger.debug(`resolvers.auth.login.walletExists:${walletExists}`)
+      const twoFaSetup = await this.setupTwoFa(claims, tempUserApi);
+      logger.debug(`resolvers.auth.login.!!twoFaSetup.twoFaQrCode:${!!twoFaSetup.twoFaQrCode}`)
+      logger.debug(`resolvers.auth.login.!!twoFaSetup.twoFaSecret:${!!twoFaSetup.twoFaSecret}`)
+      return {
+        userApi: tempUserApi,
+        twoFaEnabled: claims.twoFaEnabled,
+        token,
+        walletExists,
+        ...twoFaSetup,
+      };
+    } catch (error) {
+      logger.warn(`resolvers.auth.login.catch:${error}`)
+      throw error;
+    }
   }
 
   public async validateExistingToken(
@@ -78,31 +92,52 @@ class Resolvers extends ResolverBase {
     args: {},
     { user, req, wallet }: Context,
   ) {
-    this.requireAuth(user);
-    const walletExists = await this.verifyWalletsExist(user, wallet)
-    const twoFaSetup = await this.setupTwoFa(user, user);
-    const token = req.headers.authorization
-      ? req.headers.authorization.replace('Bearer ', '')
-      : '';
-    const twoFaAuthenticated = await auth.verifyTwoFaAuthenticated(token, config.hostname)
-    return {
-      userApi: user,
-      twoFaEnabled: user.twoFaEnabled,
-      twoFaAuthenticated,
-      walletExists,
-      ...twoFaSetup,
+    try {
+      logger.debug(`resolvers.auth.validateExistingToken.userId:${user && user.userId}`);
+      this.requireAuth(user);
+      logger.debug(`resolvers.auth.validateExistingToken.requireAuth:ok`)
+      const walletExists = await this.verifyWalletsExist(user, wallet)
+      logger.debug(`resolvers.auth.validateExistingToken.walletExists:${walletExists}`);
+      const twoFaSetup = await this.setupTwoFa(user, user);
+      logger.debug(`resolvers.auth.validateExistingToken.twoFaSetup.twoFaQrCode:${twoFaSetup.twoFaQrCode}`);
+      logger.debug(`resolvers.auth.validateExistingToken.twoFaSetup.twoFaSecret:${twoFaSetup.twoFaSecret}`);
+      const token = req.headers.authorization
+        ? req.headers.authorization.replace('Bearer ', '')
+        : '';
+      logger.debug(`resolvers.auth.validateExistingToken.!!token:${!!token}`);
+      const twoFaAuthenticated = await auth.verifyTwoFaAuthenticated(token, config.hostname)
+      logger.debug(`resolvers.auth.validateExistingToken.twoFaAuthenticated:${twoFaAuthenticated}`);
+      return {
+        userApi: user,
+        twoFaEnabled: user.twoFaEnabled,
+        twoFaAuthenticated,
+        walletExists,
+        ...twoFaSetup,
+      }
+    } catch (error) {
+      logger.warn(`resolvers.auth.validateExistingToken.catch:${error}`);
+      throw error;
     }
   }
 
   public async twoFaRegister(parent: any, args: {}, { user }: Context) {
-    this.requireAuth(user);
-    const { twoFaSecret } = await user.findFromDb();
-    if (twoFaSecret) {
-      throw new ApolloError('Two Factor Authentication is already set up.');
-    }
-    const { qrCode, secret } = await user.setTempTwoFaSecret();
+    try {
+      logger.debug(`resolvers.auth.twoFaRegister.userId:${user && user.userId}`);
+      this.requireAuth(user);
+      logger.debug(`resolvers.auth.twoFaRegister.requireAuth:ok`);
+      const { twoFaSecret } = await user.findFromDb();
+      logger.debug(`resolvers.auth.twoFaRegister.requireAuth.twoFaSecret:${twoFaSecret}`);
+      if (twoFaSecret) {
+        throw new ApolloError('Two Factor Authentication is already set up.');
+      }
+      const { qrCode, secret } = await user.setTempTwoFaSecret();
+      logger.debug(`resolvers.auth.twoFaRegister.!!qrCode:${!!qrCode}`);
 
-    return { twoFaQrCode: qrCode, twoFaSecret: secret };
+      return { twoFaQrCode: qrCode, twoFaSecret: secret };
+    } catch (error) {
+      logger.warn(`resolvers.auth.twoFaRegister.catch:${error}`);
+      throw error;
+    }
   }
 
   public async twoFaValidate(
@@ -110,24 +145,39 @@ class Resolvers extends ResolverBase {
     args: { totpToken: string },
     { user, req }: Context,
   ) {
-    this.requireAuth(user);
-    const token = req.headers.authorization
-      ? req.headers.authorization.replace('Bearer ', '')
-      : '';
-    const { authenticated, newToken } = await auth.validateTwoFa(
-      config.hostname,
-      token,
-      args.totpToken,
-    );
-
-    return { authenticated, newToken };
+    try {
+      logger.debug(`resolvers.auth.twoFaValidate.userId:${user && user.userId}`);
+      this.requireAuth(user);
+      logger.debug(`resolvers.auth.twoFaValidate.requireAuth:ok`);
+      const token = req.headers.authorization
+        ? req.headers.authorization.replace('Bearer ', '')
+        : '';
+      logger.debug(`resolvers.auth.twoFaValidate.!!token:${!!token}`);
+      const { authenticated, newToken } = await auth.validateTwoFa(
+        config.hostname,
+        token,
+        args.totpToken,
+      );
+      logger.debug(`resolvers.auth.twoFaValidate.authenticated:${authenticated}`);
+      logger.debug(`resolvers.auth.twoFaValidate.!!newToken:${!!newToken}`);
+      return { authenticated, newToken };
+    } catch (error) {
+      logger.warn(`resolvers.auth.twoFaValidate.catch:${error}`);
+      throw error;
+    }
   }
 
   async getUserProfile(
     { userApi }: { userApi: UserApi },
   ) {
+    logger.debug(`resolvers.auth.getUserProfile.userId:${userApi.userId}`);
     const profile = await userApi.findFromDb();
     return profile;
+  }
+
+  public walletPasswordRequired() {
+    logger.debug(`resolvers.auth.walletPasswordRequired.config.clientSecretKeyRequired:${config.clientSecretKeyRequired}`);
+    return config.clientSecretKeyRequired
   }
 }
 
@@ -143,10 +193,7 @@ export default {
   Query: {
     twoFaValidate: resolvers.twoFaValidate,
     validateExistingToken: resolvers.validateExistingToken,
-    walletPasswordRequired: () => {
-      console.log("resolver -> config", config.clientSecretKeyRequired)
-      return config.clientSecretKeyRequired
-    }
+    walletPasswordRequired: resolvers.walletPasswordRequired
   },
   Mutation: {
     login: resolvers.login,
