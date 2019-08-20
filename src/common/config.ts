@@ -88,7 +88,6 @@ class Config {
       'ETHERSCAN_API_KEY',
       'ETH_ADD_FOR_ERC20_FEE_CALC',
     ].filter(name => !process.env[name]);
-    console.log('process', process.env.CLIENT_SECRET_KEY_REQUIRED);
     if (missingEnvVariables.length > 0) {
       throw new Error(
         `Required environment variable(s) ${missingEnvVariables.join(

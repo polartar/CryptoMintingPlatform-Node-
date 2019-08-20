@@ -2,26 +2,27 @@ import * as winston from 'winston';
 require('winston-mongodb');
 import { config } from '../common';
 
-const logger = winston.createLogger({
-  level: config.logLevel,
-  format: winston.format.json(),
-  transports: [
-    new winston.transports.Console({
-      format: winston.format.simple(),
-    }),
-  ],
-});
+const logger = winston.createLogger()
+
 
 if (process.env.NODE_ENV === 'production' && config.mongodbUri) {
   logger.add(
     // @ts-ignore
     new winston.transports.MongoDB({
-      level: 'error',
+      format: winston.format.json(),
+      level: process.env.LOG_LEVEL,
       db: config.mongodbUri,
-      collection: 'error-logs',
+      collection: 'wallet-logs',
       storeHost: true,
     }),
-  );
+  )
+} else {
+  logger.add(
+    new winston.transports.Console({
+      format: winston.format.simple(),
+      level: config.logLevel,
+    }),
+  )
 }
 
 export default logger;

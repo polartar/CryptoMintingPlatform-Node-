@@ -1,6 +1,6 @@
 // import config from '../../common/config'
 import { ICoinMetadata, eSupportedInterfaces } from '../types';
-import { walletConfig } from '../common';
+import { walletConfig, logger } from '../common';
 import {
   BtcWallet,
   EthWallet,
@@ -35,24 +35,41 @@ export default class WalletApi {
 
   // maybe to rename to coin() so that when it is called it is just wallet.coin('btc')?
   public coin(symbol: string) {
-    const walletApi = this.symbolToInterface.get(symbol.toLowerCase());
-    if (!walletApi) throw new Error(`coinSymbol: ${symbol} not supported.`);
-    return walletApi;
+    try {
+      logger.debug(`wallet-api.coin-wallet.WalletApi.coin.symbol: ${symbol}`)
+      const walletApi = this.symbolToInterface.get(symbol.toLowerCase());
+      if (!walletApi) throw new Error(`coinSymbol: ${symbol} not supported.`);
+      return walletApi;
+    } catch (error) {
+      logger.warn(`wallet-api.coin-wallet.WalletApi.coin.catch: ${error}`);
+      throw error;
+    }
   }
 
   private selectWalletInterface(
     coinWalletConfig: ICoinMetadata,
   ): CoinWalletBase {
-    switch (coinWalletConfig.walletApi) {
-      case eSupportedInterfaces.btc: {
-        return new BtcWallet(coinWalletConfig);
+    try {
+      switch (coinWalletConfig.walletApi) {
+        case eSupportedInterfaces.btc: {
+          logger.debug(`wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${coinWalletConfig.walletApi} => BTC`)
+          return new BtcWallet(coinWalletConfig);
+        }
+        case eSupportedInterfaces.eth: {
+          logger.debug(`wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${coinWalletConfig.walletApi} => ETH`)
+          return new EthWallet(coinWalletConfig);
+        }
+        case eSupportedInterfaces.erc20: {
+          logger.debug(`wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${coinWalletConfig.walletApi} => ERC20`)
+          return new Erc20Wallet(coinWalletConfig);
+        }
+        default: {
+          throw new Error(`Interface not supported`)
+        }
       }
-      case eSupportedInterfaces.eth: {
-        return new EthWallet(coinWalletConfig);
-      }
-      case eSupportedInterfaces.erc20: {
-        return new Erc20Wallet(coinWalletConfig);
-      }
+    } catch (error) {
+      logger.warn(`wallet-api.coin-wallet.WalletApi.selectWalletInterface.catch: ${error}`)
+      throw error;
     }
   }
 
@@ -63,21 +80,22 @@ export default class WalletApi {
     const ETH = 'ETH';
 
     if (hostName.includes('share.green')) {
-      console.log('selected - GREEN')
+      logger.debug(`wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: GREEN`)
       return [GREEN, BTC];
     } else if (hostName.includes('connectblockchain.net')) {
-      console.log('selected - CONNECT')
+      logger.debug(`wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: CONNECT`)
       return [BTC, ETH];
     } else if (hostName.includes('codexunited.com')) {
-      console.log('selected - CODEX')
+      logger.debug(`wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: CODEX`)
       return [BTC, ETH];
     } else if (hostName.includes('arcadeblockchain.com')) {
-      console.log('selected - ARCADE')
+      logger.debug(`wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: ARCADE`)
       return [BTC, ARCADE];
     } else if (hostName.includes('localhost')) {
-      console.log('selected - LOCALHOST')
+      logger.debug(`wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: LOCALHOST`)
       return [BTC, ETH, GREEN, ARCADE];
     } else {
+      logger.warn(`wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: NONE MATCHED`)
       throw new Error('Host not configured for wallet selection');
     }
   }

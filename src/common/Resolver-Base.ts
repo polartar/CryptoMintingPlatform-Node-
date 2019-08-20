@@ -2,28 +2,37 @@ import { AuthenticationError, ForbiddenError, UserInputError } from 'apollo-serv
 import { UserApi } from '../data-sources';
 import { config } from '../common';
 import { crypto } from '../utils'
+import logger from './logger';
 
 export default abstract class ResolverBase {
   // Common method to throw an graphQL auth error if the user is null
   protected requireAuth(user: UserApi) {
     if (!user) {
+      logger.debug(`common.Resolver-Base.!user`)
       throw new AuthenticationError('Authentication required');
     }
   }
 
   protected requireTwoFa(twoFaValid: boolean) {
     const { isDev, bypassTwoFaInDev } = config;
+    logger.debug(`common.Resolver-Base.requireTwoFa.twoFaValid:${twoFaValid}`)
+    logger.debug(`common.Resolver-Base.requireTwoFa.isDev:${isDev}`)
+    logger.debug(`common.Resolver-Base.requireTwoFa.bypassTwoFaInDev:${bypassTwoFaInDev}`)
+
     if (isDev && bypassTwoFaInDev) return;
     if (!twoFaValid) throw new ForbiddenError('Invalid two factor auth token');
   }
 
   protected maybeRequireStrongWalletPassword(walletPassword: string) {
+    logger.debug(`common.Resolver-Base.maybeRequireStrongWalletPassword.clientSecretRequired:${config.clientSecretKeyRequired}`)
     if (config.clientSecretKeyRequired) {
+      logger.debug(`common.Resolver-Base.maybeRequireStrongWalletPassword.!!walletPassword:${!!walletPassword}`)
       if (!walletPassword) {
         throw new ForbiddenError('Wallet password required')
       }
       const strongPasswordPattern = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})");
       const isPasswordStrong = strongPasswordPattern.test(walletPassword);
+      logger.debug(`common.Resolver-Base.maybeRequireStrongWalletPassword.isPasswordString:${isPasswordStrong}`)
       if (!isPasswordStrong) {
         throw new UserInputError('Weak Password')
       }

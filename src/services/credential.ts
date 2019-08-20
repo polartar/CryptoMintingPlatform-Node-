@@ -1,4 +1,4 @@
-import config from '../common/config';
+import { config, logger } from '../common';
 const jwt = require('jsonwebtoken');
 import axios, { AxiosError } from 'axios';
 const autoBind = require('auto-bind');
@@ -49,8 +49,10 @@ class CredentialService {
     payload: string | Buffer | object,
     options: SignOptions = {},
   ): string {
+    logger.debug(`services.credential.sign`)
     const combinedOptions = Object.assign(options, this.jwtOptions);
     const token = jwt.sign(payload, config.jwtPrivateKey, combinedOptions);
+    logger.debug(`services.credential.sign.token.length`, token.length)
     return token;
   }
 
@@ -68,36 +70,56 @@ class CredentialService {
     resource: string,
     payload: string,
   ) {
-    const resourceKey = `${coin}-${resource}`;
-    const apiKeyUrl = `${config.apiKeyServiceUrl}/`;
-    const jwtAxios = this.getAxios({
-      userId,
-      accountId: resourceKey,
-    });
-    const createResponse = await jwtAxios.post(apiKeyUrl, {
-      userId: userId,
-      accountId: resourceKey,
-      apiKey: payload,
-    });
-    return createResponse;
+    try {
+      logger.debug(`services.credential.create.userId: ${userId}`)
+      logger.debug(`services.credential.create.coin: ${coin}`)
+      logger.debug(`services.credential.create.resource: ${resource}`)
+      const resourceKey = `${coin}-${resource}`;
+      const apiKeyUrl = `${config.apiKeyServiceUrl}/`;
+      const jwtAxios = this.getAxios({
+        userId,
+        accountId: resourceKey,
+      });
+      logger.debug(`services.credential.create:before`)
+      const createResponse = await jwtAxios.post(apiKeyUrl, {
+        userId: userId,
+        accountId: resourceKey,
+        apiKey: payload,
+      });
+      logger.debug(`services.credential.create.createResponse.status: ${createResponse.status}`)
+      return createResponse;
+    } catch (error) {
+      logger.warn(`services.credential.create.catch`, error);
+      throw error;
+    }
   }
 
   public async get(userId: string, coin: string, resource: string) {
-    const resourceKey = `${coin}-${resource}`;
-    const apiKeyUrl = `${config.apiKeyServiceUrl}/${userId}/${resourceKey}`;
-    const jwtAxios = this.getAxios({
-      userId,
-      accountId: resourceKey,
-    });
-    const response = await jwtAxios.get(apiKeyUrl, {
-      params: {
-        userId: userId,
-      },
-    });
-    return response.data;
+    try {
+      logger.debug(`services.credential.get.userId: ${userId}`)
+      logger.debug(`services.credential.get.coin: ${coin}`)
+      logger.debug(`services.credential.get.resource: ${resource}`)
+      const resourceKey = `${coin}-${resource}`;
+      const apiKeyUrl = `${config.apiKeyServiceUrl}/${userId}/${resourceKey}`;
+      const jwtAxios = this.getAxios({
+        userId,
+        accountId: resourceKey,
+      });
+      logger.debug(`services.credential.get:before`)
+      const response = await jwtAxios.get(apiKeyUrl, {
+        params: {
+          userId: userId,
+        },
+      });
+      logger.debug(`services.credential.get.response.status,statusText: ${response.status}, ${response.statusText}`)
+      return response.data;
+    } catch (error) {
+      logger.warn(`services.credential.get.catch: ${error}`)
+    }
   }
 
   public handleErrResponse(error: AxiosError, messageIf404: string) {
+    logger.warn(`services.credential.handleErrorResponse:${error}`)
     if (error.response && error.response.status === 404) {
       throw new Error(messageIf404)
     }
