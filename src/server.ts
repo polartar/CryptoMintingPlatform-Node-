@@ -43,19 +43,22 @@ class Server {
     const token = req.headers.authorization
       ? req.headers.authorization.replace('Bearer ', '')
       : '';
-    logger.debug(`server.buildContext.token: ${token}`)
+    logger.debug(`server.buildContext.token.length: ${token && token.length}`)
     let user = null;
     if (token) {
       try {
         const { claims } = auth.verifyAndDecodeToken(token, hostname)
-        logger.debug(`server.buildContext.claims: ${claims}`)
+        if (config.logLevel === 'debug' || config.logLevel === 'silly') {
+          Object.entries(claims).forEach(([claim, value]) => {
+            logger.debug(`server.buildContext.claims.${claim}: ${Array.isArray(value) ? value.length : value}`)
+          })
+        }
         user = new UserApi(claims);
       } catch (error) {
         logger.warn(`server.buildContext.catch: ${error}`)
         user = null;
       }
     }
-
     return { req, res, user, wallet: this.walletApi };
   }
 

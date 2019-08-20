@@ -124,7 +124,8 @@ class Resolvers extends ResolverBase {
     const walletApi = wallet.coin(parent.symbol);
     logger.debug(`resolvers.wallet.getBalance.parent.symbol: ${parent.symbol}`)
     const walletResult = await walletApi.getBalance(userIdOrAddress);
-    logger.debug(`resolvers.wallet.getBalance.walletResult: ${walletResult}`)
+    logger.debug(`resolvers.wallet.getBalance.walletResult.confirmed: ${walletResult.confirmed}`)
+    logger.debug(`resolvers.wallet.getBalance.walletResult.unConfirmed: ${walletResult.unconfirmed}`)
     return walletResult;
   }
 

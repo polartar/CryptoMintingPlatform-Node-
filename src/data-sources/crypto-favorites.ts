@@ -13,9 +13,9 @@ class CryptoFavorites extends RESTDataSource {
       fsyms: userFavorites.join(','),
       tsyms: currency,
     });
-    logger.debug(`data-sources.crypto-favorites.getUserFavorites.cryptoPriceResponse.status: ${cryptoPriceResponse.status}`)
 
     const { RAW: rawFavorites } = cryptoPriceResponse
+    logger.debug(`data-sources.crypto-favorites.getUserFavorites.cryptoPriceResponse.RAW.keys.length: ${Object.keys(rawFavorites).length}`)
     return Object.values(rawFavorites).map(({ [currency]: fav }) => {
       const {
         CHANGEPCT24HOUR: changePercent24Hour,

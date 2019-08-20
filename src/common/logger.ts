@@ -16,8 +16,6 @@ if (process.env.NODE_ENV === 'production' && config.mongodbUri) {
       storeHost: true,
     }),
   )
-
-
 } else {
   logger.add(
     new winston.transports.Console({
