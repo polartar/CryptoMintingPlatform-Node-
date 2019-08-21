@@ -23,7 +23,7 @@ class Crypto {
     const decryptedString = new SimpleCrypto(secret).decrypt(encryptedText).toString()
     if (!decryptedString) {
       const error = new Error(this.ERROR_INCORRECT_SECRET);
-      logger.warn(error);
+      logger.warn(`utils.crypto.Crypto.decrypt.catch: ${error}`);
       throw error;
     }
     return decryptedString

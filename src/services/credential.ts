@@ -49,19 +49,29 @@ class CredentialService {
     payload: string | Buffer | object,
     options: SignOptions = {},
   ): string {
-    logger.debug(`services.credential.sign`)
-    const combinedOptions = Object.assign(options, this.jwtOptions);
-    const token = jwt.sign(payload, config.jwtPrivateKey, combinedOptions);
-    logger.debug(`services.credential.sign.token.length`, token.length)
-    return token;
+    try {
+      logger.debug(`services.credential.sign`)
+      const combinedOptions = Object.assign(options, this.jwtOptions);
+      const token = jwt.sign(payload, config.jwtPrivateKey, combinedOptions);
+      logger.debug(`services.credential.sign.token.length: ${token.length}`)
+      return token;
+    } catch (error) {
+      logger.warn(`services.credential.sign.catch: ${error}`)
+      throw error;
+    }
   }
 
   public getAxios(payload: string | Buffer | object, options?: SignOptions) {
-    const token = this.sign(payload, options);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    axios.defaults.headers.post['Content-Type'] = 'application/json';
-    axios.defaults.headers.put['Content-Type'] = 'application/json';
-    return axios;
+    try {
+      const token = this.sign(payload, options);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      axios.defaults.headers.post['Content-Type'] = 'application/json';
+      axios.defaults.headers.put['Content-Type'] = 'application/json';
+      return axios;
+    } catch (error) {
+      logger.warn(`services.credential.getAxios.catch: ${error}`)
+      throw error;
+    }
   }
 
   public async create(
@@ -115,6 +125,7 @@ class CredentialService {
       return response.data;
     } catch (error) {
       logger.warn(`services.credential.get.catch: ${error}`)
+      throw error;
     }
   }
 

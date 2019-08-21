@@ -141,6 +141,7 @@ class Resolvers extends ResolverBase {
       return generatedMnemonic
     } catch (error) {
       logger.warn(`resolvers.wallet.generateMnemonic.catch: ${error}`)
+      throw error;
     }
   }
 

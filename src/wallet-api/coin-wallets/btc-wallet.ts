@@ -105,6 +105,7 @@ class BtcWallet extends CoinWalletBase {
       return Promise.resolve(estimate.toFixed());
     } catch (error) {
       logger.warn(`walletApi.coin-wallets.BtcWallet.estimateFee.catch: ${error}`)
+      throw error;
     }
     // Cant remember why we used this formula to estimate the fee
   }
@@ -142,6 +143,7 @@ class BtcWallet extends CoinWalletBase {
       return satoshis.div(100000000);
     } catch (error) {
       logger.warn(`walletApi.coin-wallets.BtcWallet.satToBtc.catch:${error}`)
+      throw error;
     }
 
   }
@@ -294,7 +296,8 @@ class BtcWallet extends CoinWalletBase {
       logger.debug(`walletApi.coin-wallets.BtcWallet.setWallet.token.length:${token.length}`)
       return this.walletClient.wallet(accountId, token);
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.BtcWallet.setWallet.catch:${error}`)
+      logger.warn(`walletApi.coin-wallets.BtcWallet.setWallet.catch:${error}`);
+      throw error;
     }
   }
 
