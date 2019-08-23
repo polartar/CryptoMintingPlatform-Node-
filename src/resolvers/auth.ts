@@ -17,16 +17,14 @@ class Resolvers extends ResolverBase {
 
   private async verifyWalletsExist(user: UserApi, wallet: WalletApi) {
     logger.debug(`resolvers.auth.verifyWalletsExist.userId:${user.userId}`)
-    const btc = wallet.coin('btc');
-    const eth = wallet.coin('eth');
+
     try {
-      const [btcWalletExists, ethWalletExists] = await Promise.all([
-        btc.checkIfWalletExists(user),
-        eth.checkIfWalletExists(user)
-      ]);
-      logger.debug(`resolvers.auth.verifyWalletsExist.btcWalletExists:${btcWalletExists}`)
-      logger.debug(`resolvers.auth.verifyWalletsExist.ethWalletExists:${ethWalletExists}`)
-      const bothWalletsExist = btcWalletExists && ethWalletExists
+      const walletsExist = await Promise.all(
+        wallet.parentInterfaces.map(parentCoin => parentCoin.checkIfWalletExists(user))
+      );
+      logger.debug(`resolvers.auth.verifyWalletsExist.walletsExist:${walletsExist}`)
+      const bothWalletsExist = walletsExist.every(walletExists => walletExists)
+      logger.debug(`resolvers.auth.verifyWalletsExist.bothWalletsExist:${bothWalletsExist}`)
       return bothWalletsExist
     } catch (error) {
       logger.warn(`resolvers.auth.verifyWalletsExist.catch:${error}`)

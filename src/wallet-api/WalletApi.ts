@@ -10,21 +10,29 @@ import {
 import autoBind = require('auto-bind');
 
 export default class WalletApi {
-  public allCoins: CoinWalletBase[];
   private symbolToInterface: Map<string, CoinWalletBase> = new Map();
+  private parentWalletSymbols = ['BTC', 'ETH']
+
+  public allCoins: CoinWalletBase[];
+  public parentInterfaces: CoinWalletBase[];
 
   constructor(hostName: string) {
     autoBind(this);
     const walletsForHost = this.selectWalletsFromHostName(hostName);
-    const allCoins = walletConfig
+    const allCoins = this.mapInterfacesByFilter(walletsForHost)
+    this.parentInterfaces = this.mapInterfacesByFilter(this.parentWalletSymbols)
+    this.allCoins = allCoins;
+    this.mapSymbolsToInterfaces(allCoins);
+  }
+
+  private mapInterfacesByFilter(symbols: string[]) {
+    return walletConfig
       .filter(possible => {
-        return walletsForHost.includes(possible.symbol);
+        return symbols.includes(possible.symbol);
       })
       .map(envConfig => {
         return this.selectWalletInterface(envConfig);
       });
-    this.allCoins = allCoins;
-    this.mapSymbolsToInterfaces(allCoins);
   }
 
   private mapSymbolsToInterfaces(walletApis: CoinWalletBase[]) {
