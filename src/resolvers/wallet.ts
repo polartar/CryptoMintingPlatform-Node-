@@ -66,20 +66,20 @@ class Resolvers extends ResolverBase {
       const mnemonicIsValid = mnemonicUtils.validate(recoveryPhrase);
       logger.debug(`resolvers.wallet.createWallet.mnemonicIsValid: ${mnemonicIsValid}`)
       if (!mnemonicIsValid) throw new Error('Invalid mnemonic')
-      const btcApi = wallet.coin('btc');
-      const ethApi = wallet.coin('eth');
-      const [btcExists, ethExists] = await Promise.all([
-        btcApi.checkIfWalletExists(user),
-        ethApi.checkIfWalletExists(user)
-      ]);
-      logger.debug(`resolvers.wallet.createWallet.btcExists,ethExists: ${btcExists},${ethExists}`)
-      if (btcExists || ethExists) throw new Error('Wallet already exists');
-      const [btcWalletCreated, ethWalletCreated] = await Promise.all([
-        btcApi.createWallet(user, walletPassword, recoveryPhrase),
-        ethApi.createWallet(user, walletPassword, recoveryPhrase)
-      ]);
-      logger.debug(`resolvers.wallet.createWallet.btcWalletCreated,ethWalletCreated: ${btcWalletCreated},${ethWalletCreated}`)
-      if (!btcWalletCreated || !ethWalletCreated) throw new Error('Error creating wallet')
+
+      const walletsExist = await Promise.all(
+        wallet.parentInterfaces.map(parentCoin => parentCoin.checkIfWalletExists(user))
+      );
+      logger.debug(`resolvers.wallet.createWallet.walletsExist:${walletsExist}`)
+      const bothWalletsExist = walletsExist.every(walletExists => walletExists)
+      logger.debug(`resolvers.wallet.createWallet.bothWalletsExist:${bothWalletsExist}`)
+      if (walletsExist.some(walExists => walExists)) throw new Error('Wallet already exists');
+      const walletsCreated = await Promise.all(
+        wallet.parentInterfaces.map(parentCoin => parentCoin.createWallet(user, walletPassword, recoveryPhrase))
+      );
+      logger.debug(`resolvers.wallet.createWallet.walletsCreated: ${walletsCreated}`)
+      logger.debug(`resolvers.wallet.createWallet.walletsCreated.every(createdWallet => createdWallet): ${walletsCreated.every(createdWallet => createdWallet)}`)
+      if (walletsCreated.some(createdWallet => !createdWallet)) throw new Error('Error creating wallet')
       if (config.clientSecretKeyRequired) {
         await this.saveWalletPassword(user.userId, walletPassword, recoveryPhrase)
       }

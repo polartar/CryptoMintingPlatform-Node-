@@ -93,7 +93,7 @@ class EthWallet extends CoinWalletBase {
       logger.debug(`walletApi.coin-wallets.EthWallet.getPrivateKey.userId:${!!privateKey}`);
       return privateKey
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.EthWallet.getPrivateKey.catch:${!!error}`);
+      logger.warn(`walletApi.coin-wallets.EthWallet.getPrivateKey.catch:${error}`);
       throw error;
     }
   }
