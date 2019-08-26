@@ -54,7 +54,7 @@ class Resolvers extends ResolverBase {
     );
     logger.debug(
       `resolvers.wallet.getAndDecryptWalletPassword.encryptedPassword.status: ${
-      encryptedPassword.status
+        encryptedPassword.status
       }`,
     );
     const password = this.decrypt(encryptedPassword, lowerMnemonic);
@@ -84,7 +84,7 @@ class Resolvers extends ResolverBase {
     );
     logger.debug(
       `resolvers.wallet.selectUserIdOrAddress.parent.receiveAddress: ${
-      parent.receiveAddress
+        parent.receiveAddress
       }`,
     );
     if (parent.symbol.toLowerCase() === 'btc') return userId;
@@ -99,11 +99,10 @@ class Resolvers extends ResolverBase {
     const { mnemonic: recoveryPhrase, walletPassword } = args;
     logger.debug(
       `resolvers.wallet.createWallet.walletPassword(typeof,length): ${typeof walletPassword},${
-      walletPassword ? walletPassword.length : 'falsy'
+        walletPassword ? walletPassword.length : 'falsy'
       }`,
     );
     this.requireAuth(user);
-    this.maybeRequireStrongWalletPassword(walletPassword);
     try {
       this.maybeRequireStrongWalletPassword(walletPassword);
       const mnemonicIsValid = mnemonicUtils.validate(recoveryPhrase);
@@ -154,9 +153,31 @@ class Resolvers extends ResolverBase {
       };
     } catch (error) {
       logger.debug(`resolvers.wallet.createWallet.catch: ${error}`);
+      let message;
+      switch (error.message) {
+        case 'Error creating wallet': {
+          message = error.message;
+          break;
+        }
+        case 'Wallet password required': {
+          message = error.message;
+          break;
+        }
+        case 'Weak Password': {
+          message = error.message;
+          break;
+        }
+        case 'Wallet already exists': {
+          message = error.message;
+          break;
+        }
+        default: {
+          throw error;
+        }
+      }
       return {
         success: false,
-        message: error.message || error.stack,
+        message: message,
       };
     }
   }
@@ -167,41 +188,57 @@ class Resolvers extends ResolverBase {
     { user, wallet }: Context,
   ) {
     this.requireAuth(user);
-    if (coinSymbol) {
-      logger.debug(`resolvers.wallet.getWallet.coinSymbol: ${coinSymbol}`);
-      const walletApi = wallet.coin(coinSymbol);
-      const walletResult = await walletApi.getWalletInfo(user);
-      logger.debug(`resolvers.wallet.getWallet.walletResult: ${walletResult}`);
-      return [walletResult];
+    try {
+      if (coinSymbol) {
+        logger.debug(`resolvers.wallet.getWallet.coinSymbol: ${coinSymbol}`);
+        const walletApi = wallet.coin(coinSymbol);
+        const walletResult = await walletApi.getWalletInfo(user);
+        logger.debug(
+          `resolvers.wallet.getWallet.walletResult: ${walletResult}`,
+        );
+        return [walletResult];
+      }
+      const { allCoins } = wallet;
+      const walletData = await Promise.all(
+        allCoins.map(walletCoinApi => walletCoinApi.getWalletInfo(user)),
+      );
+      logger.debug(
+        `resolvers.wallet.getWallet.walletData.length: ${walletData.length}`,
+      );
+      return walletData;
+    } catch (error) {
+      logger.warn(`resolvers.wallet.getWallet.catch: ${error}`);
+      throw error;
     }
-    const { allCoins } = wallet;
-    const walletData = await Promise.all(
-      allCoins.map(walletCoinApi => walletCoinApi.getWalletInfo(user)),
-    );
-    logger.debug(
-      `resolvers.wallet.getWallet.walletData.length: ${walletData.length}`,
-    );
-    return walletData;
   }
 
   async getBalance(parent: any, args: {}, { user, wallet }: Context) {
     this.requireAuth(user);
-    const userIdOrAddress = this.selectUserIdOrAddress(user.userId, parent);
-    logger.debug(`resolvers.wallet.getBalance.walletData: ${userIdOrAddress}`);
-    const walletApi = wallet.coin(parent.symbol);
-    logger.debug(`resolvers.wallet.getBalance.parent.symbol: ${parent.symbol}`);
-    const walletResult = await walletApi.getBalance(userIdOrAddress);
-    logger.debug(
-      `resolvers.wallet.getBalance.walletResult.confirmed: ${
-      walletResult.confirmed
-      }`,
-    );
-    logger.debug(
-      `resolvers.wallet.getBalance.walletResult.unConfirmed: ${
-      walletResult.unconfirmed
-      }`,
-    );
-    return walletResult;
+    try {
+      const userIdOrAddress = this.selectUserIdOrAddress(user.userId, parent);
+      logger.debug(
+        `resolvers.wallet.getBalance.walletData: ${userIdOrAddress}`,
+      );
+      const walletApi = wallet.coin(parent.symbol);
+      logger.debug(
+        `resolvers.wallet.getBalance.parent.symbol: ${parent.symbol}`,
+      );
+      const walletResult = await walletApi.getBalance(userIdOrAddress);
+      logger.debug(
+        `resolvers.wallet.getBalance.walletResult.confirmed: ${
+          walletResult.confirmed
+        }`,
+      );
+      logger.debug(
+        `resolvers.wallet.getBalance.walletResult.unConfirmed: ${
+          walletResult.unconfirmed
+        }`,
+      );
+      return walletResult;
+    } catch (error) {
+      logger.debug(`resolvers.wallet.getBalance.catch: ${error}`);
+      throw error;
+    }
   }
 
   public generateMnemonic(
@@ -209,14 +246,14 @@ class Resolvers extends ResolverBase {
     args: { lang: string },
     { user }: Context,
   ) {
+    this.requireAuth(user);
     try {
-      this.requireAuth(user);
       const lang = args.lang || 'en';
       logger.debug(`resolvers.wallet.generateMnemonic.lang: ${lang}`);
       const generatedMnemonic = mnemonicUtils.generateRandom(lang);
       logger.debug(
         `resolvers.wallet.generateMnemonic.generatedMnemonic.length: ${
-        generatedMnemonic.split(' ').length
+          generatedMnemonic.split(' ').length
         }`,
       );
       return generatedMnemonic;
@@ -298,24 +335,29 @@ class Resolvers extends ResolverBase {
     { user, wallet }: Context,
   ) {
     this.requireAuth(user);
-    const userIdOrAddress = this.selectUserIdOrAddress(user.userId, parent);
-    logger.debug(
-      `resolvers.wallet.getTransactions.userIdOrAddress: ${userIdOrAddress}`,
-    );
-    const walletApi = wallet.coin(parent.symbol);
-    logger.debug(
-      `resolvers.wallet.getTransactions.parent.symbol: ${parent.symbol}`,
-    );
-    const transactions = await walletApi.getTransactions(
-      userIdOrAddress,
-      parent.blockNumAtCreation,
-    );
-    logger.debug(
-      `resolvers.wallet.getTransactions.parent.blockNumAtCreation: ${
-      parent.blockNumAtCreation
-      }`,
-    );
-    return transactions;
+    try {
+      const userIdOrAddress = this.selectUserIdOrAddress(user.userId, parent);
+      logger.debug(
+        `resolvers.wallet.getTransactions.userIdOrAddress: ${userIdOrAddress}`,
+      );
+      const walletApi = wallet.coin(parent.symbol);
+      logger.debug(
+        `resolvers.wallet.getTransactions.parent.symbol: ${parent.symbol}`,
+      );
+      const transactions = await walletApi.getTransactions(
+        userIdOrAddress,
+        parent.blockNumAtCreation,
+      );
+      logger.debug(
+        `resolvers.wallet.getTransactions.parent.blockNumAtCreation: ${
+          parent.blockNumAtCreation
+        }`,
+      );
+      return transactions;
+    } catch (error) {
+      logger.warn(`resolvers.wallet.getTransactions.catch: ${error}`);
+      throw error;
+    }
   }
 
   async estimateFee(
@@ -323,13 +365,18 @@ class Resolvers extends ResolverBase {
     args: any,
     { user, wallet }: Context,
   ) {
-    logger.debug(`resolvers.wallet.estimateFee.user.userId: ${user.userId}`);
-    this.requireAuth(user);
-    logger.debug(`resolvers.wallet.estimateFee.user.userId:ok`);
-    const walletApi = wallet.coin(symbol);
-    const feeEstimate = await walletApi.estimateFee(user);
-    logger.debug(`resolvers.wallet.estimateFee.feeEstimate: ${feeEstimate}`);
-    return feeEstimate;
+    try {
+      logger.debug(`resolvers.wallet.estimateFee.user.userId: ${user.userId}`);
+      this.requireAuth(user);
+      logger.debug(`resolvers.wallet.estimateFee.user.userId:ok`);
+      const walletApi = wallet.coin(symbol);
+      const feeEstimate = await walletApi.estimateFee(user);
+      logger.debug(`resolvers.wallet.estimateFee.feeEstimate: ${feeEstimate}`);
+      return feeEstimate;
+    } catch (error) {
+      logger.warn(`resolvers.wallet.estimateFee.catch: ${error}`);
+      throw error;
+    }
   }
 
   async sendTransaction(
@@ -350,19 +397,40 @@ class Resolvers extends ResolverBase {
     },
     { user, wallet }: Context,
   ) {
-    this.requireAuth(user);
-    logger.debug(
-      `resolvers.wallet.sendTransaction.walletPassword.length>1: ${walletPassword &&
-      walletPassword.length &&
-      walletPassword.length > 1}`,
-    );
-    this.maybeRequireStrongWalletPassword(walletPassword);
-
-    // const twoFaValid = await user.validateTwoFa(totpToken);
-    // this.requireTwoFa(twoFaValid);
-    const walletApi = wallet.coin(coinSymbol);
-    const result = await walletApi.send(user, to, amount, walletPassword);
-    return result;
+    try {
+      this.requireAuth(user);
+      logger.debug(
+        `resolvers.wallet.sendTransaction.walletPassword.length>1: ${walletPassword &&
+          walletPassword.length &&
+          walletPassword.length > 1}`,
+      );
+      this.maybeRequireStrongWalletPassword(walletPassword);
+      const twoFaValid = await user.validateTwoFa(totpToken);
+      this.requireTwoFa(twoFaValid);
+      const walletApi = wallet.coin(coinSymbol);
+      const result = await walletApi.send(user, to, amount, walletPassword);
+      return result;
+    } catch (error) {
+      logger.warn(`resolvers.wallet.sendTransaction.catch: ${error}`);
+      let message;
+      switch (error.message) {
+        case 'Weak Password': {
+          message = 'Incorrect Password';
+          break;
+        }
+        case 'Invalid two factor auth token': {
+          message = 'Invalid one-time password';
+          break;
+        }
+        default: {
+          throw error;
+        }
+      }
+      return {
+        success: false,
+        message,
+      };
+    }
   }
 }
 
