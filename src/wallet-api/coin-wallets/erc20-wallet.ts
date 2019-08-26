@@ -3,7 +3,6 @@ import { config, logger } from '../../common';
 import { ethers, utils } from 'ethers';
 import { ITransaction, ICoinMetadata, IWeb3TransferEvent } from '../../types';
 import { UserApi } from '../../data-sources';
-import { add } from 'winston';
 const Web3 = require('web3');
 
 class Erc20API extends EthWallet {
@@ -49,10 +48,14 @@ class Erc20API extends EthWallet {
   }
 
   async estimateFee(userApi: UserApi) {
-    logger.debug(`walletApi.coin-wallets.Erc20Wallet.estimateFee:${userApi.userId}`)
+    logger.debug(
+      `walletApi.coin-wallets.Erc20Wallet.estimateFee:${userApi.userId}`,
+    );
 
     const gasPrice = await this.provider.getGasPrice();
-    logger.debug(`walletApi.coin-wallets.Erc20Wallet.estimateFee.gasPrice:${gasPrice.toHexString()}`)
+    logger.debug(
+      `walletApi.coin-wallets.Erc20Wallet.estimateFee.gasPrice:${gasPrice.toHexString()}`,
+    );
     try {
       const testValue = this.bigNumberify(10);
       const estimate = await this.contract.estimate.transfer(
@@ -60,81 +63,127 @@ class Erc20API extends EthWallet {
         testValue,
         { gasLimit: 750000 },
       );
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.estimateFee.estimate:${estimate.toHexString()}`)
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.estimateFee.estimate:${estimate.toHexString()}`,
+      );
       const total = this.toEther(estimate.mul(gasPrice));
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.estimateFee.total:${total}`)
-      return total
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.estimateFee.total:${total}`,
+      );
+      return total;
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.Erc20Wallet.estimateFee.catch:${error}`)
+      logger.warn(
+        `walletApi.coin-wallets.Erc20Wallet.estimateFee.catch:${error}`,
+      );
       return this.toEther(this.FALLBACK_GAS_VALUE.mul(gasPrice));
     }
   }
 
   private negate(numToNegate: string | utils.BigNumber) {
     try {
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.negate.numToNegate:${numToNegate.toString()}`)
-      if (typeof numToNegate === 'string') return `-${numToNegate}`
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.negate.numToNegate:${numToNegate.toString()}`,
+      );
+      if (typeof numToNegate === 'string') return `-${numToNegate}`;
       return this.bigNumberify(0).sub(numToNegate);
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.Erc20Wallet.negate.catch:${error}`)
+      logger.warn(`walletApi.coin-wallets.Erc20Wallet.negate.catch:${error}`);
       throw error;
     }
   }
 
   private decimalize(numHexOrBn: string | number | utils.BigNumber): string {
     try {
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.decimalize.numHexOrBn:${numHexOrBn.toString()}`)
-      const parsedUnits = utils.formatUnits(numHexOrBn.toString(), this.decimalPlaces);
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.decimalize.parsedUnits:${parsedUnits}`)
-      return parsedUnits
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.decimalize.numHexOrBn:${numHexOrBn.toString()}`,
+      );
+      const parsedUnits = utils.formatUnits(
+        numHexOrBn.toString(),
+        this.decimalPlaces,
+      );
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.decimalize.parsedUnits:${parsedUnits}`,
+      );
+      return parsedUnits;
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.Erc20Wallet.decimalize.catch:${error}`)
+      logger.warn(
+        `walletApi.coin-wallets.Erc20Wallet.decimalize.catch:${error}`,
+      );
       throw error;
     }
   }
 
   private integerize(decimalizedString: string) {
     try {
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.integerize.decimalizedString:${decimalizedString}`)
-      const integer = utils.parseUnits(decimalizedString.toString(), this.decimalPlaces);
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.integerize.integer:${integer.toHexString()}`)
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.integerize.decimalizedString:${decimalizedString}`,
+      );
+      const integer = utils.parseUnits(
+        decimalizedString.toString(),
+        this.decimalPlaces,
+      );
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.integerize.integer:${integer.toHexString()}`,
+      );
       return integer;
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.Erc20Wallet.integerize.catch:${error}`)
+      logger.warn(
+        `walletApi.coin-wallets.Erc20Wallet.integerize.catch:${error}`,
+      );
       throw error;
     }
   }
 
   private async getBalanceFromContract(ethAddress: string) {
     try {
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.getBalanceFromContract.ethAddress:${ethAddress}`)
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.getBalanceFromContract.ethAddress:${ethAddress}`,
+      );
       const balance = await this.contract.balanceOf(ethAddress);
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.getBalanceFromContract.balance:${balance.toString()}`)
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.getBalanceFromContract.balance:${balance.toString()}`,
+      );
       const decimalizedBalance = this.decimalize(balance);
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.getBalanceFromContract.decimalizedBalance:${decimalizedBalance}`)
-      return decimalizedBalance
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.getBalanceFromContract.decimalizedBalance:${decimalizedBalance}`,
+      );
+      return decimalizedBalance;
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.Erc20Wallet.getBalanceFromContract.catch:${error}`)
+      logger.warn(
+        `walletApi.coin-wallets.Erc20Wallet.getBalanceFromContract.catch:${error}`,
+      );
       throw error;
     }
   }
 
   async getWalletInfo(userApi: UserApi) {
     try {
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.getWalletInfo.userId:${userApi.userId}`)
-      const { ethAddress, blockNumAtCreation } = await this.getEthAddress(userApi);
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.getWalletInfo.ethAddress:${ethAddress}`)
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.getWalletInfo.blocknumAtCreation:${blockNumAtCreation}`)
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.getWalletInfo.userId:${
+        userApi.userId
+        }`,
+      );
+      const { ethAddress, blockNumAtCreation } = await this.getEthAddress(
+        userApi,
+      );
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.getWalletInfo.ethAddress:${ethAddress}`,
+      );
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.getWalletInfo.blocknumAtCreation:${blockNumAtCreation}`,
+      );
       return {
         receiveAddress: ethAddress,
         symbol: this.symbol,
         name: this.name,
         backgroundColor: this.backgroundColor,
         icon: this.icon,
-        blockNumAtCreation
+        blockNumAtCreation,
       };
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.Erc20Wallet.getWalletInfo.catch:${error}`)
+      logger.warn(
+        `walletApi.coin-wallets.Erc20Wallet.getWalletInfo.catch:${error}`,
+      );
       throw error;
     }
   }
@@ -145,7 +194,11 @@ class Erc20API extends EthWallet {
     userAddress: string,
     web3: any,
   ): Promise<ITransaction[]> {
-    logger.debug(`walletApi.coin-wallets.Erc20Wallet.transferEventsToTransactions.transferEvents[length],currentBlockNumber,userAddress:${transferEvents.length},${currentBlockNumber},${userAddress}`)
+    logger.debug(
+      `walletApi.coin-wallets.Erc20Wallet.transferEventsToTransactions.transferEvents[length],currentBlockNumber,userAddress:${
+      transferEvents.length
+      },${currentBlockNumber},${userAddress}`,
+    );
 
     return Promise.all(
       transferEvents
@@ -166,11 +219,11 @@ class Erc20API extends EthWallet {
           const transaction = await web3.eth.getTransaction(transactionHash);
           const { gasPrice, gas } = transaction;
           const fee = this.bigNumberify(gas).mul(this.bigNumberify(gasPrice));
-          const feeString = `${utils.formatEther(fee)} ETH`
+          const feeString = `${utils.formatEther(fee)} ETH`;
           const isDeposit = to === userAddress;
           const formattedAmount = isDeposit
             ? amount.toString()
-            : this.negate(amount).toString()
+            : this.negate(amount).toString();
           const formattedTotal = isDeposit
             ? `${formattedAmount}`
             : `${formattedAmount} ${this.symbol}, -${feeString}`;
@@ -187,37 +240,58 @@ class Erc20API extends EthWallet {
             amount: formattedAmount,
             total: formattedTotal,
           };
-          logger.silly(`walletApi.coin-wallets.Erc20Wallet.transferEventsToTransactions.returnTransaction:${JSON.stringify(returnTransaction)}`)
+          logger.silly(
+            `walletApi.coin-wallets.Erc20Wallet.transferEventsToTransactions.returnTransaction:${JSON.stringify(
+              returnTransaction,
+            )}`,
+          );
 
           return returnTransaction;
         }),
     );
   }
 
-  async getTransactions(address: string, blockNumAtCreation: number): Promise<ITransaction[]> {
+  async getTransactions(
+    address: string,
+    blockNumAtCreation: number,
+  ): Promise<ITransaction[]> {
     try {
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.getTransactions.address:${address}`)
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.getTransactions.blockNumAtCreation:${blockNumAtCreation}`)
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.getTransactions.address:${address}`,
+      );
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.getTransactions.blockNumAtCreation:${blockNumAtCreation}`,
+      );
       // Ethers isn't quite there with getting past events. The new v5 release looks like serious improvements are coming.
       const web3 = new Web3(config.ethNodeUrl);
       const contract = new web3.eth.Contract(this.abi, this.contractAddress);
 
       const currentBlockNumber = await web3.eth.getBlockNumber();
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.getTransactions.currentBlockNumber:${currentBlockNumber}`)
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.getTransactions.currentBlockNumber:${currentBlockNumber}`,
+      );
       const sent = await contract.getPastEvents('Transfer', {
         fromBlock: blockNumAtCreation,
         filter: {
           from: address,
         },
       });
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.getTransactions.sent.length:${sent.length}`)
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.getTransactions.sent.length:${
+        sent.length
+        }`,
+      );
       const received = await contract.getPastEvents('Transfer', {
         fromBlock: blockNumAtCreation,
         filter: {
           to: address,
         },
       });
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.getTransactions.received.length:${received.length}`)
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.getTransactions.received.length:${
+        received.length
+        }`,
+      );
 
       const transactions = await this.transferEventsToTransactions(
         [...sent, ...received],
@@ -225,25 +299,37 @@ class Erc20API extends EthWallet {
         address,
         web3,
       );
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.getTransactions.transactions.length:${transactions.length}`)
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.getTransactions.transactions.length:${
+        transactions.length
+        }`,
+      );
       return transactions;
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.Erc20Wallet.getTransactions.catch:${error}`)
+      logger.warn(
+        `walletApi.coin-wallets.Erc20Wallet.getTransactions.catch:${error}`,
+      );
       throw error;
     }
   }
 
   public async getBalance(address: string) {
-    logger.debug(`walletApi.coin-wallets.Erc20Wallet.getBalance.address:${address}`)
+    logger.debug(
+      `walletApi.coin-wallets.Erc20Wallet.getBalance.address:${address}`,
+    );
     try {
       const balance = await this.getBalanceFromContract(address);
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.getBalance.balance:${balance.toString()}`)
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.getBalance.balance:${balance.toString()}`,
+      );
       return {
         confirmed: balance.toString(),
         unconfirmed: '0',
       };
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.Erc20Wallet.getBalance.catch:${error}`)
+      logger.warn(
+        `walletApi.coin-wallets.Erc20Wallet.getBalance.catch:${error}`,
+      );
       throw error;
     }
   }
@@ -254,72 +340,141 @@ class Erc20API extends EthWallet {
     amount: string,
   ) {
     try {
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.userId: ${userApi.userId}`)
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.address: ${address}`)
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.amount: ${amount}`)
-      const { parseEther, parseUnits } = utils
-      const [{ confirmed: tokenBalance }, feeEstimate, etherBalance] = await Promise.all([
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.userId: ${
+        userApi.userId
+        }`,
+      );
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.address: ${address}`,
+      );
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.amount: ${amount}`,
+      );
+      const { parseEther, parseUnits } = utils;
+      const [
+        { confirmed: tokenBalance },
+        feeEstimate,
+        etherBalance,
+      ] = await Promise.all([
         this.getBalance(address),
         this.estimateFee(userApi),
-        this.provider.getBalance(address)
-      ])
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.tokenBalance: ${tokenBalance}`)
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.parseEther(feeEstimate): ${parseEther(feeEstimate).toHexString()}`)
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.etherBalance: ${etherBalance.toHexString()}`)
+        this.provider.getBalance(address),
+      ]);
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.tokenBalance: ${tokenBalance}`,
+      );
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.parseEther(feeEstimate): ${parseEther(
+          feeEstimate,
+        ).toHexString()}`,
+      );
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.etherBalance: ${etherBalance.toHexString()}`,
+      );
       const hasEnoughEther = etherBalance.gt(parseEther(feeEstimate));
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.hasEnoughEther: ${hasEnoughEther}`)
-      const hasEnoughTokens = parseUnits(tokenBalance, this.decimalPlaces).gte(amount);
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.hasEnoughTokens: ${hasEnoughTokens}`)
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.hasEnoughEther: ${hasEnoughEther}`,
+      );
+      const hasEnoughTokens = parseUnits(tokenBalance, this.decimalPlaces).gte(
+        amount,
+      );
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.hasEnoughTokens: ${hasEnoughTokens}`,
+      );
       if (!hasEnoughTokens) {
-        throw new Error(
-          `Insufficient account balance. Amount: ${this.decimalize(amount)}. Balance: ${tokenBalance}`,
-        );
+        throw new Error(`Insufficient token balance`);
       }
       if (!hasEnoughEther) {
-        throw new Error('Insufficient ETH balance to cover transaction fee');
+        throw new Error('Insufficient ETH balance');
       }
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.catch: ${error}`)
+      logger.warn(
+        `walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.catch: ${error}`,
+      );
       throw error;
     }
   }
 
-  async send(userApi: UserApi, to: string, value: string, walletPassword: string) {
-    logger.debug(`walletApi.coin-wallets.Erc20Wallet.send.userId: ${userApi.userId}`)
-    logger.debug(`walletApi.coin-wallets.Erc20Wallet.send.to: ${to}`)
-    logger.debug(`walletApi.coin-wallets.Erc20Wallet.send.value: ${value}`)
-    logger.debug(`walletApi.coin-wallets.Erc20Wallet.send.!!walletPassword: ${!!walletPassword}`)
+  async send(
+    userApi: UserApi,
+    to: string,
+    value: string,
+    walletPassword: string,
+  ) {
+    logger.debug(
+      `walletApi.coin-wallets.Erc20Wallet.send.userId: ${userApi.userId}`,
+    );
+    logger.debug(`walletApi.coin-wallets.Erc20Wallet.send.to: ${to}`);
+    logger.debug(`walletApi.coin-wallets.Erc20Wallet.send.value: ${value}`);
+    logger.debug(
+      `walletApi.coin-wallets.Erc20Wallet.send.!!walletPassword: ${!!walletPassword}`,
+    );
     try {
       const { nonce, ethAddress } = await this.getEthAddress(userApi);
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.send.nonce: ${nonce}`)
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.send.ethAddress: ${ethAddress}`)
+      logger.debug(`walletApi.coin-wallets.Erc20Wallet.send.nonce: ${nonce}`);
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.send.ethAddress: ${ethAddress}`,
+      );
       const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.send.!!encryptedPrivateKey: ${!!encryptedPrivateKey}`)
-      const privateKey = this.decrypt(encryptedPrivateKey, walletPassword)
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.send.!!privateKey: ${!!privateKey}`)
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.send.!!encryptedPrivateKey: ${!!encryptedPrivateKey}`,
+      );
+      const privateKey = this.decrypt(encryptedPrivateKey, walletPassword);
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.send.!!privateKey: ${!!privateKey}`,
+      );
       const amount = this.integerize(value);
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.send.amount: ${amount.toHexString()}`)
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.send.amount: ${amount.toHexString()}`,
+      );
       const wallet = new ethers.Wallet(privateKey, this.provider);
-      await this.requireEnoughTokensAndEtherToSend(userApi, wallet.address, amount.toString())
+      await this.requireEnoughTokensAndEtherToSend(
+        userApi,
+        wallet.address,
+        amount.toString(),
+      );
       const contract = new ethers.Contract(
         this.contractAddress,
         this.abi,
         wallet,
       );
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.send.contract.address: ${contract.address}`)
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.send.contract.address: ${
+        contract.address
+        }`,
+      );
       const transaction = await contract.transfer(to, amount, { nonce });
       await userApi.incrementTxCount();
-      this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi)
-      logger.debug(`walletApi.coin-wallets.Erc20Wallet.send.transaction.hash: ${transaction.hash}`)
+      this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.send.transaction.hash: ${
+        transaction.hash
+        }`,
+      );
       return {
         success: true,
         message: transaction.hash,
       };
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.Erc20Wallet.send.catch: ${error}`)
+      logger.warn(`walletApi.coin-wallets.Erc20Wallet.send.catch: ${error}`);
+      let message;
+      switch (error.message) {
+        case 'Insufficient ETH balance': {
+          message = error.message;
+          break;
+        }
+        case 'Insufficient token balance': {
+          message = `Insufficient ${this.symbol} balance`;
+          break;
+        }
+        default: {
+          throw error;
+        }
+      }
       return {
         success: false,
-        message: error.stack,
+        message,
       };
     }
   }

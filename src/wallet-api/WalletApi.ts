@@ -7,11 +7,11 @@ import {
   Erc20Wallet,
   CoinWalletBase,
 } from './coin-wallets';
-import autoBind = require('auto-bind');
+const autoBind = require('auto-bind');
 
 export default class WalletApi {
   private symbolToInterface: Map<string, CoinWalletBase> = new Map();
-  private parentWalletSymbols = ['BTC', 'ETH']
+  private parentWalletSymbols = ['BTC', 'ETH'];
 
   public allCoins: CoinWalletBase[];
   public parentInterfaces: CoinWalletBase[];
@@ -19,8 +19,10 @@ export default class WalletApi {
   constructor(hostName: string) {
     autoBind(this);
     const walletsForHost = this.selectWalletsFromHostName(hostName);
-    const allCoins = this.mapInterfacesByFilter(walletsForHost)
-    this.parentInterfaces = this.mapInterfacesByFilter(this.parentWalletSymbols)
+    const allCoins = this.mapInterfacesByFilter(walletsForHost);
+    this.parentInterfaces = this.mapInterfacesByFilter(
+      this.parentWalletSymbols,
+    );
     this.allCoins = allCoins;
     this.mapSymbolsToInterfaces(allCoins);
   }
@@ -41,10 +43,9 @@ export default class WalletApi {
     });
   }
 
-  // maybe to rename to coin() so that when it is called it is just wallet.coin('btc')?
   public coin(symbol: string) {
     try {
-      logger.debug(`wallet-api.coin-wallet.WalletApi.coin.symbol: ${symbol}`)
+      logger.debug(`wallet-api.coin-wallet.WalletApi.coin.symbol: ${symbol}`);
       const walletApi = this.symbolToInterface.get(symbol.toLowerCase());
       if (!walletApi) throw new Error(`coinSymbol: ${symbol} not supported.`);
       return walletApi;
@@ -60,23 +61,37 @@ export default class WalletApi {
     try {
       switch (coinWalletConfig.walletApi) {
         case eSupportedInterfaces.btc: {
-          logger.debug(`wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${coinWalletConfig.walletApi} => BTC`)
+          logger.debug(
+            `wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${
+              coinWalletConfig.walletApi
+            } => BTC`,
+          );
           return new BtcWallet(coinWalletConfig);
         }
         case eSupportedInterfaces.eth: {
-          logger.debug(`wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${coinWalletConfig.walletApi} => ETH`)
+          logger.debug(
+            `wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${
+              coinWalletConfig.walletApi
+            } => ETH`,
+          );
           return new EthWallet(coinWalletConfig);
         }
         case eSupportedInterfaces.erc20: {
-          logger.debug(`wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${coinWalletConfig.walletApi} => ERC20`)
+          logger.debug(
+            `wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${
+              coinWalletConfig.walletApi
+            } => ERC20`,
+          );
           return new Erc20Wallet(coinWalletConfig);
         }
         default: {
-          throw new Error(`Interface not supported`)
+          throw new Error(`Interface not supported`);
         }
       }
     } catch (error) {
-      logger.warn(`wallet-api.coin-wallet.WalletApi.selectWalletInterface.catch: ${error}`)
+      logger.warn(
+        `wallet-api.coin-wallet.WalletApi.selectWalletInterface.catch: ${error}`,
+      );
       throw error;
     }
   }
@@ -88,22 +103,34 @@ export default class WalletApi {
     const ETH = 'ETH';
 
     if (hostName.includes('share.green')) {
-      logger.debug(`wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: GREEN`)
+      logger.debug(
+        `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: GREEN`,
+      );
       return [GREEN, BTC];
     } else if (hostName.includes('connectblockchain.net')) {
-      logger.debug(`wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: CONNECT`)
+      logger.debug(
+        `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: CONNECT`,
+      );
       return [BTC, ETH];
     } else if (hostName.includes('codexunited.com')) {
-      logger.debug(`wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: CODEX`)
+      logger.debug(
+        `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: CODEX`,
+      );
       return [BTC, ETH];
     } else if (hostName.includes('arcadeblockchain.com')) {
-      logger.debug(`wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: ARCADE`)
+      logger.debug(
+        `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: ARCADE`,
+      );
       return [BTC, ARCADE];
     } else if (hostName.includes('localhost')) {
-      logger.debug(`wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: LOCALHOST`)
+      logger.debug(
+        `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: LOCALHOST`,
+      );
       return [BTC, ETH, GREEN, ARCADE];
     } else {
-      logger.warn(`wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: NONE MATCHED`)
+      logger.warn(
+        `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: NONE MATCHED`,
+      );
       throw new Error('Host not configured for wallet selection');
     }
   }
