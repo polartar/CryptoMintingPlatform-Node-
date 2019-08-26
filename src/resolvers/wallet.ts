@@ -54,7 +54,7 @@ class Resolvers extends ResolverBase {
     );
     logger.debug(
       `resolvers.wallet.getAndDecryptWalletPassword.encryptedPassword.status: ${
-        encryptedPassword.status
+      encryptedPassword.status
       }`,
     );
     const password = this.decrypt(encryptedPassword, lowerMnemonic);
@@ -84,7 +84,7 @@ class Resolvers extends ResolverBase {
     );
     logger.debug(
       `resolvers.wallet.selectUserIdOrAddress.parent.receiveAddress: ${
-        parent.receiveAddress
+      parent.receiveAddress
       }`,
     );
     if (parent.symbol.toLowerCase() === 'btc') return userId;
@@ -99,7 +99,7 @@ class Resolvers extends ResolverBase {
     const { mnemonic: recoveryPhrase, walletPassword } = args;
     logger.debug(
       `resolvers.wallet.createWallet.walletPassword(typeof,length): ${typeof walletPassword},${
-        walletPassword ? walletPassword.length : 'falsy'
+      walletPassword ? walletPassword.length : 'falsy'
       }`,
     );
     this.requireAuth(user);
@@ -193,12 +193,12 @@ class Resolvers extends ResolverBase {
     const walletResult = await walletApi.getBalance(userIdOrAddress);
     logger.debug(
       `resolvers.wallet.getBalance.walletResult.confirmed: ${
-        walletResult.confirmed
+      walletResult.confirmed
       }`,
     );
     logger.debug(
       `resolvers.wallet.getBalance.walletResult.unConfirmed: ${
-        walletResult.unconfirmed
+      walletResult.unconfirmed
       }`,
     );
     return walletResult;
@@ -216,7 +216,7 @@ class Resolvers extends ResolverBase {
       const generatedMnemonic = mnemonicUtils.generateRandom(lang);
       logger.debug(
         `resolvers.wallet.generateMnemonic.generatedMnemonic.length: ${
-          generatedMnemonic.split(' ').length
+        generatedMnemonic.split(' ').length
         }`,
       );
       return generatedMnemonic;
@@ -312,7 +312,7 @@ class Resolvers extends ResolverBase {
     );
     logger.debug(
       `resolvers.wallet.getTransactions.parent.blockNumAtCreation: ${
-        parent.blockNumAtCreation
+      parent.blockNumAtCreation
       }`,
     );
     return transactions;
@@ -353,8 +353,8 @@ class Resolvers extends ResolverBase {
     this.requireAuth(user);
     logger.debug(
       `resolvers.wallet.sendTransaction.walletPassword.length>1: ${walletPassword &&
-        walletPassword.length &&
-        walletPassword.length > 1}`,
+      walletPassword.length &&
+      walletPassword.length > 1}`,
     );
     this.maybeRequireStrongWalletPassword(walletPassword);
 
