@@ -152,18 +152,14 @@ class Resolvers extends ResolverBase {
     this.requireAuth(user);
     try {
       this.requireValidMnemonic(mnemonic);
-      const btcApi = wallet.coin('btc');
-      const ethApi = wallet.coin('eth');
       const oldPassword = await this.getAndDecryptWalletPassword(user.userId, mnemonic)
       logger.debug(`resolvers.wallet.recoverWallet.!!oldPassword: ${!!oldPassword}`)
-
-      const [btcSuccess, ethSuccess] = await Promise.all([
-        btcApi.recoverWallet(user, oldPassword, newPassword),
-        ethApi.recoverWallet(user, oldPassword, newPassword)
-      ])
-      logger.debug(`resolvers.wallet.recoverWallet.btcSuccess: ${btcSuccess}`)
-      logger.debug(`resolvers.wallet.recoverWallet.ethSuccess: ${ethSuccess}`)
-      if (!btcSuccess || !ethSuccess) throw new Error('Error while recovering wallet');
+      const recoverySuccessful = await Promise.all(
+        wallet.parentInterfaces.map(coin => coin.recoverWallet(user, oldPassword, newPassword))
+      )
+      logger.debug(`resolvers.wallet.recoverWallet.recoverySuccessful: ${recoverySuccessful}`)
+      logger.debug(`resolvers.wallet.recoverWallet.!recoverySuccessful.every: ${!recoverySuccessful.every(recoveryAttempt => recoveryAttempt)}`)
+      if (!recoverySuccessful.every(recoveryAttempt => recoveryAttempt)) throw new Error('Error while recovering wallet');
       await this.saveWalletPassword(user.userId, newPassword, mnemonic);
       logger.debug(`resolvers.wallet.recoverWallet.saveWalletPassword:done`)
       return {

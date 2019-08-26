@@ -7,7 +7,7 @@ import {
   Erc20Wallet,
   CoinWalletBase,
 } from './coin-wallets';
-import autoBind = require('auto-bind');
+const autoBind = require('auto-bind');
 
 export default class WalletApi {
   private symbolToInterface: Map<string, CoinWalletBase> = new Map();
@@ -41,7 +41,6 @@ export default class WalletApi {
     });
   }
 
-  // maybe to rename to coin() so that when it is called it is just wallet.coin('btc')?
   public coin(symbol: string) {
     try {
       logger.debug(`wallet-api.coin-wallet.WalletApi.coin.symbol: ${symbol}`)
