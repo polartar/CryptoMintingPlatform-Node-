@@ -160,7 +160,7 @@ class Erc20API extends EthWallet {
     try {
       logger.debug(
         `walletApi.coin-wallets.Erc20Wallet.getWalletInfo.userId:${
-        userApi.userId
+          userApi.userId
         }`,
       );
       const { ethAddress, blockNumAtCreation } = await this.getEthAddress(
@@ -196,7 +196,7 @@ class Erc20API extends EthWallet {
   ): Promise<ITransaction[]> {
     logger.debug(
       `walletApi.coin-wallets.Erc20Wallet.transferEventsToTransactions.transferEvents[length],currentBlockNumber,userAddress:${
-      transferEvents.length
+        transferEvents.length
       },${currentBlockNumber},${userAddress}`,
     );
 
@@ -278,7 +278,7 @@ class Erc20API extends EthWallet {
       });
       logger.debug(
         `walletApi.coin-wallets.Erc20Wallet.getTransactions.sent.length:${
-        sent.length
+          sent.length
         }`,
       );
       const received = await contract.getPastEvents('Transfer', {
@@ -289,7 +289,7 @@ class Erc20API extends EthWallet {
       });
       logger.debug(
         `walletApi.coin-wallets.Erc20Wallet.getTransactions.received.length:${
-        received.length
+          received.length
         }`,
       );
 
@@ -301,7 +301,7 @@ class Erc20API extends EthWallet {
       );
       logger.debug(
         `walletApi.coin-wallets.Erc20Wallet.getTransactions.transactions.length:${
-        transactions.length
+          transactions.length
         }`,
       );
       return transactions;
@@ -342,7 +342,7 @@ class Erc20API extends EthWallet {
     try {
       logger.debug(
         `walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.userId: ${
-        userApi.userId
+          userApi.userId
         }`,
       );
       logger.debug(
@@ -441,7 +441,7 @@ class Erc20API extends EthWallet {
       );
       logger.debug(
         `walletApi.coin-wallets.Erc20Wallet.send.contract.address: ${
-        contract.address
+          contract.address
         }`,
       );
       const transaction = await contract.transfer(to, amount, { nonce });
@@ -449,7 +449,7 @@ class Erc20API extends EthWallet {
       this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
       logger.debug(
         `walletApi.coin-wallets.Erc20Wallet.send.transaction.hash: ${
-        transaction.hash
+          transaction.hash
         }`,
       );
       return {
@@ -466,6 +466,10 @@ class Erc20API extends EthWallet {
         }
         case 'Insufficient token balance': {
           message = `Insufficient ${this.symbol} balance`;
+          break;
+        }
+        case 'Incorrect password': {
+          message = error.message;
           break;
         }
         default: {
