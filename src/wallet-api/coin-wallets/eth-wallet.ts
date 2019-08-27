@@ -28,7 +28,7 @@ class EthWallet extends CoinWalletBase {
   public async checkIfWalletExists(userApi: UserApi) {
     logger.debug(
       `walletApi.coin-wallets.EthWallet.checkIfWalletExists.userId:${
-      userApi.userId
+        userApi.userId
       }`,
     );
     try {
@@ -58,7 +58,7 @@ class EthWallet extends CoinWalletBase {
     );
     logger.debug(
       `walletApi.coin-wallets.EthWallet.createWallet.userApi.userId:${
-      userApi.userId
+        userApi.userId
       }`,
     );
     try {
@@ -88,7 +88,7 @@ class EthWallet extends CoinWalletBase {
       ]);
       logger.debug(
         `walletApi.coin-wallets.EthWallet.createWallet.privateKeyResponse:${
-        privateKeyResponse.status
+          privateKeyResponse.status
         }`,
       );
       logger.debug(
@@ -180,7 +180,7 @@ class EthWallet extends CoinWalletBase {
     try {
       logger.debug(
         `walletApi.coin-wallets.EthWallet.getWalletInfo.userId:${
-        userApi.userId
+          userApi.userId
         }`,
       );
       const { ethAddress } = await this.getEthAddress(userApi);
@@ -313,11 +313,13 @@ class EthWallet extends CoinWalletBase {
       );
       logger.debug(
         `walletApi.coin-wallets.EthWallet.getTransactions.transactions.length:${
-        transactions.length
+          transactions.length
         }`,
       );
       const formattedTransactions = this.formatTransactions(
-        transactions,
+        transactions.filter(tx => {
+          return !tx.value.isZero();
+        }),
         address,
       );
       return formattedTransactions;
@@ -344,7 +346,7 @@ class EthWallet extends CoinWalletBase {
       else {
         logger.warn(
           `walletApi.coin-wallets.EthWallet.ensureEthAddressMatchesPkey.mismatch:${
-          userApi.userId
+            userApi.userId
           },${address},${addressFromDb}`,
         );
         userApi.Model.findByIdAndUpdate(
@@ -489,7 +491,7 @@ class EthWallet extends CoinWalletBase {
     try {
       logger.debug(
         `walletApi.coin-wallets.EthWallet.formatTransactions.transactions.length:${
-        transactions.length
+          transactions.length
         }`,
       );
       logger.debug(
@@ -549,7 +551,7 @@ class EthWallet extends CoinWalletBase {
     try {
       logger.debug(
         `walletApi.coin-wallets.EthWallet.recoverWallet.userId:${
-        userApi.userId
+          userApi.userId
         }`,
       );
       logger.debug(
@@ -578,7 +580,7 @@ class EthWallet extends CoinWalletBase {
       );
       logger.debug(
         `walletApi.coin-wallets.EthWallet.recoverWallet.credentialCreate.response.status:${
-        response.status
+          response.status
         }`,
       );
       return response && response.status === 200;
