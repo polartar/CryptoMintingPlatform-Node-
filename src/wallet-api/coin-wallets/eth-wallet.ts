@@ -448,10 +448,18 @@ class EthWallet extends CoinWalletBase {
           break;
         }
         default: {
-          if (error.reason && error.reason === 'underflow occurred') {
-            message = 'Invalid ETH value';
-          } else {
-            throw error;
+          switch (error.reason) {
+            case 'underflow occurred': {
+              message = 'Invalid ETH value';
+              break;
+            }
+            case 'insufficient funds': {
+              message = 'Insufficient account balance';
+              break;
+            }
+            default: {
+              throw error;
+            }
           }
         }
       }
