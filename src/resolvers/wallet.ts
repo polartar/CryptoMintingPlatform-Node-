@@ -405,8 +405,8 @@ class Resolvers extends ResolverBase {
           walletPassword.length > 1}`,
       );
       this.maybeRequireStrongWalletPassword(walletPassword);
-      const twoFaValid = await user.validateTwoFa(totpToken);
-      this.requireTwoFa(twoFaValid);
+      // const twoFaValid = await user.validateTwoFa(totpToken);
+      // this.requireTwoFa(twoFaValid);
       const walletApi = wallet.coin(coinSymbol);
       const result = await walletApi.send(user, to, amount, walletPassword);
       return result;
