@@ -445,9 +445,14 @@ class EthWallet extends CoinWalletBase {
         }
         case 'Insufficient account balance': {
           message = 'Insufficient ETH balance';
+          break;
         }
         default: {
-          throw error;
+          if (error.reason && error.reason === 'underflow occurred') {
+            message = 'Invalid ETH value';
+          } else {
+            throw error;
+          }
         }
       }
       return {

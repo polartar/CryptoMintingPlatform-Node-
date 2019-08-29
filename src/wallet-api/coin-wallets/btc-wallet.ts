@@ -523,6 +523,10 @@ class BtcWallet extends CoinWalletBase {
           message = 'Incorrect Password';
           break;
         }
+        case 'Output is dust.': {
+          message = 'BTC amount is too low';
+          break;
+        }
         default: {
           throw error;
         }

@@ -473,7 +473,11 @@ class Erc20API extends EthWallet {
           break;
         }
         default: {
-          throw error;
+          if (error.reason === 'underflow occurred') {
+            message = `Invalid ${this.symbol} value`;
+          } else {
+            throw error;
+          }
         }
       }
       return {
