@@ -1,7 +1,7 @@
 // This abstract class is intended to provide a framework for each of the wallet interfaces to ensure they implement the same methods and return the same data shape
 import { ITransaction } from '../../types';
 import { UserApi } from '../../data-sources';
-import { crypto } from '../../utils'
+import { crypto } from '../../utils';
 
 export default abstract class CoinWalletBase {
   constructor(
@@ -49,24 +49,43 @@ export default abstract class CoinWalletBase {
 
   abstract checkIfWalletExists(user: UserApi): Promise<boolean>;
 
-  abstract getTransactions(addressOrUserId: string, blockNumberAtCreation?: number): Promise<ITransaction[]>;
+  abstract getTransactions(
+    addressOrUserId: string,
+    blockNumberAtCreation?: number,
+  ): Promise<ITransaction[]>;
 
-  abstract estimateFee(userApi: UserApi): Promise<string>;
+  abstract estimateFee(
+    userApi: UserApi,
+  ): Promise<{
+    estimatedFee: string;
+    feeCurrency: string;
+    feeCurrencyBalance: string;
+  }>;
 
   abstract send(
     userApi: UserApi,
     to: string,
     amount: string,
-    walletPassword: string
+    walletPassword: string,
   ): Promise<{ success: boolean; message?: string }>;
 
-  abstract createWallet(user: UserApi, walletPassword: string, recoveryPhrase: string): Promise<boolean>;
+  abstract createWallet(
+    user: UserApi,
+    walletPassword: string,
+    recoveryPhrase: string,
+  ): Promise<boolean>;
 
-  abstract recoverWallet(user: UserApi, oldPassword: string, newPassword: string): Promise<boolean>;
+  abstract recoverWallet(
+    user: UserApi,
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<boolean>;
 
-  protected encrypt = (plainText: string, secret: string) => crypto.encrypt(plainText, secret)
+  protected encrypt = (plainText: string, secret: string) =>
+    crypto.encrypt(plainText, secret);
 
-  protected decrypt = (encryptedText: string, secret: string) => crypto.decrypt(encryptedText, secret);
+  protected decrypt = (encryptedText: string, secret: string) =>
+    crypto.decrypt(encryptedText, secret);
 
-  protected hash = (value: string) => crypto.hash(value)
+  protected hash = (value: string) => crypto.hash(value);
 }

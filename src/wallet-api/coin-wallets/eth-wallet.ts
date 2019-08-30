@@ -150,6 +150,12 @@ class EthWallet extends CoinWalletBase {
     }
   }
 
+  protected async getEthBalance(userApi: UserApi) {
+    const { ethAddress } = await this.getEthAddress(userApi);
+    const balance = await this.provider.getBalance(ethAddress);
+    return ethers.utils.formatEther(balance);
+  }
+
   public async estimateFee(userApi: UserApi) {
     try {
       logger.debug(
@@ -167,7 +173,20 @@ class EthWallet extends CoinWalletBase {
       logger.debug(
         `walletApi.coin-wallets.EthWallet.estimateFee.feeInEther:${feeInEther}`,
       );
-      return feeInEther;
+
+      const ethBalance = await this.getEthBalance(userApi);
+
+      const feeData = {
+        estimatedFee: feeInEther,
+        feeCurrency: 'ETH',
+        feeCurrencyBalance: ethBalance,
+      };
+      logger.debug(
+        `walletApi.coin-wallets.EthWallet.estimateFee.feeData:${JSON.stringify(
+          feeData,
+        )}`,
+      );
+      return feeData;
     } catch (error) {
       logger.debug(
         `walletApi.coin-wallets.EthWallet.estimateFee.catch:${error}`,

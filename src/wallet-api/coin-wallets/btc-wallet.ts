@@ -135,7 +135,7 @@ class BtcWallet extends CoinWalletBase {
     }
   }
 
-  public estimateFee() {
+  public async estimateFee(userApi: UserApi) {
     try {
       logger.debug(`walletApi.coin-wallets.BtcWallet.estimateFee`);
       const feeRate = new BigNumber(this.feeRate);
@@ -146,14 +146,24 @@ class BtcWallet extends CoinWalletBase {
       logger.debug(
         `walletApi.coin-wallets.BtcWallet.estimateFee.estimate ${estimate.toFixed()}`,
       );
-      return Promise.resolve(estimate.toFixed());
+      const { confirmed } = await this.getBalance(userApi.userId);
+      const feeData = {
+        estimatedFee: estimate.toFixed(),
+        feeCurrency: 'BTC',
+        feeCurrencyBalance: confirmed,
+      };
+      logger.debug(
+        `walletApi.coin-wallets.BtcWallet.estimateFee.feeData ${JSON.stringify(
+          feeData,
+        )}`,
+      );
+      return feeData;
     } catch (error) {
       logger.warn(
         `walletApi.coin-wallets.BtcWallet.estimateFee.catch: ${error}`,
       );
       throw error;
     }
-    // Cant remember why we used this formula to estimate the fee
   }
 
   private async selectAndMaybeSavePassphrase(
