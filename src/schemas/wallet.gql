@@ -17,6 +17,12 @@ type Transaction {
   total: String!
 }
 
+type FeeEstimate {
+  estimatedFee: String!
+  feeCurrency: String!
+  feeCurrencyBalance: String!
+}
+
 type Wallet {
   symbol: String!
   name: String!
@@ -25,7 +31,7 @@ type Wallet {
   backgroundColor: String!
   receiveAddress: String!
   transactions: [Transaction!]!
-  feeEstimate: Float!
+  feeEstimate: FeeEstimate!
 }
 
 type Query {

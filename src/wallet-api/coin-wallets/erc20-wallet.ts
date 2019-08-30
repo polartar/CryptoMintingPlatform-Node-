@@ -56,6 +56,7 @@ class Erc20API extends EthWallet {
     logger.debug(
       `walletApi.coin-wallets.Erc20Wallet.estimateFee.gasPrice:${gasPrice.toHexString()}`,
     );
+    const ethBalance = await this.getEthBalance(userApi);
     try {
       const testValue = this.bigNumberify(10);
       const estimate = await this.contract.estimate.transfer(
@@ -70,12 +71,29 @@ class Erc20API extends EthWallet {
       logger.debug(
         `walletApi.coin-wallets.Erc20Wallet.estimateFee.total:${total}`,
       );
-      return total;
+      const feeData = {
+        estimatedFee: total,
+        feeCurrency: 'ETH',
+        feeCurrencyBalance: ethBalance,
+      };
+      logger.debug(
+        `walletApi.coin-wallets.Erc20Wallet.estimateFee.feeData:${JSON.stringify(
+          feeData,
+        )}`,
+      );
     } catch (error) {
       logger.warn(
         `walletApi.coin-wallets.Erc20Wallet.estimateFee.catch:${error}`,
       );
-      return this.toEther(this.FALLBACK_GAS_VALUE.mul(gasPrice));
+      const backupFeeEstimate = this.toEther(
+        this.FALLBACK_GAS_VALUE.mul(gasPrice),
+      );
+      return {
+        estimatedFee: backupFeeEstimate,
+        feeCurrency: 'ETH',
+        feeCurrencyBalance: ethBalance,
+      };
+      return;
     }
   }
 
@@ -365,14 +383,16 @@ class Erc20API extends EthWallet {
         `walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.tokenBalance: ${tokenBalance}`,
       );
       logger.debug(
-        `walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.parseEther(feeEstimate): ${parseEther(
+        `walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.feeEstimate: ${JSON.stringify(
           feeEstimate,
-        ).toHexString()}`,
+        )}`,
       );
       logger.debug(
         `walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.etherBalance: ${etherBalance.toHexString()}`,
       );
-      const hasEnoughEther = etherBalance.gt(parseEther(feeEstimate));
+      const hasEnoughEther = etherBalance.gt(
+        parseEther(feeEstimate.estimatedFee),
+      );
       logger.debug(
         `walletApi.coin-wallets.Erc20Wallet.requireEnoughTokensAndEtherToSend.hasEnoughEther: ${hasEnoughEther}`,
       );
