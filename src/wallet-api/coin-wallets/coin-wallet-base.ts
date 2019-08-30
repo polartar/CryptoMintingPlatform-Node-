@@ -67,7 +67,11 @@ export default abstract class CoinWalletBase {
     to: string,
     amount: string,
     walletPassword: string,
-  ): Promise<{ success: boolean; message?: string }>;
+  ): Promise<{
+    success: boolean;
+    message?: string;
+    transaction?: ITransaction;
+  }>;
 
   abstract createWallet(
     user: UserApi,

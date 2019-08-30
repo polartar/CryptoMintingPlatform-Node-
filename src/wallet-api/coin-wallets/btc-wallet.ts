@@ -508,10 +508,9 @@ class BtcWallet extends CoinWalletBase {
       logger.debug(
         `walletApi.coin-wallets.BtcWallet.send.!!amountToSend:${amountToSend.toFixed()}`,
       );
-      const { hash } = await userWallet.send({
+      const transaction = await userWallet.send({
         account: 'default',
         passphrase: passphrase,
-        //10000 satoshis per kilobyte for a fee?
         rate: this.feeRate,
         outputs: [
           {
@@ -520,11 +519,38 @@ class BtcWallet extends CoinWalletBase {
           },
         ],
       });
-      logger.debug(`walletApi.coin-wallets.BtcWallet.send.hash:${hash}`);
-      return {
-        message: hash,
+      logger.debug(
+        `walletApi.coin-wallets.BtcWallet.send.hash:${transaction.hash}`,
+      );
+      const { address: from = '' } = transaction.inputs.find(
+        (input: any) => !!input.path,
+      );
+      const fee = new BigNumber(transaction.fee);
+      const response: {
+        message: string;
+        success: boolean;
+        transaction: ITransaction;
+      } = {
+        message: null,
         success: true,
+        transaction: {
+          amount: amount,
+          confirmations: transaction.confirmations,
+          fee: this.satToBtc(fee).toFixed(),
+          from,
+          to: to,
+          id: transaction.hash,
+          link: `${config.btcTxLink}/${transaction.hash}/`,
+          status: 'Pending',
+          timestamp: transaction.mtime,
+          type: 'Withdrawal',
+          total: this.satToBtc(fee)
+            .plus(amountToSend)
+            .negated()
+            .toFixed(),
+        },
       };
+      return response;
     } catch (error) {
       logger.warn(`walletApi.coin-wallets.BtcWallet.send.catch:${error}`);
       let message;
