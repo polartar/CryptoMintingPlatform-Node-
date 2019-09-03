@@ -45,6 +45,12 @@ type MutationResponse {
   message: String
 }
 
+type TxSendResponse {
+  success: Boolean!
+  message: String
+  transaction: Transaction
+}
+
 type Mutation {
   # If no coinSymbol is provided, all supported wallets will be returned
   sendTransaction(
@@ -53,7 +59,7 @@ type Mutation {
     amount: String!
     totpToken: String
     walletPassword: String
-  ): MutationResponse!
+  ): TxSendResponse!
   createWallet(mnemonic: String!, walletPassword: String): MutationResponse!
   recoverWallet(mnemonic: String!, newPassword: String!): MutationResponse!
 }

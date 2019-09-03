@@ -450,10 +450,28 @@ class EthWallet extends CoinWalletBase {
       logger.debug(
         `walletApi.coin-wallets.EthWallet.send.ensureEthAddressMatchesPkey: done`,
       );
-      return {
+      const response: {
+        message: string;
+        success: boolean;
+        transaction: ITransaction;
+      } = {
+        message: null,
         success: true,
-        message: txHash,
+        transaction: {
+          amount: this.toEther(transaction.value),
+          confirmations: 0,
+          fee: 'TBD',
+          from: transaction.from,
+          to: transaction.to,
+          id: transaction.hash,
+          link: `${config.ethTxLink}/${transaction.hash}`,
+          status: 'Pending',
+          timestamp: Math.floor(Date.now() / 1000),
+          type: 'Withdrawal',
+          total: value + ' + pending fee',
+        },
       };
+      return response;
     } catch (error) {
       logger.warn(`walletApi.coin-wallets.EthWallet.send.catch:${error}`);
       let message;
