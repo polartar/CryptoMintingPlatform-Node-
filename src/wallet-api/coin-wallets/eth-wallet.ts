@@ -458,7 +458,7 @@ class EthWallet extends CoinWalletBase {
         message: null,
         success: true,
         transaction: {
-          amount: this.toEther(transaction.value),
+          amount: this.toEther(transaction.value, true),
           confirmations: 0,
           fee: 'TBD',
           from: transaction.from,

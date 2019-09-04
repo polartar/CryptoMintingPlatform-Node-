@@ -534,7 +534,7 @@ class BtcWallet extends CoinWalletBase {
         message: null,
         success: true,
         transaction: {
-          amount: amount,
+          amount: `-${amount}`,
           confirmations: transaction.confirmations,
           fee: this.satToBtc(fee).toFixed(),
           from,
@@ -569,8 +569,7 @@ class BtcWallet extends CoinWalletBase {
       }
       return {
         success: false,
-        message:
-          message || 'Something went wrong while sending this transaction',
+        message,
       };
     }
   }
