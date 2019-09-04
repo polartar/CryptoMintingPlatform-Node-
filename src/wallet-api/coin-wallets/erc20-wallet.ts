@@ -480,7 +480,7 @@ class Erc20API extends EthWallet {
         message: null,
         success: true,
         transaction: {
-          amount: value,
+          amount: `-${value}`,
           confirmations: 0,
           fee: 'TBD',
           from: transaction.from,
