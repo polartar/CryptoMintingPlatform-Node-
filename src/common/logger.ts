@@ -2,8 +2,7 @@ import * as winston from 'winston';
 require('winston-mongodb');
 import { config } from '../common';
 
-const logger = winston.createLogger()
-
+const logger = winston.createLogger();
 
 if (process.env.NODE_ENV === 'production' && config.mongodbUri) {
   logger.add(
@@ -15,14 +14,14 @@ if (process.env.NODE_ENV === 'production' && config.mongodbUri) {
       collection: 'wallet-logs',
       storeHost: true,
     }),
-  )
+  );
 } else {
   logger.add(
     new winston.transports.Console({
       format: winston.format.simple(),
       level: config.logLevel,
     }),
-  )
+  );
 }
 
 export default logger;

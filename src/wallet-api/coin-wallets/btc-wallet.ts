@@ -79,6 +79,7 @@ class BtcWallet extends CoinWalletBase {
         }`,
       );
       const userWallet = this.walletClient.wallet(userId, token);
+      const { receiveAddress } = await userWallet.getAccount('default');
       const {
         key: { xprivkey },
       } = await userWallet.getMaster();
@@ -102,10 +103,19 @@ class BtcWallet extends CoinWalletBase {
         this.encrypt(xprivkey, mnemonic),
       );
 
+      const receiveAddressSavePromise = userApi.setBtcAddressToUser(
+        receiveAddress,
+      );
+
       // Wait for all of the requests to the apiKeyService to resolve for maximum concurrency
-      const [tokenSaveFulfilled, privKeySaveFulfilled] = await Promise.all([
+      const [
+        tokenSaveFulfilled,
+        privKeySaveFulfilled,
+        receiveAddressSaveFulfilled,
+      ] = await Promise.all([
         tokenSavePromise,
         privKeySavePromise,
+        receiveAddressSavePromise,
       ]);
       logger.debug(
         `walletApi.coin-wallets.BtcWallet.createWallet.tokenSaveFulfilled.status: ${
@@ -116,6 +126,11 @@ class BtcWallet extends CoinWalletBase {
         `walletApi.coin-wallets.BtcWallet.createWallet.privKeySaveFulfilled.status: ${
           privKeySaveFulfilled.status
         }`,
+      );
+      logger.debug(
+        `walletApi.coin-wallets.BtcWallet.createWallet.receiveAddressSaveFulfilled.wallet.receiveAddress: ${receiveAddressSaveFulfilled &&
+          receiveAddressSaveFulfilled.wallet &&
+          receiveAddressSaveFulfilled.wallet.btcAddress}`,
       );
       // Send the generated passphrase to bcoin to encrypt the user's wallet. Success: boolean will be returned
       logger.debug(
@@ -399,6 +414,7 @@ class BtcWallet extends CoinWalletBase {
       logger.debug(
         `walletApi.coin-wallets.BtcWallet.getWalletInfo.userWallet.getAccount.receiveAddress: ${receiveAddress}`,
       );
+      userApi.setBtcAddressToUser(receiveAddress);
       return {
         receiveAddress: receiveAddress,
         symbol: this.symbol,

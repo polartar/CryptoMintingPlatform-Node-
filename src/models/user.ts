@@ -6,6 +6,7 @@ interface IUserWalletDoc extends mongoose.Document {
   cryptoFavorites?: string[];
   cryptoFavoritesSet?: boolean;
   ethNonce: number;
+  btcAddress?: number;
 }
 export interface IUser extends mongoose.Document {
   email: string;
@@ -29,6 +30,7 @@ const walletSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  btcAddress: String,
 });
 
 const userSchema = new mongoose.Schema({
@@ -54,11 +56,11 @@ const userSchema = new mongoose.Schema({
   wallet: walletSchema,
   currency: {
     type: String,
-    default: 'USD'
-  }
+    default: 'USD',
+  },
 });
 
-userSchema.post('save', function (doc: IUser) {
+userSchema.post('save', function(doc: IUser) {
   if (!doc._id) {
     return;
   }
@@ -71,4 +73,4 @@ userSchema.post('save', function (doc: IUser) {
 
 const User = mongoose.model<IUser>('user', userSchema);
 
-export default User
+export default User;

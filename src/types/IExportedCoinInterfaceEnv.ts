@@ -1,4 +1,4 @@
-import ICoinMetadata from './ICoinMetadata'
+import ICoinMetadata from './ICoinMetadata';
 
 export default interface IExportedCoinInterfaceEnv {
   btc: ICoinMetadata;
