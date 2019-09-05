@@ -1,4 +1,3 @@
-
 export default interface ICoinDefaultConfig {
   name: string;
   backgroundColor: string;

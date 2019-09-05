@@ -50,13 +50,13 @@ class CredentialService {
     options: SignOptions = {},
   ): string {
     try {
-      logger.debug(`services.credential.sign`)
+      logger.debug(`services.credential.sign`);
       const combinedOptions = Object.assign(options, this.jwtOptions);
       const token = jwt.sign(payload, config.jwtPrivateKey, combinedOptions);
-      logger.debug(`services.credential.sign.token.length: ${token.length}`)
+      logger.debug(`services.credential.sign.token.length: ${token.length}`);
       return token;
     } catch (error) {
-      logger.warn(`services.credential.sign.catch: ${error}`)
+      logger.warn(`services.credential.sign.catch: ${error}`);
       throw error;
     }
   }
@@ -69,7 +69,7 @@ class CredentialService {
       axios.defaults.headers.put['Content-Type'] = 'application/json';
       return axios;
     } catch (error) {
-      logger.warn(`services.credential.getAxios.catch: ${error}`)
+      logger.warn(`services.credential.getAxios.catch: ${error}`);
       throw error;
     }
   }
@@ -81,22 +81,26 @@ class CredentialService {
     payload: string,
   ) {
     try {
-      logger.debug(`services.credential.create.userId: ${userId}`)
-      logger.debug(`services.credential.create.coin: ${coin}`)
-      logger.debug(`services.credential.create.resource: ${resource}`)
+      logger.debug(`services.credential.create.userId: ${userId}`);
+      logger.debug(`services.credential.create.coin: ${coin}`);
+      logger.debug(`services.credential.create.resource: ${resource}`);
       const resourceKey = `${coin}-${resource}`;
       const apiKeyUrl = `${config.apiKeyServiceUrl}/`;
       const jwtAxios = this.getAxios({
         userId,
         accountId: resourceKey,
       });
-      logger.debug(`services.credential.create:before`)
+      logger.debug(`services.credential.create:before`);
       const createResponse = await jwtAxios.post(apiKeyUrl, {
         userId: userId,
         accountId: resourceKey,
         apiKey: payload,
       });
-      logger.debug(`services.credential.create.createResponse.status: ${createResponse.status}`)
+      logger.debug(
+        `services.credential.create.createResponse.status: ${
+          createResponse.status
+        }`,
+      );
       return createResponse;
     } catch (error) {
       logger.warn(`services.credential.create.catch`, error);
@@ -106,33 +110,37 @@ class CredentialService {
 
   public async get(userId: string, coin: string, resource: string) {
     try {
-      logger.debug(`services.credential.get.userId: ${userId}`)
-      logger.debug(`services.credential.get.coin: ${coin}`)
-      logger.debug(`services.credential.get.resource: ${resource}`)
+      logger.debug(`services.credential.get.userId: ${userId}`);
+      logger.debug(`services.credential.get.coin: ${coin}`);
+      logger.debug(`services.credential.get.resource: ${resource}`);
       const resourceKey = `${coin}-${resource}`;
       const apiKeyUrl = `${config.apiKeyServiceUrl}/${userId}/${resourceKey}`;
       const jwtAxios = this.getAxios({
         userId,
         accountId: resourceKey,
       });
-      logger.debug(`services.credential.get:before`)
+      logger.debug(`services.credential.get:before`);
       const response = await jwtAxios.get(apiKeyUrl, {
         params: {
           userId: userId,
         },
       });
-      logger.debug(`services.credential.get.response.status,statusText: ${response.status}, ${response.statusText}`)
+      logger.debug(
+        `services.credential.get.response.status,statusText: ${
+          response.status
+        }, ${response.statusText}`,
+      );
       return response.data;
     } catch (error) {
-      logger.warn(`services.credential.get.catch: ${error}`)
+      logger.warn(`services.credential.get.catch: ${error}`);
       throw error;
     }
   }
 
   public handleErrResponse(error: AxiosError, messageIf404: string) {
-    logger.warn(`services.credential.handleErrorResponse:${error}`)
+    logger.warn(`services.credential.handleErrorResponse:${error}`);
     if (error.response && error.response.status === 404) {
-      throw new Error(messageIf404)
+      throw new Error(messageIf404);
     }
     throw error;
   }

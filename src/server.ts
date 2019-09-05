@@ -4,19 +4,19 @@ import { DocumentNode } from 'graphql';
 import schemas from './schemas';
 import resolvers from './resolvers';
 import { UserApi, CryptoFavorites } from './data-sources';
-import { WalletApi } from './wallet-api'
+import { WalletApi } from './wallet-api';
 import { config, logger, auth } from './common';
 import autoBind = require('auto-bind');
 import { connect, set, connection } from 'mongoose';
 
 class Server {
   public app: express.Application = express();
-  public walletApi: WalletApi
+  public walletApi: WalletApi;
   constructor() {
     autoBind(this);
-    const { isDev, hostname } = config
+    const { isDev, hostname } = config;
     const typeDefs: DocumentNode = gql(schemas);
-    this.walletApi = new WalletApi(hostname)
+    this.walletApi = new WalletApi(hostname);
     const server = new ApolloServer({
       typeDefs,
       resolvers,
@@ -43,19 +43,23 @@ class Server {
     const token = req.headers.authorization
       ? req.headers.authorization.replace('Bearer ', '')
       : '';
-    logger.debug(`server.buildContext.token.length: ${token && token.length}`)
+    logger.debug(`server.buildContext.token.length: ${token && token.length}`);
     let user = null;
     if (token) {
       try {
-        const { claims } = auth.verifyAndDecodeToken(token, hostname)
+        const { claims } = auth.verifyAndDecodeToken(token, hostname);
         if (config.logLevel === 'debug' || config.logLevel === 'silly') {
           Object.entries(claims).forEach(([claim, value]) => {
-            logger.debug(`server.buildContext.claims.${claim}: ${Array.isArray(value) ? value.length : value}`)
-          })
+            logger.debug(
+              `server.buildContext.claims.${claim}: ${
+                Array.isArray(value) ? value.length : value
+              }`,
+            );
+          });
         }
         user = new UserApi(claims);
       } catch (error) {
-        logger.warn(`server.buildContext.catch: ${error}`)
+        logger.warn(`server.buildContext.catch: ${error}`);
         user = null;
       }
     }
@@ -76,7 +80,7 @@ class Server {
 
   public async initialize() {
     try {
-      await this.connectToMongodb()
+      await this.connectToMongodb();
       this.listen();
     } catch (error) {
       throw error;
