@@ -1,6 +1,6 @@
-import IExportedCoinInterfaceEnv from './IExportedCoinInterfaceEnv'
+import IExportedCoinInterfaceEnv from './IExportedCoinInterfaceEnv';
 
 export interface IExportedCoinInterface {
-  dev: IExportedCoinInterfaceEnv
-  prod: IExportedCoinInterfaceEnv
+  dev: IExportedCoinInterfaceEnv;
+  prod: IExportedCoinInterfaceEnv;
 }
