@@ -39,6 +39,7 @@ type TwoFaValidationResponse {
 type Mutation {
   login(token: String!): ReturnToken!
   twoFaRegister: TwoFaRegisterResponse!
+  disableTwoFa(totpToken: String!): MutationResponse!
 }
 
 type Query {
