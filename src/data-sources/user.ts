@@ -7,6 +7,7 @@ import { IUserClaims } from '../types/context';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
 import { ApolloError } from 'apollo-server-express';
+import auth from '../common/auth';
 export default class UserApi extends DataSource {
   Model: Model<IUser> = User;
   domain: string;
@@ -15,10 +16,24 @@ export default class UserApi extends DataSource {
   userId: string;
   authorized: boolean;
   twoFaEnabled: boolean;
+  token: string;
+  claims: IUserClaims;
 
-  constructor(userClaims: IUserClaims) {
+  constructor(token: string) {
     super();
-    const { permissions, role, userId, authorized, twoFaEnabled } = userClaims;
+    const { claims } = auth.verifyAndDecodeToken(token, config.hostname);
+    if (config.logLevel === 'debug' || config.logLevel === 'silly') {
+      Object.entries(claims).forEach(([claim, value]) => {
+        logger.debug(
+          `server.buildContext.claims.${claim}: ${
+            Array.isArray(value) ? value.length : value
+          }`,
+        );
+      });
+    }
+    this.claims = claims;
+    const { permissions, role, userId, authorized, twoFaEnabled } = claims;
+    this.token = token;
     this.permissions = permissions;
     this.role = role;
     this.authorized = authorized;

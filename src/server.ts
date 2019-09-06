@@ -39,7 +39,6 @@ class Server {
     req: express.Request;
     res: express.Response;
   }) {
-    const { hostname } = config;
     const token = req.headers.authorization
       ? req.headers.authorization.replace('Bearer ', '')
       : '';
@@ -47,17 +46,7 @@ class Server {
     let user = null;
     if (token) {
       try {
-        const { claims } = auth.verifyAndDecodeToken(token, hostname);
-        if (config.logLevel === 'debug' || config.logLevel === 'silly') {
-          Object.entries(claims).forEach(([claim, value]) => {
-            logger.debug(
-              `server.buildContext.claims.${claim}: ${
-                Array.isArray(value) ? value.length : value
-              }`,
-            );
-          });
-        }
-        user = new UserApi(claims);
+        user = new UserApi(token);
       } catch (error) {
         logger.warn(`server.buildContext.catch: ${error}`);
         user = null;
