@@ -80,12 +80,10 @@ class Resolvers extends ResolverBase {
       logger.debug(`resolvers.auth.login.!!args.token:${!!args.token}`);
       const token = await auth.signIn(args.token, config.hostname);
       logger.debug(`resolvers.auth.login.!!token:${!!token}`);
-      const { claims } = auth.verifyAndDecodeToken(token, config.hostname);
-      logger.debug(`resolvers.auth.login.claims.userId:${claims.userId}`);
-      const tempUserApi = new UserApi(claims);
+      const tempUserApi = new UserApi(token);
       const walletExists = await this.verifyWalletsExist(tempUserApi, wallet);
       logger.debug(`resolvers.auth.login.walletExists:${walletExists}`);
-      const twoFaSetup = await this.setupTwoFa(claims, tempUserApi);
+      const twoFaSetup = await this.setupTwoFa(tempUserApi.claims, tempUserApi);
       logger.debug(
         `resolvers.auth.login.!!twoFaSetup.twoFaQrCode:${!!twoFaSetup.twoFaQrCode}`,
       );
@@ -94,7 +92,7 @@ class Resolvers extends ResolverBase {
       );
       return {
         userApi: tempUserApi,
-        twoFaEnabled: claims.twoFaEnabled,
+        twoFaEnabled: tempUserApi.claims.twoFaEnabled,
         token,
         walletExists,
         ...twoFaSetup,
@@ -108,7 +106,7 @@ class Resolvers extends ResolverBase {
   public async validateExistingToken(
     parent: any,
     args: {},
-    { user, req, wallet }: Context,
+    { user, wallet }: Context,
   ) {
     try {
       logger.debug(
@@ -131,12 +129,11 @@ class Resolvers extends ResolverBase {
           twoFaSetup.twoFaSecret
         }`,
       );
-      const token = req.headers.authorization
-        ? req.headers.authorization.replace('Bearer ', '')
-        : '';
-      logger.debug(`resolvers.auth.validateExistingToken.!!token:${!!token}`);
+      logger.debug(
+        `resolvers.auth.validateExistingToken.!!token:${!!user.token}`,
+      );
       const twoFaAuthenticated = await auth.verifyTwoFaAuthenticated(
-        token,
+        user.token,
         config.hostname,
       );
       logger.debug(
@@ -182,7 +179,7 @@ class Resolvers extends ResolverBase {
   public async twoFaValidate(
     parent: any,
     args: { totpToken: string },
-    { user, req }: Context,
+    { user }: Context,
   ) {
     try {
       logger.debug(
@@ -190,13 +187,10 @@ class Resolvers extends ResolverBase {
       );
       this.requireAuth(user);
       logger.debug(`resolvers.auth.twoFaValidate.requireAuth:ok`);
-      const token = req.headers.authorization
-        ? req.headers.authorization.replace('Bearer ', '')
-        : '';
-      logger.debug(`resolvers.auth.twoFaValidate.!!token:${!!token}`);
+      logger.debug(`resolvers.auth.twoFaValidate.!!token:${!!user.token}`);
       const { authenticated, newToken } = await auth.validateTwoFa(
         config.hostname,
-        token,
+        user.token,
         args.totpToken,
       );
       logger.debug(
@@ -210,7 +204,39 @@ class Resolvers extends ResolverBase {
     }
   }
 
-  async getUserProfile({ userApi }: { userApi: UserApi }) {
+  public async disableTwoFa(
+    parent: any,
+    args: { totpToken: string },
+    { user }: Context,
+  ) {
+    this.requireAuth(user);
+    try {
+      const { authenticated } = await auth.validateTwoFa(
+        config.hostname,
+        user.token,
+        args.totpToken,
+      );
+      logger.debug(
+        `resolvers.auth.disableTwoFa.authenticated:${authenticated}`,
+      );
+      this.requireTwoFa(authenticated);
+      const result = await user.Model.findByIdAndUpdate(
+        user.userId,
+        { $unset: { twoFaSecret: 1, twoFaTempSecret: 1 } },
+        { new: true },
+      );
+      logger.debug(
+        `resolvers.auth.disableTwoFa.!!result.twoFaSecret:${!!result.twoFaSecret}`,
+      );
+      return {
+        success: !result.twoFaSecret,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async getUserProfile({ userApi }: { userApi: UserApi }) {
     logger.debug(`resolvers.auth.getUserProfile.userId:${userApi.userId}`);
     const profile = await userApi.findFromDb();
     return profile;
@@ -243,5 +269,6 @@ export default {
   Mutation: {
     login: resolvers.login,
     twoFaRegister: resolvers.twoFaRegister,
+    disableTwoFa: resolvers.disableTwoFa,
   },
 };
