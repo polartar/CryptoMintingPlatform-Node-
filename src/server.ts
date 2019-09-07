@@ -5,7 +5,7 @@ import schemas from './schemas';
 import resolvers from './resolvers';
 import { UserApi, CryptoFavorites } from './data-sources';
 import { WalletApi } from './wallet-api';
-import { config, logger, auth } from './common';
+import { config, logger } from './common';
 import autoBind = require('auto-bind');
 import { connect, set, connection } from 'mongoose';
 

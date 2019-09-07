@@ -5,6 +5,7 @@ import ResolverBase from '../common/Resolver-Base';
 import { ApolloError } from 'apollo-server-express';
 import { UserApi } from '../data-sources/';
 const autoBind = require('auto-bind');
+import { User } from '../models';
 interface ITwoFaSetup {
   twoFaSecret: string | null;
   twoFaQrCode: string | null;
@@ -48,7 +49,6 @@ class Resolvers extends ResolverBase {
       logger.debug(
         `resolvers.auth.setupTwoFa.claims.twoFaEnabled:${claims.twoFaEnabled}`,
       );
-
       if (!claims.twoFaEnabled) {
         const {
           qrCode: userQrCode,
@@ -66,7 +66,57 @@ class Resolvers extends ResolverBase {
         twoFaQrCode: qrCode,
       };
     } catch (error) {
-      logger.debug(`resolvers.auth.setupTwoFa.catch:${error}`);
+      logger.warn(`resolvers.auth.setupTwoFa.catch:${error}`);
+      throw error;
+    }
+  }
+
+  public async createUser(
+    parent: any,
+    args: {
+      userInfo: {
+        token: string;
+        firstName: string;
+        lastName: string;
+        phone: string;
+        phoneCountry: string;
+        referredBy: string;
+      };
+    },
+  ) {
+    try {
+      const {
+        token,
+        firstName,
+        lastName,
+        phone,
+        phoneCountry,
+        referredBy,
+      } = args.userInfo;
+      const firebaseUid = await auth.getFirebaseUid(token, config.hostname);
+      logger.debug(`resolvers.auth.createUser.firebaseUid:${firebaseUid}`);
+      const { email } = await auth.getUser(firebaseUid, config.hostname);
+      const newUser = new User({
+        email,
+        firebaseUid,
+        firstName,
+        lastName,
+        phoneCountry,
+        phone,
+        referredBy,
+      });
+      logger.debug(`resolvers.auth.createUser.newUser.id:${newUser.id}`);
+      await newUser.save();
+      const customToken = await auth.signIn(token, config.hostname);
+      const userApi = new UserApi(customToken);
+      return {
+        userApi,
+        twoFaEnabled: false,
+        token: customToken,
+        walletExists: false,
+      };
+    } catch (error) {
+      logger.warn(`resolvers.auth.createUser.catch:${error}`);
       throw error;
     }
   }
@@ -270,5 +320,6 @@ export default {
     login: resolvers.login,
     twoFaRegister: resolvers.twoFaRegister,
     disableTwoFa: resolvers.disableTwoFa,
+    createUser: resolvers.createUser,
   },
 };
