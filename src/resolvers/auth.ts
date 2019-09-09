@@ -71,56 +71,6 @@ class Resolvers extends ResolverBase {
     }
   }
 
-  public async createUser(
-    parent: any,
-    args: {
-      userInfo: {
-        token: string;
-        firstName: string;
-        lastName: string;
-        phone: string;
-        phoneCountry: string;
-        referredBy: string;
-      };
-    },
-  ) {
-    try {
-      const {
-        token,
-        firstName,
-        lastName,
-        phone,
-        phoneCountry,
-        referredBy,
-      } = args.userInfo;
-      const firebaseUid = await auth.getFirebaseUid(token, config.hostname);
-      logger.debug(`resolvers.auth.createUser.firebaseUid:${firebaseUid}`);
-      const { email } = await auth.getUser(firebaseUid, config.hostname);
-      const newUser = new User({
-        email,
-        firebaseUid,
-        firstName,
-        lastName,
-        phoneCountry,
-        phone,
-        referredBy,
-      });
-      logger.debug(`resolvers.auth.createUser.newUser.id:${newUser.id}`);
-      await newUser.save();
-      const customToken = await auth.signIn(token, config.hostname);
-      const userApi = new UserApi(customToken);
-      return {
-        userApi,
-        twoFaEnabled: false,
-        token: customToken,
-        walletExists: false,
-      };
-    } catch (error) {
-      logger.warn(`resolvers.auth.createUser.catch:${error}`);
-      throw error;
-    }
-  }
-
   public async login(
     parent: any,
     args: { token: string },
@@ -259,27 +209,18 @@ class Resolvers extends ResolverBase {
     args: { totpToken: string },
     { user }: Context,
   ) {
+    logger.debug(`resolvers.auth.disableTwoFa.!!user:${!!user}`);
     this.requireAuth(user);
     try {
-      const { authenticated } = await auth.validateTwoFa(
+      const newToken = await auth.disableTwoFa(
         config.hostname,
         user.token,
         args.totpToken,
       );
-      logger.debug(
-        `resolvers.auth.disableTwoFa.authenticated:${authenticated}`,
-      );
-      this.requireTwoFa(authenticated);
-      const result = await user.Model.findByIdAndUpdate(
-        user.userId,
-        { $unset: { twoFaSecret: 1, twoFaTempSecret: 1 } },
-        { new: true },
-      );
-      logger.debug(
-        `resolvers.auth.disableTwoFa.!!result.twoFaSecret:${!!result.twoFaSecret}`,
-      );
+      logger.debug(`resolvers.auth.disableTwoFa.!!newToken:${!!newToken}`);
       return {
-        success: !result.twoFaSecret,
+        authenticated: !!newToken,
+        newToken,
       };
     } catch (error) {
       throw error;
@@ -320,6 +261,5 @@ export default {
     login: resolvers.login,
     twoFaRegister: resolvers.twoFaRegister,
     disableTwoFa: resolvers.disableTwoFa,
-    createUser: resolvers.createUser,
   },
 };

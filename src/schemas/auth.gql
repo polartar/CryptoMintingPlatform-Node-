@@ -36,19 +36,10 @@ type TwoFaValidationResponse {
   newToken: String
 }
 
-input CreateUserInput {
-  token: String!
-  firstName: String!
-  lastName: String!
-  phone: String!
-  phoneCountry: String!
-  referredBy: String!
-}
-
 type Mutation {
   login(token: String!): ReturnToken!
   twoFaRegister: TwoFaRegisterResponse!
-  disableTwoFa(totpToken: String!): MutationResponse!
+  disableTwoFa(totpToken: String!): TwoFaValidationResponse!
   createUser(userInfo: CreateUserInput!): ReturnToken!
 }
 
