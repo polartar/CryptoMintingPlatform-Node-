@@ -18,10 +18,11 @@ export default class UserApi extends DataSource {
   twoFaEnabled: boolean;
   token: string;
   claims: IUserClaims;
+  uid: string;
 
   constructor(token: string) {
     super();
-    const { claims } = auth.verifyAndDecodeToken(token, config.hostname);
+    const { claims, uid } = auth.verifyAndDecodeToken(token, config.hostname);
     if (config.logLevel === 'debug' || config.logLevel === 'silly') {
       Object.entries(claims).forEach(([claim, value]) => {
         logger.debug(
@@ -32,6 +33,7 @@ export default class UserApi extends DataSource {
       });
     }
     this.claims = claims;
+    this.uid = uid;
     const { permissions, role, userId, authorized, twoFaEnabled } = claims;
     this.token = token;
     this.permissions = permissions;
