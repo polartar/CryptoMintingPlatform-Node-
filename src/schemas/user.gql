@@ -11,8 +11,10 @@ input UpdateUserInput {
   lastName: String
   phone: String
   email: String
+  password: String
 }
 
 type Mutation {
   createUser(userInfo: CreateUserInput!): ReturnToken!
+  updateUser(userInfo: UpdateUserInput!): MutationResponse!
 }

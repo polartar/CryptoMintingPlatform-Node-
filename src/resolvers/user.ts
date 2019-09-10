@@ -55,15 +55,30 @@ class Resolvers extends ResolverBase {
 
   public async updateUser(
     parent: any,
-    args: { email: string; firstName: string; lastName: string; phone: string },
+    args: {
+      userInfo: {
+        email?: string;
+        firstName?: string;
+        lastName?: string;
+        phone?: string;
+        password?: string;
+      };
+    },
     { user }: Context,
   ) {
     this.requireAuth(user);
-    const { email, firstName, lastName, phone } = args;
+    const { email, firstName, lastName, phone, password } = args.userInfo;
     const userDoc = await user.findFromDb();
+    const emailPass: { email?: string; password?: string } = {};
     if (email) {
-      await auth.updateUserAuth(user.uid, { email }, config.hostname);
+      emailPass.email = email;
       userDoc.set('email', email);
+    }
+    if (password) {
+      emailPass.password = password;
+    }
+    if (emailPass.email || emailPass.password) {
+      await auth.updateUserAuth(user.uid, emailPass, config.hostname);
     }
     if (firstName) {
       userDoc.set('firstName', firstName);
@@ -87,5 +102,6 @@ export default {
   Query: {},
   Mutation: {
     createUser: resolvers.createUser,
+    updateUser: resolvers.updateUser,
   },
 };
