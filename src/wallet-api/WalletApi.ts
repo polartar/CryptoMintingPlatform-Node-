@@ -106,7 +106,7 @@ export default class WalletApi {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: GREEN`,
       );
-      return [GREEN, BTC];
+      return [GREEN, BTC, ETH];
     } else if (hostName.includes('connectblockchain.net')) {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: CONNECT`,
@@ -121,7 +121,7 @@ export default class WalletApi {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: ARCADE`,
       );
-      return [BTC, ARCADE];
+      return [ARCADE, BTC, ETH];
     } else if (hostName.includes('localhost')) {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: LOCALHOST`,
