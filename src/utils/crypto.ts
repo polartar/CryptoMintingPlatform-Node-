@@ -1,13 +1,15 @@
 import { config, logger } from '../common';
 import autoBind = require('auto-bind');
 const SimpleCrypto = require('simple-crypto-js').default;
-const SHA256 = require('crypto-js/sha256');
+import { MD5, enc, SHA256 } from 'crypto-js';
 
 class Crypto {
   public ERROR_INCORRECT_SECRET = 'Incorrect password';
   constructor() {
     autoBind(this);
   }
+  enc = enc;
+  MD5 = MD5;
   public encrypt(plainText: string, secret: string) {
     logger.debug(
       `utils.crypto.encrypt.config.clientSecretKeyRequired:${

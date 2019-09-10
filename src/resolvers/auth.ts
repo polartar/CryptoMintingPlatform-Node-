@@ -5,7 +5,6 @@ import ResolverBase from '../common/Resolver-Base';
 import { ApolloError } from 'apollo-server-express';
 import { UserApi } from '../data-sources/';
 const autoBind = require('auto-bind');
-import { User } from '../models';
 interface ITwoFaSetup {
   twoFaSecret: string | null;
   twoFaQrCode: string | null;
