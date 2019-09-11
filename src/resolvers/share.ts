@@ -1,6 +1,6 @@
 import ResolverBase from '../common/Resolver-Base';
 import { Context } from '../types/context';
-import { config, logger } from '../common';
+import { logger, config } from '../common';
 import { IWalletEnvironment } from '../models/environment';
 import autoBind = require('auto-bind');
 
@@ -19,10 +19,7 @@ class Resolvers extends ResolverBase {
       `resolvers.share.shareConfig.user.userId: ${user && user.userId}`,
     );
     this.requireAuth(user);
-    const adjustedHost = 'stage0.walletsrv.connectblockchain.net'.replace(
-      '.walletsrv',
-      '',
-    );
+    const adjustedHost = config.hostname.replace('.walletsrv', '');
     logger.debug(
       `resolvers.share.shareUser.config.adjustedHost: ${adjustedHost}`,
     );
