@@ -1,0 +1,28 @@
+type ShareUser {
+  # Is user's wallet currently activated
+  activated: Boolean!
+  # If not activated, do they have enough to activate
+  btcBalanceConfirmed: String
+  # If not activated, do they have a qualifying pending transaction
+  btcBalancePending: String
+}
+
+type ShareConfig {
+  # Portion of fee that goes to referrer
+  referrerReward: Int!
+  # Portion of fee that goes to company.
+  companyFee: Int!
+  # Green, codex, winex etc
+  rewardCurrency: String!
+  # Amount of reward: i.e 100 (insert currency here)
+  rewardAmount: Int!
+  # How much a user needs for a balance in USD to qualify.
+  userBalanceThreshold: Int!
+  # Number of share commissions allowed per user once their wallet is activated.
+  shareLimit: Int!
+}
+
+type Query {
+  shareConfig: ShareConfig!
+  shareUser: ShareUser!
+}

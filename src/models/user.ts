@@ -8,6 +8,7 @@ interface IUserWalletDoc extends mongoose.Document {
   cryptoFavoritesSet?: boolean;
   ethNonce: number;
   btcAddress?: number;
+  activated: boolean;
 }
 export interface IUser extends mongoose.Document {
   email: string;
@@ -51,6 +52,10 @@ const walletSchema = new mongoose.Schema({
     default: 0,
   },
   btcAddress: String,
+  activated: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const userSchema = new mongoose.Schema(
