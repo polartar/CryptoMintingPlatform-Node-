@@ -18,11 +18,14 @@ class Resolvers extends ResolverBase {
     logger.debug(
       `resolvers.share.shareConfig.user.userId: ${user && user.userId}`,
     );
-    logger.debug(
-      `resolvers.share.shareConfig.config.hostname: ${config.hostname}`,
-    );
-
     this.requireAuth(user);
+    const adjustedHost = 'stage0.walletsrv.connectblockchain.net'.replace(
+      '.walletsrv',
+      '',
+    );
+    logger.debug(
+      `resolvers.share.shareUser.config.adjustedHost: ${adjustedHost}`,
+    );
     try {
       const {
         walletCompanyFee: companyFee,
@@ -32,7 +35,7 @@ class Resolvers extends ResolverBase {
         walletShareLimit: shareLimit,
         walletUserBalanceThreshold: userBalanceThreshold,
       } = (await environment.findOne({
-        domain: config.hostname,
+        domain: adjustedHost,
       })) as IWalletEnvironment;
       const shareConfigResponse = {
         referrerReward,
@@ -59,10 +62,8 @@ class Resolvers extends ResolverBase {
     );
 
     this.requireAuth(user);
+
     try {
-      logger.debug(
-        `resolvers.share.shareUser.config.hostname: ${config.hostname}`,
-      );
       const { wallet: userWallet } = await user.findFromDb();
       if (!userWallet) throw new Error('User wallet not initialized');
       logger.debug(
@@ -86,6 +87,7 @@ class Resolvers extends ResolverBase {
           shareUserResponse,
         )}`,
       );
+      return shareUserResponse;
     } catch (error) {
       logger.warn(`resolvers.share.shareUser.catch: ${error}`);
       throw error;
