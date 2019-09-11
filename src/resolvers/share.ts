@@ -18,6 +18,10 @@ class Resolvers extends ResolverBase {
     logger.debug(
       `resolvers.share.shareConfig.user.userId: ${user && user.userId}`,
     );
+    logger.debug(
+      `resolvers.share.shareConfig.config.hostname: ${config.hostname}`,
+    );
+
     this.requireAuth(user);
     try {
       const {
@@ -39,7 +43,9 @@ class Resolvers extends ResolverBase {
         shareLimit,
       };
       logger.debug(
-        `resolvers.share.shareConfig.shareConfigResponse: ${shareConfigResponse}`,
+        `resolvers.share.shareConfig.shareConfigResponse: ${JSON.stringify(
+          shareConfigResponse,
+        )}`,
       );
       return shareConfigResponse;
     } catch (error) {
@@ -54,6 +60,9 @@ class Resolvers extends ResolverBase {
 
     this.requireAuth(user);
     try {
+      logger.debug(
+        `resolvers.share.shareUser.config.hostname: ${config.hostname}`,
+      );
       const { wallet: userWallet } = await user.findFromDb();
       if (!userWallet) throw new Error('User wallet not initialized');
       logger.debug(
@@ -73,7 +82,9 @@ class Resolvers extends ResolverBase {
         btcBalancePending: unconfirmed,
       };
       logger.debug(
-        `resolvers.share.shareUser.shareUserResponse: ${shareUserResponse}`,
+        `resolvers.share.shareUser.shareUserResponse: ${JSON.stringify(
+          shareUserResponse,
+        )}`,
       );
     } catch (error) {
       logger.warn(`resolvers.share.shareUser.catch: ${error}`);
