@@ -2,9 +2,9 @@ type ShareUser {
   # Is user's wallet currently activated
   activated: Boolean!
   # If not activated, do they have enough to activate
-  adequateBalance: Boolean
+  btcBalanceConfirmed: String
   # If not activated, do they have a qualifying pending transaction
-  adequatePendingTx: Boolean
+  btcBalancePending: String
 }
 
 type ShareConfig {
