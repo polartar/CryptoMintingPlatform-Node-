@@ -1,3 +1,12 @@
+type UserProfile {
+  email: String!
+  phone: String
+  phoneCountry: String
+  id: ID!
+  created: Date!
+  currency: String!
+}
+
 input CreateUserInput {
   token: String!
   firstName: String!
@@ -12,6 +21,10 @@ input UpdateUserInput {
   phone: String
   email: String
   password: String
+}
+
+type Query {
+  profile: UserProfile!
 }
 
 type Mutation {

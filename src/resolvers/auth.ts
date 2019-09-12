@@ -5,6 +5,8 @@ import ResolverBase from '../common/Resolver-Base';
 import { ApolloError } from 'apollo-server-express';
 import { UserApi } from '../data-sources/';
 const autoBind = require('auto-bind');
+import { userResolver } from './user';
+
 interface ITwoFaSetup {
   twoFaSecret: string | null;
   twoFaQrCode: string | null;
@@ -82,19 +84,11 @@ class Resolvers extends ResolverBase {
       const tempUserApi = new UserApi(token);
       const walletExists = await this.verifyWalletsExist(tempUserApi, wallet);
       logger.debug(`resolvers.auth.login.walletExists:${walletExists}`);
-      const twoFaSetup = await this.setupTwoFa(tempUserApi.claims, tempUserApi);
-      logger.debug(
-        `resolvers.auth.login.!!twoFaSetup.twoFaQrCode:${!!twoFaSetup.twoFaQrCode}`,
-      );
-      logger.debug(
-        `resolvers.auth.login.!!twoFaSetup.twoFaSecret:${!!twoFaSetup.twoFaSecret}`,
-      );
       return {
         userApi: tempUserApi,
         twoFaEnabled: tempUserApi.claims.twoFaEnabled,
         token,
         walletExists,
-        ...twoFaSetup,
       };
     } catch (error) {
       logger.warn(`resolvers.auth.login.catch:${error}`);
@@ -226,12 +220,6 @@ class Resolvers extends ResolverBase {
     }
   }
 
-  public async getUserProfile({ userApi }: { userApi: UserApi }) {
-    logger.debug(`resolvers.auth.getUserProfile.userId:${userApi.userId}`);
-    const profile = await userApi.findFromDb();
-    return profile;
-  }
-
   public walletPasswordRequired() {
     logger.debug(
       `resolvers.auth.walletPasswordRequired.config.clientSecretKeyRequired:${
@@ -246,10 +234,10 @@ const resolvers = new Resolvers();
 
 export default {
   ReturnToken: {
-    profile: resolvers.getUserProfile,
+    profile: userResolver.getUserProfile,
   },
   ValidateExistingTokenResponse: {
-    profile: resolvers.getUserProfile,
+    profile: userResolver.getUserProfile,
   },
   Query: {
     twoFaValidate: resolvers.twoFaValidate,

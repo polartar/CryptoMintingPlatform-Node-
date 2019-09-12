@@ -81,6 +81,7 @@ const userSchema = new mongoose.Schema(
       default: 'member',
     },
     phone: String,
+    phoneCountry: String,
     affiliateId: { type: String, index: true },
     referredBy: { type: String, index: true },
     language: String,
@@ -95,6 +96,8 @@ const userSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    twoFaTempSecret: String,
+    twoFaSecret: String,
     walletAddresses: Array,
     number: {
       type: String,
