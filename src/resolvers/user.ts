@@ -94,14 +94,34 @@ class Resolvers extends ResolverBase {
       success: true,
     };
   }
+
+  public async getUserProfile(
+    parent: { userApi: UserApi },
+    args: {},
+    { user }: Context,
+  ) {
+    let userApi;
+    if (!user) {
+      userApi = parent.userApi;
+    } else if (user) {
+      userApi = user;
+    } else {
+      throw new Error('Cannot retreive profile');
+    }
+    logger.debug(`resolvers.auth.getUserProfile.userId:${userApi.userId}`);
+    const profile = await userApi.findFromDb();
+    return profile;
+  }
 }
 
-const resolvers = new Resolvers();
+export const userResolver = new Resolvers();
 
 export default {
-  Query: {},
+  Query: {
+    profile: userResolver.getUserProfile,
+  },
   Mutation: {
-    createUser: resolvers.createUser,
-    updateUser: resolvers.updateUser,
+    createUser: userResolver.createUser,
+    updateUser: userResolver.updateUser,
   },
 };

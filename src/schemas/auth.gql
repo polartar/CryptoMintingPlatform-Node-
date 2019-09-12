@@ -1,18 +1,6 @@
-type UserProfile {
-  email: String!
-  firebaseUid: String!
-  role: String!
-  permissions: [String!]!
-  id: ID!
-  created: Date!
-  currency: String!
-}
-
 type ReturnToken {
   twoFaEnabled: Boolean!
   token: String!
-  twoFaSecret: String
-  twoFaQrCode: String
   walletExists: Boolean!
   profile: UserProfile!
 }
