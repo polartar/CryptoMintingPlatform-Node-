@@ -5,6 +5,8 @@ type ShareUser {
   btcBalanceConfirmed: String
   # If not activated, do they have a qualifying pending transaction
   btcBalancePending: String
+  # Bitly share url
+  shareUrl: String
 }
 
 type ShareConfig {

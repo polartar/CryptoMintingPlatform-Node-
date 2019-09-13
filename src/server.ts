@@ -3,7 +3,7 @@ import { ApolloServer, gql } from 'apollo-server-express';
 import { DocumentNode } from 'graphql';
 import schemas from './schemas';
 import resolvers from './resolvers';
-import { UserApi, CryptoFavorites, Environment } from './data-sources';
+import { UserApi, CryptoFavorites, Environment, Bitly } from './data-sources';
 import { WalletApi } from './wallet-api';
 import { config, logger } from './common';
 import autoBind = require('auto-bind');
@@ -59,6 +59,7 @@ class Server {
     return {
       cryptoFavorites: new CryptoFavorites(),
       environment: new Environment(),
+      bitly: new Bitly(),
     };
   }
 

@@ -14,6 +14,7 @@ class Config {
   public readonly mongodbUri = process.env.MONGODB_URI;
   public readonly jwtPrivateKey = keys.privateKey;
   public readonly jwtPublicKey = keys.publicKey;
+  public readonly bitlyToken = process.env.BITLY_API_KEY;
   public readonly serviceAccounts = keys.serviceAccounts;
   public readonly defaultCryptoFavorites = ['BTC', 'ETH', 'LTC', 'XRP'];
   public readonly bypassTwoFaInDev =
@@ -27,6 +28,7 @@ class Config {
     process.env.CLIENT_SECRET_KEY_REQUIRED === 'true';
   public readonly erc20FeeCalcAddress = process.env.ETH_ADD_FOR_ERC20_FEE_CALC;
   public readonly cryptoNetwork = process.env.CRYPTO_NETWORK;
+  public readonly walletClientDomain = process.env.WALLET_CLIENT_DOMAIN;
   public readonly cryptoSymbolToNameMap: Map<
     string,
     string
