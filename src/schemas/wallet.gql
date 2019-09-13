@@ -32,12 +32,7 @@ type Wallet {
   receiveAddress: String!
   transactions: [Transaction!]!
   feeEstimate: FeeEstimate!
-}
-
-type Query {
-  # If no coinSymbol is provided, all supported wallets will be returned
-  wallet(coinSymbol: String): [Wallet!]!
-  mnemonic(lang: String): String!
+  contractAddress: String
 }
 
 type MutationResponse {
@@ -49,6 +44,12 @@ type TxSendResponse {
   success: Boolean!
   message: String
   transaction: Transaction
+}
+
+type Query {
+  # If no coinSymbol is provided, all supported wallets will be returned
+  wallet(coinSymbol: String): [Wallet!]!
+  mnemonic(lang: String): String!
 }
 
 type Mutation {
