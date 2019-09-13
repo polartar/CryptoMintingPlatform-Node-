@@ -190,7 +190,7 @@ class Erc20API extends EthWallet {
         `walletApi.coin-wallets.Erc20Wallet.getWalletInfo.blocknumAtCreation:${blockNumAtCreation}`,
       );
       return {
-        constractAddress: this.contractAddress,
+        contractAddress: this.contractAddress,
         receiveAddress: ethAddress,
         symbol: this.symbol,
         name: this.name,
