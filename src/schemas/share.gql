@@ -5,6 +5,8 @@ type ShareUser {
   btcBalanceConfirmed: String
   # If not activated, do they have a qualifying pending transaction
   btcBalancePending: String
+  # Bitly share url
+  shareUrl: String
 }
 
 type ShareConfig {
@@ -22,7 +24,16 @@ type ShareConfig {
   shareLimit: Int!
 }
 
+type ReferrerName {
+  firstName: String!
+  lastName: String!
+}
+
 type Query {
   shareConfig: ShareConfig!
   shareUser: ShareUser!
+}
+
+type Mutation {
+  logClick(referredBy: String): ReferrerName!
 }

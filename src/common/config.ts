@@ -3,17 +3,21 @@ import * as path from 'path';
 import * as dotenv from 'dotenv';
 import * as autoBind from 'auto-bind';
 import keys from './keys';
+import { Connection, createConnection } from 'mongoose';
 
 dotenv.config({ path: '.env' });
 
 class Config {
   public readonly nodeEnv = process.env.NODE_ENV;
+  public readonly brand = this.getBrandFromHost();
   public readonly logLevel = process.env.LOG_LEVEL;
   public readonly port = this.normalizePort(process.env.PORT);
   public readonly hostname = process.env.HOSTNAME;
   public readonly mongodbUri = process.env.MONGODB_URI;
+  public connectMongoConnection: Connection;
   public readonly jwtPrivateKey = keys.privateKey;
   public readonly jwtPublicKey = keys.publicKey;
+  public readonly bitlyToken = process.env.BITLY_API_KEY;
   public readonly serviceAccounts = keys.serviceAccounts;
   public readonly defaultCryptoFavorites = ['BTC', 'ETH', 'LTC', 'XRP'];
   public readonly bypassTwoFaInDev =
@@ -27,6 +31,7 @@ class Config {
     process.env.CLIENT_SECRET_KEY_REQUIRED === 'true';
   public readonly erc20FeeCalcAddress = process.env.ETH_ADD_FOR_ERC20_FEE_CALC;
   public readonly cryptoNetwork = process.env.CRYPTO_NETWORK;
+  public readonly walletClientDomain = process.env.WALLET_CLIENT_DOMAIN;
   public readonly cryptoSymbolToNameMap: Map<
     string,
     string
@@ -68,6 +73,7 @@ class Config {
   constructor() {
     autoBind(this);
     this.ensureRequiredVariables();
+    this.setConnectMongoConnection();
   }
 
   private ensureRequiredVariables() {
@@ -94,6 +100,37 @@ class Config {
           ', ',
         )} undefined.`,
       );
+    }
+  }
+
+  private getBrandFromHost() {
+    const hostName = process.env.HOSTNAME.toLowerCase();
+    if (hostName.includes('connectblockchain')) {
+      return 'connect';
+    }
+    if (hostName.includes('green')) {
+      return 'green';
+    }
+    if (hostName.includes('codex')) {
+      return 'codex';
+    }
+    if (hostName.includes('arcade')) {
+      return 'arcade';
+    }
+    if (hostName.includes('localhost')) {
+      return 'localhost';
+    }
+  }
+
+  public async setConnectMongoConnection() {
+    const connectMongoUrl = process.env.CONNECT_MONGODB_URI;
+    if (
+      !this.hostname.includes('localhost') ||
+      (!this.hostname.includes('connectblockchain.net') &&
+        connectMongoUrl !== undefined)
+    ) {
+      this.connectMongoConnection = await createConnection(connectMongoUrl);
+      console.log('info: mongoDB:Connect connected');
     }
   }
 

@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import { crypto } from '../utils';
 
-interface IUserWalletDoc extends mongoose.Document {
+export interface IUserWalletDoc extends mongoose.Document {
   ethAddress?: string;
   ethBlockNumAtCreation?: number;
   cryptoFavorites?: string[];
@@ -9,6 +9,7 @@ interface IUserWalletDoc extends mongoose.Document {
   ethNonce: number;
   btcAddress?: number;
   activated: boolean;
+  shareLink?: string;
 }
 export interface IUser extends mongoose.Document {
   email: string;
@@ -56,9 +57,10 @@ const walletSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  shareLink: String,
 });
 
-const userSchema = new mongoose.Schema(
+export const userSchema = new mongoose.Schema(
   {
     firstName: String,
     lastName: String,
