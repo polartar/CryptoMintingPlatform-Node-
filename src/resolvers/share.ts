@@ -4,11 +4,33 @@ import { logger, config } from '../common';
 import { IWalletEnvironment } from '../models/environment';
 import { IUserWallet } from '../types';
 import autoBind = require('auto-bind');
+import { userSchema, default as User, IUser } from '../models/user';
+import { offersSchema, clicksSchema, Click, Offer } from '../models';
 
 class Resolvers extends ResolverBase {
   constructor() {
     super();
     autoBind(this);
+  }
+
+  private async saveClick(referrerId: string, referrerFromBrand: string) {
+    const walletName = config.brand.replace('codex', 'connect');
+    const offerQuery = { name: `${walletName}_smart_wallet` };
+    let OfferModel;
+    let ClickModel;
+    if (referrerFromBrand === 'self') {
+      OfferModel = Offer;
+      ClickModel = Click;
+    } else if (referrerFromBrand === 'connect') {
+      OfferModel = config.connectMongoConnection.model('offer', offersSchema);
+      ClickModel = config.connectMongoConnection.model('click', clicksSchema);
+    }
+    const offer = await OfferModel.findOne(offerQuery);
+    ClickModel.create({
+      userId: referrerId,
+      offerId: offer.id,
+      type: 'click',
+    });
   }
 
   public async shareConfig(
@@ -125,11 +147,55 @@ class Resolvers extends ResolverBase {
       throw error;
     }
   }
+
+  public async logClick(
+    parent: any,
+    args: { referredBy: String },
+    context: Context,
+  ) {
+    try {
+      const byAffiliateId = { affiliateId: args.referredBy };
+      let referrer = await User.findOne(byAffiliateId);
+      let referrerFromBrand: string;
+      if (referrer) {
+        referrerFromBrand = 'self';
+      } else {
+        if (config.connectMongoConnection) {
+          const connectUserModel = config.connectMongoConnection.model<IUser>(
+            'user',
+            userSchema,
+          );
+          referrer = await connectUserModel.findOne(byAffiliateId);
+          if (referrer) {
+            referrerFromBrand = 'connect';
+          } else {
+            throw new Error('Refferrer not found');
+          }
+        } else {
+          throw new Error('Refferrer not found');
+        }
+      }
+      this.saveClick(referrer.id, referrerFromBrand);
+      return {
+        firstName: referrer.firstName,
+        lastName: referrer.lastName,
+      };
+    } catch (error) {
+      logger.warn(`resolvers.share.logClick.catch:${error}`);
+      logger.warn(
+        `resolvers.share.logClick.catch.referredBy:${args.referredBy}`,
+      );
+      throw error;
+    }
+  }
 }
 
 const resolvers = new Resolvers();
 
 export default {
+  Mutation: {
+    logClick: resolvers.logClick,
+  },
   Query: {
     shareConfig: resolvers.shareConfig,
     shareUser: resolvers.shareUser,

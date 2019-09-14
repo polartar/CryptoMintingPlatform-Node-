@@ -24,7 +24,16 @@ type ShareConfig {
   shareLimit: Int!
 }
 
+type ReferrerName {
+  firstName: String!
+  lastName: String!
+}
+
 type Query {
   shareConfig: ShareConfig!
   shareUser: ShareUser!
+}
+
+type Mutation {
+  logClick(referredBy: String): ReferrerName!
 }

@@ -60,7 +60,7 @@ const walletSchema = new mongoose.Schema({
   shareLink: String,
 });
 
-const userSchema = new mongoose.Schema(
+export const userSchema = new mongoose.Schema(
   {
     firstName: String,
     lastName: String,
