@@ -1,10 +1,7 @@
 import ResolverBase from '../common/Resolver-Base';
 import { Context } from '../types/context';
 import { logger, config } from '../common';
-import {
-  default as environment,
-  IWalletEnvironment,
-} from '../models/environment';
+import { default as environment } from '../models/environment';
 import { IUserWallet, ISendOutput } from '../types';
 import autoBind = require('auto-bind');
 import { userSchema, default as User, IUser } from '../models/user';
@@ -48,9 +45,9 @@ class Resolvers extends ResolverBase {
       walletRewardCurrency: rewardCurrency,
       walletShareLimit: shareLimit,
       walletUserBalanceThreshold: userBalanceThreshold,
-    } = (await environment.findOne({
+    } = await environment.findOne({
       domain: adjustedHost,
-    })) as IWalletEnvironment;
+    });
     const shareConfig = {
       referrerReward,
       companyFee,
@@ -120,16 +117,13 @@ class Resolvers extends ResolverBase {
           userWallet.activated
         }`,
       );
-      if (!userWallet.activated) {
-        return { activated: false };
-      }
       const { confirmed, unconfirmed } = await wallet
         .coin('btc')
         .getBalance(user.userId);
       const activatedShares =
         (userWallet && userWallet.shares && userWallet.shares[brand]) || 0;
       const shareUserResponse = {
-        activated: true,
+        activated: userWallet.activated,
         btcBalanceConfirmed: confirmed,
         btcBalancePending: unconfirmed,
         userWallet, // Returned for use in child resolver
