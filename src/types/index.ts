@@ -11,3 +11,4 @@ export { default as ICoinDefaultConfig } from './ICoinDefaultConfig';
 export { default as eSupportedInterfaces } from './eSupportedInterfaces';
 export { default as IBcoinTx } from './IBcoinTx';
 export { IUserWalletDoc as IUserWallet } from '../models/user';
+export { default as ISendOutput } from './ISendOutput';
