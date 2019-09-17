@@ -2,7 +2,7 @@ import { credentialService } from '../../services';
 import CoinWalletBase from './coin-wallet-base';
 import { ethers, providers, utils } from 'ethers';
 import { config, logger } from '../../common';
-import { ITransaction, ICoinMetadata } from '../../types';
+import { ITransaction, ICoinMetadata, ISendOutput } from '../../types';
 import { UserApi } from '../../data-sources';
 
 const PRIVATEKEY = 'privatekey';
@@ -399,16 +399,12 @@ class EthWallet extends CoinWalletBase {
     }
   }
 
-  async send(
-    userApi: UserApi,
-    to: string,
-    amount: string,
-    walletPassword: string,
-  ) {
+  async send(userApi: UserApi, outputs: ISendOutput[], walletPassword: string) {
+    const [{ to, amount }] = outputs;
     logger.debug(
       `walletApi.coin-wallets.EthWallet.send.userId:${userApi.userId}`,
     );
-    logger.debug(`walletApi.coin-wallets.EthWallet.send.to:${to}`);
+
     logger.debug(`walletApi.coin-wallets.EthWallet.send.amount:${amount}`);
     logger.debug(
       `walletApi.coin-wallets.EthWallet.send.!!walletPassword:${!!walletPassword}`,
@@ -462,7 +458,7 @@ class EthWallet extends CoinWalletBase {
           confirmations: 0,
           fee: 'TBD',
           from: transaction.from,
-          to: transaction.to,
+          to: [transaction.to],
           id: transaction.hash,
           link: `${config.ethTxLink}/${transaction.hash}`,
           status: 'Pending',
@@ -570,7 +566,7 @@ class EthWallet extends CoinWalletBase {
           timestamp: +timestamp,
           fee: isDeposit ? '0' : this.toEther(fee, true),
           link: `${config.ethTxLink}/${hash}`,
-          to: to,
+          to: [to],
           from: from,
           type: isDeposit ? 'Deposit' : 'Withdrawal',
           amount: isDeposit

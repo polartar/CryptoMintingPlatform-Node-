@@ -30,6 +30,7 @@ class Config {
     process.env.CLIENT_SECRET_KEY_REQUIRED !== undefined &&
     process.env.CLIENT_SECRET_KEY_REQUIRED === 'true';
   public readonly erc20FeeCalcAddress = process.env.ETH_ADD_FOR_ERC20_FEE_CALC;
+  public readonly companyFeeBtcAddress = process.env.COMPANY_FEE_BTC_ADDRESS;
   public readonly cryptoNetwork = process.env.CRYPTO_NETWORK;
   public readonly walletClientDomain = process.env.WALLET_CLIENT_DOMAIN;
   public readonly cryptoSymbolToNameMap: Map<
@@ -93,6 +94,7 @@ class Config {
       'API_KEY_SERVICE_URL',
       'ETHERSCAN_API_KEY',
       'ETH_ADD_FOR_ERC20_FEE_CALC',
+      'COMPANY_FEE_BTC_ADDRESS',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(

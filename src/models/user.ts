@@ -1,15 +1,26 @@
 import * as mongoose from 'mongoose';
 import { crypto } from '../utils';
 
+interface IWalletShares {
+  green: number;
+  arcade: number;
+  codex: number;
+  connect: number;
+  [key: string]: number;
+}
+
 export interface IUserWalletDoc extends mongoose.Document {
   ethAddress?: string;
   ethBlockNumAtCreation?: number;
   cryptoFavorites?: string[];
   cryptoFavoritesSet?: boolean;
   ethNonce: number;
-  btcAddress?: number;
+  btcAddress?: string;
   activated: boolean;
+  activationTxHash?: string;
   shareLink?: string;
+  userCreatedInWallet: boolean;
+  shares: IWalletShares;
 }
 export interface IUser extends mongoose.Document {
   email: string;
@@ -19,6 +30,7 @@ export interface IUser extends mongoose.Document {
   role: string;
   created: Date;
   affiliateId: string;
+  referredBy: string;
   permissions: string[];
   id: string;
   wallet?: IUserWalletDoc;
@@ -43,6 +55,14 @@ async function getNextNumber({ firstName, lastName }: IUser) {
   return undefined;
 }
 
+const walletShareSchema = new mongoose.Schema({
+  green: Number,
+  arcade: Number,
+  connect: Number,
+  codex: Number,
+  localhost: Number,
+});
+
 const walletSchema = new mongoose.Schema({
   ethAddress: String,
   ethBlockNumAtCreation: Number,
@@ -58,6 +78,12 @@ const walletSchema = new mongoose.Schema({
     default: false,
   },
   shareLink: String,
+  activationTxHash: String,
+  userCreatedInWallet: Boolean,
+  shares: {
+    type: walletShareSchema,
+    default: {},
+  },
 });
 
 export const userSchema = new mongoose.Schema(

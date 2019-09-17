@@ -1,7 +1,12 @@
 import EthWallet from './eth-wallet';
 import { config, logger } from '../../common';
 import { ethers, utils } from 'ethers';
-import { ITransaction, ICoinMetadata, IWeb3TransferEvent } from '../../types';
+import {
+  ITransaction,
+  ICoinMetadata,
+  IWeb3TransferEvent,
+  ISendOutput,
+} from '../../types';
 import { UserApi } from '../../data-sources';
 const Web3 = require('web3');
 
@@ -252,7 +257,7 @@ class Erc20API extends EthWallet {
             confirmations: currentBlockNumber - blockNumber,
             fee: isDeposit ? '0' : feeString,
             link: `${config.ethTxLink}/${transactionHash}`,
-            to,
+            to: [to],
             from,
             type: isDeposit ? 'Deposit' : 'Withdrawal',
             amount: formattedAmount,
@@ -416,12 +421,8 @@ class Erc20API extends EthWallet {
     }
   }
 
-  async send(
-    userApi: UserApi,
-    to: string,
-    value: string,
-    walletPassword: string,
-  ) {
+  async send(userApi: UserApi, outputs: ISendOutput[], walletPassword: string) {
+    const [{ to, amount: value }] = outputs;
     logger.debug(
       `walletApi.coin-wallets.Erc20Wallet.send.userId: ${userApi.userId}`,
     );
@@ -485,7 +486,7 @@ class Erc20API extends EthWallet {
           confirmations: 0,
           fee: 'TBD',
           from: transaction.from,
-          to: transaction.to,
+          to: [transaction.to],
           id: transaction.hash,
           link: `${config.ethTxLink}/${transaction.hash}`,
           status: 'Pending',

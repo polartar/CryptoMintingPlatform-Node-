@@ -10,7 +10,7 @@ type Transaction {
   timestamp: Int!
   fee: String!
   link: String!
-  to: String!
+  to: [String!]!
   from: String!
   amount: String!
   type: String!
@@ -52,12 +52,16 @@ type Query {
   mnemonic(lang: String): String!
 }
 
+input SendOutput {
+  to: String!
+  amount: String!
+}
+
 type Mutation {
   # If no coinSymbol is provided, all supported wallets will be returned
   sendTransaction(
     coinSymbol: String
-    to: String!
-    amount: String!
+    outputs: [SendOutput!]!
     totpToken: String
     walletPassword: String
   ): TxSendResponse!

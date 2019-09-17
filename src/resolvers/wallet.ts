@@ -3,6 +3,7 @@ import { mnemonic as mnemonicUtils, crypto } from '../utils';
 import ResolverBase from '../common/Resolver-Base';
 import { credentialService } from '../services';
 import { config, logger } from '../common';
+import { ISendOutput } from '../types';
 const autoBind = require('auto-bind');
 
 class Resolvers extends ResolverBase {
@@ -383,15 +384,13 @@ class Resolvers extends ResolverBase {
     parent: any,
     {
       coinSymbol,
-      to,
-      amount,
+      outputs,
       totpToken,
       walletPassword,
     }: {
       coinSymbol: string;
       accountId: string;
-      to: string;
-      amount: string;
+      outputs: ISendOutput[];
       totpToken: string;
       walletPassword: string;
     },
@@ -408,7 +407,7 @@ class Resolvers extends ResolverBase {
       // const twoFaValid = await user.validateTwoFa(totpToken);
       // this.requireTwoFa(twoFaValid);
       const walletApi = wallet.coin(coinSymbol);
-      const result = await walletApi.send(user, to, amount, walletPassword);
+      const result = await walletApi.send(user, outputs, walletPassword);
       return result;
     } catch (error) {
       logger.warn(`resolvers.wallet.sendTransaction.catch: ${error}`);

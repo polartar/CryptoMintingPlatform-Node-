@@ -7,6 +7,8 @@ type ShareUser {
   btcBalancePending: String
   # Bitly share url
   shareUrl: String
+  # Number of shares that were successfully activated.
+  activatedShares: Int!
 }
 
 type ShareConfig {
@@ -36,4 +38,5 @@ type Query {
 
 type Mutation {
   logClick(referredBy: String): ReferrerName!
+  shareActivate(walletPassword: String): TxSendResponse!
 }
