@@ -4,7 +4,12 @@ import CoinWalletBase from './coin-wallet-base';
 import { v4 as generateRandomId } from 'uuid';
 import { config, logger } from '../../common';
 import { credentialService } from '../../services';
-import { ITransaction, ICoinMetadata, IBcoinTx } from '../../types';
+import {
+  ITransaction,
+  ICoinMetadata,
+  IBcoinTx,
+  ISendOutput,
+} from '../../types';
 import { UserApi } from '../../data-sources';
 import { BigNumber } from 'bignumber.js';
 const { WalletClient } = require('bclient');
@@ -298,7 +303,7 @@ class BtcWallet extends CoinWalletBase {
         const { to, from, amount } = outputs.reduce(
           (formedOutput, rawOutput) => {
             if (!rawOutput.path) {
-              formedOutput.to = rawOutput.address;
+              formedOutput.to.push(rawOutput.address);
               formedOutput.amount = formedOutput.amount.plus(
                 this.satToBtc(new BigNumber(rawOutput.value)),
               );
@@ -307,7 +312,7 @@ class BtcWallet extends CoinWalletBase {
             }
             return formedOutput;
           },
-          { to: '', from: '', amount: new BigNumber(0) },
+          { to: [], from: '', amount: new BigNumber(0) },
         );
         return {
           ...formattedTx,
@@ -325,7 +330,7 @@ class BtcWallet extends CoinWalletBase {
         const { to, from, amount } = outputs.reduce(
           (formedOutput, rawOutput) => {
             if (rawOutput.path) {
-              formedOutput.to = rawOutput.address;
+              formedOutput.to.push(rawOutput.address);
               formedOutput.amount = formedOutput.amount.plus(
                 this.satToBtc(new BigNumber(rawOutput.value)),
               );
@@ -334,7 +339,7 @@ class BtcWallet extends CoinWalletBase {
             }
             return formedOutput;
           },
-          { to: '', from: '', amount: new BigNumber(0) },
+          { to: [], from: '', amount: new BigNumber(0) },
         );
         return {
           ...formattedTx,
@@ -503,10 +508,13 @@ class BtcWallet extends CoinWalletBase {
 
   async send(
     userApi: UserApi,
-    to: string,
-    amount: string,
+    outputs: ISendOutput[],
     walletPassword: string,
   ): Promise<{ success: boolean; id?: string; message?: string }> {
+    const bcoinOutputs = outputs.map(({ to, amount }) => ({
+      address: to,
+      value: Math.round(this.btcToSat(new BigNumber(amount)).toNumber()),
+    }));
     try {
       const accountId = userApi.userId;
       logger.debug(
@@ -520,20 +528,11 @@ class BtcWallet extends CoinWalletBase {
       logger.debug(
         `walletApi.coin-wallets.BtcWallet.send.!!passphrase:${!!passphrase}`,
       );
-      const amountToSend = new BigNumber(amount);
-      logger.debug(
-        `walletApi.coin-wallets.BtcWallet.send.!!amountToSend:${amountToSend.toFixed()}`,
-      );
       const transaction = await userWallet.send({
         account: 'default',
         passphrase: passphrase,
         rate: this.feeRate,
-        outputs: [
-          {
-            value: Math.round(this.btcToSat(amountToSend).toNumber()),
-            address: to,
-          },
-        ],
+        outputs: bcoinOutputs,
       });
       logger.debug(
         `walletApi.coin-wallets.BtcWallet.send.hash:${transaction.hash}`,
@@ -542,6 +541,10 @@ class BtcWallet extends CoinWalletBase {
         (input: any) => !!input.path,
       );
       const fee = new BigNumber(transaction.fee);
+      const totalSent = outputs.reduce((total, output) => {
+        return total + +output.amount;
+      }, 0);
+      const toAddresses = outputs.map(output => output.to);
       const response: {
         message: string;
         success: boolean;
@@ -550,18 +553,18 @@ class BtcWallet extends CoinWalletBase {
         message: null,
         success: true,
         transaction: {
-          amount: `-${amount}`,
+          amount: `-${totalSent}`,
           confirmations: transaction.confirmations,
           fee: this.satToBtc(fee).toFixed(),
           from,
-          to: to,
+          to: toAddresses,
           id: transaction.hash,
           link: `${config.btcTxLink}/${transaction.hash}/`,
           status: 'Pending',
           timestamp: transaction.mtime,
           type: 'Withdrawal',
           total: this.satToBtc(fee)
-            .plus(amountToSend)
+            .plus(totalSent)
             .negated()
             .toFixed(),
         },

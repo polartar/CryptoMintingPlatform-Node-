@@ -5,7 +5,7 @@ export default interface ITransaction {
   timestamp: number;
   fee: string;
   link: string;
-  to: string;
+  to: string[];
   from: string;
   amount: string;
   type: string;

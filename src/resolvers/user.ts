@@ -36,6 +36,9 @@ class Resolvers extends ResolverBase {
         lastName,
         phone,
         referredBy,
+        wallet: {
+          userCreatedInWallet: true,
+        },
       });
       logger.debug(`resolvers.auth.createUser.newUser.id:${newUser.id}`);
       await newUser.save();
