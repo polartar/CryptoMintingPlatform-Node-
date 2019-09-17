@@ -16,7 +16,7 @@ type ShareConfig {
   referrerReward: Int!
   # Portion of fee that goes to company.
   companyFee: Int!
-  # Green, codex, winex etc
+  # Green, codex, winx etc
   rewardCurrency: String!
   # Amount of reward: i.e 100 (insert currency here)
   rewardAmount: Int!

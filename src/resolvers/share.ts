@@ -1,10 +1,7 @@
 import ResolverBase from '../common/Resolver-Base';
 import { Context } from '../types/context';
 import { logger, config } from '../common';
-import {
-  default as environment,
-  IWalletEnvironment,
-} from '../models/environment';
+import { default as environment } from '../models/environment';
 import { IUserWallet, ISendOutput } from '../types';
 import autoBind = require('auto-bind');
 import { userSchema, default as User, IUser } from '../models/user';
