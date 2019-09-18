@@ -85,7 +85,7 @@ Deploy CONNECT Production:
   variables:
     DEPLOY_URI: $PROD_URI_CONNECT
     SERVER_HOSTKEYS: $CONNECT_SERVER_HOSTKEYS
-    ENV: $CONNECT_ENV_PROD
+    ENV_PROD: $CONNECT_ENV_PROD
   extends:
     - .bb_rsync_production_jwt_firebase
 
@@ -93,7 +93,7 @@ Deploy GREEN Production:
   variables:
     DEPLOY_URI: $PROD_URI_GREEN
     SERVER_HOSTKEYS: $GREEN_SERVER_HOSTKEYS
-    ENV: $GREEN_ENV_PROD
+    ENV_PROD: $GREEN_ENV_PROD
   extends:
     - .bb_rsync_production_jwt_firebase
 
@@ -101,7 +101,7 @@ Deploy CODEX Production:
   variables:
     DEPLOY_URI: $PROD_URI_CODEX
     SERVER_HOSTKEYS: $CODEX_SERVER_HOSTKEYS
-    ENV: $CODEX_ENV_PROD
+    ENV_PROD: $CODEX_ENV_PROD
   extends:
     - .bb_rsync_production_jwt_firebase
 
@@ -109,6 +109,6 @@ Deploy ARCADE Production:
   variables:
     DEPLOY_URI: $PROD_URI_ARCADE
     SERVER_HOSTKEYS: $ARCADE_SERVER_HOSTKEYS
-    ENV: $ARCADE_ENV_PROD
+    ENV_PROD: $ARCADE_ENV_PROD
   extends:
     - .bb_rsync_production_jwt_firebase
