@@ -5,7 +5,13 @@ import { default as environment } from '../models/environment';
 import { IUserWallet, ISendOutput } from '../types';
 import autoBind = require('auto-bind');
 import { userSchema, default as User, IUser } from '../models/user';
-import { offersSchema, clicksSchema, Click, Offer } from '../models';
+import {
+  offersSchema,
+  clicksSchema,
+  Click,
+  Offer,
+  UnclaimedReward,
+} from '../models';
 
 class Resolvers extends ResolverBase {
   constructor() {
@@ -88,7 +94,6 @@ class Resolvers extends ResolverBase {
     logger.debug(
       `resolvers.share.shareConfig.user.userId: ${user && user.userId}`,
     );
-    this.requireAuth(user);
     try {
       const shareConfigResponse = await this.getShareConfig();
       logger.debug(
@@ -223,31 +228,50 @@ class Resolvers extends ResolverBase {
         `resolvers.share.shareActivate.referrerReward: ${referrerReward}`,
       );
       const btcPriceInCents = Math.round(price * 100);
-      const { referrer } = await this.findReferrer(dbUser.referredBy);
-      if (!referrer || !referrer.wallet || !referrer.wallet.btcAddress) {
-        throw new Error(
-          `Referrer does not have a wallet or BTC address: ${referrer.id}`,
-        );
+      const { referrer } = await this.findReferrer(dbUser.referredBy).catch(
+        () => ({ referrer: null }),
+      );
+      const companyPortion = Math.round(companyFee * 100) / btcPriceInCents;
+      const referrerPortion =
+        Math.round(referrerReward * 100) / btcPriceInCents;
+      let outputs: ISendOutput[];
+      if (!referrer) {
+        outputs = [
+          {
+            to: companyFeeBtcAddress,
+            amount: (companyPortion + referrerPortion).toFixed(8),
+          },
+        ];
+      } else if (!referrer.wallet || !referrer.wallet.btcAddress) {
+        outputs = [
+          {
+            to: companyFeeBtcAddress,
+            amount: (companyPortion + referrerPortion).toFixed(8),
+          },
+        ];
+        await UnclaimedReward.create({
+          userId: referrer.id,
+          btcValue: referrerPortion.toFixed(8),
+          hasWalletProperty: !!referrer.wallet,
+        });
+      } else {
+        outputs = [
+          {
+            to: config.companyFeeBtcAddress,
+            amount: companyPortion.toFixed(8),
+          },
+          {
+            to: referrer.wallet.btcAddress,
+            amount: referrerPortion.toFixed(8),
+          },
+        ];
       }
-      if (!referrer.wallet.activated) {
-        throw new Error(`Referrer not activated: ${referrer.id}`);
-      }
-      const btcToCompany = (
-        Math.round(companyFee * 100) / btcPriceInCents
-      ).toFixed(8);
-      const btcToReferrer = (
-        Math.round(referrerReward * 100) / btcPriceInCents
-      ).toFixed(8);
       logger.debug(
-        `resolvers.share.shareActivate.btcToCompany: ${btcToCompany}`,
+        `resolvers.share.shareActivate.companyPortion: ${companyPortion}`,
       );
       logger.debug(
-        `resolvers.share.shareActivate.btcToReferrer: ${btcToReferrer}`,
+        `resolvers.share.shareActivate.referrerPortion: ${referrerPortion}`,
       );
-      const outputs: ISendOutput[] = [
-        { to: referrer.wallet.btcAddress, amount: btcToReferrer },
-        { to: companyFeeBtcAddress, amount: btcToCompany },
-      ];
       const transaction = await wallet
         .coin('btc')
         .send(user, outputs, args.walletPassword);
@@ -259,13 +283,15 @@ class Resolvers extends ResolverBase {
       dbUser.wallet.activated = true;
       dbUser.wallet.activationTxHash = transaction.transaction.id;
       dbUser.save();
-      const existingShares =
-        (referrer.wallet &&
-          referrer.wallet.shares &&
-          referrer.wallet.shares[brand]) ||
-        0;
-      referrer.set(`wallet.shares.${brand}`, existingShares + 1);
-      referrer.save();
+      if (referrer && outputs.length === 2) {
+        const existingShares =
+          (referrer.wallet &&
+            referrer.wallet.shares &&
+            referrer.wallet.shares[brand]) ||
+          0;
+        referrer.set(`wallet.shares.${brand}`, existingShares + 1);
+        referrer.save();
+      }
       return transaction;
     } catch (error) {
       logger.warn(`resolvers.share.shareActivate.catch: ${error}`);
