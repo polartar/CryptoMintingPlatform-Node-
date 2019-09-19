@@ -44,8 +44,7 @@ class Resolvers extends ResolverBase {
       logger.debug(`resolvers.auth.createUser.newUser._id:${newUser._id}`);
       await newUser.save();
       const customToken = await auth.signIn(token, config.hostname);
-      const userApi = new UserApi(customToken);
-      context.user = userApi;
+      context.user = new UserApi(customToken);
       return {
         twoFaEnabled: false,
         token: customToken,
@@ -104,9 +103,12 @@ class Resolvers extends ResolverBase {
     args: {},
     { user }: Context,
   ) {
+    logger.debug(`resolvers.auth.getUserProfile.userId:${user && user.userId}`);
     this.requireAuth(user);
-    logger.debug(`resolvers.auth.getUserProfile.userId:${user.userId}`);
     const profile = await user.findFromDb();
+    logger.debug(
+      `resolvers.auth.getUserProfile.prifile.id:${profile && profile.id}`,
+    );
     return profile;
   }
 }
