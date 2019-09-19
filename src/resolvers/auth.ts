@@ -72,20 +72,19 @@ class Resolvers extends ResolverBase {
     }
   }
 
-  public async login(
-    parent: any,
-    args: { token: string },
-    { wallet }: Context,
-  ) {
+  public async login(parent: any, args: { token: string }, context: Context) {
     try {
       logger.debug(`resolvers.auth.login.!!args.token:${!!args.token}`);
       const token = await auth.signIn(args.token, config.hostname);
       logger.debug(`resolvers.auth.login.!!token:${!!token}`);
       const tempUserApi = new UserApi(token);
-      const walletExists = await this.verifyWalletsExist(tempUserApi, wallet);
+      const walletExists = await this.verifyWalletsExist(
+        tempUserApi,
+        context.wallet,
+      );
       logger.debug(`resolvers.auth.login.walletExists:${walletExists}`);
+      context.user = tempUserApi;
       return {
-        userApi: tempUserApi,
         twoFaEnabled: tempUserApi.claims.twoFaEnabled,
         token,
         walletExists,
