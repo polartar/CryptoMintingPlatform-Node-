@@ -23,6 +23,7 @@ class Resolvers extends ResolverBase {
         referredBy: string;
       };
     },
+    context: Context,
   ) {
     try {
       const { token, firstName, lastName, phone, referredBy } = args.userInfo;
@@ -35,17 +36,17 @@ class Resolvers extends ResolverBase {
         firstName,
         lastName,
         phone,
-        referredBy,
+        referredBy: referredBy || null,
         wallet: {
           userCreatedInWallet: true,
         },
       });
-      logger.debug(`resolvers.auth.createUser.newUser.id:${newUser.id}`);
+      logger.debug(`resolvers.auth.createUser.newUser._id:${newUser._id}`);
       await newUser.save();
       const customToken = await auth.signIn(token, config.hostname);
       const userApi = new UserApi(customToken);
+      context.user = userApi;
       return {
-        userApi,
         twoFaEnabled: false,
         token: customToken,
         walletExists: false,
@@ -103,16 +104,9 @@ class Resolvers extends ResolverBase {
     args: {},
     { user }: Context,
   ) {
-    let userApi;
-    if (!user) {
-      userApi = parent.userApi;
-    } else if (user) {
-      userApi = user;
-    } else {
-      throw new Error('Cannot retreive profile');
-    }
-    logger.debug(`resolvers.auth.getUserProfile.userId:${userApi.userId}`);
-    const profile = await userApi.findFromDb();
+    this.requireAuth(user);
+    logger.debug(`resolvers.auth.getUserProfile.userId:${user.userId}`);
+    const profile = await user.findFromDb();
     return profile;
   }
 }
