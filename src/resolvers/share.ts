@@ -19,6 +19,14 @@ class Resolvers extends ResolverBase {
     autoBind(this);
   }
 
+  private getAdjustedHost() {
+    const adjustedHost = config.hostname
+      .replace('.walletsrv', '')
+      .replace('arcadeblockchain.com', 'blockchaingamepartners.io');
+    logger.debug(`resolvers.share.getAdjustedHost: ${adjustedHost}`);
+    return adjustedHost;
+  }
+
   private async saveClick(referrerId: string, referrerFromBrand: string) {
     const walletName = config.brand.replace('codex', 'connect');
     const offerQuery = { name: `${walletName}_smart_wallet` };
@@ -40,7 +48,7 @@ class Resolvers extends ResolverBase {
   }
 
   private async getShareConfig() {
-    const adjustedHost = config.hostname.replace('.walletsrv', '');
+    const adjustedHost = this.getAdjustedHost();
     logger.debug(
       `resolvers.share.getShareConfig.adjustedHost: ${adjustedHost}`,
     );
