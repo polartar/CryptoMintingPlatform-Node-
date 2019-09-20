@@ -121,12 +121,12 @@ export default class WalletApi {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: CONNECT`,
       );
-      return [BTC, ETH];
+      return [BTC, ETH, GREEN, ARCADE, WinX];
     } else if (hostName.includes('codexunited.com')) {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: CODEX`,
       );
-      return [BTC, ETH];
+      return [BTC, ETH, WinX];
     } else if (hostName.includes('arcadeblockchain.com')) {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: ARCADE`,
