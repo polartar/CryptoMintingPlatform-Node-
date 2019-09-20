@@ -38,15 +38,26 @@ const walletConfigOverrides: ICoinMetadata[] = [
     decimalPlaces: 8,
   },
   {
-    walletApi: eSupportedInterfaces.erc20,
+    walletApi: eSupportedInterfaces.doc,
     name: 'Arcade',
     symbol: 'ARCADE',
     backgroundColor: '#5D3AC5',
     icon:
       'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTUiIGhlaWdodD0iNTUiIHZpZXdCb3g9IjAgMCA1NSA1NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTI3LjY1IDU0LjQ3NWMxNS4wNDItLjIyNiAyNy4wNTItMTIuNjA0IDI2LjgyNS0yNy42NDZDNTQuMjUgMTEuNzg3IDQxLjg3MS0uMjIzIDI2LjgzLjAwMyAxMS43ODcuMjMtLjIyMyAxMi42MDcuMDAzIDI3LjY1LjIzIDQyLjY5MiAxMi42MDcgNTQuNzAyIDI3LjY1IDU0LjQ3NXpNMTQuNTkzIDM5LjU5M3M3LjU4My0xOC40NTkgOC45MDctMjEuMDI5YzEuMzI0LTIuNTcgNy41ODQtMi42ODcgOC42NjcgMCAxLjA4MyAyLjY4NyA4LjQyNiAyMS4wMjkgOC40MjYgMjEuMDI5aC00LjY5NUwyOC43OTYgMjEuMjVjLS40ODEtLjkzNC0xLjU2NC0uOTM0LTIuMDQ2IDBsLTcuNTgzIDE4LjM0MmgtNC41NzR6IiBmaWxsPSIjZmZmIi8+PC9zdmc+',
-    abi: erc20Abi,
+    abi: null,
     decimalPlaces: 8,
-    contractAddress: config.contractAddresses.arcade,
+    contractAddress: null,
+  },
+  {
+    walletApi: eSupportedInterfaces.doc,
+    name: 'WinX',
+    symbol: 'WinX',
+    backgroundColor: '#0066FF',
+    icon:
+      'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTUiIGhlaWdodD0iNTUiIHZpZXdCb3g9IjAgMCA1NSA1NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTI4LjA1NyA1NC44ODNjMTUuMDQyLS4yMjcgMjcuMDUyLTEyLjYwNSAyNi44MjYtMjcuNjQ3QzU0LjY1NiAxMi4xOTQgNDIuMjc4LjE4NCAyNy4yMzYuNDEgMTIuMTk0LjYzNy4xODQgMTMuMDE1LjQxIDI4LjA1N2MuMjI3IDE1LjA0MiAxMi42MDUgMjcuMDUyIDI3LjY0NyAyNi44MjZ6TTEwIDE3aDVsNC41IDE0LjUgNi0xNC41SDI5bDYgMTQuNUw0MC41IDE3SDQ1bC03IDIxLjVoLTQuNWwtNi0xNC41TDIyIDM4LjVoLTQuNUwxMCAxN3oiIGZpbGw9IiNmZmYiLz48L3N2Zz4=',
+    abi: null,
+    decimalPlaces: 8,
+    contractAddress: null,
   },
 ];
 

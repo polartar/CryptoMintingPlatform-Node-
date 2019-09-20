@@ -5,6 +5,7 @@ import {
   BtcWallet,
   EthWallet,
   Erc20Wallet,
+  DocWallet,
   CoinWalletBase,
 } from './coin-wallets';
 const autoBind = require('auto-bind');
@@ -84,6 +85,14 @@ export default class WalletApi {
           );
           return new Erc20Wallet(coinWalletConfig);
         }
+        case eSupportedInterfaces.doc: {
+          logger.debug(
+            `wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${
+              coinWalletConfig.walletApi
+            } => Doc`,
+          );
+          return new DocWallet(coinWalletConfig);
+        }
         default: {
           throw new Error(`Interface not supported`);
         }
@@ -101,6 +110,7 @@ export default class WalletApi {
     const GREEN = 'GREEN';
     const BTC = 'BTC';
     const ETH = 'ETH';
+    const WinX = 'WinX';
 
     if (hostName.includes('share.green')) {
       logger.debug(
@@ -126,7 +136,7 @@ export default class WalletApi {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: LOCALHOST`,
       );
-      return [BTC, ETH, GREEN, ARCADE];
+      return [BTC, ETH, GREEN, ARCADE, WinX];
     } else {
       logger.warn(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: NONE MATCHED`,

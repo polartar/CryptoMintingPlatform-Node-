@@ -88,8 +88,20 @@ class Resolvers extends ResolverBase {
         parent.receiveAddress
       }`,
     );
-    if (parent.symbol.toLowerCase() === 'btc') return userId;
-    return parent.receiveAddress;
+    switch (parent.symbol.toLowerCase()) {
+      case 'btc': {
+        return userId;
+      }
+      case 'arcade': {
+        return userId;
+      }
+      case 'winx': {
+        return userId;
+      }
+      default: {
+        return parent.receiveAddress;
+      }
+    }
   }
 
   async createWallet(
