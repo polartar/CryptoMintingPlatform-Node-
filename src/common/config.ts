@@ -51,7 +51,7 @@ class Config {
   };
   public readonly ethNodeUrl =
     process.env.CRYPTO_NETWORK === 'testnet'
-      ? 'https://ropsten.infura.io/v3/c843dd81493d4fa3a6fd29277d831eb1'
+      ? 'https://dev.eth.share.green'
       : 'https://eth.share.green';
 
   public readonly etherscanNetwork =
