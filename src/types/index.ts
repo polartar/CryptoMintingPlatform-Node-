@@ -14,3 +14,4 @@ export { IUserWalletDoc as IUserWallet } from '../models/user';
 export { default as ISendOutput } from './ISendOutput';
 export { default as IZendeskRequest } from './IZendeskRequest';
 export { default as IZendeskTicket } from './IZendeskTicket';
+export { ILicenseRewardsDoc } from '../models/license-rewards';
