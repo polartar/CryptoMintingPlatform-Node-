@@ -384,9 +384,7 @@ class BtcWallet extends CoinWalletBase {
         balance: { confirmed, unconfirmed },
       } = balanceResult;
       const confirmedBalance = new BigNumber(confirmed);
-      const unconfirmedBalance = new BigNumber(unconfirmed).minus(
-        confirmedBalance,
-      );
+      const unconfirmedBalance = new BigNumber(unconfirmed);
       const confirmedFixed = this.satToBtc(confirmedBalance).toFixed();
       const unconfirmedFixed = this.satToBtc(unconfirmedBalance).toFixed();
       const balance = {

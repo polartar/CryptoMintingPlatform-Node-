@@ -1,11 +1,39 @@
-import { IShareConfig } from '../types';
-import { LicenseReward } from '../models';
-import { config, logger } from '../common';
 import autoBind = require('auto-bind');
+import { IShareConfig } from '../types';
+import { LicenseReward, RewardDistributerConfig } from '../models';
+import { config, logger, walletConfig } from '../common';
+import { ethers } from 'ethers';
 
 class RewardDistributer {
+  provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
+  rewardDistributerWallet = new ethers.Wallet(
+    config.erc20RewardDistributerPkey,
+    this.provider,
+  );
+  contract: ethers.Contract;
   constructor() {
     autoBind(this);
+  }
+
+  private getContract(rewardCurrency: string, rewardAmount: number) {
+    const erc20Config = walletConfig.find(
+      coin => coin.symbol.toLowerCase() === rewardCurrency.toLowerCase(),
+    );
+    if (!erc20Config)
+      throw new Error(
+        `${rewardCurrency} not supported for erc20 reward distribution.`,
+      );
+    return {
+      contract: new ethers.Contract(
+        erc20Config.contractAddress,
+        erc20Config.abi,
+        this.rewardDistributerWallet,
+      ),
+      amount: ethers.utils.parseUnits(
+        rewardAmount.toString(),
+        erc20Config.decimalPlaces,
+      ),
+    };
   }
 
   private getRewardName(currency: string) {
@@ -41,15 +69,14 @@ class RewardDistributer {
     logger.debug(
       `services.rewardDistributer.getRewardName.currency, selectedReward: ${currency}, ${selectedReward}`,
     );
-
     return selectedReward;
   }
 
-  public async sendReward(rewardConfig: IShareConfig, userId: string) {
-    logger.debug(`services.rewardDistributer.userId: ${userId}`);
-    const { rewardAmount, rewardCurrency } = rewardConfig;
-    logger.debug(`services.rewardDistributer.userId: ${rewardAmount}`);
-    logger.debug(`services.rewardDistributer.userId: ${userId}`);
+  private async saveDocReward(
+    rewardCurrency: string,
+    rewardAmount: number,
+    userId: string,
+  ) {
     const rewardName = this.getRewardName(rewardCurrency);
     logger.debug(`services.rewardDistributer.rewardName: ${rewardName}`);
     const createdRecord = await LicenseReward.create({
@@ -60,10 +87,55 @@ class RewardDistributer {
       rewardName,
     });
     logger.debug(
-      `services.rewardDistributer.getRewardName.createdRecord._id: ${
-        createdRecord._id
+      `services.rewardDistributer.getRewardName.createdRecord.id: ${
+        createdRecord.id
       }`,
     );
+    return createdRecord.id;
+  }
+
+  private async sendErc20(
+    rewardCurrency: string,
+    rewardAmount: number,
+    ethAddress: string,
+  ) {
+    if (!ethAddress)
+      throw new Error(`User ethAddress required to send ${rewardCurrency}`);
+    const { contract, amount } = this.getContract(rewardCurrency, rewardAmount);
+    const walletAddress = this.rewardDistributerWallet.address;
+    const { nonce } = await RewardDistributerConfig.findOne({ walletAddress });
+    const transaction = await contract.transfer(ethAddress, amount, { nonce });
+    RewardDistributerConfig.findOneAndUpdate(
+      { walletAddress },
+      {
+        $inc: { nonce: 1 },
+      },
+    );
+    return transaction.hash;
+  }
+
+  public async sendReward(
+    rewardConfig: IShareConfig,
+    userId: string,
+    ethAddress: string,
+  ) {
+    logger.debug(`services.rewardDistributer.userId: ${userId}`);
+    const { rewardAmount, rewardCurrency } = rewardConfig;
+    logger.debug(`services.rewardDistributer.userId: ${rewardAmount}`);
+    logger.debug(`services.rewardDistributer.userId: ${userId}`);
+    let id;
+    switch (rewardCurrency.toLowerCase()) {
+      case 'green': {
+        id = await this.sendErc20(rewardCurrency, rewardAmount, ethAddress);
+        break;
+      }
+      default: {
+        id = await this.saveDocReward(rewardCurrency, rewardAmount, userId);
+        break;
+      }
+    }
+    logger.debug(`services.rewardDistributer.id: ${id}`);
+    return id;
   }
 }
 
