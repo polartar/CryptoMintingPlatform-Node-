@@ -20,6 +20,9 @@ class Resolvers extends ResolverBase {
   }
 
   private getAdjustedHost() {
+    logger.debug(
+      `resolvers.share.getAdjustedHost.config.hostname: ${config.hostname}`,
+    );
     const adjustedHost = config.hostname
       .replace('.walletsrv', '')
       .replace('arcadeblockchain.com', 'blockchaingamepartners.io');
