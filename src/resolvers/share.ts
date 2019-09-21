@@ -5,6 +5,7 @@ import { default as environment } from '../models/environment';
 import { IUserWallet, ISendOutput } from '../types';
 import autoBind = require('auto-bind');
 import { userSchema, default as User, IUser } from '../models/user';
+import { rewardDistributer } from '../services';
 import {
   offersSchema,
   clicksSchema,
@@ -20,6 +21,9 @@ class Resolvers extends ResolverBase {
   }
 
   private getAdjustedHost() {
+    logger.debug(
+      `resolvers.share.getAdjustedHost.config.hostname: ${config.hostname}`,
+    );
     const adjustedHost = config.hostname
       .replace('.walletsrv', '')
       .replace('arcadeblockchain.com', 'blockchaingamepartners.io');
@@ -210,6 +214,11 @@ class Resolvers extends ResolverBase {
     }
   }
 
+  private usdToBtc(btcUsdPrice: number, amount: number) {
+    const btcPriceInCents = Math.round(btcUsdPrice * 100);
+    return Math.round(amount * 100) / btcPriceInCents;
+  }
+
   public async shareActivate(
     parent: any,
     args: { walletPassword: string },
@@ -218,15 +227,12 @@ class Resolvers extends ResolverBase {
     const { companyFeeBtcAddress, brand } = config;
     this.requireAuth(user);
     try {
-      const [
-        [{ price }],
-        dbUser,
-        { companyFee, referrerReward },
-      ] = await Promise.all([
+      const [[{ price }], dbUser, walletShareConfig] = await Promise.all([
         cryptoFavorites.getUserFavorites(['BTC']),
         user.findFromDb(),
         this.getShareConfig(),
       ]);
+      const { companyFee, referrerReward, shareLimit } = walletShareConfig;
       if (!dbUser || !dbUser.wallet || dbUser.wallet.activated) {
         throw new Error(`User inelligible for activation`);
       }
@@ -235,15 +241,18 @@ class Resolvers extends ResolverBase {
       logger.debug(
         `resolvers.share.shareActivate.referrerReward: ${referrerReward}`,
       );
-      const btcPriceInCents = Math.round(price * 100);
       const { referrer } = await this.findReferrer(dbUser.referredBy).catch(
         () => ({ referrer: null }),
       );
-      const companyPortion = Math.round(companyFee * 100) / btcPriceInCents;
-      const referrerPortion =
-        Math.round(referrerReward * 100) / btcPriceInCents;
+      const referrerAboveShareLimit =
+        referrer &&
+        referrer.wallet &&
+        referrer.wallet.shares &&
+        referrer.wallet.shares[brand] >= shareLimit;
+      const companyPortion = this.usdToBtc(price, companyFee);
+      const referrerPortion = this.usdToBtc(price, referrerReward);
       let outputs: ISendOutput[];
-      if (!referrer) {
+      if (!referrer || referrerAboveShareLimit) {
         outputs = [
           {
             to: companyFeeBtcAddress,
@@ -284,13 +293,20 @@ class Resolvers extends ResolverBase {
         .coin('btc')
         .send(user, outputs, args.walletPassword);
       logger.debug(
-        `resolvers.share.shareActivate.transaction.transaction.id: ${
-          transaction.transaction.id
-        }`,
+        `resolvers.share.shareActivate.transaction.transaction.id: ${transaction &&
+          transaction.transaction &&
+          transaction.transaction.id}`,
       );
       dbUser.wallet.activated = true;
       dbUser.wallet.activationTxHash = transaction.transaction.id;
       dbUser.save();
+      const userEthAddress =
+        (dbUser && dbUser.wallet && dbUser.wallet.ethAddress) || '';
+      rewardDistributer.sendReward(
+        walletShareConfig,
+        user.userId,
+        userEthAddress,
+      );
       if (referrer && outputs.length === 2) {
         const existingShares =
           (referrer.wallet &&
