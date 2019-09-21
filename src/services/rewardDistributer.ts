@@ -5,14 +5,21 @@ import { config, logger, walletConfig } from '../common';
 import { ethers } from 'ethers';
 
 class RewardDistributer {
-  provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
-  rewardDistributerWallet = new ethers.Wallet(
-    config.erc20RewardDistributerPkey,
-    this.provider,
-  );
+  provider: ethers.providers.JsonRpcProvider;
+  rewardDistributerWallet: ethers.Wallet;
   contract: ethers.Contract;
   constructor() {
     autoBind(this);
+    try {
+      this.provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
+      this.rewardDistributerWallet = new ethers.Wallet(
+        config.erc20RewardDistributerPkey,
+        this.provider,
+      );
+    } catch (error) {
+      logger.debug(`services.rewardDistributer.constructor.catch: ${error}`);
+      throw error;
+    }
   }
 
   private getContract(rewardCurrency: string, rewardAmount: number) {
@@ -110,43 +117,55 @@ class RewardDistributer {
     rewardAmount: number,
     ethAddress: string,
   ) {
-    logger.debug(
-      `services.rewardDistributer.sendErc20.rewardCurrency: ${rewardCurrency}`,
-    );
-    logger.debug(
-      `services.rewardDistributer.sendErc20.rewardAmount: ${rewardAmount}`,
-    );
-    logger.debug(
-      `services.rewardDistributer.sendErc20.ethAddress: ${ethAddress}`,
-    );
-    if (!ethAddress)
-      throw new Error(`User ethAddress required to send ${rewardCurrency}`);
-    const { contract, amount } = this.getContract(rewardCurrency, rewardAmount);
-    logger.debug(
-      `services.rewardDistributer.sendErc20.contract.address: ${
-        contract.address
-      }`,
-    );
-    logger.debug(`services.rewardDistributer.sendErc20.amount: ${amount}`);
-    const walletAddress = this.rewardDistributerWallet.address;
-    logger.debug(
-      `services.rewardDistributer.sendErc20.walletAddress: ${walletAddress}`,
-    );
-    const { nonce } = await RewardDistributerConfig.findOne({ walletAddress });
-    logger.debug(`services.rewardDistributer.sendErc20.nonce: ${nonce}`);
-    const transaction = await contract.transfer(ethAddress, amount, { nonce });
-    logger.debug(
-      `services.rewardDistributer.sendErc20.transaction.hash: ${
-        transaction.hash
-      }`,
-    );
-    RewardDistributerConfig.findOneAndUpdate(
-      { walletAddress },
-      {
-        $inc: { nonce: 1 },
-      },
-    );
-    return transaction.hash;
+    try {
+      logger.debug(
+        `services.rewardDistributer.sendErc20.rewardCurrency: ${rewardCurrency}`,
+      );
+      logger.debug(
+        `services.rewardDistributer.sendErc20.rewardAmount: ${rewardAmount}`,
+      );
+      logger.debug(
+        `services.rewardDistributer.sendErc20.ethAddress: ${ethAddress}`,
+      );
+      if (!ethAddress)
+        throw new Error(`User ethAddress required to send ${rewardCurrency}`);
+      const { contract, amount } = this.getContract(
+        rewardCurrency,
+        rewardAmount,
+      );
+      logger.debug(
+        `services.rewardDistributer.sendErc20.contract.address: ${
+          contract.address
+        }`,
+      );
+      logger.debug(`services.rewardDistributer.sendErc20.amount: ${amount}`);
+      const walletAddress = this.rewardDistributerWallet.address;
+      logger.debug(
+        `services.rewardDistributer.sendErc20.walletAddress: ${walletAddress}`,
+      );
+      const { nonce } = await RewardDistributerConfig.findOne({
+        walletAddress,
+      });
+      logger.debug(`services.rewardDistributer.sendErc20.nonce: ${nonce}`);
+      const transaction = await contract.transfer(ethAddress, amount, {
+        nonce,
+      });
+      logger.debug(
+        `services.rewardDistributer.sendErc20.transaction.hash: ${
+          transaction.hash
+        }`,
+      );
+      RewardDistributerConfig.findOneAndUpdate(
+        { walletAddress },
+        {
+          $inc: { nonce: 1 },
+        },
+      );
+      return transaction.hash;
+    } catch (error) {
+      logger.warn(`services.rewardDistributer.sendErc20.catch: ${error}`);
+      throw error;
+    }
   }
 
   public async sendReward(
