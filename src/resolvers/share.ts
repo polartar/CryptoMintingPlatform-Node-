@@ -5,6 +5,7 @@ import { default as environment } from '../models/environment';
 import { IUserWallet, ISendOutput } from '../types';
 import autoBind = require('auto-bind');
 import { userSchema, default as User, IUser } from '../models/user';
+import { rewardDistributer } from '../services';
 import {
   offersSchema,
   clicksSchema,
@@ -210,6 +211,12 @@ class Resolvers extends ResolverBase {
     }
   }
 
+  private btcToCents(btcUsdPrice: number, amount: number) {
+    const btcPriceInCents = Math.round(btcUsdPrice * 100);
+
+    return Math.round(amount) / btcPriceInCents;
+  }
+
   public async shareActivate(
     parent: any,
     args: { walletPassword: string },
@@ -221,12 +228,17 @@ class Resolvers extends ResolverBase {
       const [
         [{ price }],
         dbUser,
-        { companyFee, referrerReward },
+        walletShareConfig,
+        { confirmed: dbUserBalance },
+        { estimatedFee },
       ] = await Promise.all([
         cryptoFavorites.getUserFavorites(['BTC']),
         user.findFromDb(),
         this.getShareConfig(),
+        wallet.coin('btc').getBalance(user.userId),
+        wallet.coin('btc').estimateFee(user),
       ]);
+      const { companyFee, referrerReward, shareLimit } = walletShareConfig;
       if (!dbUser || !dbUser.wallet || dbUser.wallet.activated) {
         throw new Error(`User inelligible for activation`);
       }
@@ -239,11 +251,19 @@ class Resolvers extends ResolverBase {
       const { referrer } = await this.findReferrer(dbUser.referredBy).catch(
         () => ({ referrer: null }),
       );
-      const companyPortion = Math.round(companyFee * 100) / btcPriceInCents;
+      const btcFeeInCents = Math.round();
+      const dbUserBalanceInCents =
+        Math.round(+dbUserBalance * 100) / btcPriceInCents;
+      const referrerAboveShareLimit =
+        referrer &&
+        referrer.wallet &&
+        referrer.wallet.shares &&
+        referrer.wallet.shares[brand] >= shareLimit;
+      const maxCompanyPortion = Math.round(companyFee * 100) / btcPriceInCents;
       const referrerPortion =
         Math.round(referrerReward * 100) / btcPriceInCents;
       let outputs: ISendOutput[];
-      if (!referrer) {
+      if (!referrer || referrerAboveShareLimit) {
         outputs = [
           {
             to: companyFeeBtcAddress,
@@ -291,6 +311,7 @@ class Resolvers extends ResolverBase {
       dbUser.wallet.activated = true;
       dbUser.wallet.activationTxHash = transaction.transaction.id;
       dbUser.save();
+      rewardDistributer.sendReward(walletShareConfig, user.userId);
       if (referrer && outputs.length === 2) {
         const existingShares =
           (referrer.wallet &&
