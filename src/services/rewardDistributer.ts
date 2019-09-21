@@ -16,24 +16,35 @@ class RewardDistributer {
   }
 
   private getContract(rewardCurrency: string, rewardAmount: number) {
-    const erc20Config = walletConfig.find(
-      coin => coin.symbol.toLowerCase() === rewardCurrency.toLowerCase(),
-    );
-    if (!erc20Config)
-      throw new Error(
-        `${rewardCurrency} not supported for erc20 reward distribution.`,
+    try {
+      logger.debug(
+        `services.rewardDistributer.getContract.rewardCurrency: ${rewardCurrency}`,
       );
-    return {
-      contract: new ethers.Contract(
-        erc20Config.contractAddress,
-        erc20Config.abi,
-        this.rewardDistributerWallet,
-      ),
-      amount: ethers.utils.parseUnits(
-        rewardAmount.toString(),
-        erc20Config.decimalPlaces,
-      ),
-    };
+      logger.debug(
+        `services.rewardDistributer.getContract.rewardAmount: ${rewardAmount}`,
+      );
+      const erc20Config = walletConfig.find(
+        coin => coin.symbol.toLowerCase() === rewardCurrency.toLowerCase(),
+      );
+      if (!erc20Config)
+        throw new Error(
+          `${rewardCurrency} not supported for erc20 reward distribution.`,
+        );
+      return {
+        contract: new ethers.Contract(
+          erc20Config.contractAddress,
+          erc20Config.abi,
+          this.rewardDistributerWallet,
+        ),
+        amount: ethers.utils.parseUnits(
+          rewardAmount.toString(),
+          erc20Config.decimalPlaces,
+        ),
+      };
+    } catch (error) {
+      logger.warn(`services.rewardDistributer.getContract.catch: ${error}`);
+      throw error;
+    }
   }
 
   private getRewardName(currency: string) {
@@ -99,12 +110,36 @@ class RewardDistributer {
     rewardAmount: number,
     ethAddress: string,
   ) {
+    logger.debug(
+      `services.rewardDistributer.sendErc20.rewardCurrency: ${rewardCurrency}`,
+    );
+    logger.debug(
+      `services.rewardDistributer.sendErc20.rewardAmount: ${rewardAmount}`,
+    );
+    logger.debug(
+      `services.rewardDistributer.sendErc20.ethAddress: ${ethAddress}`,
+    );
     if (!ethAddress)
       throw new Error(`User ethAddress required to send ${rewardCurrency}`);
     const { contract, amount } = this.getContract(rewardCurrency, rewardAmount);
+    logger.debug(
+      `services.rewardDistributer.sendErc20.contract.address: ${
+        contract.address
+      }`,
+    );
+    logger.debug(`services.rewardDistributer.sendErc20.amount: ${amount}`);
     const walletAddress = this.rewardDistributerWallet.address;
+    logger.debug(
+      `services.rewardDistributer.sendErc20.walletAddress: ${walletAddress}`,
+    );
     const { nonce } = await RewardDistributerConfig.findOne({ walletAddress });
+    logger.debug(`services.rewardDistributer.sendErc20.nonce: ${nonce}`);
     const transaction = await contract.transfer(ethAddress, amount, { nonce });
+    logger.debug(
+      `services.rewardDistributer.sendErc20.transaction.hash: ${
+        transaction.hash
+      }`,
+    );
     RewardDistributerConfig.findOneAndUpdate(
       { walletAddress },
       {
@@ -121,8 +156,10 @@ class RewardDistributer {
   ) {
     logger.debug(`services.rewardDistributer.userId: ${userId}`);
     const { rewardAmount, rewardCurrency } = rewardConfig;
-    logger.debug(`services.rewardDistributer.userId: ${rewardAmount}`);
-    logger.debug(`services.rewardDistributer.userId: ${userId}`);
+    logger.debug(`services.rewardDistributer.rewardAmount: ${rewardAmount}`);
+    logger.debug(
+      `services.rewardDistributer.rewardCurrency: ${rewardCurrency}`,
+    );
     let id;
     switch (rewardCurrency.toLowerCase()) {
       case 'green': {
