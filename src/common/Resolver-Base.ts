@@ -39,7 +39,7 @@ export default abstract class ResolverBase {
         throw new Error('Wallet password required');
       }
       const strongPasswordPattern = new RegExp(
-        '^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*<>?),(-_=+\\{}[];:"~`|\'])(?=.{8,})',
+        '^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[.,!@#$%^&*<>?()-_=+\\{}[];:"~`|\'])(?=.{8,})',
       );
       const isPasswordStrong = strongPasswordPattern.test(walletPassword);
       logger.debug(
