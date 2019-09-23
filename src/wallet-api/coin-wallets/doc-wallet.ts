@@ -1,12 +1,12 @@
 import CoinWalletBase from './coin-wallet-base';
 import { logger } from '../../common';
-import { LicenseReward } from '../../models';
+import { PromotionalReward } from '../../models';
 import { buildGetUserRewardsPipeline } from '../../pipelines';
 import {
   ITransaction,
   ICoinMetadata,
   ISendOutput,
-  ILicenseRewardsDoc,
+  IPromotionalRewardDoc,
 } from '../../types';
 import { UserApi } from '../../data-sources';
 
@@ -95,7 +95,7 @@ class DocWallet extends CoinWalletBase {
     );
     try {
       const pipeline = buildGetUserRewardsPipeline(userId, this.rewardName);
-      const [rewardResponse] = await LicenseReward.aggregate(pipeline);
+      const [rewardResponse] = await PromotionalReward.aggregate(pipeline);
       const balance = rewardResponse ? rewardResponse.balance : '0.0';
       logger.debug(
         `walletApi.coin-wallets.DocWallet.getBalance.balance:${balance}`,
@@ -119,7 +119,7 @@ class DocWallet extends CoinWalletBase {
         `walletApi.coin-wallets.DocWallet.getTransactions.userId:${userId}`,
       );
 
-      const transactions = await LicenseReward.find({
+      const transactions = await PromotionalReward.find({
         userId,
         rewardName: this.rewardName,
       });
@@ -154,7 +154,7 @@ class DocWallet extends CoinWalletBase {
   }
 
   private formatTransactions(
-    transactions: ILicenseRewardsDoc[],
+    transactions: IPromotionalRewardDoc[],
     userId: string,
   ): ITransaction[] {
     try {

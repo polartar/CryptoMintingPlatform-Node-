@@ -20,17 +20,6 @@ class Resolvers extends ResolverBase {
     autoBind(this);
   }
 
-  private getAdjustedHost() {
-    logger.debug(
-      `resolvers.share.getAdjustedHost.config.hostname: ${config.hostname}`,
-    );
-    const adjustedHost = config.hostname
-      .replace('.walletsrv', '')
-      .replace('arcadeblockchain.com', 'blockchaingamepartners.io');
-    logger.debug(`resolvers.share.getAdjustedHost: ${adjustedHost}`);
-    return adjustedHost;
-  }
-
   private async saveClick(referrerId: string, referrerFromBrand: string) {
     const walletName = config.brand.replace('codex', 'connect');
     const offerQuery = { name: `${walletName}_smart_wallet` };
@@ -52,29 +41,45 @@ class Resolvers extends ResolverBase {
   }
 
   private async getShareConfig() {
-    const adjustedHost = this.getAdjustedHost();
-    logger.debug(
-      `resolvers.share.getShareConfig.adjustedHost: ${adjustedHost}`,
-    );
-    const {
-      walletCompanyFee: companyFee,
-      walletReferrerReward: referrerReward,
-      walletRewardAmount: rewardAmount,
-      walletRewardCurrency: rewardCurrency,
-      walletShareLimit: shareLimit,
-      walletUserBalanceThreshold: userBalanceThreshold,
-    } = await environment.findOne({
-      domain: adjustedHost,
-    });
-    const shareConfig = {
-      referrerReward,
-      companyFee,
-      rewardCurrency,
-      rewardAmount,
-      userBalanceThreshold,
-      shareLimit,
-    };
-    return shareConfig;
+    try {
+      const adjustedBrand = config.brand.replace(
+        'arcade',
+        'blockchaingamepartners',
+      );
+      logger.debug(
+        `resolvers.share.getShareConfig.adjustedBrand: ${adjustedBrand}`,
+      );
+      const shareConfigResult = await environment.findOne({
+        domain: { $regex: adjustedBrand },
+      });
+      if (!shareConfigResult)
+        throw new Error(`Sahre config not found for ${adjustedBrand}`);
+      const {
+        walletCompanyFee: companyFee,
+        walletReferrerReward: referrerReward,
+        walletRewardAmount: rewardAmount,
+        walletRewardCurrency: rewardCurrency,
+        walletShareLimit: shareLimit,
+        walletUserBalanceThreshold: userBalanceThreshold,
+      } = shareConfigResult;
+      const shareConfig = {
+        referrerReward,
+        companyFee,
+        rewardCurrency,
+        rewardAmount,
+        userBalanceThreshold,
+        shareLimit,
+      };
+      logger.debug(
+        `resolvers.share.getShareConfig.shareConfig: ${JSON.stringify(
+          shareConfig,
+        )}`,
+      );
+      return shareConfig;
+    } catch (error) {
+      logger.warn(`resolvers.share.getShareConfig.shareConfig: ${error}`);
+      throw error;
+    }
   }
 
   private async findReferrer(referredBy: string) {

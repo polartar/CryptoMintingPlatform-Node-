@@ -34,6 +34,7 @@ export const walletEnvironmentSchema = new Schema({
     type: Number,
     required: true,
   },
+  domain: String,
 });
 
 export default model<IWalletEnvironment>(
