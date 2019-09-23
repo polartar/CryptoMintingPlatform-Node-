@@ -1,6 +1,6 @@
 import autoBind = require('auto-bind');
 import { IShareConfig } from '../types';
-import { LicenseReward, RewardDistributerConfig } from '../models';
+import { PromotionalReward, RewardDistributerConfig } from '../models';
 import { config, logger, walletConfig } from '../common';
 import { ethers } from 'ethers';
 
@@ -97,7 +97,7 @@ class RewardDistributer {
   ) {
     const rewardName = this.getRewardName(rewardCurrency);
     logger.debug(`services.rewardDistributer.rewardName: ${rewardName}`);
-    const createdRecord = await LicenseReward.create({
+    const createdRecord = await PromotionalReward.create({
       rewardType: 'wallet',
       amount: rewardAmount,
       environmentType: config.brand,
