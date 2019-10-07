@@ -347,7 +347,7 @@ class Erc20API extends EthWallet {
       );
       return {
         confirmed: balance.toString(),
-        unconfirmed: '0',
+        unconfirmed: balance.toString(),
       };
     } catch (error) {
       logger.warn(

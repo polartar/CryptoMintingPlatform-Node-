@@ -232,7 +232,7 @@ class EthWallet extends CoinWalletBase {
       );
       const balanceInEther = this.toEther(balance);
       return {
-        unconfirmed: '0',
+        unconfirmed: balanceInEther,
         confirmed: balanceInEther,
       };
     } catch (error) {
