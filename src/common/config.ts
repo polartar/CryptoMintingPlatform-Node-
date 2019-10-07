@@ -51,6 +51,11 @@ class Config {
     port: +process.env.BCOIN_WALLET_PORT,
     apiKey: process.env.BCOIN_WALLET_API_KEY,
   };
+  public readonly bcoinRpc = {
+    ...this.bcoinWallet,
+    port: process.env.BCOIN_NODE_PORT ? +process.env.BCOIN_NODE_PORT : 0,
+    apiKey: process.env.BCOIN_NODE_API_KEY,
+  };
   public readonly ethNodeUrl =
     process.env.CRYPTO_NETWORK === 'testnet'
       ? 'https://ropsten.infura.io/v3/c843dd81493d4fa3a6fd29277d831eb1'
