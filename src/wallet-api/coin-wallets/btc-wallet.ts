@@ -1,5 +1,3 @@
-// The getBalance function is working in this interface. It expects an account ID as an argument (one user can have multiple accounts.) If there is no bcoin wallet for the specified account ID, one is created and all of the necessary credentials are stored in the apiKeyService
-
 import CoinWalletBase from './coin-wallet-base';
 import { v4 as generateRandomId } from 'uuid';
 import { config, logger } from '../../common';
@@ -12,7 +10,7 @@ import {
 } from '../../types';
 import { UserApi } from '../../data-sources';
 import { BigNumber } from 'bignumber.js';
-const { WalletClient } = require('bclient');
+const { WalletClient, NodeClient } = require('bclient');
 const autoBind = require('auto-bind');
 
 const XPRIVKEY = 'xprivkey';
@@ -21,8 +19,10 @@ const PASSPHRASE = 'passphrase';
 
 class BtcWallet extends CoinWalletBase {
   feeRate = 10000;
+  nextFeeFetch = 0;
   // To my knowledge, bcoin hasn't implemented types to their client.
   walletClient: any;
+  nodeClient: any;
 
   constructor({
     name,
@@ -34,8 +34,10 @@ class BtcWallet extends CoinWalletBase {
   }: ICoinMetadata) {
     super(name, symbol, contractAddress, abi, backgroundColor, icon);
     autoBind(this);
+    const { bcoinWallet, bcoinRpc } = config;
     // This is the client configured to interact with bcoin;
-    this.walletClient = new WalletClient(config.bcoinWallet);
+    this.walletClient = new WalletClient(bcoinWallet);
+    this.nodeClient = bcoinRpc.port ? new NodeClient(bcoinRpc) : undefined;
   }
 
   public async checkIfWalletExists(userApi: UserApi) {
@@ -157,12 +159,22 @@ class BtcWallet extends CoinWalletBase {
 
   public async estimateFee(userApi: UserApi) {
     try {
+      const now = Date.now();
+      if (this.nodeClient && now >= this.nextFeeFetch) {
+        const { fee } = await this.nodeClient.execute('estimatesmartfee', [10]);
+        if (fee > 0) {
+          this.feeRate = Math.floor(fee * 10 ** 8);
+          this.nextFeeFetch = now + 600000;
+        } else {
+          this.feeRate = 10000;
+        }
+      }
       logger.debug(`walletApi.coin-wallets.BtcWallet.estimateFee`);
       const feeRate = new BigNumber(this.feeRate);
       logger.debug(
         `walletApi.coin-wallets.BtcWallet.estimateFee.feeRate ${feeRate.toFixed()}`,
       );
-      const estimate = this.satToBtc(feeRate.div(4));
+      const estimate = this.satToBtc(feeRate.div(1000).multipliedBy(350));
       logger.debug(
         `walletApi.coin-wallets.BtcWallet.estimateFee.estimate ${estimate.toFixed()}`,
       );
@@ -179,6 +191,7 @@ class BtcWallet extends CoinWalletBase {
       );
       return feeData;
     } catch (error) {
+      this.feeRate = 10000;
       logger.warn(
         `walletApi.coin-wallets.BtcWallet.estimateFee.catch: ${error}`,
       );
