@@ -1,9 +1,11 @@
+import { withFilter, ApolloError } from 'apollo-server-express';
 import { Context } from '../types/context';
 import { mnemonic as mnemonicUtils, crypto } from '../utils';
 import ResolverBase from '../common/Resolver-Base';
 import { credentialService } from '../services';
 import { config, logger } from '../common';
-import { ISendOutput } from '../types';
+import { ISendOutput, IBcoinTx, CoinSymbol } from '../types';
+import listeners from '../blockchain-listeners';
 const autoBind = require('auto-bind');
 
 class Resolvers extends ResolverBase {
@@ -443,6 +445,22 @@ class Resolvers extends ResolverBase {
       };
     }
   }
+
+  public listenForNewTransactions(
+    parent: any,
+    { coinSymbol }: { coinSymbol: CoinSymbol },
+    { user }: { user: { userId: string } },
+  ) {
+    if (coinSymbol !== CoinSymbol.btc) {
+      throw new ApolloError(
+        `${coinSymbol} is not supported by this subscription.`,
+      );
+    }
+
+    listeners[coinSymbol].listenForNewTransaction(user.userId);
+
+    return config.pubsub.asyncIterator([config.newTransaction]);
+  }
 }
 
 const resolvers = new Resolvers();
@@ -461,5 +479,23 @@ export default {
     sendTransaction: resolvers.sendTransaction,
     createWallet: resolvers.createWallet,
     recoverWallet: resolvers.recoverWallet,
+  },
+  Subscription: {
+    newTransaction: {
+      subscribe: withFilter(
+        resolvers.listenForNewTransactions,
+        (
+          newTransaction: IBcoinTx & { walletId: string },
+          args: {},
+          { user }: { user: { userId: string } },
+        ) => newTransaction.walletId === user.userId,
+      ),
+      resolve: (tx: IBcoinTx) => {
+        return {
+          success: true,
+          transaction: tx,
+        };
+      },
+    },
   },
 };

@@ -299,7 +299,7 @@ class BtcWallet extends CoinWalletBase {
     }
   }
 
-  private formatTransactions(transactions: IBcoinTx[]): ITransaction[] {
+  public formatTransactions(transactions: IBcoinTx[]): ITransaction[] {
     const formattedTransactions = transactions.map(transaction => {
       const { block, confirmations, mdate, fee, outputs, hash } = transaction;
       const bnFee = this.satToBtc(new BigNumber(fee));
@@ -464,7 +464,7 @@ class BtcWallet extends CoinWalletBase {
     }
   }
 
-  private async getToken(accountId: string) {
+  public async getToken(accountId: string) {
     logger.debug(
       `walletApi.coin-wallets.BtcWallet.getToken.accountId:${accountId}`,
     );
