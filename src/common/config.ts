@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import * as autoBind from 'auto-bind';
+import { PubSub } from 'apollo-server-express';
 import keys from './keys';
 import { Connection, createConnection } from 'mongoose';
 
@@ -78,6 +79,8 @@ class Config {
     green: process.env.GREEN_ADDRESS,
     arcade: process.env.ARCADE_ADDRESS,
   };
+  public pubsub = new PubSub();
+  public readonly newTransaction = 'NEW_TRANSACTION';
 
   constructor() {
     autoBind(this);
