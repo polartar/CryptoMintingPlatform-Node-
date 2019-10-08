@@ -1,6 +1,10 @@
+import * as http from 'http';
 import * as express from 'express';
-import { ApolloServer, gql } from 'apollo-server-express';
+import { ApolloServer, gql, AuthenticationError } from 'apollo-server-express';
 import { DocumentNode } from 'graphql';
+import autoBind = require('auto-bind');
+import { connect, set, connection as mongooseConnection } from 'mongoose';
+import { ExecutionParams } from 'subscriptions-transport-ws';
 import schemas from './schemas';
 import resolvers from './resolvers';
 import {
@@ -11,40 +15,74 @@ import {
   Zendesk,
 } from './data-sources';
 import { WalletApi } from './wallet-api';
-import { config, logger } from './common';
-import autoBind = require('auto-bind');
-import { connect, set, connection } from 'mongoose';
+import { config, logger, auth } from './common';
+import { removeListeners } from './blockchain-listeners';
 
 class Server {
   public app: express.Application = express();
+  public httpServer: http.Server;
   public walletApi: WalletApi;
+
   constructor() {
     autoBind(this);
     const { isDev, hostname } = config;
+
     const typeDefs: DocumentNode = gql(schemas);
     this.walletApi = new WalletApi(hostname);
+
     const server = new ApolloServer({
       typeDefs,
       resolvers,
       context: this.buildContext,
       dataSources: this.buildDataSources,
       introspection: isDev,
-      playground: isDev,
+      playground: isDev
+        ? { settings: { 'request.credentials': 'include' } }
+        : false,
+      subscriptions: {
+        onConnect: ({ token }: { token: string }) => {
+          logger.debug(
+            `server.subscriptions.onConnect.token.length: ${token &&
+              token.length}`,
+          );
+          if (!token) {
+            throw new AuthenticationError('User not logged in.');
+          }
+
+          const user = auth.verifyAndDecodeToken(token, hostname);
+
+          return { user };
+        },
+        onDisconnect: async (socket, context) => {
+          const initialContext = await context.initPromise;
+
+          await removeListeners(initialContext.user.userId);
+        },
+      },
     });
 
     server.applyMiddleware({
       app: this.app,
-      cors: isDev,
+      cors: isDev ? { credentials: true, origin: true } : false,
     });
+
+    this.httpServer = http.createServer(this.app);
+    server.installSubscriptionHandlers(this.httpServer);
   }
 
   private buildContext({
     req,
     res,
+    connection,
   }: {
     req: express.Request;
     res: express.Response;
+    connection: ExecutionParams;
   }) {
+    if (connection && connection.context) {
+      return connection.context;
+    }
+
     const token = req.headers.authorization
       ? req.headers.authorization.replace('Bearer ', '')
       : '';
@@ -71,8 +109,8 @@ class Server {
   }
 
   private listen() {
-    this.app.listen({ port: config.port }, () =>
-      logger.info(`🚀 Server ready at http://localhost:${config.port}`),
+    this.httpServer.listen(config.port, () =>
+      logger.info(`🚀 Server ready on port ${config.port}`),
     );
   }
 
@@ -92,11 +130,11 @@ class Server {
         config.mongodbUri,
         { useNewUrlParser: true },
       );
-      connection.once('open', () => {
+      mongooseConnection.once('open', () => {
         logger.info(`Connected to mongoDb`);
         resolve();
       });
-      connection.on('error', error => {
+      mongooseConnection.on('error', error => {
         reject(error);
       });
     });

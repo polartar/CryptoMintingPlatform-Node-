@@ -17,3 +17,4 @@ export { default as IZendeskTicket } from './IZendeskTicket';
 export { IPromotionalRewardDoc } from '../models/promotional-rewards';
 export { IWalletEnvironment } from '../models/environment';
 export { default as IShareConfig } from './IShareConfig';
+export { CoinSymbol } from './CoinSymbol';

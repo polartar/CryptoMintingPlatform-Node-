@@ -17,6 +17,21 @@ type Transaction {
   total: String!
 }
 
+type NewTransaction {
+  id: String!
+  status: String!
+  confirmations: Int!
+  timestamp: Int!
+  fee: String!
+  link: String!
+  to: [String!]!
+  from: String!
+  amount: String!
+  type: String!
+  total: String!
+  coinSymbol: String!
+}
+
 type FeeEstimate {
   estimatedFee: String!
   feeCurrency: String!
@@ -46,6 +61,12 @@ type TxSendResponse {
   transaction: Transaction
 }
 
+type TxReceivedResponse {
+  success: Boolean!
+  message: String
+  transaction: NewTransaction
+}
+
 type Query {
   # If no coinSymbol is provided, all supported wallets will be returned
   wallet(coinSymbol: String): [Wallet!]!
@@ -67,4 +88,8 @@ type Mutation {
   ): TxSendResponse!
   createWallet(mnemonic: String!, walletPassword: String): MutationResponse!
   recoverWallet(mnemonic: String!, newPassword: String!): MutationResponse!
+}
+
+type Subscription {
+  newTransaction(coinSymbol: String!): TxReceivedResponse!
 }
