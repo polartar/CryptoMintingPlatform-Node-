@@ -11,8 +11,8 @@ input CreateUserInput {
   token: String!
   firstName: String!
   lastName: String!
-  phone: String!
-  referredBy: String!
+  phone: String
+  referredBy: String
 }
 
 input UpdateUserInput {
