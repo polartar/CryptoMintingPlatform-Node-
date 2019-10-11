@@ -1,6 +1,6 @@
 import * as http from 'http';
 import * as express from 'express';
-import { ApolloServer, gql, AuthenticationError } from 'apollo-server-express';
+import { ApolloServer, gql } from 'apollo-server-express';
 import { DocumentNode } from 'graphql';
 import autoBind = require('auto-bind');
 import { connect, set, connection as mongooseConnection } from 'mongoose';
@@ -15,7 +15,7 @@ import {
   Zendesk,
 } from './data-sources';
 import { WalletApi } from './wallet-api';
-import { config, logger, auth } from './common';
+import { config, logger } from './common';
 import { removeListeners } from './blockchain-listeners';
 
 class Server {
