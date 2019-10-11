@@ -26,7 +26,13 @@ class Resolvers extends ResolverBase {
     context: Context,
   ) {
     try {
-      const { token, firstName, lastName, phone, referredBy } = args.userInfo;
+      const {
+        token,
+        firstName,
+        lastName,
+        phone = null,
+        referredBy = null,
+      } = args.userInfo;
       const firebaseUid = await auth.getFirebaseUid(token, config.hostname);
       logger.debug(`resolvers.auth.createUser.firebaseUid:${firebaseUid}`);
       const { email } = await auth.getUser(firebaseUid, config.hostname);
@@ -36,7 +42,7 @@ class Resolvers extends ResolverBase {
         firstName,
         lastName,
         phone,
-        referredBy: referredBy || null,
+        referredBy,
         wallet: {
           userCreatedInWallet: true,
         },

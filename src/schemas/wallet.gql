@@ -30,6 +30,7 @@ type NewTransaction {
   type: String!
   total: String!
   coinSymbol: String!
+  balance: Balance!
 }
 
 type FeeEstimate {

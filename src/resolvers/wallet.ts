@@ -386,7 +386,11 @@ class Resolvers extends ResolverBase {
       logger.debug(`resolvers.wallet.estimateFee.user.userId:ok`);
       const walletApi = wallet.coin(symbol);
       const feeEstimate = await walletApi.estimateFee(user);
-      logger.debug(`resolvers.wallet.estimateFee.feeEstimate: ${feeEstimate}`);
+      logger.debug(
+        `resolvers.wallet.estimateFee.feeEstimate: ${JSON.stringify(
+          feeEstimate,
+        )}`,
+      );
       return feeEstimate;
     } catch (error) {
       logger.warn(`resolvers.wallet.estimateFee.catch: ${error}`);

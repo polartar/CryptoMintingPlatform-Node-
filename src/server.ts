@@ -40,23 +40,12 @@ class Server {
         ? { settings: { 'request.credentials': 'include' } }
         : false,
       subscriptions: {
-        onConnect: ({ token }: { token: string }) => {
-          logger.debug(
-            `server.subscriptions.onConnect.token.length: ${token &&
-              token.length}`,
-          );
-          if (!token) {
-            throw new AuthenticationError('User not logged in.');
-          }
-
-          const user = auth.verifyAndDecodeToken(token, hostname);
-
-          return { user };
-        },
         onDisconnect: async (socket, context) => {
-          const initialContext = await context.initPromise;
-
-          await removeListeners(initialContext.user.userId);
+          const { token } = await context.initPromise;
+          if (token) {
+            const user = new UserApi(token);
+            await removeListeners(user.userId);
+          }
         },
       },
     });
@@ -79,13 +68,15 @@ class Server {
     res: express.Response;
     connection: ExecutionParams;
   }) {
-    if (connection && connection.context) {
-      return connection.context;
+    let token;
+    if (connection && connection.context && connection.context.token) {
+      token = connection.context.token;
+    } else {
+      token = req.headers.authorization
+        ? req.headers.authorization.replace('Bearer ', '')
+        : '';
     }
 
-    const token = req.headers.authorization
-      ? req.headers.authorization.replace('Bearer ', '')
-      : '';
     logger.debug(`server.buildContext.token.length: ${token && token.length}`);
     let user = null;
     if (token) {
