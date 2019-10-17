@@ -1,7 +1,7 @@
 import ResolverBase from '../common/Resolver-Base';
 import { Context } from '../types/context';
 import { logger, config } from '../common';
-import { default as environment } from '../models/environment';
+import { default as WalletConfig } from '../models/wallet-config';
 import { IUserWallet, ISendOutput } from '../types';
 import autoBind = require('auto-bind');
 import { userSchema, default as User, IUser } from '../models/user';
@@ -42,40 +42,16 @@ class Resolvers extends ResolverBase {
 
   private async getShareConfig() {
     try {
-      const adjustedBrand = config.brand.replace(
-        'arcade',
-        'blockchaingamepartners',
-      );
-      logger.debug(
-        `resolvers.share.getShareConfig.adjustedBrand: ${adjustedBrand}`,
-      );
-      const shareConfigResult = await environment.findOne({
-        domain: { $regex: adjustedBrand },
+      const shareConfigResult = await WalletConfig.findOne({
+        brand: config.brand,
       });
-      if (!shareConfigResult)
-        throw new Error(`Sahre config not found for ${adjustedBrand}`);
-      const {
-        walletCompanyFee: companyFee,
-        walletReferrerReward: referrerReward,
-        walletRewardAmount: rewardAmount,
-        walletRewardCurrency: rewardCurrency,
-        walletShareLimit: shareLimit,
-        walletUserBalanceThreshold: userBalanceThreshold,
-      } = shareConfigResult;
-      const shareConfig = {
-        referrerReward,
-        companyFee,
-        rewardCurrency,
-        rewardAmount,
-        userBalanceThreshold,
-        shareLimit,
-      };
+      if (!shareConfigResult) throw new Error(`Share config not found.`);
       logger.debug(
         `resolvers.share.getShareConfig.shareConfig: ${JSON.stringify(
-          shareConfig,
+          shareConfigResult,
         )}`,
       );
-      return shareConfig;
+      return shareConfigResult;
     } catch (error) {
       logger.warn(`resolvers.share.getShareConfig.shareConfig: ${error}`);
       throw error;

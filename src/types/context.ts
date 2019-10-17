@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import {
   UserApi,
   CryptoFavorites,
-  Environment,
+  WalletConfig,
   Bitly,
   Zendesk,
 } from '../data-sources/';
@@ -22,7 +22,7 @@ export interface Context {
   wallet: WalletApi;
   dataSources: {
     cryptoFavorites: CryptoFavorites;
-    environment: Environment;
+    environment: WalletConfig;
     bitly: Bitly;
     zendesk: Zendesk;
   };
