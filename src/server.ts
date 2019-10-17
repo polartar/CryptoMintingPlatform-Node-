@@ -10,7 +10,7 @@ import resolvers from './resolvers';
 import {
   UserApi,
   CryptoFavorites,
-  Environment,
+  WalletConfig,
   Bitly,
   Zendesk,
 } from './data-sources';
@@ -93,7 +93,7 @@ class Server {
   private buildDataSources() {
     return {
       cryptoFavorites: new CryptoFavorites(),
-      environment: new Environment(),
+      environment: new WalletConfig(),
       bitly: new Bitly(),
       zendesk: new Zendesk(),
     };
@@ -126,7 +126,7 @@ class Server {
         resolve();
       });
       mongooseConnection.on('error', error => {
-        reject(error);
+        console.warn(error);
       });
     });
   }
