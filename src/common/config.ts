@@ -34,6 +34,7 @@ class Config {
   public readonly erc20RewardDistributerPkey =
     process.env.ERC20_REWARD_DISTRIBUTER_PKEY;
   public readonly companyFeeBtcAddress = process.env.COMPANY_FEE_BTC_ADDRESS;
+  public readonly partnerFeeBtcAddress = process.env.PARTNER_FEE_BTC_ADDRESS;
   public readonly cryptoNetwork = process.env.CRYPTO_NETWORK;
   public readonly walletClientDomain = process.env.WALLET_CLIENT_DOMAIN;
   public readonly zendeskApiKey = process.env.ZENDESK_API_KEY;
@@ -108,6 +109,7 @@ class Config {
       'COMPANY_FEE_BTC_ADDRESS',
       'ZENDESK_API_KEY',
       'ERC20_REWARD_DISTRIBUTER_PKEY',
+      'PARTNER_FEE_BTC_ADDRESS',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(

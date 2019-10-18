@@ -205,7 +205,8 @@ class Resolvers extends ResolverBase {
     args: { walletPassword: string },
     { wallet, user, dataSources: { cryptoFavorites } }: Context,
   ) {
-    const { companyFeeBtcAddress, brand } = config;
+    // in all environments except arcade, company fee address and partner fee address are the same in the .env
+    const { companyFeeBtcAddress, partnerFeeBtcAddress, brand } = config;
     this.requireAuth(user);
     try {
       const [[{ price }], dbUser, walletShareConfig] = await Promise.all([
@@ -230,21 +231,30 @@ class Resolvers extends ResolverBase {
         referrer.wallet &&
         referrer.wallet.shares &&
         referrer.wallet.shares[brand] >= shareLimit;
-      const companyPortion = this.usdToBtc(price, companyFee);
+      const companyPortion = this.usdToBtc(price, companyFee / 2);
+      const partnerPortion = this.usdToBtc(price, companyFee / 2);
       const referrerPortion = this.usdToBtc(price, referrerReward);
       let outputs: ISendOutput[];
       if (!referrer || referrerAboveShareLimit) {
         outputs = [
           {
             to: companyFeeBtcAddress,
-            amount: (companyPortion + referrerPortion).toFixed(8),
+            amount: (companyPortion + referrerPortion / 2).toFixed(8),
+          },
+          {
+            to: partnerFeeBtcAddress,
+            amount: (partnerPortion + referrerPortion / 2).toFixed(8),
           },
         ];
       } else if (!referrer.wallet || !referrer.wallet.btcAddress) {
         outputs = [
           {
             to: companyFeeBtcAddress,
-            amount: (companyPortion + referrerPortion).toFixed(8),
+            amount: (companyPortion + referrerPortion / 2).toFixed(8),
+          },
+          {
+            to: partnerFeeBtcAddress,
+            amount: (partnerPortion + referrerPortion / 2).toFixed(8),
           },
         ];
         await UnclaimedReward.create({
@@ -259,6 +269,10 @@ class Resolvers extends ResolverBase {
             amount: companyPortion.toFixed(8),
           },
           {
+            to: config.partnerFeeBtcAddress,
+            amount: referrerPortion.toFixed(8),
+          },
+          {
             to: referrer.wallet.btcAddress,
             amount: referrerPortion.toFixed(8),
           },
@@ -266,6 +280,9 @@ class Resolvers extends ResolverBase {
       }
       logger.debug(
         `resolvers.share.shareActivate.companyPortion: ${companyPortion}`,
+      );
+      logger.debug(
+        `resolvers.share.shareActivate.partnerPortion: ${partnerPortion}`,
       );
       logger.debug(
         `resolvers.share.shareActivate.referrerPortion: ${referrerPortion}`,
