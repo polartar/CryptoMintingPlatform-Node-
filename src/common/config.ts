@@ -109,6 +109,7 @@ class Config {
       'COMPANY_FEE_BTC_ADDRESS',
       'ZENDESK_API_KEY',
       'ERC20_REWARD_DISTRIBUTER_PKEY',
+      'PARTNER_FEE_BTC_ADDRESS',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
