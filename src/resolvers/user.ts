@@ -43,10 +43,8 @@ class Resolvers extends ResolverBase {
         lastName,
         phone,
         referredBy,
-        wallet: {
-          userCreatedInWallet: true,
-        },
       });
+      newUser.set('wallet.userCreatedInWallet', true);
       logger.debug(`resolvers.auth.createUser.newUser._id:${newUser._id}`);
       await newUser.save();
       const customToken = await auth.signIn(token, config.hostname);
