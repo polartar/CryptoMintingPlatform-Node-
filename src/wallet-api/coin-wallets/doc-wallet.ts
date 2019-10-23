@@ -101,7 +101,7 @@ class DocWallet extends CoinWalletBase {
         `walletApi.coin-wallets.DocWallet.getBalance.balance:${balance}`,
       );
       return {
-        unconfirmed: '0',
+        unconfirmed: balance,
         confirmed: balance,
       };
     } catch (error) {
