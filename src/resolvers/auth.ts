@@ -106,7 +106,13 @@ class Resolvers extends ResolverBase {
       );
       this.requireAuth(user);
       logger.debug(`resolvers.auth.validateExistingToken.requireAuth:ok`);
-      const walletExists = await this.verifyWalletsExist(user, wallet);
+      const newToken = await auth.signInWithDifferentCustomToken(
+        user.token,
+        config.hostname,
+      );
+      if (!newToken) throw new Error('Unauthorized');
+      const tempUser = new UserApi(newToken);
+      const walletExists = await this.verifyWalletsExist(tempUser, wallet);
       logger.debug(
         `resolvers.auth.validateExistingToken.walletExists:${walletExists}`,
       );
@@ -136,6 +142,7 @@ class Resolvers extends ResolverBase {
         twoFaEnabled: user.twoFaEnabled,
         twoFaAuthenticated,
         walletExists,
+        newToken,
         ...twoFaSetup,
       };
     } catch (error) {

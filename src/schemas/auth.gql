@@ -12,6 +12,7 @@ type ValidateExistingTokenResponse {
   profile: UserProfile!
   twoFaSecret: String
   twoFaQrCode: String
+  newToken: String!
 }
 
 type TwoFaRegisterResponse {
