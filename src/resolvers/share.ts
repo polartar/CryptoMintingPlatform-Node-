@@ -287,16 +287,21 @@ class Resolvers extends ResolverBase {
       logger.debug(
         `resolvers.share.shareActivate.referrerPortion: ${referrerPortion}`,
       );
-      const transaction = await wallet
+      const { message, transaction, success } = await wallet
         .coin('btc')
         .send(user, outputs, args.walletPassword);
+
+      logger.debug(`resolvers.share.shareActivate.success: ${success}`);
+      logger.debug(`resolvers.share.shareActivate.message: ${message}`);
+      if (!success) {
+        throw new Error(message || 'Activation transaction failed');
+      }
       logger.debug(
         `resolvers.share.shareActivate.transaction.transaction.id: ${transaction &&
-          transaction.transaction &&
-          transaction.transaction.id}`,
+          transaction.id}`,
       );
       dbUser.wallet.activated = true;
-      dbUser.wallet.activationTxHash = transaction.transaction.id;
+      dbUser.wallet.activationTxHash = transaction.id;
       dbUser.save();
       const userEthAddress =
         (dbUser && dbUser.wallet && dbUser.wallet.ethAddress) || '';
