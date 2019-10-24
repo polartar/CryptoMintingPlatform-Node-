@@ -82,6 +82,10 @@ class Config {
   };
   public pubsub = new PubSub();
   public readonly newTransaction = 'NEW_TRANSACTION';
+  public email = {
+    sendGridApiKey: process.env.SENDGRID_API_KEY,
+    sendEmailFrom: process.env.SEND_EMAIL_FROM,
+  };
 
   constructor() {
     autoBind(this);
