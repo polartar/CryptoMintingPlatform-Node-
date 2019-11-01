@@ -121,7 +121,7 @@ export default class WalletApi {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: CONNECT`,
       );
-      return [BTC, ETH, WinX];
+      return [BTC, ETH, WinX, ARCADE, GREEN];
     } else if (hostName.includes('codexunited.com')) {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: CODEX`,
