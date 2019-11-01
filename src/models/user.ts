@@ -147,7 +147,11 @@ userSchema.pre('save', async function(this: IUser, next) {
   if (user.email) {
     user.email = user.email.toLowerCase();
     user.affiliateId =
-      user.affiliateId || crypto.MD5(user.email).toString(crypto.enc.Base64);
+      user.affiliateId ||
+      crypto
+        .MD5(user.email)
+        .toString(crypto.enc.Base64)
+        .replace(/[^a-zA-Z0-9]/g, '');
   }
   if (!user.number) {
     const number = await getNextNumber(user);
