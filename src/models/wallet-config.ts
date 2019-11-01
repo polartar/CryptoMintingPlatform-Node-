@@ -1,6 +1,10 @@
 import { Schema, model, Document } from 'mongoose';
 
 export interface IWalletConfig extends Document {
+  backgroundColor: string;
+  icon: string;
+  accentColor: string;
+  textColor: string;
   referrerReward: number;
   companyFee: number;
   rewardCurrency: string;
@@ -40,6 +44,22 @@ export const walletConfigSchema = new Schema({
     required: true,
   },
   shareLinkBase: {
+    type: String,
+    required: true,
+  },
+  backgroundColor: {
+    type: String,
+    required: true,
+  },
+  icon: {
+    type: String,
+    required: true,
+  },
+  accentColor: {
+    type: String,
+    required: true,
+  },
+  textColor: {
     type: String,
     required: true,
   },

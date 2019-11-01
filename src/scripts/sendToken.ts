@@ -1,17 +1,17 @@
 // require('dotenv').config();
 // import config from '../common/config';
-// import { ethers, utils } from 'ethers';
+// import { ethers } from 'ethers';
 // import { ICoinMetadata } from '../types';
 // import { BigNumber } from 'bignumber.js';
 // import credentials from '../../credentials';
 // import autoBind = require('auto-bind');
-// import * as erc20Abi from '../common/ABI/erc20.json'
+// import * as erc20Abi from '../common/ABI/erc20.json';
 
 // interface IAccountKeys {
 //   contractAddress: string;
 //   owner: string;
 //   pkey: string;
-//   decimals: number
+//   decimals: number;
 // }
 
 // interface ISendStuff {
@@ -26,24 +26,20 @@
 //   constructor({ contractAddress, pkey, decimals }: IAccountKeys) {
 //     this.decimals = decimals;
 //     const provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
-//     const signer = new ethers.Wallet(pkey, provider)
+//     const signer = new ethers.Wallet(pkey, provider);
 //     this.contract = new ethers.Contract(contractAddress, erc20Abi, signer);
-//     autoBind(this)
+//     autoBind(this);
 //   }
 
 //   private integerize(decimalizedString: string) {
-//     return ethers.utils.parseUnits(decimalizedString, this.decimals)
+//     return ethers.utils.parseUnits(decimalizedString, this.decimals);
 //   }
 
 //   public sendTokens(addresses: string[], values: string[]) {
-//     const amounts = values.map(this.integerize)
-//     return this.contract.distributeMinting(
-//       addresses,
-//       amounts
-//     );
+//     const amounts = values.map(this.integerize);
+//     return this.contract.distributeMinting(addresses, amounts);
 //   }
 // }
-
 
 // function getRandomValue(numConfig: { min: number; max: number }) {
 //   const { min, max } = numConfig;
