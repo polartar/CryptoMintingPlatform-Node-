@@ -9,6 +9,25 @@ interface IWalletShares {
   [key: string]: number;
 }
 
+interface IActivatedWallets {
+  green: {
+    activated: boolean;
+    activationTxHash: string;
+  };
+  arcade: {
+    activated: boolean;
+    activationTxHash: string;
+  };
+  winx: {
+    activated: boolean;
+    activationTxHash: string;
+  };
+  [key: string]: {
+    activated: boolean;
+    activationTxHash: string;
+  };
+}
+
 export interface IUserWalletDoc extends mongoose.Document {
   ethAddress?: string;
   ethBlockNumAtCreation?: number;
@@ -16,8 +35,7 @@ export interface IUserWalletDoc extends mongoose.Document {
   cryptoFavoritesSet?: boolean;
   ethNonce: number;
   btcAddress?: string;
-  activated: boolean;
-  activationTxHash?: string;
+  activations: IActivatedWallets;
   shareLink?: string;
   userCreatedInWallet: boolean;
   shares: IWalletShares;
@@ -54,6 +72,19 @@ async function getNextNumber({ firstName, lastName }: IUser) {
   }
   return undefined;
 }
+const activatedWalletsSchema = new mongoose.Schema({
+  activated: {
+    type: Boolean,
+    default: false,
+  },
+  activationTxHash: String,
+});
+
+const walletsActivated = new mongoose.Schema({
+  green: activatedWalletsSchema,
+  winx: activatedWalletsSchema,
+  arcade: activatedWalletsSchema,
+});
 
 const walletShareSchema = new mongoose.Schema({
   green: Number,
@@ -73,13 +104,12 @@ const walletSchema = new mongoose.Schema({
     default: 0,
   },
   btcAddress: String,
-  activated: {
-    type: Boolean,
-    default: false,
-  },
   shareLink: String,
-  activationTxHash: String,
   userCreatedInWallet: Boolean,
+  activations: {
+    type: walletsActivated,
+    default: {},
+  },
   shares: {
     type: walletShareSchema,
     default: {},

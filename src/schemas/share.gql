@@ -1,17 +1,8 @@
-type ShareUser {
-  # Is user's wallet currently activated
-  activated: Boolean!
-  # If not activated, do they have enough to activate
-  btcBalanceConfirmed: String
-  # If not activated, do they have a qualifying pending transaction
-  btcBalancePending: String
-  # Bitly share url
-  shareUrl: String
-  # Number of shares that were successfully activated.
-  activatedShares: Int!
-}
-
-type ShareConfig {
+type ShareOption {
+  backgroundColor: String!
+  icon: String!
+  accentColor: String!
+  textColor: String!
   # Portion of fee that goes to referrer
   referrerReward: Int!
   # Portion of fee that goes to company.
@@ -26,17 +17,30 @@ type ShareConfig {
   shareLimit: Int!
 }
 
+type ShareConfig {
+  # If not activated, do they have enough to activate
+  btcBalanceConfirmed: String
+  # If not activated, do they have a qualifying pending transaction
+  btcBalancePending: String
+  # Bitly share url
+  shareUrl: String
+  # Number of shares that were successfully activated.
+  activatedShares: Int!
+  shareOptions: [ShareOption!]!
+  unactivatedShareOptions: [ShareOption!]!
+}
+
 type ReferrerName {
   firstName: String!
   lastName: String!
 }
 
 type Query {
+  # Get all available reward options
   shareConfig: ShareConfig!
-  shareUser: ShareUser!
 }
 
 type Mutation {
   logClick(referredBy: String): ReferrerName!
-  shareActivate(walletPassword: String): TxSendResponse!
+  shareActivate(walletPassword: String, rewardType: String!): TxSendResponse!
 }
