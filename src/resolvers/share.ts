@@ -161,7 +161,6 @@ class Resolvers extends ResolverBase {
           shareConfig,
         )}`,
       );
-
       return shareConfig;
     } catch (error) {}
   }

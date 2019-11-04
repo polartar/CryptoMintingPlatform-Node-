@@ -67,6 +67,10 @@ type TxReceivedResponse {
   message: String
   transaction: NewTransaction
 }
+type BalanceChangeResponse {
+  success: Boolean!
+  balance: Balance!
+}
 
 type Query {
   # If no coinSymbol is provided, all supported wallets will be returned
@@ -92,5 +96,5 @@ type Mutation {
 }
 
 type Subscription {
-  newTransaction(coinSymbol: String!): TxReceivedResponse!
+  newBalance(coinSymbol: String!): BalanceChangeResponse!
 }

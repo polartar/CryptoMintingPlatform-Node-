@@ -4,7 +4,8 @@ import BaseListener from './base';
 import { config, logger } from '../common';
 import WalletApi from '../wallet-api/WalletApi';
 import BtcWalletApi from '../wallet-api/coin-wallets/btc-wallet';
-import { IBcoinTx, CoinSymbol, ITransaction } from '../types';
+import { CoinSymbol } from '../types';
+import { BigNumber } from 'bignumber.js';
 
 class BtcBlockchainListener implements BaseListener {
   private walletClient = new WalletClient(config.bcoinWallet);
@@ -17,47 +18,25 @@ class BtcBlockchainListener implements BaseListener {
     autoBind(this);
   }
 
-  private async getAndFormatTransactionAndBalance(
-    tx: IBcoinTx,
-    walletId: string,
-  ) {
-    const [formattedTx] = this.btcWalletApi.formatTransactions([tx]);
-    logger.debug(
-      `blockchain-listeners.btc.listenForNewTransaction.walletClient.bind(tx).formattedTx: ${JSON.stringify(
-        formattedTx,
-      )}`,
-    );
-    const balance = await this.btcWalletApi.getBalance(walletId);
-    return {
-      formattedTx,
-      balance,
-    };
-  }
-
-  publishNewTx(
+  publishNewBalance(
     walletId: string,
     balance: { confirmed: string; unconfirmed: string },
-    formattedTx: ITransaction,
   ) {
     const payload = {
       walletId,
       balance,
       coinSymbol: this.coinSymbol,
-      ...formattedTx,
     };
-    logger.debug(
-      `blockchain-listeners.btc.publishNewTx: ${JSON.stringify(payload)}`,
-    );
-    config.pubsub.publish(config.newTransaction, payload);
+    config.pubsub.publish(config.newBalance, payload);
   }
 
-  public async listenForNewTransaction(walletId: string) {
+  public async listenForNewBalance(walletId: string) {
     logger.debug(
-      `blockchain-listeners.btc.listenForNewTransaction.walletId: ${walletId}`,
+      `blockchain-listeners.btc.listenForNewBalance.walletId: ${walletId}`,
     );
     const token = await this.btcWalletApi.getToken(walletId);
     logger.debug(
-      `blockchain-listeners.btc.listenForNewTransaction.token.length: ${
+      `blockchain-listeners.btc.listenForNewBalance.token.length: ${
         token ? token.length : 0
       }`,
     );
@@ -66,49 +45,14 @@ class BtcBlockchainListener implements BaseListener {
     await this.openPromise;
     await this.walletClient.join(walletId, token);
 
-    this.walletClient.bind('confirmed', async (wallet, tx) => {
-      logger.debug(
-        `blockchain-listeners.btc.listenForNewTransaction.walletClient.bind(confirmed).wallet: ${wallet}`,
-      );
-      logger.debug(
-        `blockchain-listeners.btc.listenForNewTransaction.walletClient.bind(confirmed).tx.hash: ${
-          tx.hash
-        }`,
-      );
-      logger.debug(
-        `blockchain-listeners.btc.listenForNewTransaction.walletClient.bind(confirmed).tx.confirmations: ${
-          tx.confirmations
-        }`,
-      );
-      if (tx.confirmations <= 3) {
-        const {
-          balance,
-          formattedTx,
-        } = await this.getAndFormatTransactionAndBalance(
-          (tx as unknown) as IBcoinTx,
-          wallet,
-        );
-        this.publishNewTx(walletId, balance, formattedTx);
-      }
-    });
-
-    this.walletClient.bind('tx', async (wallet, tx) => {
-      logger.debug(
-        `blockchain-listeners.btc.listenForNewTransaction.walletClient.bind(tx).wallet: ${wallet}`,
-      );
-      logger.debug(
-        `blockchain-listeners.btc.listenForNewTransaction.walletClient.bind(tx).tx.hash: ${
-          tx.hash
-        }`,
-      );
-      const {
-        balance,
-        formattedTx,
-      } = await this.getAndFormatTransactionAndBalance(
-        (tx as unknown) as IBcoinTx,
-        wallet,
-      );
-      this.publishNewTx(walletId, balance, formattedTx);
+    this.walletClient.bind('balance', async (wallet, walletBalance: any) => {
+      const confirmed = this.btcWalletApi
+        .satToBtc(new BigNumber(walletBalance.confirmed))
+        .toFixed();
+      const unconfirmed = this.btcWalletApi
+        .satToBtc(new BigNumber(walletBalance.unconfirmed))
+        .toFixed();
+      this.publishNewBalance(wallet, { confirmed, unconfirmed });
     });
   }
 

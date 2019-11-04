@@ -253,7 +253,7 @@ class BtcWallet extends CoinWalletBase {
   }
 
   // Util function to convert satoshis to btc
-  private satToBtc(satoshis: BigNumber) {
+  public satToBtc(satoshis: BigNumber) {
     try {
       logger.debug(
         `walletApi.coin-wallets.BtcWallet.satToBtc.satoshis:${satoshis.toFixed()}`,

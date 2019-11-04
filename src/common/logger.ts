@@ -3,6 +3,7 @@ require('winston-mongodb');
 import { config } from '../common';
 
 const logger = winston.createLogger();
+const colorizer = winston.format.colorize();
 
 if (process.env.NODE_ENV === 'production' && config.mongodbUri) {
   logger.add(
@@ -18,8 +19,14 @@ if (process.env.NODE_ENV === 'production' && config.mongodbUri) {
 } else {
   logger.add(
     new winston.transports.Console({
-      format: winston.format.simple(),
-      level: config.logLevel,
+      level: 'debug',
+      format: winston.format.combine(
+        winston.format.simple(),
+        winston.format.printf(
+          msg =>
+            colorizer.colorize(msg.level, `${msg.level}: `) + `${msg.message}`,
+        ),
+      ),
     }),
   );
 }

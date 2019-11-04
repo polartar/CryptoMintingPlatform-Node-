@@ -72,9 +72,10 @@ class Server {
     if (connection && connection.context && connection.context.token) {
       token = connection.context.token;
     } else {
-      token = req.headers.authorization
-        ? req.headers.authorization.replace('Bearer ', '')
-        : '';
+      token =
+        req && req.headers && req.headers.authorization
+          ? req.headers.authorization.replace('Bearer ', '')
+          : '';
     }
 
     logger.debug(`server.buildContext.token.length: ${token && token.length}`);
@@ -117,10 +118,9 @@ class Server {
   private async connectToMongodb() {
     return new Promise((resolve, reject) => {
       set('useCreateIndex', true);
-      connect(
-        config.mongodbUri,
-        { useNewUrlParser: true },
-      );
+      set('useNewUrlParser', true);
+      set('useFindAndModify', false);
+      connect(config.mongodbUri);
       mongooseConnection.once('open', () => {
         logger.info(`Connected to mongoDb`);
         resolve();

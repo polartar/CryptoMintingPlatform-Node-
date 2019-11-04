@@ -450,20 +450,21 @@ class Resolvers extends ResolverBase {
     }
   }
 
-  public listenForNewTransactions(
+  public listenForNewBalance(
     parent: any,
     { coinSymbol }: { coinSymbol: CoinSymbol },
-    { user }: { user: { userId: string } },
+    { user }: Context,
   ) {
+    this.requireAuth(user);
     if (coinSymbol !== CoinSymbol.btc) {
       throw new ApolloError(
         `${coinSymbol} is not supported by this subscription.`,
       );
     }
 
-    listeners[coinSymbol].listenForNewTransaction(user.userId);
+    listeners[coinSymbol].listenForNewBalance(user.userId);
 
-    return config.pubsub.asyncIterator([config.newTransaction]);
+    return config.pubsub.asyncIterator([config.newBalance]);
   }
 }
 
@@ -485,19 +486,19 @@ export default {
     recoverWallet: resolvers.recoverWallet,
   },
   Subscription: {
-    newTransaction: {
+    newBalance: {
       subscribe: withFilter(
-        resolvers.listenForNewTransactions,
+        resolvers.listenForNewBalance,
         (
           newTransaction: IBcoinTx & { walletId: string },
           args: {},
           { user }: { user: { userId: string } },
         ) => newTransaction.walletId === user.userId,
       ),
-      resolve: (tx: IBcoinTx) => {
+      resolve: (balance: { confirmed: string; unconfirmed: string }) => {
         return {
           success: true,
-          transaction: tx,
+          ...balance,
         };
       },
     },

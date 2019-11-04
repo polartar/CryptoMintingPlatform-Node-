@@ -82,6 +82,7 @@ class Config {
   };
   public pubsub = new PubSub();
   public readonly newTransaction = 'NEW_TRANSACTION';
+  public readonly newBalance = 'NEW_BALANCE';
   // public readonly sendGridApiKey = process.env.SENDGRID_API_KEY;
 
   constructor() {
@@ -148,8 +149,11 @@ class Config {
       (!this.hostname.includes('connectblockchain.net') &&
         connectMongoUrl !== undefined)
     ) {
-      this.connectMongoConnection = await createConnection(connectMongoUrl);
-      console.log('info: mongoDB:Connect connected');
+      this.connectMongoConnection = await createConnection(connectMongoUrl, {
+        useNewUrlParser: true,
+        useFindAndModify: false,
+        useCreateIndex: true,
+      });
     }
   }
 
