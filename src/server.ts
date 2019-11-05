@@ -13,6 +13,7 @@ import {
   WalletConfig,
   Bitly,
   Zendesk,
+  SendEmail,
 } from './data-sources';
 import { WalletApi } from './wallet-api';
 import { config, logger } from './common';
@@ -97,6 +98,7 @@ class Server {
       environment: new WalletConfig(),
       bitly: new Bitly(),
       zendesk: new Zendesk(),
+      sendEmail: new SendEmail(),
     };
   }
 

@@ -69,7 +69,7 @@ type TxReceivedResponse {
 }
 type BalanceChangeResponse {
   success: Boolean!
-  balance: Balance!
+  walletId: String!
 }
 
 type Query {
