@@ -3,7 +3,7 @@
   "main": "lib/index.js",
   "scripts": {
     "lint": "tslint --project tsconfig.json",
-    "build": "run-s format:fix fix lint tsc && cp ./src/schemas/*.gql ./lib/schemas",
+    "build": "run-s format:fix fix lint tsc && cp ./src/schemas/*.gql ./lib/schemas  && cp ./src/templates/handlebars/*.hbs ./lib/templates/handlebars/",
     "start": "npm run build && node ./lib/index.js",
     "dev": "run-s watch",
     "watch": "nodemon --watch 'src/**/*' -e ts,graphql,gql --exec 'ts-node' ./src/index.ts",
