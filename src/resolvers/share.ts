@@ -315,7 +315,7 @@ class Resolvers extends ResolverBase {
       walletPassword: string;
       rewardType: string;
     },
-    { wallet, user, dataSources: { cryptoFavorites } }: Context,
+    { wallet, user, dataSources: { cryptoFavorites, sendEmail } }: Context,
   ) {
     // in all environments except arcade, company fee address and partner fee address are the same in the .env
     const { brand } = config;
@@ -376,7 +376,8 @@ class Resolvers extends ResolverBase {
       const userEthAddress =
         (dbUser && dbUser.wallet && dbUser.wallet.ethAddress) || '';
       rewardDistributer.sendReward(rewardConfig, user.userId, userEthAddress);
-      if (referrer && outputs.length === 2) {
+      if (referrer && outputs.length >= 2) {
+        sendEmail.referrerActivated(referrer, dbUser);
         const existingShares =
           (referrer.wallet &&
             referrer.wallet.shares &&

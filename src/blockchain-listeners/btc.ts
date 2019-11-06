@@ -5,7 +5,6 @@ import { config, logger } from '../common';
 import WalletApi from '../wallet-api/WalletApi';
 import BtcWalletApi from '../wallet-api/coin-wallets/btc-wallet';
 import { CoinSymbol } from '../types';
-import { BigNumber } from 'bignumber.js';
 
 class BtcBlockchainListener implements BaseListener {
   private walletClient = new WalletClient(config.bcoinWallet);
@@ -18,14 +17,9 @@ class BtcBlockchainListener implements BaseListener {
     autoBind(this);
   }
 
-  publishNewBalance(
-    walletId: string,
-    balance: { confirmed: string; unconfirmed: string },
-  ) {
+  publishNewBalance(walletId: string) {
     const payload = {
       walletId,
-      balance,
-      coinSymbol: this.coinSymbol,
     };
     config.pubsub.publish(config.newBalance, payload);
   }
@@ -45,14 +39,8 @@ class BtcBlockchainListener implements BaseListener {
     await this.openPromise;
     await this.walletClient.join(walletId, token);
 
-    this.walletClient.bind('balance', async (wallet, walletBalance: any) => {
-      const confirmed = this.btcWalletApi
-        .satToBtc(new BigNumber(walletBalance.confirmed))
-        .toFixed();
-      const unconfirmed = this.btcWalletApi
-        .satToBtc(new BigNumber(walletBalance.unconfirmed))
-        .toFixed();
-      this.publishNewBalance(wallet, { confirmed, unconfirmed });
+    this.walletClient.bind('balance', async wallet => {
+      this.publishNewBalance(wallet);
     });
   }
 

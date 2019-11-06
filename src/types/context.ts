@@ -5,6 +5,7 @@ import {
   WalletConfig,
   Bitly,
   Zendesk,
+  SendEmail,
 } from '../data-sources/';
 import { WalletApi } from '../wallet-api';
 export interface IUserClaims {
@@ -25,6 +26,7 @@ export interface Context {
     environment: WalletConfig;
     bitly: Bitly;
     zendesk: Zendesk;
+    sendEmail: SendEmail;
   };
   user: UserApi | null;
 }

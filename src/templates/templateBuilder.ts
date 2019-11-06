@@ -1,4 +1,4 @@
-import { shareAccepted } from './handlebars';
+import { shareAccepted, referralActivated } from './handlebars';
 import { IUser } from '../types';
 import * as Handlebars from 'handlebars';
 
@@ -11,6 +11,16 @@ class TemplateBuilder {
         brand,
       }),
       subject: shareAccepted.subject,
+    };
+  }
+
+  buildReferrerActivatedHtml(referredUser: IUser, brand: string) {
+    return {
+      html: Handlebars.compile(referralActivated.html)({
+        referredUser,
+        brand,
+      }),
+      subject: referralActivated.subject,
     };
   }
 }
