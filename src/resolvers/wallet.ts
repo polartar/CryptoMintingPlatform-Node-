@@ -109,7 +109,7 @@ class Resolvers extends ResolverBase {
   async createWallet(
     parent: any,
     args: { mnemonic: string; walletPassword: string },
-    { user, wallet }: Context,
+    { user, wallet, dataSources: { sendEmail } }: Context,
   ) {
     const { mnemonic: recoveryPhrase, walletPassword } = args;
     logger.debug(
@@ -162,6 +162,17 @@ class Resolvers extends ResolverBase {
           recoveryPhrase,
         );
       }
+
+      user.findFromDb().then(referredUser => {
+        if (referredUser && referredUser.referredBy) {
+          user.Model.findOne({ affiliateId: referredUser.referredBy })
+            .exec()
+            .then(referrer => {
+              sendEmail.shareAccepted(referrer, referredUser);
+            });
+        }
+      });
+
       return {
         success: true,
         message: 'Wallet created',
@@ -493,12 +504,14 @@ export default {
           newTransaction: IBcoinTx & { walletId: string },
           args: {},
           { user }: { user: { userId: string } },
-        ) => newTransaction.walletId === user.userId,
+        ) => {
+          return newTransaction.walletId === user.userId;
+        },
       ),
-      resolve: (balance: { confirmed: string; unconfirmed: string }) => {
+      resolve: (payload: { walletId: string }) => {
         return {
           success: true,
-          ...balance,
+          ...payload,
         };
       },
     },

@@ -83,7 +83,8 @@ class Config {
   public pubsub = new PubSub();
   public readonly newTransaction = 'NEW_TRANSACTION';
   public readonly newBalance = 'NEW_BALANCE';
-  // public readonly sendGridApiKey = process.env.SENDGRID_API_KEY;
+  public readonly sendGridApiKey = process.env.SENDGRID_API_KEY;
+  public readonly sendGridEmailFrom = process.env.SENDGRID_EMAIL_FROM;
 
   constructor() {
     autoBind(this);
@@ -112,7 +113,8 @@ class Config {
       'ZENDESK_API_KEY',
       'ERC20_REWARD_DISTRIBUTER_PKEY',
       'PARTNER_FEE_BTC_ADDRESS',
-      // 'SENDGRID_API_KEY',
+      'SENDGRID_API_KEY',
+      'SENDGRID_EMAIL_FROM',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(

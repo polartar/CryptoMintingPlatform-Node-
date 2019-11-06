@@ -6,6 +6,11 @@ function readTemplate(templateFileName: string) {
 }
 
 export const shareAccepted = {
-  html: readTemplate('shareAccepted.handlebars'),
+  html: readTemplate('shareAccepted.hbs'),
   subject: 'You referred a new wallet user.',
+};
+
+export const referralActivated = {
+  html: readTemplate('referralActivated.hbs'),
+  subject: 'You referred an activation.',
 };
