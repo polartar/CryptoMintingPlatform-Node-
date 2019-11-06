@@ -114,6 +114,7 @@ class Config {
       'ERC20_REWARD_DISTRIBUTER_PKEY',
       'PARTNER_FEE_BTC_ADDRESS',
       'SENDGRID_API_KEY',
+      'SENDGRID_EMAIL_FROM',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
