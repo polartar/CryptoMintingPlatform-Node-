@@ -8,6 +8,7 @@ import { DataSource } from 'apollo-datasource';
 
 class SendEmail extends DataSource {
   capitalizedBrand = capitalize(config.brand);
+  sendFromEmailAddress = config.sendGridEmailFrom;
   transport = nodemailer.createTransport(
     sgTransport({
       auth: {
@@ -16,28 +17,7 @@ class SendEmail extends DataSource {
       },
     }),
   );
-  private get sendFromEmailAddress() {
-    switch (config.brand) {
-      case 'connect': {
-        return 'support@connectblockchain.net';
-      }
-      case 'codex': {
-        return 'support@codexunited.com';
-      }
-      case 'arcade': {
-        return 'support@arcadeblockchain.com';
-      }
-      case 'green': {
-        return 'support@share.green';
-      }
-      case 'localhost': {
-        return 'support@connectblockchain.net';
-      }
-      default: {
-        throw new Error(`No email support for brand: ${config.brand}`);
-      }
-    }
-  }
+
   public async sendMail(subject: string, sendTo: string, html: string) {
     logger.debug(`data-sources.SendEmail.sendMail.subject: ${subject}`);
     logger.debug(`data-sources.SendEmail.sendMail.sendTo: ${sendTo}`);

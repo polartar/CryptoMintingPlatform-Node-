@@ -84,6 +84,7 @@ class Config {
   public readonly newTransaction = 'NEW_TRANSACTION';
   public readonly newBalance = 'NEW_BALANCE';
   public readonly sendGridApiKey = process.env.SENDGRID_API_KEY;
+  public readonly sendGridEmailFrom = process.env.SENDGRID_EMAIL_FROM;
 
   constructor() {
     autoBind(this);
