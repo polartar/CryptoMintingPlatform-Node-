@@ -18,3 +18,4 @@ export { IPromotionalRewardDoc } from '../models/promotional-rewards';
 export { IWalletConfig } from '../models/wallet-config';
 export { default as IShareConfig } from './IShareConfig';
 export { CoinSymbol } from './CoinSymbol';
+export { Context, IUserClaims } from './context';

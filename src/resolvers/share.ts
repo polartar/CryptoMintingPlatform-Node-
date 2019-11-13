@@ -1,11 +1,10 @@
 import ResolverBase from '../common/Resolver-Base';
-import { Context } from '../types/context';
 import { logger, config } from '../common';
 import {
   default as WalletConfig,
   IWalletConfig,
 } from '../models/wallet-config';
-import { IUserWallet, ISendOutput } from '../types';
+import { IUserWallet, ISendOutput, Context } from '../types';
 import autoBind = require('auto-bind');
 import { userSchema, default as User, IUser } from '../models/user';
 import { rewardDistributer } from '../services';
@@ -43,35 +42,53 @@ class Resolvers extends ResolverBase {
     });
   }
 
-  private async getRewardConfig(reward: string) {
-    const shareConfigResult = await WalletConfig.find({ brand: config.brand });
-    const [rewardConfigResult] = shareConfigResult.filter(rewardConfig => {
-      return (
-        rewardConfig.rewardCurrency.toLocaleLowerCase() === reward.toLowerCase()
-      );
-    });
-    return rewardConfigResult;
-  }
-
-  private async getShareConfigs(alreadyActivatedRewards: string[] = []) {
+  private async getShareConfigs(user: IUser) {
     try {
+      const { softNodeLicenses } = user.toJSON();
+      const {
+        alreadyActivated,
+        numberOfActivations,
+      } = this.getAlreadyActivated(user.wallet);
       const available = await WalletConfig.find({ brand: config.brand });
-
       if (!available.length) throw new Error(`Share config not found.`);
       logger.debug(
         `resolvers.share.getShareConfig.shareConfig: ${JSON.stringify(
           available,
         )}`,
       );
-      const unactivated = available.filter(
-        result =>
-          !alreadyActivatedRewards.includes(
-            result.rewardCurrency.toLowerCase(),
-          ),
+      const { unactivated, activated } = available.reduce(
+        (accum, current) => {
+          if (alreadyActivated.includes(current.rewardCurrency.toLowerCase())) {
+            accum.activated.push(current);
+          } else {
+            accum.unactivated.push(current);
+          }
+          return accum;
+        },
+        { activated: [], unactivated: [] } as {
+          activated: IWalletConfig[];
+          unactivated: IWalletConfig[];
+        },
       );
+
+      const activationShares = activated.reduce(
+        (total, curr) => total + curr.shareLimit,
+        0,
+      );
+      const softNodeShares = Object.values(softNodeLicenses).reduce(
+        (accum: number, curr: number) => {
+          if (isNaN(+curr)) {
+            return accum;
+          }
+          return accum + curr * config.sharesPerSoftNodeLicense;
+        },
+        0,
+      ) as number;
       return {
         available,
         unactivated,
+        earnedShares: activationShares + softNodeShares,
+        numberOfActivations,
       };
     } catch (error) {
       logger.warn(`resolvers.share.getShareConfig.shareConfig: ${error}`);
@@ -104,34 +121,37 @@ class Resolvers extends ResolverBase {
     return { referrer, brand: referrerFromBrand };
   }
 
+  private getAlreadyActivated(userWallet: IUserWallet) {
+    const { arcade, green, winx } = userWallet.activations;
+    let numberOfActivations = 0;
+    const alreadyActivated = Object.entries({ arcade, green, winx })
+      .filter(([name, activationData]) => {
+        if (activationData && activationData.activated) {
+          numberOfActivations++;
+          return true;
+        } else {
+          return false;
+        }
+      })
+      .map(([name]) => name);
+    return {
+      alreadyActivated,
+      numberOfActivations,
+    };
+  }
+
   public async shareConfig(parent: any, args: {}, { user, wallet }: Context) {
     this.requireAuth(user);
     try {
       const { brand } = config;
-      const { wallet: userWallet } = await user.findFromDb();
-      const { arcade, green, winx } = userWallet.activations;
-      let numberOfActivations = 0;
-      const alreadyActivated = Object.entries({ arcade, green, winx })
-        .filter(([name, activationData]) => {
-          if (activationData && activationData.activated) {
-            numberOfActivations++;
-            return true;
-          } else {
-            return false;
-          }
-        })
-        .map(([name]) => name);
-      const { available, unactivated } = await this.getShareConfigs(
-        alreadyActivated,
-      );
-      logger.debug(
-        `resolvers.share.shareConfig.available: ${JSON.stringify(available)}`,
-      );
-      logger.debug(
-        `resolvers.share.shareConfig.unactivated: ${JSON.stringify(
-          unactivated,
-        )}`,
-      );
+      const dbUser = await user.findFromDb();
+      const {
+        available,
+        unactivated,
+        earnedShares,
+        numberOfActivations,
+      } = await this.getShareConfigs(dbUser);
+      const userWallet = dbUser && dbUser.wallet;
       if (!userWallet) throw new Error('User wallet not initialized');
       const { confirmed, unconfirmed } = await wallet
         .coin('btc')
@@ -149,12 +169,13 @@ class Resolvers extends ResolverBase {
       );
       const shareConfig = {
         numberOfActivations,
+        activatedShares,
+        earnedShares,
         btcBalanceConfirmed: confirmed,
         btcBalancePending: unconfirmed,
-        userWallet, // Returned for use in child resolver
-        activatedShares,
         shareOptions: available,
         unactivatedShareOptions: unactivated,
+        userWallet, // Returned for use in child resolver
       };
       logger.debug(
         `resolvers.share.shareConfig.shareConfig: ${JSON.stringify(
@@ -230,68 +251,55 @@ class Resolvers extends ResolverBase {
     return Math.round(amount * 100) / btcPriceInCents;
   }
 
+  private async isReferrerEligible(referrer: IUser, rewardType: string) {
+    if (!referrer) return false;
+    const { earnedShares, numberOfActivations } = await this.getShareConfigs(
+      referrer,
+    );
+    const aboveShareLimit = numberOfActivations >= earnedShares;
+    if (aboveShareLimit || !referrer.wallet || !referrer.wallet.btcAddress) {
+      return false;
+    }
+    return true;
+  }
+
   private async getOutputs(
-    referrer: IUser,
-    shareConfig: IWalletConfig,
+    companyFee: number,
+    referrerReward: number,
     btcPrice: number,
+    referrer: IUser,
+    rewardType: string,
   ) {
-    const { companyFeeBtcAddress, partnerFeeBtcAddress, brand } = config;
-    const {
-      companyFee,
-      referrerReward,
-      shareLimit, // How is share limit handled with multiple activations?
-    } = shareConfig;
-    logger.debug(`resolvers.share.shareActivate.companyFee: ${companyFee}`);
-    logger.debug(
-      `resolvers.share.shareActivate.referrerReward: ${referrerReward}`,
+    const { companyFeeBtcAddress } = config;
+    const isReferrerEligible = await this.isReferrerEligible(
+      referrer,
+      rewardType,
     );
-    const referrerAboveShareLimit =
-      referrer &&
-      referrer.wallet &&
-      referrer.wallet.shares &&
-      referrer.wallet.shares[brand] >= shareLimit;
-    const companyPortion = this.usdToBtc(btcPrice, companyFee / 2);
-    logger.debug(
-      `resolvers.share.shareActivate.companyPortion: ${companyPortion}`,
-    );
-    const partnerPortion = this.usdToBtc(btcPrice, companyFee / 2);
-    logger.debug(
-      `resolvers.share.shareActivate.partnerPortion: ${partnerPortion}`,
-    );
+    const companyPortion = this.usdToBtc(btcPrice, companyFee);
     const referrerPortion = this.usdToBtc(btcPrice, referrerReward);
     logger.debug(
-      `resolvers.share.shareActivate.referrerPortion: ${referrerPortion}`,
+      `resolvers.share.shareActivate.portions: ${JSON.stringify({
+        companyPortion,
+        referrerPortion,
+      })}`,
     );
     let outputs: ISendOutput[];
-    if (
-      !referrer ||
-      referrerAboveShareLimit ||
-      !referrer.wallet ||
-      !referrer.wallet.btcAddress
-    ) {
-      outputs = [
-        {
-          to: companyFeeBtcAddress,
-          amount: (companyPortion + referrerPortion / 2).toFixed(8),
-        },
-        {
-          to: partnerFeeBtcAddress,
-          amount: (partnerPortion + referrerPortion / 2).toFixed(8),
-        },
-      ];
-    } else {
+    if (isReferrerEligible) {
       outputs = [
         {
           to: config.companyFeeBtcAddress,
           amount: companyPortion.toFixed(8),
         },
         {
-          to: config.partnerFeeBtcAddress,
-          amount: referrerPortion.toFixed(8),
-        },
-        {
           to: referrer.wallet.btcAddress,
           amount: referrerPortion.toFixed(8),
+        },
+      ];
+    } else {
+      outputs = [
+        {
+          to: companyFeeBtcAddress,
+          amount: (companyPortion + referrerPortion).toFixed(8),
         },
       ];
     }
@@ -322,16 +330,25 @@ class Resolvers extends ResolverBase {
     const rewardType = args.rewardType.toLowerCase();
     this.requireAuth(user);
     try {
-      const [[{ price }], dbUser, rewardConfig] = await Promise.all([
+      const dbUser = await user.findFromDb();
+      const { referrer } = await this.findReferrer(dbUser.referredBy).catch(
+        () => ({ referrer: null }),
+      );
+
+      const [[{ price }], shareConfigUser] = await Promise.all([
         cryptoFavorites.getUserFavorites(['BTC']),
-        user.findFromDb(),
-        this.getRewardConfig(args.rewardType),
+        this.getShareConfigs(dbUser),
       ]);
 
-      if (!rewardConfig) {
+      const [rewardConfigUser] = shareConfigUser.available.filter(
+        configItem => configItem.rewardCurrency === args.rewardType,
+      );
+
+      if (!rewardConfigUser) {
         throw new Error(`Reward currency: ${rewardType} not supported`);
       }
 
+      // Check if user has already activated for this currency type.
       if (
         !dbUser ||
         !dbUser.wallet ||
@@ -341,18 +358,19 @@ class Resolvers extends ResolverBase {
       ) {
         throw new Error(`User inelligible for activation`);
       }
-      logger.debug(`resolvers.share.shareActivate.price: ${price}`);
-      const { referrer } = await this.findReferrer(dbUser.referredBy).catch(
-        () => ({ referrer: null }),
+
+      const outputs = await this.getOutputs(
+        rewardConfigUser.companyFee,
+        rewardConfigUser.referrerReward,
+        price,
+        referrer,
+        args.rewardType,
       );
-      const outputs = await this.getOutputs(referrer, rewardConfig, price);
 
       const { message, transaction, success } = await wallet
         .coin('btc')
         .send(user, outputs, args.walletPassword);
 
-      logger.debug(`resolvers.share.shareActivate.success: ${success}`);
-      logger.debug(`resolvers.share.shareActivate.message: ${message}`);
       if (!success) {
         if (message) {
           return {
@@ -363,10 +381,6 @@ class Resolvers extends ResolverBase {
           throw new Error(message || 'Activation transaction failed');
         }
       }
-      logger.debug(
-        `resolvers.share.shareActivate.transaction.transaction.id: ${transaction &&
-          transaction.id}`,
-      );
       dbUser.set(`wallet.activations.${rewardType}.activated`, true);
       dbUser.set(
         `wallet.activations.${rewardType}.activationTxHash`,
@@ -375,7 +389,11 @@ class Resolvers extends ResolverBase {
       dbUser.save();
       const userEthAddress =
         (dbUser && dbUser.wallet && dbUser.wallet.ethAddress) || '';
-      rewardDistributer.sendReward(rewardConfig, user.userId, userEthAddress);
+      rewardDistributer.sendReward(
+        rewardConfigUser,
+        user.userId,
+        userEthAddress,
+      );
       if (referrer && outputs.length >= 2) {
         sendEmail.referrerActivated(referrer, dbUser);
         const existingShares =
