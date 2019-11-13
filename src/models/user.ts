@@ -40,6 +40,10 @@ export interface IUserWalletDoc extends mongoose.Document {
   userCreatedInWallet: boolean;
   shares: IWalletShares;
 }
+
+interface ISoftNodeLicenses {
+  [key: string]: number;
+}
 export interface IUser extends mongoose.Document {
   email: string;
   firebaseUid: string;
@@ -56,6 +60,7 @@ export interface IUser extends mongoose.Document {
   twoFaSecret?: string;
   currency?: string;
   number: string;
+  softNodeLicenses: ISoftNodeLicenses;
   getNextNumber: () => string | undefined;
 }
 
@@ -86,7 +91,7 @@ const walletsActivated = new mongoose.Schema({
   arcade: activatedWalletsSchema,
 });
 
-const walletShareSchema = new mongoose.Schema({
+const walletShareAndSoftNodeLicensesSchema = new mongoose.Schema({
   green: Number,
   arcade: Number,
   connect: Number,
@@ -111,7 +116,7 @@ const walletSchema = new mongoose.Schema({
     default: {},
   },
   shares: {
-    type: walletShareSchema,
+    type: walletShareAndSoftNodeLicensesSchema,
     default: {},
   },
 });
@@ -169,6 +174,10 @@ export const userSchema = new mongoose.Schema(
       default: 'USD',
     },
     wallet: walletSchema,
+    softNodeLicenses: {
+      type: walletShareAndSoftNodeLicensesSchema,
+      default: {},
+    },
   },
   { id: false },
 );

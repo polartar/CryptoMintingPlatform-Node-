@@ -12,7 +12,7 @@ class Config {
   public readonly nodeEnv = process.env.NODE_ENV;
   public readonly brand = this.getBrandFromHost();
   public readonly logLevel = process.env.LOG_LEVEL;
-  public readonly port = this.normalizePort(process.env.PORT);
+  public readonly port = this.normalizeNumber(process.env.PORT);
   public readonly hostname = process.env.HOSTNAME;
   public readonly mongodbUri = process.env.MONGODB_URI;
   public connectMongoConnection: Connection;
@@ -34,7 +34,6 @@ class Config {
   public readonly erc20RewardDistributerPkey =
     process.env.ERC20_REWARD_DISTRIBUTER_PKEY;
   public readonly companyFeeBtcAddress = process.env.COMPANY_FEE_BTC_ADDRESS;
-  public readonly partnerFeeBtcAddress = process.env.PARTNER_FEE_BTC_ADDRESS;
   public readonly cryptoNetwork = process.env.CRYPTO_NETWORK;
   public readonly walletClientDomain = process.env.WALLET_CLIENT_DOMAIN;
   public readonly zendeskApiKey = process.env.ZENDESK_API_KEY;
@@ -85,6 +84,9 @@ class Config {
   public readonly newBalance = 'NEW_BALANCE';
   public readonly sendGridApiKey = process.env.SENDGRID_API_KEY;
   public readonly sendGridEmailFrom = process.env.SENDGRID_EMAIL_FROM;
+  public readonly sharesPerSoftNodeLicense = this.normalizeNumber(
+    process.env.SHARES_PER_SOFTNODE_LICENSE,
+  );
 
   constructor() {
     autoBind(this);
@@ -112,9 +114,9 @@ class Config {
       'COMPANY_FEE_BTC_ADDRESS',
       'ZENDESK_API_KEY',
       'ERC20_REWARD_DISTRIBUTER_PKEY',
-      'PARTNER_FEE_BTC_ADDRESS',
       'SENDGRID_API_KEY',
       'SENDGRID_EMAIL_FROM',
+      'SHARES_PER_SOFTNODE_LICENSE',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
@@ -159,20 +161,22 @@ class Config {
     }
   }
 
-  private normalizePort(val: string) {
-    const port = parseInt(val, 10);
+  private normalizeNumber(val: string) {
+    const numberValue = parseInt(val, 10);
 
-    if (isNaN(port)) {
+    if (isNaN(numberValue)) {
       // named pipe
-      throw new Error('port is not a number');
+      throw new Error(`Failed to normalize ${val} as a number`);
     }
 
-    if (port >= 0) {
-      // port number
-      return port;
+    if (numberValue >= 0) {
+      // numberValue number
+      return numberValue;
     }
 
-    throw new Error('port is less than 0');
+    throw new Error(
+      `Failed to normalize as number greater than 0: ${numberValue}`,
+    );
   }
 
   private mapSymbolToName() {
