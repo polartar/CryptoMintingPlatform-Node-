@@ -33,7 +33,11 @@ class Config {
   public readonly erc20FeeCalcAddress = process.env.ETH_ADD_FOR_ERC20_FEE_CALC;
   public readonly erc20RewardDistributerPkey =
     process.env.ERC20_REWARD_DISTRIBUTER_PKEY;
-  public readonly companyFeeBtcAddress = process.env.COMPANY_FEE_BTC_ADDRESS;
+  public readonly companyFeeBtcAddresses: { [key: string]: string } = {
+    green: process.env.COMPANY_FEE_BTC_ADDRESS_GREEN,
+    winx: process.env.COMPANY_FEE_BTC_ADDRESS_WINX,
+    arcade: process.env.COMPANY_FEE_BTC_ADDRESS_ARCADE,
+  };
   public readonly cryptoNetwork = process.env.CRYPTO_NETWORK;
   public readonly walletClientDomain = process.env.WALLET_CLIENT_DOMAIN;
   public readonly zendeskApiKey = process.env.ZENDESK_API_KEY;
@@ -111,7 +115,9 @@ class Config {
       'API_KEY_SERVICE_URL',
       'ETHERSCAN_API_KEY',
       'ETH_ADD_FOR_ERC20_FEE_CALC',
-      'COMPANY_FEE_BTC_ADDRESS',
+      'COMPANY_FEE_BTC_ADDRESS_GREEN',
+      'COMPANY_FEE_BTC_ADDRESS_WINX',
+      'COMPANY_FEE_BTC_ADDRESS_ARCADE',
       'ZENDESK_API_KEY',
       'ERC20_REWARD_DISTRIBUTER_PKEY',
       'SENDGRID_API_KEY',
