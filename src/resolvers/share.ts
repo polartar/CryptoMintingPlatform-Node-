@@ -270,24 +270,23 @@ class Resolvers extends ResolverBase {
     referrer: IUser,
     rewardType: string,
   ) {
-    const { companyFeeBtcAddress } = config;
+    const { companyFeeBtcAddresses } = config;
     const isReferrerEligible = await this.isReferrerEligible(
       referrer,
       rewardType,
     );
     const companyPortion = this.usdToBtc(btcPrice, companyFee);
     const referrerPortion = this.usdToBtc(btcPrice, referrerReward);
-    logger.debug(
-      `resolvers.share.shareActivate.portions: ${JSON.stringify({
-        companyPortion,
-        referrerPortion,
-      })}`,
-    );
+    const companyBtcAddress = companyFeeBtcAddresses[rewardType.toLowerCase()];
+    if (!companyBtcAddress) {
+      throw new Error(`BTC address not found for reward: ${rewardType}`);
+    }
+
     let outputs: ISendOutput[];
     if (isReferrerEligible) {
       outputs = [
         {
-          to: config.companyFeeBtcAddress,
+          to: companyBtcAddress,
           amount: companyPortion.toFixed(8),
         },
         {
@@ -298,7 +297,7 @@ class Resolvers extends ResolverBase {
     } else {
       outputs = [
         {
-          to: companyFeeBtcAddress,
+          to: companyBtcAddress,
           amount: (companyPortion + referrerPortion).toFixed(8),
         },
       ];
@@ -314,6 +313,9 @@ class Resolvers extends ResolverBase {
     } catch (error) {
       console.log(error);
     }
+    logger.debug(
+      `resolvers.share.shareActivate.portions: ${JSON.stringify(outputs)}`,
+    );
     return outputs;
   }
 
