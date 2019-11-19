@@ -12,6 +12,9 @@ export interface IWalletConfig extends Document {
   userBalanceThreshold: number;
   shareLimit: number;
   shareLinkBase: string;
+  upgradeBenefits: string[];
+  basicWalletBenefits: string[];
+  upgradeAccountName: string;
 }
 
 export const walletConfigSchema = new Schema({
@@ -63,6 +66,9 @@ export const walletConfigSchema = new Schema({
     type: String,
     required: true,
   },
+  upgradeBenefits: [String],
+  basicWalletBenefits: [String],
+  upgradeAccountName: String,
 });
 
 export default model<IWalletConfig>('wallet-config', walletConfigSchema);

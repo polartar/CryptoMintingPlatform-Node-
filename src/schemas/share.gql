@@ -15,6 +15,9 @@ type ShareOption {
   userBalanceThreshold: Int!
   # Number of share commissions allowed per user once their wallet is activated.
   shareLimit: Int!
+  upgradeBenefits: [String!]!
+  basicWalletBenefits: [String!]!
+  upgradeAccountName: String!
 }
 
 type ShareConfig {
