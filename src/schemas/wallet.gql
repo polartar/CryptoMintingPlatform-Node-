@@ -72,15 +72,20 @@ type BalanceChangeResponse {
   walletId: String!
 }
 
-type Query {
-  # If no coinSymbol is provided, all supported wallets will be returned
-  wallet(coinSymbol: String): [Wallet!]!
-  mnemonic(lang: String): String!
+type ValidateMnemonicResponse {
+  valid: Boolean!
 }
 
 input SendOutput {
   to: String!
   amount: String!
+}
+
+type Query {
+  # If no coinSymbol is provided, all supported wallets will be returned
+  wallet(coinSymbol: String): [Wallet!]!
+  mnemonic(lang: String): String!
+  validateMnemonic(mnemonic: String!): ValidateMnemonicResponse!
 }
 
 type Mutation {
