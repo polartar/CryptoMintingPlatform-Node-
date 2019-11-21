@@ -386,6 +386,24 @@ class Resolvers extends ResolverBase {
     }
   }
 
+  async validateMnemonic(
+    parent: any,
+    args: { mnemonic: string },
+    { user }: Context,
+  ) {
+    this.requireAuth(user);
+    let mnemonicValid = false;
+    try {
+      mnemonicValid = !!(await this.getAndDecryptWalletPassword(
+        user.userId,
+        args.mnemonic.toLowerCase(),
+      ));
+    } catch (error) {}
+    return {
+      valid: mnemonicValid,
+    };
+  }
+
   async estimateFee(
     { symbol }: { symbol: string },
     args: any,
@@ -485,6 +503,7 @@ export default {
   Query: {
     wallet: resolvers.getWallet,
     mnemonic: resolvers.generateMnemonic,
+    validateMnemonic: resolvers.validateMnemonic,
   },
   Wallet: {
     transactions: resolvers.getTransactions,
