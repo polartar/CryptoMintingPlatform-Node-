@@ -16,6 +16,13 @@ import {
   UnclaimedReward,
 } from '../models';
 
+interface IActivationPayment {
+  outputs: { amount: string; to: string }[];
+  btcUsdPrice: number;
+  btcToCompany: number;
+  btcToReferrer: number;
+}
+
 class Resolvers extends ResolverBase {
   constructor() {
     super();
@@ -91,7 +98,7 @@ class Resolvers extends ResolverBase {
         numberOfActivations,
       };
     } catch (error) {
-      logger.warn(`resolvers.share.getShareConfig.shareConfig: ${error}`);
+      logger.warn(`resolvers.share.getShareConfig.catch: ${error}`);
       throw error;
     }
   }
@@ -122,6 +129,12 @@ class Resolvers extends ResolverBase {
   }
 
   private getAlreadyActivated(userWallet: IUserWallet) {
+    if (!userWallet || !userWallet.activations) {
+      return {
+        alreadyActivated: [],
+        numberOfActivations: 0,
+      };
+    }
     const { arcade, green, winx } = userWallet.activations;
     let numberOfActivations = 0;
     const alreadyActivated = Object.entries({ arcade, green, winx })
@@ -183,7 +196,9 @@ class Resolvers extends ResolverBase {
         )}`,
       );
       return shareConfig;
-    } catch (error) {}
+    } catch (error) {
+      logger.debug(`resolvers.share.shareConfig.catch: ${error}`);
+    }
   }
 
   public async shareUrl(
@@ -282,8 +297,12 @@ class Resolvers extends ResolverBase {
       throw new Error(`BTC address not found for reward: ${rewardType}`);
     }
 
+    let btcToCompany: number;
+    let btcToReferrer: number;
     let outputs: ISendOutput[];
     if (isReferrerEligible) {
+      btcToReferrer = +referrerPortion.toFixed(8);
+      btcToCompany = +companyPortion.toFixed(8);
       outputs = [
         {
           to: companyBtcAddress,
@@ -295,6 +314,8 @@ class Resolvers extends ResolverBase {
         },
       ];
     } else {
+      btcToReferrer = 0;
+      btcToCompany = +(companyPortion + referrerPortion).toFixed(8);
       outputs = [
         {
           to: companyBtcAddress,
@@ -316,7 +337,34 @@ class Resolvers extends ResolverBase {
     logger.debug(
       `resolvers.share.shareActivate.portions: ${JSON.stringify(outputs)}`,
     );
-    return outputs;
+    return {
+      outputs,
+      btcToReferrer,
+      btcToCompany,
+      btcUsdPrice: btcPrice,
+    };
+  }
+
+  private saveActivationToDb(
+    userDoc: IUser,
+    rewardType: string,
+    paymentDetails: IActivationPayment & { transactionId: string },
+  ) {
+    const {
+      transactionId,
+      btcUsdPrice,
+      btcToReferrer,
+      btcToCompany,
+    } = paymentDetails;
+    const prefix = `wallet.activations.${rewardType}`;
+    userDoc.set(`${prefix}.activated`, true);
+    userDoc.set(`${prefix}.activationTxHash`, transactionId);
+    userDoc.set(`${prefix}.btcUsdPrice`, btcUsdPrice);
+    userDoc.set(`${prefix}.btcToReferrer`, btcToReferrer);
+    userDoc.set(`${prefix}.btcToCompany`, btcToCompany);
+    userDoc.set(`${prefix}.timestamp`, new Date());
+
+    return userDoc.save();
   }
 
   public async shareActivate(
@@ -361,7 +409,7 @@ class Resolvers extends ResolverBase {
         throw new Error(`User inelligible for activation`);
       }
 
-      const outputs = await this.getOutputs(
+      const paymentDetails = await this.getOutputs(
         rewardConfigUser.companyFee,
         rewardConfigUser.referrerReward,
         price,
@@ -371,7 +419,7 @@ class Resolvers extends ResolverBase {
 
       const { message, transaction, success } = await wallet
         .coin('btc')
-        .send(user, outputs, args.walletPassword);
+        .send(user, paymentDetails.outputs, args.walletPassword);
 
       if (!success) {
         if (message) {
@@ -383,12 +431,12 @@ class Resolvers extends ResolverBase {
           throw new Error(message || 'Activation transaction failed');
         }
       }
-      dbUser.set(`wallet.activations.${rewardType}.activated`, true);
-      dbUser.set(
-        `wallet.activations.${rewardType}.activationTxHash`,
-        transaction.id,
-      );
-      dbUser.save();
+
+      this.saveActivationToDb(dbUser, rewardType, {
+        ...paymentDetails,
+        transactionId: transaction.id,
+      });
+
       const userEthAddress =
         (dbUser && dbUser.wallet && dbUser.wallet.ethAddress) || '';
       rewardDistributer.sendReward(
@@ -396,7 +444,7 @@ class Resolvers extends ResolverBase {
         user.userId,
         userEthAddress,
       );
-      if (referrer && outputs.length >= 2) {
+      if (referrer && paymentDetails.outputs.length >= 2) {
         sendEmail.referrerActivated(referrer, dbUser);
         const existingShares =
           (referrer.wallet &&
