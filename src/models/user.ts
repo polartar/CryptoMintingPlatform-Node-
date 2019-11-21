@@ -83,6 +83,10 @@ const activatedWalletsSchema = new mongoose.Schema({
     default: false,
   },
   activationTxHash: String,
+  btcToCompany: Number,
+  btcToReferrer: Number,
+  btcUsdPrice: Number,
+  timestamp: Date,
 });
 
 const walletsActivated = new mongoose.Schema({
