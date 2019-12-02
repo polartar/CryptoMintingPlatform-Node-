@@ -1,10 +1,13 @@
 type UserProfile {
   email: String!
+  firstName: String!
+  lastName: String!
   phone: String
   phoneCountry: String
   id: ID!
   created: Date!
   currency: String!
+  profilePhotoUrl: String
 }
 
 input CreateUserInput {
