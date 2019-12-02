@@ -62,6 +62,7 @@ export interface IUser extends mongoose.Document {
   number: string;
   softNodeLicenses: ISoftNodeLicenses;
   getNextNumber: () => string | undefined;
+  profilePhotoUrl: string;
 }
 
 async function getNextNumber({ firstName, lastName }: IUser) {
@@ -182,6 +183,7 @@ export const userSchema = new mongoose.Schema(
       type: walletShareAndSoftNodeLicensesSchema,
       default: {},
     },
+    profilePhotoUrl: String,
   },
   { id: false },
 );
