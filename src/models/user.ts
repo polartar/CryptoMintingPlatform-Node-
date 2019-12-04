@@ -13,18 +13,42 @@ interface IActivatedWallets {
   green: {
     activated: boolean;
     activationTxHash: string;
+    btcToCompany: number;
+    btcToReferrer: number;
+    btcUsdPrice: number;
+    amountRewarded: number;
+    rewardId: string;
+    timestamp: Date;
   };
   arcade: {
     activated: boolean;
     activationTxHash: string;
+    btcToCompany: number;
+    btcToReferrer: number;
+    btcUsdPrice: number;
+    amountRewarded: number;
+    rewardId: string;
+    timestamp: Date;
   };
   winx: {
     activated: boolean;
     activationTxHash: string;
+    btcToCompany: number;
+    btcToReferrer: number;
+    btcUsdPrice: number;
+    amountRewarded: number;
+    rewardId: string;
+    timestamp: Date;
   };
   [key: string]: {
     activated: boolean;
     activationTxHash: string;
+    btcToCompany: number;
+    btcToReferrer: number;
+    btcUsdPrice: number;
+    amountRewarded: number;
+    rewardId: string;
+    timestamp: Date;
   };
 }
 
@@ -87,6 +111,8 @@ const activatedWalletsSchema = new mongoose.Schema({
   btcToCompany: Number,
   btcToReferrer: Number,
   btcUsdPrice: Number,
+  amountRewarded: Number,
+  rewardId: String,
   timestamp: Date,
 });
 
@@ -104,27 +130,30 @@ const walletShareAndSoftNodeLicensesSchema = new mongoose.Schema({
   localhost: Number,
 });
 
-const walletSchema = new mongoose.Schema({
-  ethAddress: String,
-  ethBlockNumAtCreation: Number,
-  cryptoFavorites: [String],
-  cryptoFavoritesSet: Boolean,
-  ethNonce: {
-    type: Number,
-    default: 0,
+const walletSchema = new mongoose.Schema(
+  {
+    ethAddress: String,
+    ethBlockNumAtCreation: Number,
+    cryptoFavorites: [String],
+    cryptoFavoritesSet: Boolean,
+    ethNonce: {
+      type: Number,
+      default: 0,
+    },
+    btcAddress: String,
+    shareLink: String,
+    userCreatedInWallet: Boolean,
+    activations: {
+      type: walletsActivated,
+      default: {},
+    },
+    shares: {
+      type: walletShareAndSoftNodeLicensesSchema,
+      default: {},
+    },
   },
-  btcAddress: String,
-  shareLink: String,
-  userCreatedInWallet: Boolean,
-  activations: {
-    type: walletsActivated,
-    default: {},
-  },
-  shares: {
-    type: walletShareAndSoftNodeLicensesSchema,
-    default: {},
-  },
-});
+  { timestamps: true },
+);
 
 export const userSchema = new mongoose.Schema(
   {
@@ -187,6 +216,7 @@ export const userSchema = new mongoose.Schema(
   },
   { id: false },
 );
+
 userSchema.pre('save', async function(this: IUser, next) {
   const user = this;
   if (user.email) {
@@ -209,6 +239,7 @@ userSchema.pre('save', async function(this: IUser, next) {
   }
   next();
 });
+
 userSchema.post('save', async function(
   doc: IUser,
   next: mongoose.HookNextFunction,

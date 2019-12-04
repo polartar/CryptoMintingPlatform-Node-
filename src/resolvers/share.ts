@@ -1,5 +1,5 @@
 import ResolverBase from '../common/Resolver-Base';
-import { logger, config } from '../common';
+import { config } from '../common';
 import {
   default as WalletConfig,
   IWalletConfig,
@@ -15,6 +15,7 @@ import {
   Offer,
   UnclaimedReward,
 } from '../models';
+import { logResolver } from '../common/logger';
 
 interface IActivationPayment {
   outputs: { amount: string; to: string }[];
@@ -58,11 +59,6 @@ class Resolvers extends ResolverBase {
       } = this.getAlreadyActivated(user.wallet);
       const available = await WalletConfig.find({ brand: config.brand });
       if (!available.length) throw new Error(`Share config not found.`);
-      logger.debug(
-        `resolvers.share.getShareConfig.shareConfig: ${JSON.stringify(
-          available,
-        )}`,
-      );
       const { unactivated, activated } = available.reduce(
         (accum, current) => {
           if (alreadyActivated.includes(current.rewardCurrency.toLowerCase())) {
@@ -98,7 +94,6 @@ class Resolvers extends ResolverBase {
         numberOfActivations,
       };
     } catch (error) {
-      logger.warn(`resolvers.share.getShareConfig.catch: ${error}`);
       throw error;
     }
   }
@@ -153,33 +148,37 @@ class Resolvers extends ResolverBase {
     };
   }
 
-  public async shareConfig(parent: any, args: {}, { user, wallet }: Context) {
+  public async shareConfig(
+    parent: any,
+    args: {},
+    { user, wallet, logger }: Context,
+  ) {
     this.requireAuth(user);
     try {
       const { brand } = config;
       const dbUser = await user.findFromDb();
+
       const {
         available,
         unactivated,
         earnedShares,
         numberOfActivations,
       } = await this.getShareConfigs(dbUser);
+      logger.JSON.debug({
+        available,
+        unactivated,
+        earnedShares,
+        numberOfActivations,
+      });
       const userWallet = dbUser && dbUser.wallet;
       if (!userWallet) throw new Error('User wallet not initialized');
       const { confirmed, unconfirmed } = await wallet
         .coin('btc')
         .getBalance(user.userId);
-      logger.debug(
-        `resolvers.share.shareConfig.confirmed,unconfirmed: ${JSON.stringify({
-          confirmed,
-          unconfirmed,
-        })}`,
-      );
+      logger.JSON.debug({ confirmed, unconfirmed });
       const activatedShares =
         (userWallet && userWallet.shares && userWallet.shares[brand]) || 0;
-      logger.debug(
-        `resolvers.share.shareConfig.activatedShares: ${activatedShares}`,
-      );
+      logger.obj.debug({ activatedShares });
       const shareConfig = {
         numberOfActivations,
         activatedShares,
@@ -190,14 +189,10 @@ class Resolvers extends ResolverBase {
         unactivatedShareOptions: unactivated,
         userWallet, // Returned for use in child resolver
       };
-      logger.debug(
-        `resolvers.share.shareConfig.shareConfig: ${JSON.stringify(
-          shareConfig,
-        )}`,
-      );
+      logger.JSON.debug(shareConfig);
       return shareConfig;
     } catch (error) {
-      logger.debug(`resolvers.share.shareConfig.catch: ${error}`);
+      logger.obj.warn({ error });
     }
   }
 
@@ -208,34 +203,33 @@ class Resolvers extends ResolverBase {
       numberOfActivations: string;
     },
     args: {},
-    { dataSources: { bitly }, user }: Context,
+    { dataSources: { bitly }, user, logger }: Context,
   ) {
     try {
       const { activated, userWallet, numberOfActivations } = parent;
-      logger.debug(`resolvers.share.shareUrl.user.userId: ${user.userId}`);
-      logger.debug(`resolvers.share.shareUrl.activated: ${activated}`);
-      logger.debug(
-        `resolvers.share.shareUrl.userWallet.shareLink: ${userWallet &&
-          userWallet.shareLink}`,
-      );
+      logger.JSON.debug({
+        activated,
+        userWallet: userWallet && userWallet.shareLink,
+      });
       if (!numberOfActivations) return null;
       if (userWallet.shareLink) {
         return userWallet.shareLink;
       }
       const userModel = await user.findFromDb();
-      logger.debug(
-        `resolvers.share.shareUrl.userModel.affiliateId: ${
-          userModel.affiliateId
-        }`,
-      );
-      const url = await bitly.getLink(userModel.affiliateId);
-      logger.debug(`resolvers.share.url: ${url}`);
+      if (!userModel) {
+        throw new Error('Not found');
+      }
+      const { affiliateId } = userModel;
+      logger.obj.debug({ affiliateId });
+
+      const url = await bitly.getLink(affiliateId);
+      logger.obj.debug({ url });
       userModel.set('wallet.shareLink', url);
       await userModel.save();
-      logger.debug(`resolvers.share.shareUrl.usermodel.save(): done`);
+      logger.debug(`usermodel.save(): done`);
       return url;
     } catch (error) {
-      logger.warn(`resolvers.share.shareUrl.catch: ${error}`);
+      logger.obj.warn({ error });
       throw error;
     }
   }
@@ -243,20 +237,18 @@ class Resolvers extends ResolverBase {
   public async logClick(
     parent: any,
     args: { referredBy: string },
-    context: Context,
+    { logger }: Context,
   ) {
+    const { referredBy } = args;
     try {
-      const { referrer, brand } = await this.findReferrer(args.referredBy);
+      const { referrer, brand } = await this.findReferrer(referredBy);
       this.saveClick(referrer.id, brand);
       return {
         firstName: referrer.firstName,
         lastName: referrer.lastName,
       };
     } catch (error) {
-      logger.warn(`resolvers.share.logClick.catch:${error}`);
-      logger.warn(
-        `resolvers.share.logClick.catch.referredBy:${args.referredBy}`,
-      );
+      logger.obj.warn({ error, referredBy });
       throw error;
     }
   }
@@ -334,9 +326,6 @@ class Resolvers extends ResolverBase {
     } catch (error) {
       console.log(error);
     }
-    logger.debug(
-      `resolvers.share.shareActivate.portions: ${JSON.stringify(outputs)}`,
-    );
     return {
       outputs,
       btcToReferrer,
@@ -349,6 +338,7 @@ class Resolvers extends ResolverBase {
     userDoc: IUser,
     rewardType: string,
     paymentDetails: IActivationPayment & { transactionId: string },
+    rewardResult: { amountRewarded: number; rewardId: string },
   ) {
     const {
       transactionId,
@@ -356,6 +346,7 @@ class Resolvers extends ResolverBase {
       btcToReferrer,
       btcToCompany,
     } = paymentDetails;
+    const { amountRewarded, rewardId } = rewardResult;
     const prefix = `wallet.activations.${rewardType}`;
     userDoc.set(`${prefix}.activated`, true);
     userDoc.set(`${prefix}.activationTxHash`, transactionId);
@@ -363,7 +354,9 @@ class Resolvers extends ResolverBase {
     userDoc.set(`${prefix}.btcToReferrer`, btcToReferrer);
     userDoc.set(`${prefix}.btcToCompany`, btcToCompany);
     userDoc.set(`${prefix}.timestamp`, new Date());
-
+    userDoc.set(`${prefix}.amountRewarded`, amountRewarded);
+    userDoc.set(`${prefix}.rewardId`, rewardId);
+    userDoc.save();
     return userDoc.save();
   }
 
@@ -373,11 +366,17 @@ class Resolvers extends ResolverBase {
       walletPassword: string;
       rewardType: string;
     },
-    { wallet, user, dataSources: { cryptoFavorites, sendEmail } }: Context,
+    {
+      wallet,
+      user,
+      logger,
+      dataSources: { cryptoFavorites, sendEmail },
+    }: Context,
   ) {
     // in all environments except arcade, company fee address and partner fee address are the same in the .env
     const { brand } = config;
     const rewardType = args.rewardType.toLowerCase();
+    logger.obj.debug({ rewardType });
     this.requireAuth(user);
     try {
       const dbUser = await user.findFromDb();
@@ -416,11 +415,11 @@ class Resolvers extends ResolverBase {
         referrer,
         args.rewardType,
       );
-
+      logger.JSON.debug(paymentDetails);
       const { message, transaction, success } = await wallet
         .coin('btc')
         .send(user, paymentDetails.outputs, args.walletPassword);
-
+      logger.JSON.debug({ message, success, transaction });
       if (!success) {
         if (message) {
           return {
@@ -432,18 +431,21 @@ class Resolvers extends ResolverBase {
         }
       }
 
-      this.saveActivationToDb(dbUser, rewardType, {
-        ...paymentDetails,
-        transactionId: transaction.id,
-      });
-
       const userEthAddress =
         (dbUser && dbUser.wallet && dbUser.wallet.ethAddress) || '';
-      rewardDistributer.sendReward(
+      const rewardResult = await rewardDistributer.sendReward(
         rewardConfigUser,
         user.userId,
         userEthAddress,
+        logger,
       );
+      this.saveActivationToDb(
+        dbUser,
+        rewardType,
+        { ...paymentDetails, transactionId: transaction.id },
+        rewardResult,
+      );
+
       if (referrer && paymentDetails.outputs.length >= 2) {
         sendEmail.referrerActivated(referrer, dbUser);
         const existingShares =
@@ -459,7 +461,7 @@ class Resolvers extends ResolverBase {
         transaction,
       };
     } catch (error) {
-      logger.warn(`resolvers.share.shareActivate.catch: ${error}`);
+      logger.obj.warn({ error });
       throw error;
     }
   }
@@ -467,7 +469,7 @@ class Resolvers extends ResolverBase {
 
 const resolvers = new Resolvers();
 
-export default {
+export default logResolver({
   Mutation: {
     logClick: resolvers.logClick,
     shareActivate: resolvers.shareActivate,
@@ -478,4 +480,4 @@ export default {
   ShareConfig: {
     shareUrl: resolvers.shareUrl,
   },
-};
+});

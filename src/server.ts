@@ -7,6 +7,7 @@ import { connect, set, connection as mongooseConnection } from 'mongoose';
 import { ExecutionParams } from 'subscriptions-transport-ws';
 import schemas from './schemas';
 import resolvers from './resolvers';
+import { config } from './common';
 import {
   UserApi,
   CryptoFavorites,
@@ -16,8 +17,9 @@ import {
   SendEmail,
 } from './data-sources';
 import { WalletApi } from './wallet-api';
-import { config, logger } from './common';
 import { removeListeners } from './blockchain-listeners';
+import { Logger, winstonLogger, systemLogger } from './common/logger';
+import { Context } from './types';
 
 class Server {
   public app: express.Application = express();
@@ -79,17 +81,19 @@ class Server {
           : '';
     }
 
-    logger.debug(`server.buildContext.token.length: ${token && token.length}`);
     let user = null;
+    const logger = new Logger(winstonLogger);
     if (token) {
       try {
         user = new UserApi(token);
+        logger.startSession(user.userId);
       } catch (error) {
+        logger.startSession();
         logger.warn(`server.buildContext.catch: ${error}`);
         user = null;
       }
     }
-    return { req, res, user, wallet: this.walletApi };
+    return { req, res, user, wallet: this.walletApi, logger };
   }
 
   private buildDataSources() {
@@ -104,7 +108,7 @@ class Server {
 
   private listen() {
     this.httpServer.listen(config.port, () =>
-      logger.info(`🚀 Server ready on port ${config.port}`),
+      systemLogger.info(`🚀 Server ready on port ${config.port}`),
     );
   }
 
@@ -124,7 +128,7 @@ class Server {
       set('useFindAndModify', false);
       connect(config.mongodbUri);
       mongooseConnection.once('open', () => {
-        logger.info(`Connected to mongoDb`);
+        systemLogger.info(`Connected to mongoDb`);
         resolve();
       });
       mongooseConnection.on('error', error => {
