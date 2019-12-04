@@ -28,7 +28,7 @@ export default function logResolver(resolverConfig: IResolverConfig) {
           ) => {
             context.logger.setResolverType(queryType);
             context.logger.setResolverName(resolverName);
-            resolverFunction(parent, args, context, info);
+            return resolverFunction(parent, args, context, info);
           };
           return finalResolvers;
         },

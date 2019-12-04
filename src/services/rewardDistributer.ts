@@ -150,10 +150,10 @@ class RewardDistributer {
     const methodLogger = logger.setMethod('sendReward');
     const { rewardAmount, rewardCurrency } = rewardConfig;
     methodLogger.JSON.debug({ rewardAmount, rewardCurrency });
-    let actionId;
+    let rewardId;
     switch (rewardCurrency.toLowerCase()) {
       case 'green': {
-        actionId = await this.sendErc20(
+        rewardId = await this.sendErc20(
           rewardCurrency,
           rewardAmount,
           ethAddress,
@@ -162,7 +162,7 @@ class RewardDistributer {
         break;
       }
       default: {
-        actionId = await this.saveDocReward(
+        rewardId = await this.saveDocReward(
           rewardCurrency,
           rewardAmount,
           userId,
@@ -171,8 +171,9 @@ class RewardDistributer {
         break;
       }
     }
-    methodLogger.obj.debug({ actionId });
-    return actionId;
+    const rewardResult = { rewardId, amountRewarded: rewardAmount };
+    methodLogger.JSON.debug(rewardResult);
+    return rewardResult;
   }
 }
 

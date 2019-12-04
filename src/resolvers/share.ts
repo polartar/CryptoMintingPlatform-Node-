@@ -164,16 +164,18 @@ class Resolvers extends ResolverBase {
         earnedShares,
         numberOfActivations,
       } = await this.getShareConfigs(dbUser);
+      logger.JSON.debug({
+        available,
+        unactivated,
+        earnedShares,
+        numberOfActivations,
+      });
       const userWallet = dbUser && dbUser.wallet;
       if (!userWallet) throw new Error('User wallet not initialized');
       const { confirmed, unconfirmed } = await wallet
         .coin('btc')
         .getBalance(user.userId);
-      logger.obj.debug({ confirmed, unconfirmed });
-      logger.JSON.debug({
-        confirmed,
-        unconfirmed,
-      });
+      logger.JSON.debug({ confirmed, unconfirmed });
       const activatedShares =
         (userWallet && userWallet.shares && userWallet.shares[brand]) || 0;
       logger.obj.debug({ activatedShares });
@@ -190,7 +192,7 @@ class Resolvers extends ResolverBase {
       logger.JSON.debug(shareConfig);
       return shareConfig;
     } catch (error) {
-      logger.debug(`resolvers.share.shareConfig.catch: ${error}`);
+      logger.obj.warn({ error });
     }
   }
 
@@ -205,20 +207,26 @@ class Resolvers extends ResolverBase {
   ) {
     try {
       const { activated, userWallet, numberOfActivations } = parent;
-      logger.obj.debug({ activated });
-      logger.debug(`shareLink: ${userWallet && userWallet.shareLink}`);
+      logger.JSON.debug({
+        activated,
+        userWallet: userWallet && userWallet.shareLink,
+      });
       if (!numberOfActivations) return null;
       if (userWallet.shareLink) {
         return userWallet.shareLink;
       }
       const userModel = await user.findFromDb();
+      if (!userModel) {
+        throw new Error('Not found');
+      }
       const { affiliateId } = userModel;
       logger.obj.debug({ affiliateId });
-      const url = await bitly.getLink(userModel.affiliateId);
+
+      const url = await bitly.getLink(affiliateId);
       logger.obj.debug({ url });
       userModel.set('wallet.shareLink', url);
       await userModel.save();
-      logger.debug(`userModel.save()`);
+      logger.debug(`usermodel.save(): done`);
       return url;
     } catch (error) {
       logger.obj.warn({ error });
@@ -330,6 +338,7 @@ class Resolvers extends ResolverBase {
     userDoc: IUser,
     rewardType: string,
     paymentDetails: IActivationPayment & { transactionId: string },
+    rewardResult: { amountRewarded: number; rewardId: string },
   ) {
     const {
       transactionId,
@@ -337,6 +346,7 @@ class Resolvers extends ResolverBase {
       btcToReferrer,
       btcToCompany,
     } = paymentDetails;
+    const { amountRewarded, rewardId } = rewardResult;
     const prefix = `wallet.activations.${rewardType}`;
     userDoc.set(`${prefix}.activated`, true);
     userDoc.set(`${prefix}.activationTxHash`, transactionId);
@@ -344,7 +354,9 @@ class Resolvers extends ResolverBase {
     userDoc.set(`${prefix}.btcToReferrer`, btcToReferrer);
     userDoc.set(`${prefix}.btcToCompany`, btcToCompany);
     userDoc.set(`${prefix}.timestamp`, new Date());
-
+    userDoc.set(`${prefix}.amountRewarded`, amountRewarded);
+    userDoc.set(`${prefix}.rewardId`, rewardId);
+    userDoc.save();
     return userDoc.save();
   }
 
@@ -357,8 +369,8 @@ class Resolvers extends ResolverBase {
     {
       wallet,
       user,
-      dataSources: { cryptoFavorites, sendEmail },
       logger,
+      dataSources: { cryptoFavorites, sendEmail },
     }: Context,
   ) {
     // in all environments except arcade, company fee address and partner fee address are the same in the .env
@@ -419,19 +431,21 @@ class Resolvers extends ResolverBase {
         }
       }
 
-      this.saveActivationToDb(dbUser, rewardType, {
-        ...paymentDetails,
-        transactionId: transaction.id,
-      });
-
       const userEthAddress =
         (dbUser && dbUser.wallet && dbUser.wallet.ethAddress) || '';
-      rewardDistributer.sendReward(
+      const rewardResult = await rewardDistributer.sendReward(
         rewardConfigUser,
         user.userId,
         userEthAddress,
         logger,
       );
+      this.saveActivationToDb(
+        dbUser,
+        rewardType,
+        { ...paymentDetails, transactionId: transaction.id },
+        rewardResult,
+      );
+
       if (referrer && paymentDetails.outputs.length >= 2) {
         sendEmail.referrerActivated(referrer, dbUser);
         const existingShares =
