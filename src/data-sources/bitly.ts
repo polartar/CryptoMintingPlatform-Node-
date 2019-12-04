@@ -12,9 +12,7 @@ class Bitly extends RESTDataSource {
       logger.debug(
         `data-sources.bitly.getLink.encodedAffiliateId: ${encodedAffiliateId}`,
       );
-      const longUrl = `${
-        config.walletClientDomain
-      }/register?r=${encodedAffiliateId}`;
+      const longUrl = `${config.walletClientDomain}?r=${encodedAffiliateId}`;
       const { data, status_code } = await this.get('shorten', {
         access_token: config.bitlyToken,
         longUrl,

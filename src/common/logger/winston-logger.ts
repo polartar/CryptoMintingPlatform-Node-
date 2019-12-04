@@ -1,6 +1,6 @@
 import * as winston from 'winston';
 require('winston-mongodb');
-import { config } from '../common';
+import { config } from '..';
 
 const logger = winston.createLogger();
 const colorizer = winston.format.colorize();

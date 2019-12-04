@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Logger } from '../common/logger';
 import {
   UserApi,
   CryptoFavorites,
@@ -29,4 +30,5 @@ export interface Context {
     sendEmail: SendEmail;
   };
   user: UserApi | null;
+  logger: Logger;
 }
