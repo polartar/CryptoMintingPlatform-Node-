@@ -108,6 +108,7 @@ class RewardDistributer {
       );
       const { address: contractAddress } = contract;
       const walletAddress = this.rewardDistributerWallet.address;
+      logger.obj.debug({ walletAddress });
       const distrubuterConfig = await RewardDistributerConfig.findOneAndUpdate(
         { walletAddress },
         {
@@ -123,7 +124,6 @@ class RewardDistributer {
       logger.obj.debug({
         contractAddress,
         amount: amount.toString(),
-        walletAddress,
         nonce,
       });
       const transaction = await contract.transfer(ethAddress, amount, {

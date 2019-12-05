@@ -19,7 +19,6 @@ import {
 import { WalletApi } from './wallet-api';
 import { removeListeners } from './blockchain-listeners';
 import { Logger, winstonLogger, systemLogger } from './common/logger';
-import { Context } from './types';
 
 class Server {
   public app: express.Application = express();
