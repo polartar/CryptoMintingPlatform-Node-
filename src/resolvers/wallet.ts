@@ -111,6 +111,10 @@ class Resolvers extends ResolverBase {
     args: { mnemonic: string; walletPassword: string },
     { user, wallet, dataSources: { sendEmail } }: Context,
   ) {
+    const keyServiceOk = await credentialService.checkHealth(user.userId);
+    if (!keyServiceOk) {
+      throw new Error('Key service down');
+    }
     const { mnemonic: recoveryPhrase, walletPassword } = args;
     logger.debug(
       `resolvers.wallet.createWallet.walletPassword(typeof,length): ${typeof walletPassword},${

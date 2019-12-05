@@ -40,6 +40,8 @@ class CredentialService {
     audience: 'urn:connectTrader',
     subject: 'connectTrader:subject',
   };
+  private apiKeyUrl = `${config.apiKeyServiceUrl}/api-keys`;
+  private healthUrl = `${config.apiKeyServiceUrl}/health`;
 
   constructor() {
     autoBind(this);
@@ -85,7 +87,7 @@ class CredentialService {
       logger.debug(`services.credential.create.coin: ${coin}`);
       logger.debug(`services.credential.create.resource: ${resource}`);
       const resourceKey = `${coin}-${resource}`;
-      const apiKeyUrl = `${config.apiKeyServiceUrl}/`;
+      const apiKeyUrl = `${this.apiKeyUrl}/`;
       const jwtAxios = this.getAxios({
         userId,
         accountId: resourceKey,
@@ -114,7 +116,7 @@ class CredentialService {
       logger.debug(`services.credential.get.coin: ${coin}`);
       logger.debug(`services.credential.get.resource: ${resource}`);
       const resourceKey = `${coin}-${resource}`;
-      const apiKeyUrl = `${config.apiKeyServiceUrl}/${userId}/${resourceKey}`;
+      const apiKeyUrl = `${this.apiKeyUrl}/${userId}/${resourceKey}`;
       const jwtAxios = this.getAxios({
         userId,
         accountId: resourceKey,
@@ -143,6 +145,19 @@ class CredentialService {
       throw new Error(messageIf404);
     }
     throw error;
+  }
+
+  public async checkHealth(userId: string) {
+    try {
+      const jwtAxios = this.getAxios({
+        userId,
+      });
+      const response = await jwtAxios.get(`${this.healthUrl}/`);
+      return response.data.redis.ok === true;
+    } catch (error) {
+      logger.warn(`services.credential.checkHealth.catch: ${error}`);
+      return false;
+    }
   }
 }
 
