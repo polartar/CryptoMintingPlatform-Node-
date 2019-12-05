@@ -7,3 +7,4 @@ export { default as PromotionalReward } from './promotional-rewards';
 export { default as RewardDistributerConfig } from './rewardDistributerConfig';
 export { offersSchema } from './offers';
 export { clicksSchema } from './clicks';
+export { userSchema } from './user';
