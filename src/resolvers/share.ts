@@ -356,7 +356,6 @@ class Resolvers extends ResolverBase {
     userDoc.set(`${prefix}.timestamp`, new Date());
     userDoc.set(`${prefix}.amountRewarded`, amountRewarded);
     userDoc.set(`${prefix}.rewardId`, rewardId);
-    userDoc.save();
     return userDoc.save();
   }
 

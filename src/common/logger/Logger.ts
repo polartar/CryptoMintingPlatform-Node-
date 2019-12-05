@@ -35,22 +35,22 @@ export default class Logger {
     this.meta.resolverName = resolverName;
   }
   error(message: string) {
-    this.logger.error(message, { meatadata: this.meta });
+    this.logger.error(message, { meta: this.meta });
   }
   warn(message: string) {
-    this.logger.warn(message, { meatadata: this.meta });
+    this.logger.warn(message, { meta: this.meta });
   }
   info(message: string) {
-    this.logger.info(message, { meatadata: this.meta });
+    this.logger.info(message, { meta: this.meta });
   }
   debug(message: string) {
-    this.logger.debug(message, { meatadata: this.meta });
+    this.logger.debug(message, { meta: this.meta });
   }
   verbose(message: string) {
-    this.logger.verbose(message, { meatadata: this.meta });
+    this.logger.verbose(message, { meta: this.meta });
   }
   silly(message: string) {
-    this.logger.silly(message, { meatadata: this.meta });
+    this.logger.silly(message, { meta: this.meta });
   }
 
   private logKeyValues(

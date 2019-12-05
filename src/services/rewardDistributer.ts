@@ -108,9 +108,13 @@ class RewardDistributer {
       );
       const { address: contractAddress } = contract;
       const walletAddress = this.rewardDistributerWallet.address;
-      const distrubuterConfig = await RewardDistributerConfig.findOne({
-        walletAddress,
-      });
+      logger.obj.debug({ walletAddress });
+      const distrubuterConfig = await RewardDistributerConfig.findOneAndUpdate(
+        { walletAddress },
+        {
+          $inc: { nonce: 1 },
+        },
+      );
       if (!distrubuterConfig) {
         throw new Error(
           `Distributer config not found for walletAddress: ${walletAddress}`,
@@ -120,20 +124,26 @@ class RewardDistributer {
       logger.obj.debug({
         contractAddress,
         amount: amount.toString(),
-        walletAddress,
         nonce,
       });
       const transaction = await contract.transfer(ethAddress, amount, {
         nonce,
       });
+      transaction
+        .wait(1)
+        .then(
+          ({
+            transactionHash: receiptTxHash,
+          }: ethers.providers.TransactionReceipt) => {
+            logger.obj.debug({ receiptTxHash });
+          },
+        )
+        .catch((error: Error) => {
+          logger.obj.warn({ error: error.toString() });
+        });
       const { hash } = transaction;
       logger.obj.debug({ hash });
-      RewardDistributerConfig.findOneAndUpdate(
-        { walletAddress },
-        {
-          $inc: { nonce: 1 },
-        },
-      );
+
       return transaction.hash;
     } catch (error) {
       logger.obj.warn({ error });
