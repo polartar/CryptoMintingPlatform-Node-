@@ -131,11 +131,15 @@ class RewardDistributer {
       });
       transaction
         .wait(1)
-        .then(({ transactionHash: receiptTxHash }: any) => {
-          logger.obj.debug({ receiptTxHash });
-        })
-        .catch((error: any) => {
-          logger.obj.warn({ error });
+        .then(
+          ({
+            transactionHash: receiptTxHash,
+          }: ethers.providers.TransactionReceipt) => {
+            logger.obj.debug({ receiptTxHash });
+          },
+        )
+        .catch((error: Error) => {
+          logger.obj.warn({ error: error.toString() });
         });
       const { hash } = transaction;
       logger.obj.debug({ hash });
