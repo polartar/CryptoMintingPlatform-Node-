@@ -5,6 +5,7 @@ import templateBuilder from '../templates/templateBuilder';
 import { IUser } from '../types';
 import { capitalize } from '../utils';
 import { DataSource } from 'apollo-datasource';
+import { Attachment, Options } from 'nodemailer/lib/mailer';
 
 class SendEmail extends DataSource {
   capitalizedBrand = capitalize(config.brand);
@@ -18,16 +19,25 @@ class SendEmail extends DataSource {
     }),
   );
 
-  public async sendMail(subject: string, sendTo: string, html: string) {
+  public async sendMail(
+    subject: string,
+    sendTo: string,
+    html: string,
+    attachments?: Attachment[],
+  ) {
     logger.debug(`data-sources.SendEmail.sendMail.subject: ${subject}`);
     logger.debug(`data-sources.SendEmail.sendMail.sendTo: ${sendTo}`);
     try {
-      const mailOptions = {
+      const mailOptions: Options = {
         to: sendTo,
         from: this.sendFromEmailAddress,
         subject: subject,
         html: html,
       };
+      if (attachments) {
+        mailOptions.attachments = attachments;
+      }
+
       const { message } = await this.transport.sendMail(mailOptions);
       logger.debug(
         `data-sources.SendEmail.sendMail.message === success: ${message ===
@@ -87,3 +97,5 @@ class SendEmail extends DataSource {
 }
 
 export default SendEmail;
+
+export const emailService = new SendEmail();
