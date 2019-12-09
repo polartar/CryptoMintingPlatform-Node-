@@ -91,6 +91,7 @@ class Config {
   public readonly sharesPerSoftNodeLicense = this.normalizeNumber(
     process.env.SHARES_PER_SOFTNODE_LICENSE,
   );
+  public readonly sendWalletReportTo = process.env.SEND_WALLET_REPORT_TO;
 
   constructor() {
     autoBind(this);

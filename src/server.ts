@@ -19,6 +19,7 @@ import {
 import { WalletApi } from './wallet-api';
 import { removeListeners } from './blockchain-listeners';
 import { Logger, winstonLogger, systemLogger } from './common/logger';
+import { dailyWalletStatsCron } from './cron';
 
 class Server {
   public app: express.Application = express();
@@ -114,6 +115,7 @@ class Server {
   public async initialize() {
     try {
       await this.connectToMongodb();
+      dailyWalletStatsCron.schedule('0 0 0 * * *');
       this.listen();
     } catch (error) {
       throw error;
