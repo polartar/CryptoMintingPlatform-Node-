@@ -4,6 +4,8 @@ import { PromotionalReward, RewardDistributerConfig } from '../models';
 import { config, walletConfig } from '../common';
 import { ethers } from 'ethers';
 import { Logger } from '../common/logger';
+import slackService from './slack';
+import { formatEther, formatUnits } from 'ethers/utils';
 
 class RewardDistributer {
   provider: ethers.providers.JsonRpcProvider;
@@ -92,6 +94,42 @@ class RewardDistributer {
     return createdRecordId;
   }
 
+  private async checkErc20RewardWalletBalance(
+    contract: ethers.Contract,
+    rewardDistributerAddress: string,
+    rewardCurrency: string,
+    rewardAmount: ethers.utils.BigNumber,
+  ) {
+    const { erc20RewardWarnThreshold } = config;
+    const estWeiPerTx = ethers.utils.bigNumberify(60000000000000);
+    const [weiBalance, tokenBalance, decimals] = await Promise.all([
+      this.provider.getBalance(rewardDistributerAddress),
+      contract.balanceOf(rewardDistributerAddress),
+      contract.decimals(),
+    ]);
+    const estTxsRemaining = weiBalance.div(estWeiPerTx);
+    const lowOnWei = estTxsRemaining.lte(erc20RewardWarnThreshold);
+    const estTokenTxsRemaining = tokenBalance.div(rewardAmount);
+    const lowOnTokens = estTokenTxsRemaining.lte(erc20RewardWarnThreshold);
+    if (lowOnWei) {
+      slackService.postMessage(
+        `Low on ETH!\nSend ETH to ${rewardDistributerAddress} ASAP!\nCurrent balance: ${formatEther(
+          weiBalance,
+        )} ETH.\nEstimated ${estTxsRemaining.toString()} transactions until empty.
+        `,
+      );
+    }
+    if (lowOnTokens) {
+      slackService.postMessage(
+        `Low on ${rewardCurrency}!\nSend ${rewardCurrency} to ${rewardDistributerAddress} ASAP!\nCurrent balance: ${formatUnits(
+          tokenBalance,
+          decimals,
+        )} ${rewardCurrency}.\nEstimated ${estTokenTxsRemaining.toString()} transactions until empty.
+        `,
+      );
+    }
+  }
+
   private async sendErc20(
     rewardCurrency: string,
     rewardAmount: number,
@@ -135,6 +173,12 @@ class RewardDistributer {
           ({
             transactionHash: receiptTxHash,
           }: ethers.providers.TransactionReceipt) => {
+            this.checkErc20RewardWalletBalance(
+              contract,
+              walletAddress,
+              rewardCurrency,
+              amount,
+            );
             logger.obj.debug({ receiptTxHash });
           },
         )
@@ -144,7 +188,7 @@ class RewardDistributer {
       const { hash } = transaction;
       logger.obj.debug({ hash });
 
-      return transaction.hash;
+      return hash;
     } catch (error) {
       logger.obj.warn({ error });
       throw error;
