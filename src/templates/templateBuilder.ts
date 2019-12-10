@@ -1,4 +1,8 @@
-import { shareAccepted, referralActivated } from './handlebars';
+import {
+  shareAccepted,
+  referralActivated,
+  sendSoftNodeDiscount,
+} from './handlebars';
 import { IUser } from '../types';
 import * as Handlebars from 'handlebars';
 
@@ -21,6 +25,15 @@ class TemplateBuilder {
         brand,
       }),
       subject: referralActivated.subject,
+    };
+  }
+  buildSendSoftNodeDiscountHtml(user: IUser, brand: string) {
+    return {
+      html: Handlebars.compile(sendSoftNodeDiscount.html)({
+        user,
+        brand,
+      }),
+      subject: sendSoftNodeDiscount.subject,
     };
   }
 }

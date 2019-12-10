@@ -152,6 +152,7 @@ class CredentialService {
       const jwtAxios = this.getAxios({
         userId,
       });
+
       const response = await jwtAxios.get(`${this.healthUrl}/`);
       return response.data.redis.ok === true;
     } catch (error) {

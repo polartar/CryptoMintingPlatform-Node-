@@ -1,4 +1,5 @@
-import cron from 'node-cron';
+// import cron from 'node-cron';
+import * as cron from 'node-cron';
 import { User } from '../models';
 import { buildDailyWalletReportPipeline } from '../pipelines';
 import { config } from '../common';
