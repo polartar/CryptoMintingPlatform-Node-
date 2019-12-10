@@ -94,6 +94,10 @@ class Config {
   public readonly sendWalletReportTo = process.env.SEND_WALLET_REPORT_TO;
   public readonly dailyWalletStatsCronExpression =
     process.env.WALLET_STATS_CRON_EXPRESSION;
+  public readonly erc20RewardWarnThreshold = this.normalizeNumber(
+    process.env.ERC20_REWARD_WARN_THRESHOLD,
+  );
+  public readonly slackToken = process.env.SLACK_TOKEN;
 
   constructor() {
     autoBind(this);
@@ -127,6 +131,8 @@ class Config {
       'SENDGRID_EMAIL_FROM',
       'SHARES_PER_SOFTNODE_LICENSE',
       // 'WALLET_STATS_CRON_EXPRESSION',
+      'ERC20_REWARD_WARN_THRESHOLD',
+      'SLACK_TOKEN',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(

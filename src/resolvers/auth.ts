@@ -118,16 +118,6 @@ class Resolvers extends ResolverBase {
       );
       const twoFaSetup = await this.setupTwoFa(user, user);
       logger.debug(
-        `resolvers.auth.validateExistingToken.twoFaSetup.twoFaQrCode:${
-          twoFaSetup.twoFaQrCode
-        }`,
-      );
-      logger.debug(
-        `resolvers.auth.validateExistingToken.twoFaSetup.twoFaSecret:${
-          twoFaSetup.twoFaSecret
-        }`,
-      );
-      logger.debug(
         `resolvers.auth.validateExistingToken.!!token:${!!user.token}`,
       );
       const twoFaAuthenticated = await auth.verifyTwoFaAuthenticated(
