@@ -92,6 +92,8 @@ class Config {
     process.env.SHARES_PER_SOFTNODE_LICENSE,
   );
   public readonly sendWalletReportTo = process.env.SEND_WALLET_REPORT_TO;
+  public readonly dailyWalletStatsCronExpression =
+    process.env.WALLET_STATS_CRON_EXPRESSION;
 
   constructor() {
     autoBind(this);
@@ -124,6 +126,7 @@ class Config {
       'SENDGRID_API_KEY',
       'SENDGRID_EMAIL_FROM',
       'SHARES_PER_SOFTNODE_LICENSE',
+      // 'WALLET_STATS_CRON_EXPRESSION',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
