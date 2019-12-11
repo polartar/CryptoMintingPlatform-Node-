@@ -28,12 +28,31 @@ class TemplateBuilder {
     };
   }
   buildSendSoftNodeDiscountHtml(user: IUser, brand: string) {
+    const path = '../assets/',
+      cid = 'image';
+    let filename;
+    switch (brand) {
+      case 'winx':
+        filename = 'instant-credit-codex-soft-node.jpg';
+        break;
+      case 'green':
+        filename = 'instant-credit-green-soft-node.jpg';
+        break;
+      default:
+        filename = 'instant-credit-arcade-soft-node.jpg';
+        break;
+    }
     return {
       html: Handlebars.compile(sendSoftNodeDiscount.html)({
         user,
         brand,
       }),
-      subject: sendSoftNodeDiscount.subject,
+      subject: sendSoftNodeDiscount.subject(brand),
+      attachments: {
+        filename,
+        path,
+        cid,
+      },
     };
   }
 }
