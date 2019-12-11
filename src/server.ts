@@ -115,7 +115,7 @@ class Server {
   public async initialize() {
     try {
       await this.connectToMongodb();
-      // dailyWalletStatsCron.schedule(config.dailyWalletStatsCronExpression);
+      dailyWalletStatsCron.schedule(config.dailyWalletStatsCronExpression);
       this.listen();
     } catch (error) {
       throw error;
