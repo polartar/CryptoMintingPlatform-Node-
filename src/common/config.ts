@@ -91,13 +91,24 @@ class Config {
   public readonly sharesPerSoftNodeLicense = this.normalizeNumber(
     process.env.SHARES_PER_SOFTNODE_LICENSE,
   );
-  public readonly sendWalletReportTo = process.env.SEND_WALLET_REPORT_TO;
   public readonly dailyWalletStatsCronExpression =
     process.env.WALLET_STATS_CRON_EXPRESSION;
   public readonly erc20RewardWarnThreshold = this.normalizeNumber(
     process.env.ERC20_REWARD_WARN_THRESHOLD,
   );
   public readonly slackToken = process.env.SLACK_TOKEN;
+  public readonly sendWalletReportToConnect =
+    process.env.SEND_WALLET_REPORT_TO_CONNECT;
+  public readonly sendWalletReportToConnectArcade =
+    process.env.SEND_WALLET_REPORT_TO_CONNECTARCADE;
+  public readonly sendWalletReportToArcade =
+    process.env.SEND_WALLET_REPORT_TO_ARCADE;
+  public readonly sendWalletReportToCodex =
+    process.env.SEND_WALLET_REPORT_TO_CODEX;
+  public readonly sendWalletReportToGreen =
+    process.env.SEND_WALLET_REPORT_TO_GREEN;
+  public readonly sendWalletReportToLocalhost =
+    process.env.SEND_WALLET_REPORT_TO_LOCALHOST;
 
   constructor() {
     autoBind(this);
@@ -130,9 +141,15 @@ class Config {
       'SENDGRID_API_KEY',
       'SENDGRID_EMAIL_FROM',
       'SHARES_PER_SOFTNODE_LICENSE',
-      // 'WALLET_STATS_CRON_EXPRESSION',
+      'WALLET_STATS_CRON_EXPRESSION',
       'ERC20_REWARD_WARN_THRESHOLD',
       'SLACK_TOKEN',
+      'SEND_WALLET_REPORT_TO_CONNECT',
+      'SEND_WALLET_REPORT_TO_CONNECTARCADE',
+      'SEND_WALLET_REPORT_TO_ARCADE',
+      'SEND_WALLET_REPORT_TO_CODEX',
+      'SEND_WALLET_REPORT_TO_GREEN',
+      'SEND_WALLET_REPORT_TO_LOCALHOST',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(

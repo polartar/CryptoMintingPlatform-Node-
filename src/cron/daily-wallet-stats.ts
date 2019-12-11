@@ -2,6 +2,7 @@ import * as cron from 'node-cron';
 import { User } from '../models';
 import { buildDailyWalletReportPipeline } from '../pipelines';
 import { config } from '../common';
+import { systemLogger } from '../common/logger';
 const { Parser } = require('json2csv');
 import { emailService as emailSender } from '../data-sources/send-email';
 
@@ -26,32 +27,83 @@ interface IRawWalletReport {
   winx: IWalletStats;
 }
 
+interface IReportSendConfig {
+  sendTo: string;
+  rowsToInclude: string[];
+}
+
 class DailyWalletStats {
   parser = new Parser();
-
-  reportsForBrand: { [key: string]: string[] } = {
-    connect: ['winx', 'green', 'arcade'],
-    arcade: ['arcade'],
-    codex: ['winx'],
-    green: ['green'],
-    localhost: ['winx', 'green', 'arcade'],
+  reportsForBrand: { [key: string]: IReportSendConfig[] } = {
+    connect: [
+      {
+        sendTo: config.sendWalletReportToConnect,
+        rowsToInclude: ['winx', 'green', 'arcade'],
+      },
+      {
+        sendTo: config.sendWalletReportToConnectArcade,
+        rowsToInclude: ['arcade'],
+      },
+    ],
+    arcade: [
+      {
+        sendTo: config.sendWalletReportToArcade,
+        rowsToInclude: ['arcade'],
+      },
+    ],
+    codex: [
+      {
+        sendTo: config.sendWalletReportToCodex,
+        rowsToInclude: ['winx'],
+      },
+    ],
+    green: [
+      {
+        sendTo: config.sendWalletReportToGreen,
+        rowsToInclude: ['green'],
+      },
+    ],
+    localhost: [
+      {
+        sendTo: config.sendWalletReportToLocalhost,
+        rowsToInclude: ['winx', 'green', 'arcade'],
+      },
+    ],
   };
 
   schedule(cronString: string) {
-    if (!config.sendWalletReportTo || !cronString) return;
-    cron.schedule(cronString, this.run, { timezone: 'America/Denver' });
+    const sendConfig = this.getSendConfig();
+    cron.schedule(cronString, () => this.run(sendConfig), {
+      timezone: 'America/Denver',
+    });
   }
 
-  async run() {
+  private getSendConfig() {
+    const hostBrand = config.brand.toLowerCase();
+    const sendConfig = this.reportsForBrand[hostBrand];
+    if (!sendConfig) {
+      throw new Error(`No send config for brand: ${hostBrand}`);
+    }
+    return sendConfig;
+  }
+
+  async run(sendConfig: IReportSendConfig[]) {
     const pipeline = buildDailyWalletReportPipeline();
     const [rawResults] = await User.aggregate(pipeline);
-    const formattedJson = this.selectAndFormat(rawResults);
-    const csv = this.parseJsonToCsv(formattedJson);
-    emailSender.sendMail(
-      `${config.brand} Wallet Report`,
-      config.sendWalletReportTo,
-      '<p>Report Attached</p>',
-      [{ filename: 'report.csv', content: csv }],
+    const results = await Promise.all(
+      sendConfig.map(async ({ sendTo, rowsToInclude }) => {
+        const formattedJson = this.selectAndFormat(rawResults, rowsToInclude);
+        const csv = this.parseJsonToCsv(formattedJson);
+        return emailSender.sendMail(
+          `${config.brand} Wallet Report`,
+          sendTo,
+          '<p>Report Attached</p>',
+          [{ filename: 'report.csv', content: csv }],
+        );
+      }),
+    );
+    systemLogger.info(
+      `Daily wallet report results: ${JSON.stringify(results)}`,
     );
   }
 
@@ -67,11 +119,10 @@ class DailyWalletStats {
     return +value.toFixed(2);
   }
 
-  selectAndFormat(rawReport: IRawWalletReport) {
+  selectAndFormat(rawReport: IRawWalletReport, rowsToInclude: string[]) {
     return Object.entries(rawReport)
       .filter(([reportBrand]) => {
-        const hostBrand = config.brand.toLowerCase();
-        return this.reportsForBrand[hostBrand].includes(reportBrand);
+        return rowsToInclude.includes(reportBrand);
       })
       .map(([brand, stats]: [string, IWalletStats]) => {
         const {
@@ -107,4 +158,5 @@ class DailyWalletStats {
   }
 }
 
-export default new DailyWalletStats();
+const runner = new DailyWalletStats();
+export default runner;
