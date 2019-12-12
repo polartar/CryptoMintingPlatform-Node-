@@ -14,3 +14,7 @@ export const referralActivated = {
   html: readTemplate('referralActivated.hbs'),
   subject: 'You referred an activation.',
 };
+export const sendSoftNodeDiscount = {
+  html: readTemplate('sendSoftNodeDiscount.hbs'),
+  subject: (brand: string) => `Your $100 Instant Credit for ${brand}+ Upgrade.`,
+};
