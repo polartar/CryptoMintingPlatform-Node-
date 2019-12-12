@@ -122,7 +122,7 @@ const walletsActivated = new mongoose.Schema({
   arcade: activatedWalletsSchema,
 });
 
-const walletShareAndSoftNodeLicensesSchema = new mongoose.Schema({
+const walletShareSchema = new mongoose.Schema({
   green: Number,
   arcade: Number,
   connect: Number,
@@ -148,7 +148,7 @@ const walletSchema = new mongoose.Schema(
       default: {},
     },
     shares: {
-      type: walletShareAndSoftNodeLicensesSchema,
+      type: walletShareSchema,
       default: {},
     },
   },
@@ -209,8 +209,10 @@ export const userSchema = new mongoose.Schema(
     },
     wallet: walletSchema,
     softNodeLicenses: {
-      type: walletShareAndSoftNodeLicensesSchema,
-      default: {},
+      green: Number,
+      codex: Number,
+      arcade: Number,
+      connect: Number,
     },
     profilePhotoUrl: String,
   },
