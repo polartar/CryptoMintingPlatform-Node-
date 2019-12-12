@@ -45,6 +45,7 @@ class SendEmail extends DataSource {
       );
       return message === 'success';
     } catch (error) {
+      logger.error(error);
       return false;
     }
   }
@@ -78,14 +79,23 @@ class SendEmail extends DataSource {
     if (!user) {
       return false;
     }
-    const { html, subject } = templateBuilder.buildSendSoftNodeDiscountHtml(
+    const {
+      html,
+      subject,
+      attachments,
+    } = templateBuilder.buildSendSoftNodeDiscountHtml(
       user,
       this.capitalizedBrand,
     );
     try {
-      const emailSent = await this.sendMail(subject, user.email, html);
+      const emailSent = await this.sendMail(
+        subject,
+        user.email,
+        html,
+        attachments,
+      );
       logger.debug(
-        `data-sources.SendEmail.shareAccepted.emailSent: ${emailSent}`,
+        `data-sources.SendEmail.sendSoftNodeDiscount.emailSent: ${emailSent}`,
       );
       return emailSent;
     } catch (err) {

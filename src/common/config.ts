@@ -15,6 +15,7 @@ class Config {
   public readonly port = this.normalizeNumber(process.env.PORT);
   public readonly hostname = process.env.HOSTNAME;
   public readonly mongodbUri = process.env.MONGODB_URI;
+  public readonly cartUrl = process.env.CART_URL;
   public connectMongoConnection: Connection;
   public readonly jwtPrivateKey = keys.privateKey;
   public readonly jwtPublicKey = keys.publicKey;
@@ -150,6 +151,7 @@ class Config {
       'SEND_WALLET_REPORT_TO_CODEX',
       'SEND_WALLET_REPORT_TO_GREEN',
       'SEND_WALLET_REPORT_TO_LOCALHOST',
+      'CART_URL',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
