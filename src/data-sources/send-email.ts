@@ -45,6 +45,7 @@ class SendEmail extends DataSource {
       );
       return message === 'success';
     } catch (error) {
+      logger.error(error);
       return false;
     }
   }
@@ -71,7 +72,36 @@ class SendEmail extends DataSource {
     );
     return emailSent;
   }
-
+  public async sendSoftNodeDiscount(user: IUser) {
+    logger.debug(
+      `data-sources.SendEmail.sendSoftNodeDiscount.user: ${user && user.id}`,
+    );
+    if (!user) {
+      return false;
+    }
+    const {
+      html,
+      subject,
+      attachments,
+    } = templateBuilder.buildSendSoftNodeDiscountHtml(
+      user,
+      this.capitalizedBrand,
+    );
+    try {
+      const emailSent = await this.sendMail(
+        subject,
+        user.email,
+        html,
+        attachments,
+      );
+      logger.debug(
+        `data-sources.SendEmail.sendSoftNodeDiscount.emailSent: ${emailSent}`,
+      );
+      return emailSent;
+    } catch (err) {
+      logger.error(err);
+    }
+  }
   public async referrerActivated(user: IUser, referredUser: IUser) {
     logger.debug(
       `data-sources.SendEmail.referrerActivated.user: ${user && user.id}`,

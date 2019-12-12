@@ -348,6 +348,8 @@ class Resolvers extends ResolverBase {
     } = paymentDetails;
     const { amountRewarded, rewardId } = rewardResult;
     const prefix = `wallet.activations.${rewardType}`;
+    const permission = `${rewardType}-soft-node-discount`;
+    userDoc.permissions.push(permission);
     userDoc.set(`${prefix}.activated`, true);
     userDoc.set(`${prefix}.activationTxHash`, transactionId);
     userDoc.set(`${prefix}.btcUsdPrice`, btcUsdPrice);
@@ -356,6 +358,7 @@ class Resolvers extends ResolverBase {
     userDoc.set(`${prefix}.timestamp`, new Date());
     userDoc.set(`${prefix}.amountRewarded`, amountRewarded);
     userDoc.set(`${prefix}.rewardId`, rewardId);
+
     return userDoc.save();
   }
 
@@ -438,13 +441,14 @@ class Resolvers extends ResolverBase {
         userEthAddress,
         logger,
       );
+
       this.saveActivationToDb(
         dbUser,
         rewardType,
         { ...paymentDetails, transactionId: transaction.id },
         rewardResult,
       );
-
+      sendEmail.sendSoftNodeDiscount(dbUser);
       if (referrer && paymentDetails.outputs.length >= 2) {
         sendEmail.referrerActivated(referrer, dbUser);
         const existingShares =
