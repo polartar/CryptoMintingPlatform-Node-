@@ -6,7 +6,6 @@ import {
 import { IUser } from '../types';
 import config from '../common/config';
 import * as Handlebars from 'handlebars';
-import * as fs from 'fs';
 import { logger } from '../common';
 
 class TemplateBuilder {
