@@ -7,6 +7,7 @@ import { IUser } from '../types';
 import config from '../common/config';
 import * as Handlebars from 'handlebars';
 import * as fs from 'fs';
+import { logger } from '../common';
 
 class TemplateBuilder {
   buildShareAcceptedHtml(user: IUser, referredUser: IUser, brand: string) {
@@ -33,7 +34,9 @@ class TemplateBuilder {
     let path = __dirname + '/../assets/';
     const cid = 'logo';
     let filename;
-
+    logger.debug(
+      `templates.templateBuilder.buildSendSoftNodeDiscountHtml.brand: ${brand}`,
+    );
     switch (brand) {
       case 'connect':
         filename = 'instant-credit-codex-soft-node.jpg';
@@ -49,7 +52,12 @@ class TemplateBuilder {
         break;
     }
     path += filename;
-
+    logger.debug(
+      `templates.templateBuilder.buildSendSoftNodeDiscountHtml.filename: ${filename}`,
+    );
+    logger.debug(
+      `templates.templateBuilder.buildSendSoftNodeDiscountHtml.path: ${path}`,
+    );
     return {
       html: Handlebars.compile(sendSoftNodeDiscount.html)({
         user,
