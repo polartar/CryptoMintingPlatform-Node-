@@ -78,7 +78,7 @@ class Resolvers extends ResolverBase {
         (total, curr) => total + curr.shareLimit,
         0,
       );
-      const softNodeShares = Object.values(softNodeLicenses).reduce(
+      const softNodeShares = Object.values(softNodeLicenses || {}).reduce(
         (accum: number, curr: number) => {
           if (isNaN(+curr)) {
             return accum;
