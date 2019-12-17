@@ -123,7 +123,7 @@ class Server {
   }
 
   private async connectToMongodb() {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       set('useCreateIndex', true);
       set('useNewUrlParser', true);
       set('useFindAndModify', false);
