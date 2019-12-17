@@ -6,7 +6,6 @@ import {
 import { IUser } from '../types';
 import config from '../common/config';
 import * as Handlebars from 'handlebars';
-import * as fs from 'fs';
 import { logger } from '../common';
 
 class TemplateBuilder {
@@ -38,13 +37,13 @@ class TemplateBuilder {
       `templates.templateBuilder.buildSendSoftNodeDiscountHtml.brand: ${brand}`,
     );
     switch (brand) {
-      case 'connect':
+      case 'Connect':
         filename = 'instant-credit-codex-soft-node.jpg';
         break;
-      case 'codex':
+      case 'Codex':
         filename = 'instant-credit-codex-soft-node.jpg';
         break;
-      case 'green':
+      case 'Green':
         filename = 'instant-credit-green-soft-node.jpg';
         break;
       default:
