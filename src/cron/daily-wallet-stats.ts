@@ -88,6 +88,7 @@ class DailyWalletStats {
   }
 
   async run(sendConfig: IReportSendConfig[]) {
+    systemLogger.info('Running daily wallet report cron job');
     const pipeline = buildDailyWalletReportPipeline();
     const [rawResults] = await User.aggregate(pipeline);
     const results = await Promise.all(
