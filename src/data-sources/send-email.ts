@@ -47,7 +47,9 @@ class SendEmail extends DataSource {
     } catch (error) {
       logger.debug(`data-sources.SendEmail.sendMail.html: ${html}`);
       logger.debug(
-        `data-sources.SendEmail.sendMail.attachments: ${attachments}`,
+        `data-sources.SendEmail.sendMail.attachments: ${JSON.stringify(
+          attachments,
+        )}`,
       );
       logger.error(error);
       return false;
