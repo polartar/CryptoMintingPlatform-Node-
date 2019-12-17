@@ -88,24 +88,28 @@ class DailyWalletStats {
   }
 
   async run(sendConfig: IReportSendConfig[]) {
-    systemLogger.info('Running daily wallet report cron job');
-    const pipeline = buildDailyWalletReportPipeline();
-    const [rawResults] = await User.aggregate(pipeline);
-    const results = await Promise.all(
-      sendConfig.map(async ({ sendTo, rowsToInclude }) => {
-        const formattedJson = this.selectAndFormat(rawResults, rowsToInclude);
-        const csv = this.parseJsonToCsv(formattedJson);
-        return emailSender.sendMail(
-          `${config.brand} Wallet Report`,
-          sendTo,
-          '<p>Report Attached</p>',
-          [{ filename: 'report.csv', content: csv }],
-        );
-      }),
-    );
-    systemLogger.info(
-      `Daily wallet report results: ${JSON.stringify(results)}`,
-    );
+    try {
+      systemLogger.info('Running daily wallet report cron job');
+      const pipeline = buildDailyWalletReportPipeline();
+      const [rawResults] = await User.aggregate(pipeline);
+      const results = await Promise.all(
+        sendConfig.map(async ({ sendTo, rowsToInclude }) => {
+          const formattedJson = this.selectAndFormat(rawResults, rowsToInclude);
+          const csv = this.parseJsonToCsv(formattedJson);
+          return emailSender.sendMail(
+            `${config.brand} Wallet Report`,
+            sendTo,
+            '<p>Report Attached</p>',
+            [{ filename: 'report.csv', content: csv }],
+          );
+        }),
+      );
+      systemLogger.info(
+        `Daily wallet report results: ${JSON.stringify(results)}`,
+      );
+    } catch (error) {
+      systemLogger.warn(`cron.daily-wallet-stats.catch: ${error}`);
+    }
   }
 
   private parseJsonToCsv(data: any) {
