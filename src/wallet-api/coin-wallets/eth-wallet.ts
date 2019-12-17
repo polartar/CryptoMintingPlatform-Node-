@@ -26,16 +26,8 @@ class EthWallet extends CoinWalletBase {
   }
 
   public async checkIfWalletExists(userApi: UserApi) {
-    logger.debug(
-      `walletApi.coin-wallets.EthWallet.checkIfWalletExists.userId:${
-        userApi.userId
-      }`,
-    );
     try {
       const privateKey = await this.getPrivateKey(userApi.userId);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.checkIfWalletExists.address:${!!privateKey}`,
-      );
       return !!privateKey;
     } catch (error) {
       logger.warn(
@@ -50,29 +42,9 @@ class EthWallet extends CoinWalletBase {
     walletPassword: string,
     mnemonic: string,
   ) {
-    logger.debug(
-      `walletApi.coin-wallets.EthWallet.createWallet.!!walletPassword:${!!walletPassword}`,
-    );
-    logger.debug(
-      `walletApi.coin-wallets.EthWallet.createWallet.!!mnemonic:${!!mnemonic}`,
-    );
-    logger.debug(
-      `walletApi.coin-wallets.EthWallet.createWallet.userApi.userId:${
-        userApi.userId
-      }`,
-    );
     try {
       const { privateKey, address } = ethers.Wallet.fromMnemonic(mnemonic);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.createWallet.!!privateKey:${!!privateKey}`,
-      );
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.createWallet.address:${address}`,
-      );
       const encryptedPrivateKey = this.encrypt(privateKey, walletPassword);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.createWallet.!!encryptedPrivateKey:${!!encryptedPrivateKey}`,
-      );
       const privateKeyPromise = credentialService.create(
         userApi.userId,
         'ETH',
@@ -82,19 +54,7 @@ class EthWallet extends CoinWalletBase {
 
       const addressSavePromise = this.saveAddress(userApi, address);
 
-      const [privateKeyResponse, addressSaveResponse] = await Promise.all([
-        privateKeyPromise,
-        addressSavePromise,
-      ]);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.createWallet.privateKeyResponse:${
-          privateKeyResponse.status
-        }`,
-      );
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.createWallet.!!addressSaveResponse:${!!addressSaveResponse}`,
-      );
-
+      await Promise.all([privateKeyPromise, addressSavePromise]);
       return true;
     } catch (error) {
       logger.warn(
@@ -106,22 +66,10 @@ class EthWallet extends CoinWalletBase {
 
   private async saveAddress(userApi: UserApi, ethAddress: string) {
     try {
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.saveAddress.userId:${userApi.userId}`,
-      );
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.saveAddress.ethAddress:${ethAddress}`,
-      );
       const ethBlockNumAtCreation = await this.provider.getBlockNumber();
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.saveAddress.ethBlockNumAtCreation:${ethBlockNumAtCreation}`,
-      );
       const updateResult = await userApi.setWalletAccountToUser(
         ethAddress,
         ethBlockNumAtCreation,
-      );
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.saveAddress.updateResult:${!!updateResult}`,
       );
       return updateResult;
     } catch (error) {
@@ -133,14 +81,8 @@ class EthWallet extends CoinWalletBase {
   }
 
   protected async getPrivateKey(userId: string) {
-    logger.debug(
-      `walletApi.coin-wallets.EthWallet.getPrivateKey.userId:${userId}`,
-    );
     try {
       const privateKey = await credentialService.get(userId, 'ETH', PRIVATEKEY);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getPrivateKey.userId:${!!privateKey}`,
-      );
       return privateKey;
     } catch (error) {
       logger.warn(
@@ -151,28 +93,23 @@ class EthWallet extends CoinWalletBase {
   }
 
   protected async getEthBalance(userApi: UserApi) {
-    const { ethAddress } = await this.getEthAddress(userApi);
-    const balance = await this.provider.getBalance(ethAddress);
-    return ethers.utils.formatEther(balance);
+    try {
+      const { ethAddress } = await this.getEthAddress(userApi);
+      const balance = await this.provider.getBalance(ethAddress);
+      return ethers.utils.formatEther(balance);
+    } catch (error) {
+      logger.debug(
+        `walletApi.coin-wallets.EthWallet.getEthBalance.catch: ${error}`,
+      );
+      throw error;
+    }
   }
 
   public async estimateFee(userApi: UserApi) {
     try {
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.estimateFee.userId:${userApi.userId}`,
-      );
       const gasPrice = await this.provider.getGasPrice();
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.estimateFee.gasPrice:${gasPrice.toHexString()}`,
-      );
       const feeEstimate = gasPrice.mul(21001);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.estimateFee.gasPrice:${feeEstimate.toHexString()}`,
-      );
       const feeInEther = this.toEther(feeEstimate);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.estimateFee.feeInEther:${feeInEther}`,
-      );
 
       const ethBalance = await this.getEthBalance(userApi);
 
@@ -181,15 +118,10 @@ class EthWallet extends CoinWalletBase {
         feeCurrency: 'ETH',
         feeCurrencyBalance: ethBalance,
       };
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.estimateFee.feeData:${JSON.stringify(
-          feeData,
-        )}`,
-      );
       return feeData;
     } catch (error) {
       logger.debug(
-        `walletApi.coin-wallets.EthWallet.estimateFee.catch:${error}`,
+        `walletApi.coin-wallets.EthWallet.estimateFee.catch: ${error}`,
       );
       throw error;
     }
@@ -197,15 +129,7 @@ class EthWallet extends CoinWalletBase {
 
   public async getWalletInfo(userApi: UserApi) {
     try {
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getWalletInfo.userId:${
-          userApi.userId
-        }`,
-      );
       const { ethAddress } = await this.getEthAddress(userApi);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getWalletInfo.ethAddress:${ethAddress}`,
-      );
       return {
         receiveAddress: ethAddress,
         symbol: this.symbol,
@@ -215,28 +139,24 @@ class EthWallet extends CoinWalletBase {
       };
     } catch (error) {
       logger.warn(
-        `walletApi.coin-wallets.EthWallet.getWalletInfo.catch:${error}`,
+        `walletApi.coin-wallets.EthWallet.getWalletInfo.catch: ${error}`,
       );
       throw error;
     }
   }
 
   async getBalance(address: string) {
-    logger.debug(
-      `walletApi.coin-wallets.EthWallet.getBalance.address:${address}`,
-    );
     try {
       const balance = await this.provider.getBalance(address);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getBalance.balance:${balance.toHexString()}`,
-      );
       const balanceInEther = this.toEther(balance);
       return {
         unconfirmed: balanceInEther,
         confirmed: balanceInEther,
       };
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.EthWallet.getBalance.catch:${error}`);
+      logger.warn(
+        `walletApi.coin-wallets.EthWallet.getBalance.catch: ${error}`,
+      );
       throw error;
     }
   }
@@ -246,25 +166,10 @@ class EthWallet extends CoinWalletBase {
     amount: utils.BigNumber,
   ) {
     try {
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getBalance.address:${address}`,
-      );
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getBalance.amount:${amount.toHexString()}`,
-      );
       const { parseEther } = utils;
       const { confirmed } = await this.getBalance(address);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getBalance.confirmed:${confirmed}`,
-      );
       const weiConfirmed = parseEther(confirmed);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getBalance.weiConfirmed:${weiConfirmed.toHexString()}`,
-      );
       const hasEnough = weiConfirmed.gte(amount);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getBalance.hasEnough:${hasEnough}`,
-      );
 
       if (!hasEnough) throw new Error(`Insufficient account balance`);
     } catch (error) {
@@ -276,9 +181,6 @@ class EthWallet extends CoinWalletBase {
   }
 
   protected async getEthAddress(userApi: UserApi) {
-    logger.debug(
-      `walletApi.coin-wallets.EthWallet.getEthAddress.userId:${userApi.userId}`,
-    );
     try {
       const {
         wallet = {
@@ -288,21 +190,12 @@ class EthWallet extends CoinWalletBase {
         },
       } = await userApi.findFromDb();
       /* tslint:disable: prefer-const */
-      let {
+      const {
         ethAddress,
         ethNonce: nonce,
         ethBlockNumAtCreation: blockNumAtCreation,
       } = wallet;
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getEthAddress.ethAddress:${ethAddress}`,
-      );
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getEthAddress.nonce:${nonce}`,
-      );
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getEthAddress.blockNumAtCreation:${blockNumAtCreation}`,
-      );
-      /* tslint:enable:prefer-const */
+
       if (!ethAddress) {
         throw new Error('Wallet not found');
       }
@@ -320,20 +213,9 @@ class EthWallet extends CoinWalletBase {
     blockNumAtCreation: number,
   ): Promise<ITransaction[]> {
     try {
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getTransactions.address:${address}`,
-      );
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getTransactions.blockNumAtCreation:${blockNumAtCreation}`,
-      );
       const transactions = await this.etherscan.getHistory(
         address,
         blockNumAtCreation,
-      );
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getTransactions.transactions.length:${
-          transactions.length
-        }`,
       );
       const formattedTransactions = this.formatTransactions(
         transactions.filter(tx => {
@@ -363,11 +245,6 @@ class EthWallet extends CoinWalletBase {
       const { address } = userWallet;
       if (address.toLowerCase() === addressFromDb.toLowerCase()) resolve();
       else {
-        logger.warn(
-          `walletApi.coin-wallets.EthWallet.ensureEthAddressMatchesPkey.mismatch:${
-            userApi.userId
-          },${address},${addressFromDb}`,
-        );
         userApi.Model.findByIdAndUpdate(
           userApi.userId,
           { $set: { 'wallet.ethAddress': address } },
@@ -382,50 +259,24 @@ class EthWallet extends CoinWalletBase {
     });
   }
   protected async requireValidAddress(maybeAddress: string) {
-    logger.debug(
-      `walletApi.coin-wallets.EthWallet.requireValidAddress.maybeAddress:${maybeAddress}`,
-    );
     try {
       const isAddress = !!(await this.provider.resolveName(maybeAddress));
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.requireValidAddress.isAddress:${isAddress}`,
-      );
       if (!isAddress) throw new Error(`Invalid address ${maybeAddress}`);
     } catch (error) {
-      logger.warn(
-        `walletApi.coin-wallets.EthWallet.requireValidAddress.catch:${error}`,
-      );
       throw error;
     }
   }
 
   async send(userApi: UserApi, outputs: ISendOutput[], walletPassword: string) {
     const [{ to, amount }] = outputs;
-    logger.debug(
-      `walletApi.coin-wallets.EthWallet.send.userId:${userApi.userId}`,
-    );
 
-    logger.debug(`walletApi.coin-wallets.EthWallet.send.amount:${amount}`);
-    logger.debug(
-      `walletApi.coin-wallets.EthWallet.send.!!walletPassword:${!!walletPassword}`,
-    );
     try {
       this.requireValidAddress(to);
       const value = utils.parseEther(amount);
       const { nonce, ethAddress } = await this.getEthAddress(userApi);
-      logger.debug(`walletApi.coin-wallets.EthWallet.send.nonce:${nonce}`);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.send.ethAddress:${ethAddress}`,
-      );
       await this.requireEnoughBalanceToSendEther(ethAddress, value);
       const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.send.!!encryptedPrivateKey:${!!encryptedPrivateKey}`,
-      );
       const privateKey = this.decrypt(encryptedPrivateKey, walletPassword);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.send.!!privateKey:${!!privateKey}`,
-      );
       const wallet = new ethers.Wallet(privateKey, this.provider);
       const transaction = await wallet.sendTransaction({
         nonce,
@@ -433,19 +284,8 @@ class EthWallet extends CoinWalletBase {
         value,
         gasLimit: 21001,
       });
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.send.!!privateKey:${!!privateKey}`,
-      );
-      const { hash: txHash } = transaction;
-      logger.debug(`walletApi.coin-wallets.EthWallet.send.txHash:${txHash}`);
       await userApi.incrementTxCount();
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.send.incrementTxCount: done`,
-      );
       this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.send.ensureEthAddressMatchesPkey: done`,
-      );
       const response: {
         message: string;
         success: boolean;
@@ -469,7 +309,7 @@ class EthWallet extends CoinWalletBase {
       };
       return response;
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.EthWallet.send.catch:${error}`);
+      logger.warn(`walletApi.coin-wallets.EthWallet.send.catch: ${error}`);
       let message;
       switch (error.message) {
         case 'Incorrect password': {
@@ -505,10 +345,6 @@ class EthWallet extends CoinWalletBase {
 
   protected toEther(wei: utils.BigNumber, negate: boolean = false): string {
     try {
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.toEther.wei:${wei.toHexString()}`,
-      );
-      logger.debug(`walletApi.coin-wallets.EthWallet.toEther.negate:${negate}`);
       const inEther = utils.formatEther(wei);
       return `${negate ? '-' : ''}${inEther}`;
     } catch (error) {
@@ -518,10 +354,8 @@ class EthWallet extends CoinWalletBase {
   }
 
   protected toWei(ether: string): utils.BigNumber {
-    logger.debug(`walletApi.coin-wallets.EthWallet.toWei.ether:${ether}`);
     try {
       const amount = utils.parseEther(ether);
-      logger.debug(`walletApi.coin-wallets.EthWallet.toWei.amount:${amount}`);
       return amount;
     } catch (error) {
       logger.warn(`walletApi.coin-wallets.EthWallet.toWei.catch:${error}`);
@@ -535,14 +369,6 @@ class EthWallet extends CoinWalletBase {
     address: string,
   ): ITransaction[] {
     try {
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.formatTransactions.transactions.length:${
-          transactions.length
-        }`,
-      );
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.formatTransactions.address:${address}`,
-      );
       const gasUsed = this.bigNumberify(2100);
       return transactions.map(rawTx => {
         const {
@@ -574,11 +400,6 @@ class EthWallet extends CoinWalletBase {
             : this.toEther(subTotal, true),
           total: isDeposit ? this.toEther(total) : this.toEther(total, true),
         };
-        logger.silly(
-          `walletApi.coin-wallets.EthWallet.formatTransactions.returnTx:${JSON.stringify(
-            returnTx,
-          )}`,
-        );
         return returnTx;
       });
     } catch (error) {
@@ -595,39 +416,14 @@ class EthWallet extends CoinWalletBase {
     newPassword: string,
   ) {
     try {
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.recoverWallet.userId:${
-          userApi.userId
-        }`,
-      );
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.recoverWallet.!!oldPassword:${!!oldPassword}`,
-      );
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.recoverWallet.!!newPassword:${!!newPassword}`,
-      );
       const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.recoverWallet.!!encryptedPrivateKey:${!!encryptedPrivateKey}`,
-      );
       const privateKey = this.decrypt(encryptedPrivateKey, oldPassword);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.recoverWallet.!!privateKey:${!!privateKey}`,
-      );
       const reEncryptedPrivateKey = this.encrypt(privateKey, newPassword);
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.recoverWallet.!!reEncryptedPrivateKey:${!!reEncryptedPrivateKey}`,
-      );
       const response = await credentialService.create(
         userApi.userId,
         'ETH',
         PRIVATEKEY,
         reEncryptedPrivateKey,
-      );
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.recoverWallet.credentialCreate.response.status:${
-          response.status
-        }`,
       );
       return response && response.status === 200;
     } catch (error) {
