@@ -38,13 +38,13 @@ class TemplateBuilder {
       `templates.templateBuilder.buildSendSoftNodeDiscountHtml.brand: ${brand}`,
     );
     switch (brand) {
-      case 'connect':
+      case 'Connect':
         filename = 'instant-credit-codex-soft-node.jpg';
         break;
-      case 'codex':
+      case 'Codex':
         filename = 'instant-credit-codex-soft-node.jpg';
         break;
-      case 'green':
+      case 'Green':
         filename = 'instant-credit-green-soft-node.jpg';
         break;
       default:
