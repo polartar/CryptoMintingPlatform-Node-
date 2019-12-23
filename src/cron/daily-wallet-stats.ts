@@ -1,10 +1,11 @@
 import * as cron from 'node-cron';
 import { User } from '../models';
 import { buildDailyWalletReportPipeline } from '../pipelines';
-import { config } from '../common';
+import { config, logger } from '../common';
 import { systemLogger } from '../common/logger';
 const { Parser } = require('json2csv');
 import { emailService as emailSender } from '../data-sources/send-email';
+import * as mongoose from 'mongoose';
 
 interface IWalletStats {
   accounts24: number;
@@ -73,9 +74,17 @@ class DailyWalletStats {
 
   schedule(cronString: string) {
     const sendConfig = this.getSendConfig();
-    cron.schedule(cronString, () => this.run(sendConfig), {
-      timezone: 'America/Denver',
-    });
+    cron.schedule(
+      cronString,
+      () => {
+        this.fixStringifiedDatesAndObjectIds().then(() => {
+          this.run(sendConfig);
+        });
+      },
+      {
+        timezone: 'America/Denver',
+      },
+    );
   }
 
   private getSendConfig() {
@@ -88,24 +97,68 @@ class DailyWalletStats {
   }
 
   async run(sendConfig: IReportSendConfig[]) {
-    systemLogger.info('Running daily wallet report cron job');
-    const pipeline = buildDailyWalletReportPipeline();
-    const [rawResults] = await User.aggregate(pipeline);
+    try {
+      systemLogger.info('Running daily wallet report cron job');
+      const pipeline = buildDailyWalletReportPipeline();
+      const [rawResults] = await User.aggregate(pipeline);
+      const results = await Promise.all(
+        sendConfig.map(async ({ sendTo, rowsToInclude }) => {
+          const formattedJson = this.selectAndFormat(rawResults, rowsToInclude);
+          const csv = this.parseJsonToCsv(formattedJson);
+          return emailSender.sendMail(
+            `${config.brand} Wallet Report`,
+            sendTo,
+            '<p>Report Attached</p>',
+            [{ filename: 'report.csv', content: csv }],
+          );
+        }),
+      );
+      systemLogger.info(
+        `Daily wallet report results: ${JSON.stringify(results)}`,
+      );
+    } catch (error) {
+      systemLogger.warn(`cron.daily-wallet-stats.catch: ${error}`);
+    }
+  }
+
+  private async fixStringifiedDatesAndObjectIds() {
+    const { ObjectId } = mongoose.Types;
+    const collection = mongoose.connection.db.collection('users');
+    const users = await collection
+      .find({ wallet: { $exists: true } })
+      .toArray();
     const results = await Promise.all(
-      sendConfig.map(async ({ sendTo, rowsToInclude }) => {
-        const formattedJson = this.selectAndFormat(rawResults, rowsToInclude);
-        const csv = this.parseJsonToCsv(formattedJson);
-        return emailSender.sendMail(
-          `${config.brand} Wallet Report`,
-          sendTo,
-          '<p>Report Attached</p>',
-          [{ filename: 'report.csv', content: csv }],
-        );
+      users.map(async user => {
+        const { wallet, id } = user;
+        const updateRecord: { [key: string]: any } = {};
+        if (typeof wallet._id === 'string') {
+          updateRecord['wallet._id'] = new ObjectId(wallet._id);
+        }
+        if (typeof wallet?.activations?._id === 'string') {
+          updateRecord['wallet.activations._id'] = new ObjectId(
+            wallet.activations._id,
+          );
+        }
+        if (typeof wallet.createdAt === 'string') {
+          updateRecord['wallet.createdAt'] = new Date(wallet.createdAt);
+        }
+        if (typeof wallet.updatedAt === 'string') {
+          updateRecord['wallet.updatedAt'] = new Date(wallet.updatedAt);
+        }
+        if (typeof wallet?.shares?._id === 'string') {
+          updateRecord['wallet.shares._id'] = new ObjectId(wallet.shares._id);
+        }
+        if (Object.keys(updateRecord).length > 0) {
+          const updateResult = await collection.updateOne(
+            { id },
+            { $set: updateRecord },
+          );
+          logger.debug(`Bad daily-wallet-report data fixed: ${id}`);
+          return updateResult;
+        }
       }),
     );
-    systemLogger.info(
-      `Daily wallet report results: ${JSON.stringify(results)}`,
-    );
+    return results;
   }
 
   private parseJsonToCsv(data: any) {
