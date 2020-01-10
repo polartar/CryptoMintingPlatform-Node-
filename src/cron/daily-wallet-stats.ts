@@ -105,10 +105,11 @@ class DailyWalletStats {
         sendConfig.map(async ({ sendTo, rowsToInclude }) => {
           const formattedJson = this.selectAndFormat(rawResults, rowsToInclude);
           const csv = this.parseJsonToCsv(formattedJson);
+          const inlineTable = this.buildInlineTable(csv);
           return emailSender.sendMail(
             `${config.brand} Wallet Report`,
             sendTo,
-            '<p>Report Attached</p>',
+            inlineTable,
             [{ filename: 'report.csv', content: csv }],
           );
         }),
@@ -119,6 +120,25 @@ class DailyWalletStats {
     } catch (error) {
       systemLogger.warn(`cron.daily-wallet-stats.catch: ${error}`);
     }
+  }
+
+  private buildInlineTable(csv: string) {
+    const [headers, ...rows] = csv
+      .split('\n')
+      .map(line => line.replace(/"/g, '').split(','));
+    const colStyles = 'style="border: 1px solid black;"';
+    const tableStyles = 'cellpadding="5" cellspacing="0"';
+    const tableHeaders =
+      '<tr>' + headers.map(header => `<th>${header}</th>`).join('') + '</tr>';
+    const tableRows = rows
+      .map(
+        row =>
+          `<tr>${row
+            .map(column => `<td ${colStyles}>${column}</td>`)
+            .join('')}</tr>`,
+      )
+      .join('');
+    return `<table ${tableStyles}>${tableHeaders}${tableRows}</table>`;
   }
 
   private async fixStringifiedDatesAndObjectIds() {
