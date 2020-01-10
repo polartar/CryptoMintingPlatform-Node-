@@ -63,33 +63,25 @@ export default class WalletApi {
       switch (coinWalletConfig.walletApi) {
         case eSupportedInterfaces.btc: {
           logger.debug(
-            `wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${
-              coinWalletConfig.walletApi
-            } => BTC`,
+            `wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${coinWalletConfig.walletApi} => BTC`,
           );
           return new BtcWallet(coinWalletConfig);
         }
         case eSupportedInterfaces.eth: {
           logger.debug(
-            `wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${
-              coinWalletConfig.walletApi
-            } => ETH`,
+            `wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${coinWalletConfig.walletApi} => ETH`,
           );
           return new EthWallet(coinWalletConfig);
         }
         case eSupportedInterfaces.erc20: {
           logger.debug(
-            `wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${
-              coinWalletConfig.walletApi
-            } => ERC20`,
+            `wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${coinWalletConfig.walletApi} => ERC20`,
           );
           return new Erc20Wallet(coinWalletConfig);
         }
         case eSupportedInterfaces.doc: {
           logger.debug(
-            `wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${
-              coinWalletConfig.walletApi
-            } => Doc`,
+            `wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${coinWalletConfig.walletApi} => Doc`,
           );
           return new DocWallet(coinWalletConfig);
         }
@@ -137,6 +129,8 @@ export default class WalletApi {
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: LOCALHOST`,
       );
       return [BTC, ETH, GREEN, ARCADE, WinX];
+    } else if (hostName.includes('blue')) {
+      return [BTC, ETH];
     } else {
       logger.warn(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: NONE MATCHED`,
