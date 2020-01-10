@@ -176,6 +176,9 @@ class Config {
     if (hostName.includes('arcade')) {
       return 'arcade';
     }
+    if (hostName.includes('blue')) {
+      return 'blue';
+    }
     if (hostName.includes('localhost')) {
       return 'localhost';
     }
