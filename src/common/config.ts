@@ -1,7 +1,6 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import * as dotenv from 'dotenv';
 import * as autoBind from 'auto-bind';
+import * as supportedFavoriteOptions from '../data/supportedFavoriteOptions.json';
 import { PubSub } from 'apollo-server-express';
 import keys from './keys';
 import { Connection, createConnection } from 'mongoose';
@@ -218,17 +217,9 @@ class Config {
   }
 
   private mapSymbolToName() {
-    const symbolsWithNames = JSON.parse(
-      fs
-        .readFileSync(
-          path.join(__dirname, '../data/supportedFavoriteOptions.json'),
-        )
-        .toString(),
-    ) as { name: string; symbol: string }[];
-
     const symbolToName = new Map();
 
-    symbolsWithNames.forEach(({ name, symbol }) => {
+    supportedFavoriteOptions.forEach(({ name, symbol }) => {
       symbolToName.set(symbol, name);
     });
 
