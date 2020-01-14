@@ -21,6 +21,7 @@ class Resolvers extends ResolverBase {
         phone: string;
         phoneCountry: string;
         referredBy: string;
+        utmInfo: string[];
       };
     },
     context: Context,
@@ -32,6 +33,7 @@ class Resolvers extends ResolverBase {
         lastName,
         phone = null,
         referredBy = null,
+        utmInfo,
       } = args.userInfo;
       const firebaseUid = await auth.getFirebaseUid(token, config.hostname);
       logger.debug(`resolvers.auth.createUser.firebaseUid:${firebaseUid}`);
@@ -43,6 +45,7 @@ class Resolvers extends ResolverBase {
         lastName,
         phone,
         referredBy,
+        utmInfo,
       });
       newUser.set('wallet.userCreatedInWallet', true);
       logger.debug(`resolvers.auth.createUser.newUser._id:${newUser._id}`);

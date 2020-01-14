@@ -75,6 +75,7 @@ export interface IUser extends mongoose.Document {
   lastName: string;
   role: string;
   created: Date;
+  utmInfo: string[];
   affiliateId: string;
   referredBy: string;
   permissions: string[];
@@ -215,6 +216,10 @@ export const userSchema = new mongoose.Schema(
       connect: Number,
     },
     profilePhotoUrl: String,
+    utmInfo: {
+      type: [String],
+      default: [],
+    },
   },
   { id: false },
 );
