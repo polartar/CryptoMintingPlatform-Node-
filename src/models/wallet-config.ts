@@ -15,6 +15,10 @@ export interface IWalletConfig extends Document {
   upgradeBenefits: string[];
   basicWalletBenefits: string[];
   upgradeAccountName: string;
+  coupon: {
+    photo: string;
+    softnodeType: string;
+  };
 }
 
 export const walletConfigSchema = new Schema({
@@ -69,6 +73,14 @@ export const walletConfigSchema = new Schema({
   upgradeBenefits: [String],
   basicWalletBenefits: [String],
   upgradeAccountName: String,
+  coupon: {
+    photo: {
+      type: String,
+    },
+    softnodeType: {
+      type: String,
+    },
+  },
 });
 
 export default model<IWalletConfig>('wallet-config', walletConfigSchema);

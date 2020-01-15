@@ -30,30 +30,18 @@ class TemplateBuilder {
       subject: referralActivated.subject,
     };
   }
-  buildSendSoftNodeDiscountHtml(user: IUser, brand: string) {
-    let filepath = path.join(__dirname, '/../assets/');
+  buildSendSoftNodeDiscountHtml(
+    user: IUser,
+    upgradeAccountName: string,
+    photo: string,
+    softnodeType: string,
+  ) {
+    const filepath = path.join(__dirname, '/../assets/', photo);
     const cid = 'logo';
-    let filename;
     logger.debug(
-      `templates.templateBuilder.buildSendSoftNodeDiscountHtml.brand: ${brand}`,
-    );
-    switch (brand) {
-      case 'Connect':
-        filename = 'instant-credit-codex-soft-node.jpg';
-        break;
-      case 'Codex':
-        filename = 'instant-credit-codex-soft-node.jpg';
-        break;
-      case 'Green':
-        filename = 'instant-credit-green-soft-node.jpg';
-        break;
-      default:
-        filename = 'instant-credit-arcade-soft-node.jpg';
-        break;
-    }
-    filepath += filename;
-    logger.debug(
-      `templates.templateBuilder.buildSendSoftNodeDiscountHtml.filename: ${filename}`,
+      `templates.templateBuilder.buildSendSoftNodeDiscountHtml.upgradeAccountName: ${upgradeAccountName}`,
+      `templates.templateBuilder.buildSendSoftNodeDiscountHtml.photo: ${photo}`,
+      `templates.templateBuilder.buildSendSoftNodeDiscountHtml.softnodeType: ${softnodeType}`,
     );
     logger.debug(
       `templates.templateBuilder.buildSendSoftNodeDiscountHtml.filepath: ${filepath}`,
@@ -61,13 +49,14 @@ class TemplateBuilder {
     return {
       html: Handlebars.compile(sendSoftNodeDiscount.html)({
         user,
-        brand,
+        brand: upgradeAccountName.replace('+', ''),
         href: config.cartUrl,
+        softnodeType,
       }),
-      subject: sendSoftNodeDiscount.subject(brand),
+      subject: sendSoftNodeDiscount.subject(upgradeAccountName),
       attachments: [
         {
-          filename,
+          filename: photo,
           path: filepath,
           cid,
         },

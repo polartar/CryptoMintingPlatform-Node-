@@ -339,6 +339,7 @@ class Resolvers extends ResolverBase {
     rewardType: string,
     paymentDetails: IActivationPayment & { transactionId: string },
     rewardResult: { amountRewarded: number; rewardId: string },
+    softnodeType: string,
   ) {
     const {
       transactionId,
@@ -348,7 +349,7 @@ class Resolvers extends ResolverBase {
     } = paymentDetails;
     const { amountRewarded, rewardId } = rewardResult;
     const prefix = `wallet.activations.${rewardType}`;
-    const permission = `${rewardType}-soft-node-discount`;
+    const permission = `${softnodeType}-soft-node-discount`;
     userDoc.permissions.push(permission);
     userDoc.set(`${prefix}.activated`, true);
     userDoc.set(`${prefix}.activationTxHash`, transactionId);
@@ -372,7 +373,7 @@ class Resolvers extends ResolverBase {
       wallet,
       user,
       logger,
-      dataSources: { cryptoFavorites, sendEmail },
+      dataSources: { cryptoFavorites, sendEmail, environment },
     }: Context,
   ) {
     // in all environments except arcade, company fee address and partner fee address are the same in the .env
@@ -382,9 +383,9 @@ class Resolvers extends ResolverBase {
     this.requireAuth(user);
     try {
       const dbUser = await user.findFromDb();
-      const { referrer } = await this.findReferrer(dbUser.referredBy).catch(
-        () => ({ referrer: null }),
-      );
+      const { referrer } = await this.findReferrer(
+        dbUser.referredBy,
+      ).catch(() => ({ referrer: null }));
 
       const [[{ price }], shareConfigUser] = await Promise.all([
         cryptoFavorites.getUserFavorites(['BTC']),
@@ -442,13 +443,25 @@ class Resolvers extends ResolverBase {
         logger,
       );
 
+      const {
+        upgradeAccountName,
+        coupon: { photo, softnodeType },
+      } = (await environment.findOne({
+        rewardCurrency: args.rewardType,
+      })) as IWalletConfig;
       this.saveActivationToDb(
         dbUser,
         rewardType,
         { ...paymentDetails, transactionId: transaction.id },
         rewardResult,
+        softnodeType.toLowerCase(),
       );
-      sendEmail.sendSoftNodeDiscount(dbUser);
+      sendEmail.sendSoftNodeDiscount(
+        dbUser,
+        upgradeAccountName,
+        photo,
+        softnodeType,
+      );
       if (referrer && paymentDetails.outputs.length >= 2) {
         sendEmail.referrerActivated(referrer, dbUser);
         const existingShares =
