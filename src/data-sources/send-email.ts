@@ -78,7 +78,12 @@ class SendEmail extends DataSource {
     );
     return emailSent;
   }
-  public async sendSoftNodeDiscount(user: IUser) {
+  public async sendSoftNodeDiscount(
+    user: IUser,
+    upgradeAccountName: string,
+    photo: string,
+    softnodeType: string,
+  ) {
     logger.debug(
       `data-sources.SendEmail.sendSoftNodeDiscount.user: ${user && user.id}`,
     );
@@ -91,7 +96,9 @@ class SendEmail extends DataSource {
       attachments,
     } = templateBuilder.buildSendSoftNodeDiscountHtml(
       user,
-      this.capitalizedBrand,
+      upgradeAccountName,
+      photo,
+      softnodeType,
     );
     try {
       const emailSent = await this.sendMail(
