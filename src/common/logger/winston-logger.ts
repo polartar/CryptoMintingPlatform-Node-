@@ -19,7 +19,7 @@ if (process.env.NODE_ENV === 'production' && config.mongodbUri) {
 } else {
   logger.add(
     new winston.transports.Console({
-      level: process.env.LOG_LEVEL,
+      level: 'debug',
       format: winston.format.combine(
         winston.format.simple(),
         winston.format.printf(
