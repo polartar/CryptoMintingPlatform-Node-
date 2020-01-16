@@ -16,7 +16,7 @@ input CreateUserInput {
   lastName: String!
   phone: String
   referredBy: String
-  utmInfo: [String!]!
+  utmInfo: [String!]
 }
 
 input UpdateUserInput {

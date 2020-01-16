@@ -33,7 +33,7 @@ class Resolvers extends ResolverBase {
         lastName,
         phone = null,
         referredBy = null,
-        utmInfo,
+        utmInfo = [],
       } = args.userInfo;
       const firebaseUid = await auth.getFirebaseUid(token, config.hostname);
       logger.debug(`resolvers.auth.createUser.firebaseUid:${firebaseUid}`);
