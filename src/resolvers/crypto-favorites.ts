@@ -1,46 +1,59 @@
 import { Context } from '../types/context';
-import { logger, config } from '../common';
+import { logger } from '../common';
 import ResolverBase from '../common/Resolver-Base';
-import * as topSupportedCryptoFavorites from '../data/topSupportedFavoriteOptions.json';
-import { UserInputError } from 'apollo-server-express';
 const autoBind = require('auto-bind');
+import * as supportedCryptoFavorites from '../data/supportedFavoriteOptions.json';
 
 class Resolvers extends ResolverBase {
-  supportedFavorites = topSupportedCryptoFavorites.slice(0, 100);
-  supportedFavoritesMap: Map<
-    string,
-    { symbol: string; name: string }
-  > = new Map();
   constructor() {
     super();
     autoBind(this);
-    this.supportedFavorites.forEach(fav =>
-      this.supportedFavoritesMap.set(fav.symbol, fav),
-    );
   }
 
-  async getFavorites(parent: any, args: {}, { user }: Context) {
+  async getFavorites(
+    parent: any,
+    args: {},
+    { user, dataSources: { cryptoFavorites } }: Context,
+  ) {
     try {
+      logger.debug(
+        `resolvers.crypto-favorites.getFavorites.userId:${user && user.userId}`,
+      );
       this.requireAuth(user);
-      const userFavoriteMap = new Map();
+      logger.debug(`resolvers.crypto-favorites.getFavorites.userId:ok`);
       const foundUser = await user.findFromDb();
+      logger.debug(
+        `resolvers.crypto-favorites.getFavorites.foundUser.id:${foundUser.id}`,
+      );
       const { wallet } = foundUser;
-      if (wallet) {
-        wallet.cryptoFavorites.forEach(fav => userFavoriteMap.set(fav, true));
-      } else {
-        await user.setWalletAccountToUser();
-        config.defaultCryptoFavorites.forEach(fav =>
-          userFavoriteMap.set(fav, true),
+      logger.debug(
+        `resolvers.crypto-favorites.getFavorites.foundUser.wallet:${wallet &&
+          wallet.id}`,
+      );
+      if (!wallet) {
+        const updatedUser = await user.setWalletAccountToUser();
+        logger.debug(
+          `resolvers.crypto-favorites.getFavorites.foundUser.wallet.!!updatedUser:${!!updatedUser}`,
         );
+        const favoritesFullData = await cryptoFavorites.getUserFavorites(
+          updatedUser.wallet.cryptoFavorites,
+        );
+        logger.debug(
+          `resolvers.crypto-favorites.getFavorites.foundUser.wallet.favoritesFullData.length:${
+            favoritesFullData.length
+          }`,
+        );
+        return favoritesFullData;
       }
-      return topSupportedCryptoFavorites
-        .slice(0, 100)
-        .map(supportedFavorite => {
-          return {
-            ...supportedFavorite,
-            following: !!userFavoriteMap.get(supportedFavorite.symbol),
-          };
-        });
+      const userFavoritesFullData = await cryptoFavorites.getUserFavorites(
+        wallet.cryptoFavorites,
+      );
+      logger.debug(
+        `resolvers.crypto-favorites.getFavorites.foundUser.wallet.userFavoritesFullData.length:${
+          userFavoritesFullData.length
+        }`,
+      );
+      return userFavoritesFullData;
     } catch (error) {
       logger.debug(`resolvers.crypto-favorites.getFavorites.catch:${error}`);
       throw error;
@@ -53,17 +66,25 @@ class Resolvers extends ResolverBase {
     { user, dataSources: { cryptoFavorites } }: Context,
   ) {
     try {
+      logger.debug(
+        `resolvers.crypto-favorites.addFavorite.userId:${user && user.userId}`,
+      );
+      logger.debug(
+        `resolvers.crypto-favorites.addFavorite.args.symbol:${args.symbol}`,
+      );
       this.requireAuth(user);
-      const favoriteSupported = !!this.supportedFavoritesMap.get(args.symbol);
-      if (!favoriteSupported)
-        throw new UserInputError(`${args.symbol} not supported as a favorite`);
+      logger.debug(`resolvers.crypto-favorites.addFavorite.requireAuth:ok`);
       const foundUser = await user.findFromDb();
+      logger.debug(
+        `resolvers.crypto-favorites.addFavorite.foundUser.id:${foundUser.id}`,
+      );
       const { wallet } = <{ wallet: any }>foundUser;
       wallet.cryptoFavorites.addToSet(args.symbol);
       await foundUser.save();
-      return {
-        success: true,
-      };
+      logger.debug(
+        `resolvers.crypto-favorites.addFavorite.foundUser.save():done`,
+      );
+      return cryptoFavorites.getUserFavorites(wallet.cryptoFavorites);
     } catch (error) {
       logger.warn(`resolvers.crypto-favorites.addFavorite.catch:${error}`);
       throw error;
@@ -73,17 +94,29 @@ class Resolvers extends ResolverBase {
   async removeFavorite(
     parent: any,
     args: { symbol: string },
-    { user }: Context,
+    { user, dataSources: { cryptoFavorites } }: Context,
   ) {
     try {
+      logger.debug(
+        `resolvers.crypto-favorites.removeFavorite.userId:${user &&
+          user.userId}`,
+      );
+      logger.debug(
+        `resolvers.crypto-favorites.removeFavorite.args.symbol:${args.symbol}`,
+      );
       this.requireAuth(user);
+      logger.debug(`resolvers.crypto-favorites.removeFavorite.requireAuth:ok`);
       const foundUser = await user.findFromDb();
+      logger.debug(
+        `resolvers.crypto-favorites.removeFavorite.foundUser.id:${
+          foundUser.id
+        }`,
+      );
       const { wallet } = <{ wallet: any }>foundUser;
       wallet.cryptoFavorites.remove(args.symbol);
       await foundUser.save();
-      return {
-        success: true,
-      };
+      logger.debug(`resolvers.crypto-favorites.removeFavorite.save():done`);
+      return cryptoFavorites.getUserFavorites(wallet.cryptoFavorites);
     } catch (error) {
       logger.warn(`resolvers.crypto-favorites.removeFavorite.catch:${error}`);
       throw error;
@@ -91,7 +124,8 @@ class Resolvers extends ResolverBase {
   }
 
   getSupportedFavorites = () => {
-    return this.supportedFavorites;
+    logger.debug(`resolvers.crypto-favorites.removeFavorite.save():done`);
+    return supportedCryptoFavorites;
   };
 }
 
