@@ -110,6 +110,10 @@ class Config {
   public readonly sendWalletReportToLocalhost =
     process.env.SEND_WALLET_REPORT_TO_LOCALHOST;
 
+  public readonly s3Bucket = process.env.S3_BUCKET;
+  public readonly awsAccessKey = process.env.AWS_ACCESS_KEY_ID;
+  public readonly awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+
   constructor() {
     autoBind(this);
     this.ensureRequiredVariables();
