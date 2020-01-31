@@ -1,0 +1,12 @@
+type AwsSignature {
+  signedRequest: any!
+  url: String!
+}
+type AwsInput {
+  fileName: String!
+  fileType: String!
+}
+
+type Mutation {
+  signs3(pictureInfo: AwsInput!): AwsSignature!
+}
