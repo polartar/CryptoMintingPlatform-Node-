@@ -73,6 +73,7 @@ export interface IUser extends mongoose.Document {
   firebaseUid: string;
   firstName: string;
   lastName: string;
+  displayName: string;
   role: string;
   created: Date;
   utmInfo: string[];
@@ -160,6 +161,7 @@ export const userSchema = new mongoose.Schema(
   {
     firstName: String,
     lastName: String,
+    displayName: String,
     email: {
       type: String,
       unique: true,
