@@ -113,6 +113,7 @@ class Config {
   public readonly s3Bucket = process.env.S3_BUCKET;
   public readonly awsAccessKey = process.env.AWS_ACCESS_KEY_ID;
   public readonly awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+  public readonly s3Region = process.env.S3_REGION;
 
   constructor() {
     autoBind(this);
@@ -155,6 +156,10 @@ class Config {
       'SEND_WALLET_REPORT_TO_GREEN',
       'SEND_WALLET_REPORT_TO_LOCALHOST',
       'CART_URL',
+      'S3_BUCKET',
+      'AWS_ACCESS_KEY_ID',
+      'AWS_SECRET_ACCESS_KEY',
+      'S3_REGION',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(

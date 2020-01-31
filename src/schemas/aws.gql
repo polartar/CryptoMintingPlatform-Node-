@@ -1,8 +1,8 @@
 type AwsSignature {
-  signedRequest: any!
+  signedRequest: String!
   url: String!
 }
-type AwsInput {
+input AwsInput {
   fileName: String!
   fileType: String!
 }
