@@ -2,6 +2,7 @@ type UserProfile {
   email: String!
   firstName: String!
   lastName: String!
+  displayName: String
   phone: String
   phoneCountry: String
   id: ID!
@@ -14,6 +15,7 @@ input CreateUserInput {
   token: String!
   firstName: String!
   lastName: String!
+  displayName: String
   phone: String
   referredBy: String
   utmInfo: [String!]
@@ -22,6 +24,7 @@ input CreateUserInput {
 input UpdateUserInput {
   firstName: String
   lastName: String
+  displayName: String
   phone: String
   email: String
   password: String
