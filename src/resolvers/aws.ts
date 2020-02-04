@@ -10,7 +10,7 @@ class Resolvers extends ResolverBase {
     autoBind(this);
   }
 
-  public async signs3(
+  public async getS3Signature(
     parent: any,
     args: { pictureInfo: { fileName: string; fileType: string } },
     { user }: Context,
@@ -29,7 +29,7 @@ class Resolvers extends ResolverBase {
 const resolvers = new Resolvers();
 
 export default {
-  Mutation: {
-    signs3: resolvers.signs3,
+  Query: {
+    getS3Signature: resolvers.getS3Signature,
   },
 };

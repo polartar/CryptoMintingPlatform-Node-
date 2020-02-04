@@ -7,6 +7,6 @@ input AwsInput {
   fileType: String!
 }
 
-type Mutation {
-  signs3(pictureInfo: AwsInput!): AwsSignature!
+type Query {
+  getS3Signature(pictureInfo: AwsInput!): AwsSignature!
 }

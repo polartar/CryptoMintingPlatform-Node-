@@ -74,7 +74,7 @@ class Resolvers extends ResolverBase {
         firstName?: string;
         lastName?: string;
         displayName?: string;
-        profileUrl?: string;
+        profilePhotoUrl?: string;
         phone?: string;
         password?: string;
       };
@@ -87,7 +87,7 @@ class Resolvers extends ResolverBase {
       firstName,
       lastName,
       displayName,
-      profileUrl,
+      profilePhotoUrl,
       phone,
       password,
     } = args.userInfo;
@@ -112,8 +112,8 @@ class Resolvers extends ResolverBase {
     if (displayName) {
       userDoc.set('displayName', displayName);
     }
-    if (profileUrl) {
-      userDoc.set('profileUrl', profileUrl);
+    if (profilePhotoUrl) {
+      userDoc.set('profilePhotoUrl', profilePhotoUrl);
     }
     if (phone) {
       userDoc.set('phone', phone);

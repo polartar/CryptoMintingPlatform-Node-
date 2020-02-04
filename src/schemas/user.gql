@@ -3,7 +3,6 @@ type UserProfile {
   firstName: String!
   lastName: String!
   displayName: String
-  profileUrl: String
   phone: String
   phoneCountry: String
   id: ID!
@@ -17,7 +16,7 @@ input CreateUserInput {
   firstName: String!
   lastName: String!
   displayName: String
-  profileUrl: String
+  profilePhotoUrl: String
   phone: String
   referredBy: String
   utmInfo: [String!]
@@ -27,7 +26,7 @@ input UpdateUserInput {
   firstName: String
   lastName: String
   displayName: String
-  profileUrl: String
+  profilePhotoUrl: String
   phone: String
   email: String
   password: String
