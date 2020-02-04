@@ -1,5 +1,6 @@
 import * as aws from 'aws-sdk';
 import { config } from '../common';
+import { v4 as randomString } from 'uuid';
 
 class S3Service {
   s3: aws.S3;
@@ -27,7 +28,11 @@ class S3Service {
   };
 
   getSignedUrl = (fileName: string, fileType: string) => {
-    const params = this.getParams(fileName, fileType);
+    const randomizedFileName = `${randomString()}-${fileName.replace(
+      /\s/g,
+      '-',
+    )}`;
+    const params = this.getParams(randomizedFileName, fileType);
     return new Promise((resolve, reject) => {
       this.s3.getSignedUrl('putObject', params, (err: any, data: any) => {
         if (err) {
