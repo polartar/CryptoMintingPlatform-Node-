@@ -16,6 +16,7 @@ input CreateUserInput {
   firstName: String!
   lastName: String!
   displayName: String
+  profilePhotoUrl: String
   phone: String
   referredBy: String
   utmInfo: [String!]
@@ -25,6 +26,7 @@ input UpdateUserInput {
   firstName: String
   lastName: String
   displayName: String
+  profilePhotoUrl: String
   phone: String
   email: String
   password: String

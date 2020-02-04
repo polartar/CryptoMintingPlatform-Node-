@@ -21,6 +21,7 @@
     "apollo-datasource-rest": "^0.5.0",
     "apollo-server-express": "^2.2.6",
     "auto-bind": "^1.2.1",
+    "aws-sdk": "^2.610.0",
     "axios": "^0.19.0",
     "bclient": "^0.1.7",
     "bignumber.js": "^9.0.0",
@@ -45,7 +46,7 @@
     "simple-crypto-js": "^2.0.2",
     "speakeasy": "^2.0.0",
     "subscriptions-transport-ws": "^0.9.16",
-    "uuid": "^3.3.3",
+    "uuid": "^3.4.0",
     "web3": "^1.0.0-beta.55",
     "winston": "^3.1.0",
     "winston-mongodb": "^4.0.3"
