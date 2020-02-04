@@ -15,7 +15,6 @@ class Resolvers extends ResolverBase {
     args: { pictureInfo: { fileName: string; fileType: string } },
     { user }: Context,
   ) {
-    this.requireAuth(user);
     const { fileName, fileType } = args.pictureInfo;
     try {
       const s3Response = await s3Service.getSignedUrl(fileName, fileType);
