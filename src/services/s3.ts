@@ -40,7 +40,7 @@ class S3Service {
         } else {
           const returnData = {
             signedRequest: data,
-            url: `https://${config.s3Bucket}.s3.amazonaws.com/${fileName}`,
+            url: `https://${config.s3Bucket}.s3.amazonaws.com/${randomizedFileName}`,
           };
           resolve(returnData);
         }
