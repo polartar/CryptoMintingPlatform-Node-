@@ -19,6 +19,7 @@ class Resolvers extends ResolverBase {
         firstName: string;
         lastName: string;
         displayName: string;
+        profilePhotoUrl: string;
         phone: string;
         phoneCountry: string;
         referredBy: string;
@@ -33,6 +34,7 @@ class Resolvers extends ResolverBase {
         firstName,
         lastName,
         displayName,
+        profilePhotoUrl,
         phone = null,
         referredBy = null,
         utmInfo = [],
@@ -46,6 +48,7 @@ class Resolvers extends ResolverBase {
         firstName,
         lastName,
         displayName,
+        profilePhotoUrl,
         phone,
         referredBy,
         utmInfo,
