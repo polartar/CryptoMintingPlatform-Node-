@@ -58,6 +58,10 @@ export const walletConfigSchema = new Schema({
     type: String,
     required: true,
   },
+  backgroundColorNew: {
+    type: String,
+    required: true,
+  },
   icon: {
     type: String,
     required: true,
