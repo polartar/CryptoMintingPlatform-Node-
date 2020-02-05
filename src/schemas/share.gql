@@ -1,5 +1,6 @@
 type ShareOption {
   backgroundColor: String!
+  backgroundColorNew: String!
   icon: String!
   accentColor: String!
   textColor: String!

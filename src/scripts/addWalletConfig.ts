@@ -5,6 +5,7 @@ void (async () => {
   const arcade = {
     prod: {
       backgroundColor: '#B38DF7',
+      backgroundColorNew: '#671BCC',
       icon: 'arcade-share.png',
       accentColor: '#e8d1ff',
       textColor: '#6600CC',
@@ -31,9 +32,14 @@ void (async () => {
         'Hold early access game items*',
         'Advanced play access to Arcade games (coming soon)',
       ],
+      coupon: {
+        photo: 'instant-credit-arcade-soft-node.jpg',
+        softnodeType: 'Arcade',
+      },
     },
     local: {
       backgroundColor: '#B38DF7',
+      backgroundColorNew: '#671BCC',
       icon: 'arcade-share.png',
       accentColor: '#e8d1ff',
       textColor: '#6600CC',
@@ -60,12 +66,17 @@ void (async () => {
         'Hold early access game items*',
         'Advanced play access to Arcade games (coming soon)',
       ],
+      coupon: {
+        photo: 'instant-credit-arcade-soft-node.jpg',
+        softnodeType: 'Arcade',
+      },
     },
   };
 
   const green = {
     prod: {
       backgroundColor: '#92D36E',
+      backgroundColorNew: '#4A837A',
       icon: 'green-share.png',
       accentColor: '#e0f7e0',
       textColor: '#33cc33',
@@ -90,9 +101,14 @@ void (async () => {
         'Send and receive ETH',
         'Send and receive GREEN',
       ],
+      coupon: {
+        photo: 'instant-credit-green-soft-node.jpg',
+        softnodeType: 'Green',
+      },
     },
     local: {
       backgroundColor: '#92D36E',
+      backgroundColorNew: '#4A837A',
       icon: 'green-share.png',
       accentColor: '#e0f7e0',
       textColor: '#33cc33',
@@ -117,12 +133,17 @@ void (async () => {
         'Send and receive ETH',
         'Send and receive GREEN',
       ],
+      coupon: {
+        photo: 'instant-credit-green-soft-node.jpg',
+        softnodeType: 'Green',
+      },
     },
   };
 
   const codex = {
     prod: {
       backgroundColor: '#75A9F9',
+      backgroundColorNew: '#369AFF',
       icon: 'winx-share.png',
       accentColor: '#d9e8ff',
       textColor: '#0099ff',
@@ -143,9 +164,14 @@ void (async () => {
         'Digital rewards for wallet shares',
       ],
       basicWalletBenefits: ['Send and receive BTC', 'Send and receive ETH'],
+      coupon: {
+        photo: 'instant-credit-codex-soft-node.jpg',
+        softnodeType: 'Codex',
+      },
     },
     local: {
       backgroundColor: '#75A9F9',
+      backgroundColorNew: '#369AFF',
       icon: 'winx-share.png',
       accentColor: '#d9e8ff',
       textColor: '#0099ff',
@@ -166,12 +192,17 @@ void (async () => {
         'Digital rewards for wallet shares',
       ],
       basicWalletBenefits: ['Send and receive BTC', 'Send and receive ETH'],
+      coupon: {
+        photo: 'instant-credit-codex-soft-node.jpg',
+        softnodeType: 'Codex',
+      },
     },
   };
 
   const connect = {
     prod: {
       backgroundColor: '#75A9F9',
+      backgroundColorNew: '#369AFF',
       icon: 'winx-share.png',
       accentColor: '#d9e8ff',
       textColor: '#0099ff',
@@ -195,9 +226,14 @@ void (async () => {
         'Send and receive ETH',
         'Send and receive GREEN',
       ],
+      coupon: {
+        photo: 'instant-credit-codex-soft-node.jpg',
+        softnodeType: 'Codex',
+      },
     },
     local: {
       backgroundColor: '#75A9F9',
+      backgroundColorNew: '#369AFF',
       icon: 'winx-share.png',
       accentColor: '#d9e8ff',
       textColor: '#0099ff',
@@ -221,6 +257,10 @@ void (async () => {
         'Send and receive ETH',
         'Send and receive GREEN',
       ],
+      coupon: {
+        photo: 'instant-credit-codex-soft-node.jpg',
+        softnodeType: 'Codex',
+      },
     },
   };
   const brand = 'connect';
@@ -250,39 +290,39 @@ void (async () => {
   const allConnections = await connections.allConnections.connect();
 
   const [
-    connectStageModel,
-    connectProdModel,
-    greenStageModel,
-    greenProdModel,
     arcadeStageModel,
     arcadeProdModel,
     codexStageModel,
     codexProdModel,
+    connectStageModel,
+    connectProdModel,
+    greenStageModel,
+    greenProdModel,
   ] = allConnections.map(connection => {
     return connection.model<IWalletConfig>('wallet-config', walletConfigSchema);
   });
 
   const connectResult = [connectStageModel, connectProdModel].map(async cnx => {
     await cnx.deleteMany({});
-    await cnx.insertMany(connectConfig);
-    console.log('Connect Done');
+    const result = await cnx.insertMany(connectConfig);
+    console.log('Connect Done', { result });
   });
 
   const greenResult = [greenStageModel, greenProdModel].map(async cnx => {
     await cnx.deleteMany({});
-    await cnx.insertMany(greenConfig);
-    console.log('Green Done');
+    const result = await cnx.insertMany(greenConfig);
+    console.log('Green Done', { result });
   });
 
   const codexResult = [codexStageModel, codexProdModel].map(async cnx => {
     await cnx.deleteMany({});
-    await cnx.insertMany(codexConfig);
-    console.log('Codex Done');
+    const result = await cnx.insertMany(codexConfig);
+    console.log('Codex Done', { result });
   });
 
   const arcadeResult = [arcadeStageModel, arcadeProdModel].map(async cnx => {
     await cnx.deleteMany({});
-    await cnx.insertMany(arcadeConfig);
-    console.log('Arcade Done');
+    const result = await cnx.insertMany(arcadeConfig);
+    console.log('Arcade Done', { result });
   });
 })();
