@@ -109,6 +109,7 @@ class Config {
     process.env.SEND_WALLET_REPORT_TO_GREEN;
   public readonly sendWalletReportToLocalhost =
     process.env.SEND_WALLET_REPORT_TO_LOCALHOST;
+  public readonly gameItemServiceUrl = process.env.GAME_ITEM_SERVICE_URL;
 
   constructor() {
     autoBind(this);
@@ -151,6 +152,7 @@ class Config {
       'SEND_WALLET_REPORT_TO_GREEN',
       'SEND_WALLET_REPORT_TO_LOCALHOST',
       'CART_URL',
+      'GAME_ITEM_SERVICE_URL',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
