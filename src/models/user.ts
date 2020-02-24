@@ -9,47 +9,22 @@ interface IWalletShares {
   [key: string]: number;
 }
 
+interface IWalletUpgrade {
+  activated: boolean;
+  activationTxHash: string;
+  btcToCompany: number;
+  btcToReferrer: number;
+  btcUsdPrice: number;
+  amountRewarded: number;
+  itemsRewarded: string[];
+  rewardId: string;
+  timestamp: Date;
+}
 interface IActivatedWallets {
-  green: {
-    activated: boolean;
-    activationTxHash: string;
-    btcToCompany: number;
-    btcToReferrer: number;
-    btcUsdPrice: number;
-    amountRewarded: number;
-    rewardId: string;
-    timestamp: Date;
-  };
-  arcade: {
-    activated: boolean;
-    activationTxHash: string;
-    btcToCompany: number;
-    btcToReferrer: number;
-    btcUsdPrice: number;
-    amountRewarded: number;
-    rewardId: string;
-    timestamp: Date;
-  };
-  winx: {
-    activated: boolean;
-    activationTxHash: string;
-    btcToCompany: number;
-    btcToReferrer: number;
-    btcUsdPrice: number;
-    amountRewarded: number;
-    rewardId: string;
-    timestamp: Date;
-  };
-  [key: string]: {
-    activated: boolean;
-    activationTxHash: string;
-    btcToCompany: number;
-    btcToReferrer: number;
-    btcUsdPrice: number;
-    amountRewarded: number;
-    rewardId: string;
-    timestamp: Date;
-  };
+  green: IWalletUpgrade;
+  arcade: IWalletUpgrade;
+  winx: IWalletUpgrade;
+  [key: string]: IWalletUpgrade;
 }
 
 export interface IUserWalletDoc extends mongoose.Document {
@@ -113,6 +88,7 @@ const activatedWalletsSchema = new mongoose.Schema({
   btcToReferrer: Number,
   btcUsdPrice: Number,
   amountRewarded: Number,
+  itemsRewarded: [String],
   rewardId: String,
   timestamp: Date,
 });

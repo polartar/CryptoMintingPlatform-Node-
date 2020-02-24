@@ -13,8 +13,8 @@ class RewardDistributer {
     const { rewardAmount, rewardCurrency } = rewardConfig;
     methodLogger.JSON.debug({ rewardAmount, rewardCurrency });
     const rewardCurrencyLowered = rewardCurrency.toLowerCase();
-    let rewardId;
-    let itemsRewarded = [];
+    let rewardId: string;
+    let itemsRewarded: string[] = [];
     if (rewardCurrencyLowered === 'green') {
       rewardId = await erc20Reward.send(
         rewardCurrency,
@@ -23,11 +23,12 @@ class RewardDistributer {
         logger,
       );
     } else if (rewardCurrencyLowered === 'arcade') {
-      rewardId = await Promise.all([
+      const [resultRewardId, resultItemsRewarded] = await Promise.all([
         docReward.send(rewardCurrency, rewardAmount, userId, logger),
-
-        (itemsRewarded = await gameItemsReward.send(userId, ethAddress, 1)),
+        gameItemsReward.send(userId, ethAddress, 1),
       ]);
+      rewardId = resultRewardId;
+      itemsRewarded = resultItemsRewarded;
     } else {
       rewardId = await docReward.send(
         rewardCurrency,

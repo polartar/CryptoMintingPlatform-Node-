@@ -1,0 +1,21 @@
+type Rarity {
+  label: String
+  image: String
+  supplyLimit: Int
+}
+
+type GameItem {
+  name: String!
+  description: String!
+  nftBaseId: String
+  image: String!
+  rarity: Rarity!
+  amount: String!
+  status: String!
+  timestamp: Date!
+  tokenId: String!
+}
+
+type Query {
+  ownedItems: [GameItem!]!
+}

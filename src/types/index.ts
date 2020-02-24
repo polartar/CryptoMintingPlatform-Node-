@@ -18,3 +18,5 @@ export { default as IShareConfig } from './IShareConfig';
 export { CoinSymbol } from './CoinSymbol';
 export { Context, IUserClaims } from './context';
 export { IJwtSignOptions } from './IJwtSignOptions';
+export { IItem } from './IItem';
+export { IWalletTransaction } from './IWalletTransaction';

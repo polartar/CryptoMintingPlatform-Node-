@@ -12,7 +12,9 @@ class DocReward {
   ]);
 
   private getRewardName = (currency: string) => {
-    const selectedReward = this.rewardNameFromCurrency.get(currency);
+    const selectedReward = this.rewardNameFromCurrency.get(
+      currency.toLowerCase(),
+    );
     if (!selectedReward) {
       throw new Error(`No reward name for currency ${currency}`);
     }
@@ -24,7 +26,7 @@ class DocReward {
     rewardAmount: number,
     userId: string,
     logger: Logger,
-  ) => {
+  ): Promise<string> => {
     const rewardName = this.getRewardName(rewardCurrency);
     logger.obj.debug({ rewardName });
     const { id: createdRecordId } = await PromotionalReward.create({
