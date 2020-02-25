@@ -338,7 +338,11 @@ class Resolvers extends ResolverBase {
     userDoc: IUser,
     rewardType: string,
     paymentDetails: IActivationPayment & { transactionId: string },
-    rewardResult: { amountRewarded: number; rewardId: string },
+    rewardResult: {
+      amountRewarded: number;
+      rewardId: string;
+      itemsRewarded: string[];
+    },
     softnodeType: string,
   ) {
     const {
@@ -347,7 +351,7 @@ class Resolvers extends ResolverBase {
       btcToReferrer,
       btcToCompany,
     } = paymentDetails;
-    const { amountRewarded, rewardId } = rewardResult;
+    const { amountRewarded, rewardId, itemsRewarded } = rewardResult;
     const prefix = `wallet.activations.${rewardType}`;
     const permission = `${softnodeType}-soft-node-discount`;
     userDoc.permissions.push(permission);
@@ -359,6 +363,7 @@ class Resolvers extends ResolverBase {
     userDoc.set(`${prefix}.timestamp`, new Date());
     userDoc.set(`${prefix}.amountRewarded`, amountRewarded);
     userDoc.set(`${prefix}.rewardId`, rewardId);
+    userDoc.set(`${prefix}.itemsRewarded`, itemsRewarded);
 
     return userDoc.save();
   }
@@ -392,7 +397,7 @@ class Resolvers extends ResolverBase {
         this.getShareConfigs(dbUser),
       ]);
 
-      const [rewardConfigUser] = shareConfigUser.available.filter(
+      const rewardConfigUser = shareConfigUser.available.find(
         configItem => configItem.rewardCurrency === args.rewardType,
       );
 
