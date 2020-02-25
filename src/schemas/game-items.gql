@@ -1,21 +1,40 @@
-type Rarity {
-  label: String
-  image: String
-  supplyLimit: Int
+type GameSubItem {
+  id: String!
+  aquisitionType: String!
+  dateAquired: Int!
+  gameItemId: String!
 }
 
 type GameItem {
+  id: String
   name: String!
   description: String!
-  nftBaseId: String
   image: String!
-  rarity: Rarity!
-  amount: String!
-  status: String!
-  timestamp: Date!
-  tokenId: String!
+  icon: String!
+  game: String!
+  coin: String!
+  tradeWaitTime: Int!
+  withdrawalWaitTime: Int!
+  galaFee: Float!
+  quantityNeeded: Int
+  items: [GameSubItem!]
+}
+
+type FarmBot {
+  id: String
+  name: String!
+  image: String!
+  description: String!
+  icon: String!
+  game: String!
+  coin: String!
+  tradeWaitTime: Int!
+  withdrawalWaitTime: Int!
+  galaFee: Float!
+  requiredPieces: [GameItem!]!
 }
 
 type Query {
   ownedItems: [GameItem!]!
+  farmBotRequired: FarmBot!
 }

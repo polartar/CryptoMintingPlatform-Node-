@@ -18,13 +18,20 @@ class GameItemService extends ServerToServerService {
     quantity: number = 1,
   ) => {
     const jwtAxios = this.getAxios({ userId, userEthAddress });
-    const { data } = (await jwtAxios.post(this.baseUrl, {
+    const { data } = await jwtAxios.post(this.baseUrl, {
       userId,
       userEthAddress,
       quantity,
-    })) as { data: IItem[] };
+    });
 
-    return data.map(item => item.nftBaseId);
+    return data.map((item: IItem) => item.nftBaseId);
+  };
+
+  getFarmBotRequiredItems = async (userId: string) => {
+    const jwtAxios = this.getAxios({ userId });
+    const { data } = await jwtAxios.get(`${this.baseUrl}/farmbot`);
+
+    return data;
   };
 }
 
