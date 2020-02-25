@@ -111,6 +111,11 @@ class Config {
     process.env.SEND_WALLET_REPORT_TO_LOCALHOST;
   public readonly gameItemServiceUrl = process.env.GAME_ITEM_SERVICE_URL;
 
+  public readonly s3Bucket = process.env.S3_BUCKET;
+  public readonly awsAccessKey = process.env.AWS_ACCESS_KEY_ID;
+  public readonly awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+  public readonly s3Region = process.env.S3_REGION;
+
   constructor() {
     autoBind(this);
     this.ensureRequiredVariables();
@@ -153,6 +158,10 @@ class Config {
       'SEND_WALLET_REPORT_TO_LOCALHOST',
       'CART_URL',
       'GAME_ITEM_SERVICE_URL',
+      'S3_BUCKET',
+      'AWS_ACCESS_KEY_ID',
+      'AWS_SECRET_ACCESS_KEY',
+      'S3_REGION',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(

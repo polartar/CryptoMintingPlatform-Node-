@@ -18,6 +18,8 @@ class Resolvers extends ResolverBase {
         token: string;
         firstName: string;
         lastName: string;
+        displayName: string;
+        profilePhotoUrl: string;
         phone: string;
         phoneCountry: string;
         referredBy: string;
@@ -31,6 +33,8 @@ class Resolvers extends ResolverBase {
         token,
         firstName,
         lastName,
+        displayName,
+        profilePhotoUrl,
         phone = null,
         referredBy = null,
         utmInfo = [],
@@ -43,6 +47,8 @@ class Resolvers extends ResolverBase {
         firebaseUid,
         firstName,
         lastName,
+        displayName,
+        profilePhotoUrl,
         phone,
         referredBy,
         utmInfo,
@@ -70,6 +76,8 @@ class Resolvers extends ResolverBase {
         email?: string;
         firstName?: string;
         lastName?: string;
+        displayName?: string;
+        profilePhotoUrl?: string;
         phone?: string;
         password?: string;
       };
@@ -77,7 +85,15 @@ class Resolvers extends ResolverBase {
     { user }: Context,
   ) {
     this.requireAuth(user);
-    const { email, firstName, lastName, phone, password } = args.userInfo;
+    const {
+      email,
+      firstName,
+      lastName,
+      displayName,
+      profilePhotoUrl,
+      phone,
+      password,
+    } = args.userInfo;
     const userDoc = await user.findFromDb();
     const emailPass: { email?: string; password?: string } = {};
     if (email) {
@@ -95,6 +111,12 @@ class Resolvers extends ResolverBase {
     }
     if (lastName) {
       userDoc.set('lastName', lastName);
+    }
+    if (displayName) {
+      userDoc.set('displayName', displayName);
+    }
+    if (profilePhotoUrl) {
+      userDoc.set('profilePhotoUrl', profilePhotoUrl);
     }
     if (phone) {
       userDoc.set('phone', phone);
