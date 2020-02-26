@@ -42,6 +42,12 @@ class CryptoFavorites extends RESTDataSource {
       };
     });
   }
+
+  public getBtcUsdPrice = async () => {
+    const [{ price }] = await this.getUserFavorites(['BTC']);
+
+    return +price;
+  };
 }
 
 export default CryptoFavorites;

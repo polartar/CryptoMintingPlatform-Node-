@@ -4,13 +4,13 @@ import { erc20Reward, docReward, gameItemsReward } from './reward-handlers';
 
 class RewardDistributer {
   public sendReward = async (
-    rewardConfig: IShareConfig,
+    rewardAmount: number,
+    rewardCurrency: string,
     userId: string,
     ethAddress: string,
     logger: Logger,
   ) => {
     const methodLogger = logger.setMethod('sendReward');
-    const { rewardAmount, rewardCurrency } = rewardConfig;
     methodLogger.JSON.debug({ rewardAmount, rewardCurrency });
     const rewardCurrencyLowered = rewardCurrency.toLowerCase();
     let rewardId: string;

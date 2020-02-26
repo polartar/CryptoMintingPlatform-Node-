@@ -1,7 +1,7 @@
 import { DataSource } from 'apollo-datasource';
 import { config, logger } from '../common';
 import { Model } from 'mongoose';
-import { User } from '../models';
+import { User, userSchema } from '../models';
 import { IUser } from '../types';
 import { IUserClaims } from '../types/context';
 import * as speakeasy from 'speakeasy';
@@ -34,7 +34,7 @@ export default class UserApi extends DataSource {
     this.twoFaEnabled = twoFaEnabled;
   }
 
-  public async findFromDb() {
+  public findFromDb = async () => {
     try {
       const user = await User.findById(this.userId).exec();
       return user;
@@ -44,7 +44,27 @@ export default class UserApi extends DataSource {
       );
       throw error;
     }
-  }
+  };
+
+  private findConnectUser = (query: { [key: string]: any }) => {
+    if (config.brand.toLowerCase() === 'connect') {
+      return Promise.resolve(null);
+    }
+    const ConnectUser = config.connectMongoConnection.model('user', userSchema);
+    return ConnectUser.findOne(query);
+  };
+
+  public findUserAndReferrer = async () => {
+    const userFromDb = await this.findFromDb();
+    const byAffiliateId = { affiliateId: userFromDb.referredBy };
+    const [localReferrer, connectReferrer] = await Promise.all([
+      User.findOne(byAffiliateId),
+      this.findConnectUser(byAffiliateId),
+    ]);
+    const referrer = localReferrer || connectReferrer;
+
+    return { referrer, userFromDb };
+  };
 
   public async setWalletAccountToUser(
     ethAddress?: string,
@@ -53,9 +73,7 @@ export default class UserApi extends DataSource {
     try {
       const user = await this.Model.findById(this.userId);
       logger.debug(
-        `data-sources.user.setWalletAccountToUser.user.id(${this.userId}):${
-          user.id
-        }`,
+        `data-sources.user.setWalletAccountToUser.user.id(${this.userId}):${user.id}`,
       );
       const defaults: any = {
         cryptoFavorites:
@@ -73,9 +91,7 @@ export default class UserApi extends DataSource {
       return result;
     } catch (error) {
       logger.warn(
-        `data-sources.user.setWalletAccountToUser.catch(${
-          this.userId
-        }):${error}`,
+        `data-sources.user.setWalletAccountToUser.catch(${this.userId}):${error}`,
       );
       throw error;
     }

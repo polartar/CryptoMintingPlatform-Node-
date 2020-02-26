@@ -1,36 +1,18 @@
 import ResolverBase from '../common/Resolver-Base';
 import { config } from '../common';
-import {
-  default as WalletConfig,
-  IWalletConfig,
-} from '../models/wallet-config';
-import { IUserWallet, ISendOutput, Context } from '../types';
-import autoBind = require('auto-bind');
+import { IUserWallet, Context, IWalletConfig } from '../types';
 import { userSchema, default as User, IUser } from '../models/user';
-import { rewardDistributer } from '../services';
 import {
   offersSchema,
   clicksSchema,
   Click,
   Offer,
-  UnclaimedReward,
+  WalletConfig,
 } from '../models';
 import { logResolver } from '../common/logger';
 
-interface IActivationPayment {
-  outputs: { amount: string; to: string }[];
-  btcUsdPrice: number;
-  btcToCompany: number;
-  btcToReferrer: number;
-}
-
 class Resolvers extends ResolverBase {
-  constructor() {
-    super();
-    autoBind(this);
-  }
-
-  private async saveClick(referrerId: string, referrerFromBrand: string) {
+  private saveClick = async (referrerId: string, referrerFromBrand: string) => {
     const walletName = config.brand.replace('codex', 'connect');
     const offerQuery = { name: `${walletName}_smart_wallet` };
     let OfferModel;
@@ -48,9 +30,9 @@ class Resolvers extends ResolverBase {
       offerId: offer.id,
       type: 'click',
     });
-  }
+  };
 
-  private async getShareConfigs(user: IUser) {
+  private getShareConfigs = async (user: IUser) => {
     try {
       const { softNodeLicenses } = user.toJSON();
       const {
@@ -96,9 +78,9 @@ class Resolvers extends ResolverBase {
     } catch (error) {
       throw error;
     }
-  }
+  };
 
-  private async findReferrer(referredBy: string) {
+  private findReferrer = async (referredBy: string) => {
     const byAffiliateId = { affiliateId: referredBy };
     let referrer = await User.findOne(byAffiliateId);
     let referrerFromBrand: string;
@@ -121,9 +103,9 @@ class Resolvers extends ResolverBase {
       }
     }
     return { referrer, brand: referrerFromBrand };
-  }
+  };
 
-  private getAlreadyActivated(userWallet: IUserWallet) {
+  private getAlreadyActivated = (userWallet: IUserWallet) => {
     if (!userWallet || !userWallet.activations) {
       return {
         alreadyActivated: [],
@@ -146,13 +128,13 @@ class Resolvers extends ResolverBase {
       alreadyActivated,
       numberOfActivations,
     };
-  }
+  };
 
-  public async shareConfig(
+  public shareConfig = async (
     parent: any,
     args: {},
     { user, wallet, logger }: Context,
-  ) {
+  ) => {
     this.requireAuth(user);
     try {
       const { brand } = config;
@@ -194,9 +176,9 @@ class Resolvers extends ResolverBase {
     } catch (error) {
       logger.obj.warn({ error });
     }
-  }
+  };
 
-  public async shareUrl(
+  public shareUrl = async (
     parent: {
       activated: boolean;
       userWallet: IUserWallet;
@@ -204,7 +186,7 @@ class Resolvers extends ResolverBase {
     },
     args: {},
     { dataSources: { bitly }, user, logger }: Context,
-  ) {
+  ) => {
     try {
       const { activated, userWallet, numberOfActivations } = parent;
       logger.JSON.debug({
@@ -232,13 +214,13 @@ class Resolvers extends ResolverBase {
       logger.obj.warn({ error });
       throw error;
     }
-  }
+  };
 
-  public async logClick(
+  public logClick = async (
     parent: any,
     args: { referredBy: string },
     { logger }: Context,
-  ) {
+  ) => {
     const { referredBy } = args;
     try {
       const { referrer, brand } = await this.findReferrer(referredBy);
@@ -251,241 +233,7 @@ class Resolvers extends ResolverBase {
       logger.obj.warn({ error, referredBy });
       throw error;
     }
-  }
-
-  private usdToBtc(btcUsdPrice: number, amount: number) {
-    const btcPriceInCents = Math.round(btcUsdPrice * 100);
-    return Math.round(amount * 100) / btcPriceInCents;
-  }
-
-  private async isReferrerEligible(referrer: IUser, rewardType: string) {
-    if (!referrer) return false;
-    const { earnedShares, numberOfActivations } = await this.getShareConfigs(
-      referrer,
-    );
-    const aboveShareLimit = numberOfActivations >= earnedShares;
-    if (aboveShareLimit || !referrer.wallet || !referrer.wallet.btcAddress) {
-      return false;
-    }
-    return true;
-  }
-
-  private async getOutputs(
-    companyFee: number,
-    referrerReward: number,
-    btcPrice: number,
-    referrer: IUser,
-    rewardType: string,
-  ) {
-    const { companyFeeBtcAddresses } = config;
-    const isReferrerEligible = await this.isReferrerEligible(
-      referrer,
-      rewardType,
-    );
-    const companyPortion = this.usdToBtc(btcPrice, companyFee);
-    const referrerPortion = this.usdToBtc(btcPrice, referrerReward);
-    const companyBtcAddress = companyFeeBtcAddresses[rewardType.toLowerCase()];
-    if (!companyBtcAddress) {
-      throw new Error(`BTC address not found for reward: ${rewardType}`);
-    }
-
-    let btcToCompany: number;
-    let btcToReferrer: number;
-    let outputs: ISendOutput[];
-    if (isReferrerEligible) {
-      btcToReferrer = +referrerPortion.toFixed(8);
-      btcToCompany = +companyPortion.toFixed(8);
-      outputs = [
-        {
-          to: companyBtcAddress,
-          amount: companyPortion.toFixed(8),
-        },
-        {
-          to: referrer.wallet.btcAddress,
-          amount: referrerPortion.toFixed(8),
-        },
-      ];
-    } else {
-      btcToReferrer = 0;
-      btcToCompany = +(companyPortion + referrerPortion).toFixed(8);
-      outputs = [
-        {
-          to: companyBtcAddress,
-          amount: (companyPortion + referrerPortion).toFixed(8),
-        },
-      ];
-    }
-    try {
-      if (referrer && (!referrer.wallet || !referrer.wallet.btcAddress)) {
-        UnclaimedReward.create({
-          userId: referrer.id,
-          btcValue: referrerPortion.toFixed(8),
-          hasWalletProperty: !!referrer.wallet,
-        });
-      }
-    } catch (error) {
-      console.log(error);
-    }
-    return {
-      outputs,
-      btcToReferrer,
-      btcToCompany,
-      btcUsdPrice: btcPrice,
-    };
-  }
-
-  private saveActivationToDb(
-    userDoc: IUser,
-    rewardType: string,
-    paymentDetails: IActivationPayment & { transactionId: string },
-    rewardResult: {
-      amountRewarded: number;
-      rewardId: string;
-      itemsRewarded: string[];
-    },
-    softnodeType: string,
-  ) {
-    const {
-      transactionId,
-      btcUsdPrice,
-      btcToReferrer,
-      btcToCompany,
-    } = paymentDetails;
-    const { amountRewarded, rewardId, itemsRewarded } = rewardResult;
-    const prefix = `wallet.activations.${rewardType}`;
-    const permission = `${softnodeType}-soft-node-discount`;
-    userDoc.permissions.push(permission);
-    userDoc.set(`${prefix}.activated`, true);
-    userDoc.set(`${prefix}.activationTxHash`, transactionId);
-    userDoc.set(`${prefix}.btcUsdPrice`, btcUsdPrice);
-    userDoc.set(`${prefix}.btcToReferrer`, btcToReferrer);
-    userDoc.set(`${prefix}.btcToCompany`, btcToCompany);
-    userDoc.set(`${prefix}.timestamp`, new Date());
-    userDoc.set(`${prefix}.amountRewarded`, amountRewarded);
-    userDoc.set(`${prefix}.rewardId`, rewardId);
-    userDoc.set(`${prefix}.itemsRewarded`, itemsRewarded);
-
-    return userDoc.save();
-  }
-
-  public async shareActivate(
-    parent: any,
-    args: {
-      walletPassword: string;
-      rewardType: string;
-    },
-    {
-      wallet,
-      user,
-      logger,
-      dataSources: { cryptoFavorites, sendEmail, environment },
-    }: Context,
-  ) {
-    // in all environments except arcade, company fee address and partner fee address are the same in the .env
-    const { brand } = config;
-    const rewardType = args.rewardType.toLowerCase();
-    logger.obj.debug({ rewardType });
-    this.requireAuth(user);
-    try {
-      const dbUser = await user.findFromDb();
-      const { referrer } = await this.findReferrer(
-        dbUser.referredBy,
-      ).catch(() => ({ referrer: null }));
-
-      const [[{ price }], shareConfigUser] = await Promise.all([
-        cryptoFavorites.getUserFavorites(['BTC']),
-        this.getShareConfigs(dbUser),
-      ]);
-
-      const rewardConfigUser = shareConfigUser.available.find(
-        configItem => configItem.rewardCurrency === args.rewardType,
-      );
-
-      if (!rewardConfigUser) {
-        throw new Error(`Reward currency: ${rewardType} not supported`);
-      }
-
-      // Check if user has already activated for this currency type.
-      if (
-        !dbUser ||
-        !dbUser.wallet ||
-        (dbUser.wallet.activations &&
-          dbUser.wallet.activations[rewardType] &&
-          dbUser.wallet.activations[rewardType].activated)
-      ) {
-        throw new Error(`User inelligible for activation`);
-      }
-
-      const paymentDetails = await this.getOutputs(
-        rewardConfigUser.companyFee,
-        rewardConfigUser.referrerReward,
-        price,
-        referrer,
-        args.rewardType,
-      );
-      logger.JSON.debug(paymentDetails);
-      const { message, transaction, success } = await wallet
-        .coin('btc')
-        .send(user, paymentDetails.outputs, args.walletPassword);
-      logger.JSON.debug({ message, success, transaction });
-      if (!success) {
-        if (message) {
-          return {
-            success: false,
-            message,
-          };
-        } else {
-          throw new Error(message || 'Activation transaction failed');
-        }
-      }
-
-      const userEthAddress =
-        (dbUser && dbUser.wallet && dbUser.wallet.ethAddress) || '';
-      const rewardResult = await rewardDistributer.sendReward(
-        rewardConfigUser,
-        user.userId,
-        userEthAddress,
-        logger,
-      );
-
-      const {
-        upgradeAccountName,
-        coupon: { photo, softnodeType },
-      } = (await environment.findOne({
-        rewardCurrency: args.rewardType,
-      })) as IWalletConfig;
-      this.saveActivationToDb(
-        dbUser,
-        rewardType,
-        { ...paymentDetails, transactionId: transaction.id },
-        rewardResult,
-        softnodeType.toLowerCase(),
-      );
-      sendEmail.sendSoftNodeDiscount(
-        dbUser,
-        upgradeAccountName,
-        photo,
-        softnodeType,
-      );
-      if (referrer && paymentDetails.outputs.length >= 2) {
-        sendEmail.referrerActivated(referrer, dbUser);
-        const existingShares =
-          (referrer.wallet &&
-            referrer.wallet.shares &&
-            referrer.wallet.shares[brand]) ||
-          0;
-        referrer.set(`wallet.shares.${brand}`, existingShares + 1);
-        referrer.save();
-      }
-      return {
-        success: true,
-        transaction,
-      };
-    } catch (error) {
-      logger.obj.warn({ error });
-      throw error;
-    }
-  }
+  };
 }
 
 const resolvers = new Resolvers();
@@ -493,7 +241,6 @@ const resolvers = new Resolvers();
 export default logResolver({
   Mutation: {
     logClick: resolvers.logClick,
-    shareActivate: resolvers.shareActivate,
   },
   Query: {
     shareConfig: resolvers.shareConfig,

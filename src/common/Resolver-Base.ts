@@ -6,14 +6,14 @@ import logger from './logger/winston-logger';
 
 export default abstract class ResolverBase {
   // Common method to throw an graphQL auth error if the user is null
-  protected requireAuth(user: UserApi) {
+  protected requireAuth = (user: UserApi) => {
     if (!user) {
       logger.debug(`common.Resolver-Base.!user`);
       throw new AuthenticationError('Authentication required');
     }
-  }
+  };
 
-  protected requireTwoFa(twoFaValid: boolean) {
+  protected requireTwoFa = (twoFaValid: boolean) => {
     const { isDev, bypassTwoFaInDev } = config;
     logger.debug(`common.Resolver-Base.requireTwoFa.twoFaValid:${twoFaValid}`);
     logger.debug(`common.Resolver-Base.requireTwoFa.isDev:${isDev}`);
@@ -23,13 +23,11 @@ export default abstract class ResolverBase {
 
     if (isDev && bypassTwoFaInDev) return;
     if (!twoFaValid) throw new ForbiddenError('Invalid two factor auth token');
-  }
+  };
 
-  protected maybeRequireStrongWalletPassword(walletPassword: string) {
+  protected maybeRequireStrongWalletPassword = (walletPassword: string) => {
     logger.debug(
-      `common.Resolver-Base.maybeRequireStrongWalletPassword.clientSecretRequired:${
-        config.clientSecretKeyRequired
-      }`,
+      `common.Resolver-Base.maybeRequireStrongWalletPassword.clientSecretRequired:${config.clientSecretKeyRequired}`,
     );
     if (config.clientSecretKeyRequired) {
       logger.debug(
@@ -47,7 +45,7 @@ export default abstract class ResolverBase {
         throw new Error('Weak Password');
       }
     }
-  }
+  };
 
   protected encrypt = (plainText: string, secret: string) =>
     crypto.encrypt(plainText, secret);
