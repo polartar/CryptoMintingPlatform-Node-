@@ -116,6 +116,10 @@ class Config {
   public readonly awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
   public readonly s3Region = process.env.S3_REGION;
 
+  public readonly costPerLootBox = this.normalizeNumber(
+    process.env.COST_PER_LOOT_BOX,
+  );
+
   constructor() {
     autoBind(this);
     this.ensureRequiredVariables();
@@ -162,6 +166,7 @@ class Config {
       'AWS_ACCESS_KEY_ID',
       'AWS_SECRET_ACCESS_KEY',
       'S3_REGION',
+      'COST_PER_LOOT_BOX',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(

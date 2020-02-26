@@ -8,10 +8,11 @@ import { WalletApi } from '../wallet-api';
 import { UserApi, SendEmail } from '../data-sources';
 
 interface IActivationPayment {
-  outputs: { amount: string; to: string }[];
   btcUsdPrice: number;
   btcToCompany: number;
   btcToReferrer: number;
+  lootBoxExtraPaid: number;
+  lootBoxesPurchased: number;
 }
 
 interface IRewardConfig {
@@ -70,16 +71,42 @@ class Resolvers extends ResolverBase {
     return true;
   };
 
+  private getExtraCostForLootBoxes = (
+    numLootBoxes: number = 1,
+    rewardConfig: IRewardConfig,
+  ) => {
+    if (rewardConfig.rewardCurrency.toLowerCase() === 'arcade') {
+      const extraLootBoxes = (numLootBoxes || 1) > 1 ? numLootBoxes - 1 : 0;
+      const lootBoxExtraPaid = extraLootBoxes * config.costPerLootBox;
+      return {
+        lootBoxesPurchased: extraLootBoxes + 1,
+        lootBoxExtraPaid,
+      };
+    }
+    return {
+      lootBoxesPurchased: 0,
+      lootBoxExtraPaid: 0,
+    };
+  };
+
   private getPaymentDetails = (
     rewardConfig: IRewardConfig,
     btcPrice: number,
     referrer: IUser,
     isReferrerEligible: boolean,
+    numLootBoxes: number,
   ) => {
     let btcToCompany: number;
     let btcToReferrer: number;
     const { companyFee, referrerReward } = rewardConfig;
-    const companyPortion = this.usdToBtc(btcPrice, companyFee);
+    const {
+      lootBoxExtraPaid,
+      lootBoxesPurchased,
+    } = this.getExtraCostForLootBoxes(numLootBoxes, rewardConfig);
+    const companyPortion = this.usdToBtc(
+      btcPrice,
+      companyFee + lootBoxExtraPaid,
+    );
     const referrerPortion = this.usdToBtc(btcPrice, referrerReward);
     const referrerCanReceive = !!referrer?.wallet?.btcAddress;
     if (isReferrerEligible && referrerCanReceive) {
@@ -99,6 +126,8 @@ class Resolvers extends ResolverBase {
       btcToReferrer,
       referrerMissedBtc,
       btcUsdPrice: btcPrice,
+      lootBoxExtraPaid,
+      lootBoxesPurchased,
     };
   };
 
@@ -148,7 +177,10 @@ class Resolvers extends ResolverBase {
   private saveActivationToDb = (
     userDoc: IUser,
     rewardType: string,
-    paymentDetails: IActivationPayment & { transactionId: string },
+    paymentDetails: IActivationPayment & {
+      transactionId: string;
+      outputs: ISendOutput[];
+    },
     rewardResult: {
       amountRewarded: number;
       rewardId: string;
@@ -161,6 +193,8 @@ class Resolvers extends ResolverBase {
       btcUsdPrice,
       btcToReferrer,
       btcToCompany,
+      lootBoxesPurchased,
+      lootBoxExtraPaid,
     } = paymentDetails;
     const { amountRewarded, rewardId, itemsRewarded } = rewardResult;
     const prefix = `wallet.activations.${rewardType}`;
@@ -175,6 +209,9 @@ class Resolvers extends ResolverBase {
     userDoc.set(`${prefix}.amountRewarded`, amountRewarded);
     userDoc.set(`${prefix}.rewardId`, rewardId);
     userDoc.set(`${prefix}.itemsRewarded`, itemsRewarded);
+    userDoc.set(`${prefix}.lootBoxesPurchased`, lootBoxesPurchased);
+    userDoc.set(`${prefix}.lootBoxExtraPaid`, lootBoxExtraPaid);
+    userDoc.set(`${prefix}.lootBoxPriceUsd`, config.costPerLootBox);
 
     return userDoc.save();
   };
@@ -247,6 +284,7 @@ class Resolvers extends ResolverBase {
   private sendRewards = async (
     user: IUser,
     rewardConfig: IRewardConfig,
+    numLootBoxes: number,
     sendEmail: SendEmail,
     logger: Logger,
   ) => {
@@ -257,6 +295,7 @@ class Resolvers extends ResolverBase {
         rewardConfig.rewardCurrency,
         user.id,
         userEthAddress,
+        numLootBoxes,
         logger,
       ),
       sendEmail.sendSoftNodeDiscount(
@@ -290,6 +329,7 @@ class Resolvers extends ResolverBase {
     args: {
       walletPassword: string;
       rewardType: string;
+      numLootBoxes: number;
     },
     {
       wallet,
@@ -299,6 +339,7 @@ class Resolvers extends ResolverBase {
     }: Context,
   ) => {
     const rewardType = args.rewardType.toLowerCase();
+    const { walletPassword, numLootBoxes } = args;
     logger.obj.debug({ rewardType });
     this.requireAuth(user);
     try {
@@ -321,6 +362,7 @@ class Resolvers extends ResolverBase {
         btcUsdPrice,
         referrer,
         this.isReferrerEligible(referrer, allRewardConfigs),
+        numLootBoxes,
       );
       const outputs = await this.getOutputs(
         paymentDetails.btcToCompany,
@@ -333,7 +375,7 @@ class Resolvers extends ResolverBase {
       const transaction = await this.sendUpgradeTransaction(
         user,
         wallet,
-        args.walletPassword,
+        walletPassword,
         outputs,
       );
 
@@ -345,6 +387,7 @@ class Resolvers extends ResolverBase {
       const rewardResult = await this.sendRewards(
         userFromDb,
         rewardConfig,
+        paymentDetails.lootBoxesPurchased,
         sendEmail,
         logger,
       );

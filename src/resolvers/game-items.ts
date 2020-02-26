@@ -24,6 +24,32 @@ class Resolvers extends ResolverBase {
       throw error;
     }
   };
+
+  openLootbox = async (
+    parent: any,
+    args: { lootBoxId: string },
+    ctx: Context,
+  ) => {
+    const { user } = ctx;
+    const { lootBoxId } = args;
+    this.requireAuth(user);
+    try {
+      const result = await gameItemService.markLootBoxOpened(
+        user.userId,
+        lootBoxId,
+      );
+
+      return {
+        success: !!result,
+        message: result ? '' : result,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error,
+      };
+    }
+  };
 }
 
 const resolvers = new Resolvers();

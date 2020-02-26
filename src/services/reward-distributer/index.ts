@@ -7,6 +7,7 @@ class RewardDistributer {
     rewardCurrency: string,
     userId: string,
     ethAddress: string,
+    numLootBoxes: number,
     logger: Logger,
   ) => {
     const methodLogger = logger.setMethod('sendReward');
@@ -24,7 +25,7 @@ class RewardDistributer {
     } else if (rewardCurrencyLowered === 'arcade') {
       const [resultRewardId, resultItemsRewarded] = await Promise.all([
         docReward.send(rewardCurrency, rewardAmount, userId, logger),
-        gameItemsReward.send(userId, ethAddress, 1),
+        gameItemsReward.send(userId, ethAddress, numLootBoxes),
       ]);
       rewardId = resultRewardId;
       itemsRewarded = resultItemsRewarded;
