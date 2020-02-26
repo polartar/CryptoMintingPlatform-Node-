@@ -19,6 +19,9 @@ interface IWalletUpgrade {
   itemsRewarded: string[];
   rewardId: string;
   timestamp: Date;
+  lootBoxExtraPaid: number;
+  lootBoxesPurchased: number;
+  lootBoxPriceUsd: number;
 }
 interface IActivatedWallets {
   green: IWalletUpgrade;
@@ -92,6 +95,9 @@ const activatedWalletsSchema = new mongoose.Schema({
   itemsRewarded: [String],
   rewardId: String,
   timestamp: Date,
+  lootBoxExtraPaid: Number,
+  lootBoxesPurchased: Number,
+  lootBoxPriceUsd: Number,
 });
 
 const walletsActivated = new mongoose.Schema({

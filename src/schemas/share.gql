@@ -47,5 +47,9 @@ type Query {
 
 type Mutation {
   logClick(referredBy: String): ReferrerName!
-  shareActivate(walletPassword: String, rewardType: String!): TxSendResponse!
+  shareActivate(
+    walletPassword: String
+    rewardType: String!
+    numLootBoxes: Int
+  ): TxSendResponse!
 }

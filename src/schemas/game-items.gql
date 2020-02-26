@@ -39,3 +39,7 @@ type Query {
   ownedItems: [GameItem!]!
   farmBotRequired: FarmBot!
 }
+
+type Mutation {
+  openLootBox(lootBoxId: String!): MutationResponse!
+}
