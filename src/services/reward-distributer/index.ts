@@ -1,4 +1,3 @@
-import { IShareConfig } from '../../types';
 import { Logger } from '../../common/logger';
 import { erc20Reward, docReward, gameItemsReward } from './reward-handlers';
 
