@@ -3,6 +3,7 @@ type GameSubItem {
   aquisitionType: String!
   dateAquired: Int!
   gameItemId: String!
+  lootBoxId: String
 }
 
 type GameItem {
