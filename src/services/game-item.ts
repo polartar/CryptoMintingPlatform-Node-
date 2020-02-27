@@ -34,9 +34,11 @@ class GameItemService extends ServerToServerService {
     return data;
   };
 
-  markLootBoxOpened = async (userId: string, lootBoxId: string) => {
+  markLootBoxesOpened = async (userId: string, lootBoxIds: string[]) => {
     const jwtAxios = this.getAxios({ userId });
-    const { data } = await jwtAxios.get(`${this.baseUrl}/lootbox/${lootBoxId}`);
+    const { data } = await jwtAxios.put(`${this.baseUrl}/lootbox`, {
+      lootBoxIds,
+    });
 
     return data;
   };
