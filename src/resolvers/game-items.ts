@@ -25,18 +25,18 @@ class Resolvers extends ResolverBase {
     }
   };
 
-  openLootbox = async (
+  openLootboxes = async (
     parent: any,
-    args: { lootBoxId: string },
+    args: { lootBoxIds: string[] },
     ctx: Context,
   ) => {
     const { user } = ctx;
-    const { lootBoxId } = args;
+    const { lootBoxIds } = args;
     this.requireAuth(user);
     try {
-      const result = await gameItemService.markLootBoxOpened(
+      const result = await gameItemService.markLootBoxesOpened(
         user.userId,
-        lootBoxId,
+        lootBoxIds,
       );
 
       return {
@@ -58,5 +58,8 @@ export default {
   Query: {
     ownedItems: resolvers.getOwnedItems,
     farmBotRequired: resolvers.getFarmBotRequiredParts,
+  },
+  Mutation: {
+    openLootBoxes: resolvers.openLootboxes,
   },
 };

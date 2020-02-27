@@ -41,5 +41,5 @@ type Query {
 }
 
 type Mutation {
-  openLootBox(lootBoxId: String!): MutationResponse!
+  openLootBoxes(lootBoxIds: [String!]): MutationResponse!
 }
