@@ -3,15 +3,10 @@ import { auth, config, logger } from '../common';
 import { Context } from '../types/context';
 import { UserApi } from '../data-sources/';
 import { User } from '../models';
-import autoBind = require('auto-bind');
+import { crypto } from '../utils';
 
 class Resolvers extends ResolverBase {
-  constructor() {
-    super();
-    autoBind(this);
-  }
-
-  public async createUser(
+  public createUser = async (
     parent: any,
     args: {
       userInfo: {
@@ -27,7 +22,10 @@ class Resolvers extends ResolverBase {
       };
     },
     context: Context,
-  ) {
+  ) => {
+    const {
+      dataSources: { bitly },
+    } = context;
     try {
       const {
         token,
@@ -41,7 +39,13 @@ class Resolvers extends ResolverBase {
       } = args.userInfo;
       const firebaseUid = await auth.getFirebaseUid(token, config.hostname);
       logger.debug(`resolvers.auth.createUser.firebaseUid:${firebaseUid}`);
-      const { email } = await auth.getUser(firebaseUid, config.hostname);
+      const { email: userEmail } = await auth.getUser(
+        firebaseUid,
+        config.hostname,
+      );
+      const email = userEmail.toLowerCase();
+      const affiliateId = crypto.md5UrlSafe(email);
+      const url = await bitly.getLink(affiliateId);
       const newUser = new User({
         email,
         firebaseUid,
@@ -52,7 +56,9 @@ class Resolvers extends ResolverBase {
         phone,
         referredBy,
         utmInfo,
+        affiliateId,
       });
+      newUser.set('wallet.shareLink', url);
       newUser.set('wallet.userCreatedInWallet', true);
       logger.debug(`resolvers.auth.createUser.newUser._id:${newUser._id}`);
       await newUser.save();
@@ -67,9 +73,9 @@ class Resolvers extends ResolverBase {
       logger.warn(`resolvers.auth.createUser.catch:${error}`);
       throw error;
     }
-  }
+  };
 
-  public async updateUser(
+  public updateUser = async (
     parent: any,
     args: {
       userInfo: {
@@ -83,7 +89,7 @@ class Resolvers extends ResolverBase {
       };
     },
     { user }: Context,
-  ) {
+  ) => {
     this.requireAuth(user);
     const {
       email,
@@ -125,13 +131,13 @@ class Resolvers extends ResolverBase {
     return {
       success: true,
     };
-  }
+  };
 
-  public async getUserProfile(
+  public getUserProfile = async (
     parent: { userApi: UserApi },
     args: {},
     { user }: Context,
-  ) {
+  ) => {
     logger.debug(`resolvers.auth.getUserProfile.userId:${user && user.userId}`);
     this.requireAuth(user);
     const profile = await user.findFromDb();
@@ -139,7 +145,7 @@ class Resolvers extends ResolverBase {
       `resolvers.auth.getUserProfile.prifile.id:${profile && profile.id}`,
     );
     return profile;
-  }
+  };
 }
 
 export const userResolver = new Resolvers();

@@ -56,10 +56,12 @@ class Resolvers extends ResolverBase {
         },
       );
 
-      const activationShares = activated.reduce(
+      const sharesFromActivation = activated.reduce(
         (total, curr) => total + curr.shareLimit,
         0,
       );
+      const activationShares =
+        sharesFromActivation >= 5 ? sharesFromActivation : 5;
       const softNodeShares = Object.values(softNodeLicenses || {}).reduce(
         (accum: number, curr: number) => {
           if (isNaN(+curr)) {
@@ -188,12 +190,8 @@ class Resolvers extends ResolverBase {
     { dataSources: { bitly }, user, logger }: Context,
   ) => {
     try {
-      const { activated, userWallet, numberOfActivations } = parent;
-      logger.JSON.debug({
-        activated,
-        userWallet: userWallet && userWallet.shareLink,
-      });
-      if (!numberOfActivations) return null;
+      const { userWallet } = parent;
+
       if (userWallet.shareLink) {
         return userWallet.shareLink;
       }
@@ -202,13 +200,9 @@ class Resolvers extends ResolverBase {
         throw new Error('Not found');
       }
       const { affiliateId } = userModel;
-      logger.obj.debug({ affiliateId });
-
       const url = await bitly.getLink(affiliateId);
-      logger.obj.debug({ url });
       userModel.set('wallet.shareLink', url);
       await userModel.save();
-      logger.debug(`usermodel.save(): done`);
       return url;
     } catch (error) {
       logger.obj.warn({ error });

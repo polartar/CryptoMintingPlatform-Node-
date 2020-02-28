@@ -212,12 +212,7 @@ userSchema.pre('save', async function(this: IUser, next) {
   const user = this;
   if (user.email) {
     user.email = user.email.toLowerCase();
-    user.affiliateId =
-      user.affiliateId ||
-      crypto
-        .MD5(user.email)
-        .toString(crypto.enc.Base64)
-        .replace(/[^a-zA-Z0-9]/g, '');
+    user.affiliateId = user.affiliateId || crypto.md5UrlSafe(user.email);
   }
   if (!user.number) {
     const number = await getNextNumber(user);
