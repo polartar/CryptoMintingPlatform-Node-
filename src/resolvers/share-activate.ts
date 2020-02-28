@@ -56,6 +56,8 @@ class Resolvers extends ResolverBase {
       },
       0,
     );
+    const earnedFromUpgradesWithMin =
+      earnedFromUpgrades > 5 ? earnedFromUpgrades : 5;
     const sharesCount = Object.values(wallet?.shares || {}).reduce(
       (acc: number, shares: number) => {
         return isNaN(+shares) ? acc : acc + shares;
@@ -63,7 +65,7 @@ class Resolvers extends ResolverBase {
       0,
     );
     const earnedFromSoftnodes = licenseCount * config.sharesPerSoftNodeLicense;
-    const earnedShares = earnedFromSoftnodes + earnedFromUpgrades;
+    const earnedShares = earnedFromSoftnodes + earnedFromUpgradesWithMin;
     const aboveShareLimit = sharesCount >= earnedShares;
     if (aboveShareLimit || !referrer?.wallet?.btcAddress) {
       return false;
