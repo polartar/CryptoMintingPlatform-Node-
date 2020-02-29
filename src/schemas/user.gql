@@ -9,6 +9,7 @@ type UserProfile {
   created: Date!
   currency: String!
   profilePhotoUrl: String
+  language: String
 }
 
 input CreateUserInput {
