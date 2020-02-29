@@ -42,6 +42,19 @@ class GameItemService extends ServerToServerService {
 
     return data;
   };
+
+  assignItemToUserByTokenId = async (
+    userId: string,
+    userEthAddress: string,
+    tokenId: string,
+  ) => {
+    const jwtAxios = this.getAxios({ userId });
+    const { data } = await jwtAxios.post(`${this.baseUrl}/${tokenId}`, {
+      userEthAddress,
+      userId,
+    });
+    return data;
+  };
 }
 
 export const gameItemService = new GameItemService();

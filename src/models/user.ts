@@ -60,6 +60,7 @@ export interface IUser extends mongoose.Document {
   permissions: string[];
   id: string;
   wallet?: IUserWalletDoc;
+  language: string;
   twoFaTempSecret?: string;
   twoFaSecret?: string;
   currency?: string;

@@ -20,6 +20,7 @@ input CreateUserInput {
   phone: String
   referredBy: String
   utmInfo: [String!]
+  language: String
 }
 
 input UpdateUserInput {

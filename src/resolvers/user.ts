@@ -19,6 +19,7 @@ class Resolvers extends ResolverBase {
         phoneCountry: string;
         referredBy: string;
         utmInfo: string[];
+        language: string;
       };
     },
     context: Context,
@@ -36,6 +37,7 @@ class Resolvers extends ResolverBase {
         phone = null,
         referredBy = null,
         utmInfo = [],
+        language,
       } = args.userInfo;
       const firebaseUid = await auth.getFirebaseUid(token, config.hostname);
       logger.debug(`resolvers.auth.createUser.firebaseUid:${firebaseUid}`);
@@ -57,6 +59,7 @@ class Resolvers extends ResolverBase {
         referredBy,
         utmInfo,
         affiliateId,
+        language,
       });
       newUser.set('wallet.shareLink', url);
       newUser.set('wallet.userCreatedInWallet', true);
