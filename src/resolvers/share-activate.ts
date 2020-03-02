@@ -202,6 +202,9 @@ class Resolvers extends ResolverBase {
     const prefix = `wallet.activations.${rewardType}`;
     const permission = `${softnodeType}-soft-node-discount`;
     userDoc.permissions.push(permission);
+    if (rewardType === 'arcade') {
+      userDoc.permissions.push('TOWNSTAR_BETA_ACCESS');
+    }
     userDoc.set(`${prefix}.activated`, true);
     userDoc.set(`${prefix}.activationTxHash`, transactionId);
     userDoc.set(`${prefix}.btcUsdPrice`, btcUsdPrice);
