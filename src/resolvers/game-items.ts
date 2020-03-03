@@ -1,4 +1,4 @@
-import { Context, ILootBoxOrder } from '../types';
+import { Context, ILootBoxOrder, IGameToken } from '../types';
 import ResolverBase from '../common/Resolver-Base';
 import { gameItemService } from '../services/game-item';
 import { config } from '../common';
@@ -98,6 +98,7 @@ class Resolvers extends ResolverBase {
     const itemsReceived = await gameItemService.assignItemsToUser(
       user.userId,
       ethAddress,
+      numLootBoxes,
     );
     const newLootBoxOrder: ILootBoxOrder = {
       isUpgradeOrder: false,
@@ -108,10 +109,8 @@ class Resolvers extends ResolverBase {
       itemsReceived,
     };
     LootBoxOrder.create(newLootBoxOrder);
-    return {
-      success,
-      message,
-    };
+    const items = await this.getOwnedItems(parent, args, ctx);
+    return items;
   };
 }
 

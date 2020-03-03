@@ -43,5 +43,5 @@ type Query {
 
 type Mutation {
   openLootBoxes(lootBoxIds: [String!]): MutationResponse!
-  buyLootBoxes(numLootBoxes: Int!, walletPassword: String!): MutationResponse!
+  buyLootBoxes(numLootBoxes: Int!, walletPassword: String!): [GameItem!]!
 }

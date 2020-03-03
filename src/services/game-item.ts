@@ -1,6 +1,6 @@
 import { config } from '../common';
 import { ServerToServerService } from './server-to-server';
-import { IItem, IGameToken } from '../types';
+import { IItem } from '../types';
 
 class GameItemService extends ServerToServerService {
   baseUrl = `${config.gameItemServiceUrl}/items`;
