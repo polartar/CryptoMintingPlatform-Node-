@@ -38,8 +38,10 @@ type FarmBot {
 type Query {
   ownedItems: [GameItem!]!
   farmBotRequired: FarmBot!
+  lootBoxPrice: Float!
 }
 
 type Mutation {
   openLootBoxes(lootBoxIds: [String!]): MutationResponse!
+  buyLootBoxes(numLootBoxes: Int!, walletPassword: String!): MutationResponse!
 }

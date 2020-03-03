@@ -1,8 +1,14 @@
 import ResolverBase from '../common/Resolver-Base';
 import { config, logger as globalLogger } from '../common';
-import { ISendOutput, Context, IWalletConfig, IUser } from '../types';
+import {
+  ISendOutput,
+  Context,
+  IWalletConfig,
+  IUser,
+  ILootBoxOrder,
+} from '../types';
 import { rewardDistributer } from '../services';
-import { UnclaimedReward, WalletConfig } from '../models';
+import { UnclaimedReward, WalletConfig, LootBoxOrder } from '../models';
 import { logResolver, Logger } from '../common/logger';
 import { WalletApi } from '../wallet-api';
 import { UserApi, SendEmail } from '../data-sources';
@@ -329,7 +335,25 @@ class Resolvers extends ResolverBase {
     }
   };
 
-  public shareActivate = async (
+  private logLootBoxOrder = (
+    quantity: number,
+    totalBtc: number,
+    txHash: string,
+    userId: string,
+    itemsReceived: string[],
+  ) => {
+    const newLootBoxOrder: ILootBoxOrder = {
+      isUpgradeOrder: true,
+      quantity,
+      totalBtc,
+      txHash,
+      userId,
+      itemsReceived,
+    };
+    return LootBoxOrder.create(newLootBoxOrder);
+  };
+
+  shareActivate = async (
     parent: any,
     args: {
       walletPassword: string;
@@ -395,6 +419,14 @@ class Resolvers extends ResolverBase {
         paymentDetails.lootBoxesPurchased,
         sendEmail,
         logger,
+      );
+
+      this.logLootBoxOrder(
+        numLootBoxes,
+        paymentDetails.btcToCompany,
+        transaction.id,
+        user.userId,
+        rewardResult.itemsRewarded,
       );
 
       this.saveActivationToDb(
