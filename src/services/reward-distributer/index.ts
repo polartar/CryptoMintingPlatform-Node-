@@ -1,5 +1,6 @@
 import { Logger } from '../../common/logger';
 import { erc20Reward, docReward, gameItemsReward } from './reward-handlers';
+import { LootBoxOrder } from '../../models';
 
 class RewardDistributer {
   public sendReward = async (
@@ -23,12 +24,9 @@ class RewardDistributer {
         logger,
       );
     } else if (rewardCurrencyLowered === 'arcade') {
-      const tokenId =
-        '0x8000000000000000000000000000001e00000000000000000000000000000000';
       const [resultRewardId, resultItemsRewarded] = await Promise.all([
         docReward.send(rewardCurrency, rewardAmount, userId, logger),
         gameItemsReward.sendRandom(userId, ethAddress, numLootBoxes),
-        gameItemsReward.sendItemByTokenId(userId, ethAddress, tokenId),
       ]);
       rewardId = resultRewardId;
       itemsRewarded = resultItemsRewarded;
