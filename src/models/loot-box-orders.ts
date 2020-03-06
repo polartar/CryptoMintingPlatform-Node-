@@ -28,6 +28,7 @@ export const lootBoxOrderSchema = new Schema({
     type: [String],
     required: true,
   },
+  created: Date,
 });
 
 export const LootBoxOrder = model<ILootBoxOrderDocument>(

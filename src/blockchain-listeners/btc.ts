@@ -18,30 +18,42 @@ class BtcBlockchainListener implements BaseListener {
   }
 
   publishNewBalance(walletId: string) {
-    const payload = {
-      walletId,
-    };
-    config.pubsub.publish(config.newBalance, payload);
+    try {
+      const payload = {
+        walletId,
+      };
+      config.pubsub.publish(config.newBalance, payload);
+    } catch (error) {
+      logger.error(
+        `blockchain-listeners.btc.publishNewBalance.catch: ${error}`,
+      );
+    }
   }
 
   public async listenForNewBalance(walletId: string) {
-    logger.debug(
-      `blockchain-listeners.btc.listenForNewBalance.walletId: ${walletId}`,
-    );
-    const token = await this.btcWalletApi.getToken(walletId);
-    logger.debug(
-      `blockchain-listeners.btc.listenForNewBalance.token.length: ${
-        token ? token.length : 0
-      }`,
-    );
-    if (!token) return;
+    try {
+      logger.debug(
+        `blockchain-listeners.btc.listenForNewBalance.walletId: ${walletId}`,
+      );
+      const token = await this.btcWalletApi.getToken(walletId);
+      logger.debug(
+        `blockchain-listeners.btc.listenForNewBalance.token.length: ${
+          token ? token.length : 0
+        }`,
+      );
+      if (!token) return;
 
-    await this.openPromise;
-    await this.walletClient.join(walletId, token);
+      await this.openPromise;
+      await this.walletClient.join(walletId, token);
 
-    this.walletClient.bind('balance', async wallet => {
-      this.publishNewBalance(wallet);
-    });
+      this.walletClient.bind('balance', async wallet => {
+        this.publishNewBalance(wallet);
+      });
+    } catch (error) {
+      logger.error(
+        `blockchain-listeners.btc.listenForNewBalance.catch: ${error}`,
+      );
+    }
   }
 
   public async removeListeners(walletId: string) {

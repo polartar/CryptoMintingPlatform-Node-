@@ -5,4 +5,5 @@ export interface ILootBoxOrder {
   txHash: string;
   isUpgradeOrder: boolean;
   itemsReceived: string[];
+  created: Date;
 }
