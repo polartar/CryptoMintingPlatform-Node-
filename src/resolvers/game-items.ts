@@ -1,4 +1,4 @@
-import { Context, ILootBoxOrder, IGameToken } from '../types';
+import { Context, ILootBoxOrder } from '../types';
 import ResolverBase from '../common/Resolver-Base';
 import { gameItemService } from '../services/game-item';
 import { config } from '../common';
@@ -107,6 +107,7 @@ class Resolvers extends ResolverBase {
       txHash: transaction.id,
       userId: user.userId,
       itemsReceived,
+      created: new Date(),
     };
     LootBoxOrder.create(newLootBoxOrder);
     const items = await this.getOwnedItems(parent, args, ctx);

@@ -349,6 +349,7 @@ class Resolvers extends ResolverBase {
       txHash,
       userId,
       itemsReceived,
+      created: new Date(),
     };
     return LootBoxOrder.create(newLootBoxOrder);
   };
