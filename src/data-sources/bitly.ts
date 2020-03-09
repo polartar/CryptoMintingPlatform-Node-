@@ -9,39 +9,21 @@ class Bitly extends RESTDataSource {
     request.headers.set('Content-Type', 'application/json');
   }
 
-  private validateResponse(response: { status_code: number; data: any }) {
-    if (response.status_code === 403) {
-      throw new Error('Rate Limit Hit.');
-    }
-
-    if (!response.data) {
-      throw new Error('Invalid response.');
-    }
-  }
-
   private async getGroupId() {
     const response = await this.get<{
-      data: { groups: Array<{ guid: string }> };
-      status_code: number;
+      groups: Array<{ guid: string }>;
     }>('/groups');
 
-    this.validateResponse(response);
-
-    return response.data.groups[0].guid;
+    return response.groups[0].guid;
   }
 
   private async shortenLongUrl(longUrl: string, guid: string) {
-    const response = await this.post<{
-      data: { link: string };
-      status_code: number;
-    }>('/shorten', {
+    const response = await this.post<{ link: string }>('/shorten', {
       group_guid: guid,
       long_url: longUrl,
     });
 
-    this.validateResponse(response);
-
-    return response.data.link;
+    return response.link;
   }
 
   public async getLink(affiliateId: string) {
