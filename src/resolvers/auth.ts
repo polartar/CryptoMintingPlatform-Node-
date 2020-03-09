@@ -6,6 +6,7 @@ import { ApolloError } from 'apollo-server-express';
 import { UserApi } from '../data-sources/';
 const autoBind = require('auto-bind');
 import { userResolver } from './user';
+import galaGamingApiService from '../services/gala-gaming-api';
 
 interface ITwoFaSetup {
   twoFaSecret: string | null;
@@ -218,11 +219,17 @@ class Resolvers extends ResolverBase {
 
   public walletPasswordRequired() {
     logger.debug(
-      `resolvers.auth.walletPasswordRequired.config.clientSecretKeyRequired:${
-        config.clientSecretKeyRequired
-      }`,
+      `resolvers.auth.walletPasswordRequired.config.clientSecretKeyRequired:${config.clientSecretKeyRequired}`,
     );
     return config.clientSecretKeyRequired;
+  }
+
+  public async getGameJWT(parent: any, args: any, { user }: Context) {
+    this.requireAuth(user);
+
+    const token = await galaGamingApiService.getGameJWT(user.userId);
+
+    return { token };
   }
 }
 
@@ -239,6 +246,7 @@ export default {
     twoFaValidate: resolvers.twoFaValidate,
     validateExistingToken: resolvers.validateExistingToken,
     walletPasswordRequired: resolvers.walletPasswordRequired,
+    gameJWT: resolvers.getGameJWT,
   },
   Mutation: {
     login: resolvers.login,

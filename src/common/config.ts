@@ -110,6 +110,7 @@ class Config {
   public readonly sendWalletReportToLocalhost =
     process.env.SEND_WALLET_REPORT_TO_LOCALHOST;
   public readonly gameItemServiceUrl = process.env.GAME_ITEM_SERVICE_URL;
+  public readonly galaGamingApiUrl = process.env.GALA_GAMING_API_URL;
 
   public readonly s3Bucket = process.env.S3_BUCKET;
   public readonly awsAccessKey = process.env.AWS_ACCESS_KEY_ID;
@@ -162,6 +163,7 @@ class Config {
       'SEND_WALLET_REPORT_TO_LOCALHOST',
       'CART_URL',
       'GAME_ITEM_SERVICE_URL',
+      'GALA_GAMING_API_URL',
       'S3_BUCKET',
       'AWS_ACCESS_KEY_ID',
       'AWS_SECRET_ACCESS_KEY',
