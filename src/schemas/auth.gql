@@ -5,6 +5,10 @@ type ReturnToken {
   profile: UserProfile!
 }
 
+type GameToken {
+  token: String!
+}
+
 type ValidateExistingTokenResponse {
   twoFaEnabled: Boolean!
   twoFaAuthenticated: Boolean!
@@ -35,4 +39,5 @@ type Query {
   twoFaValidate(totpToken: String!): TwoFaValidationResponse!
   validateExistingToken: ValidateExistingTokenResponse!
   walletPasswordRequired: Boolean!
+  gameJWT: GameToken!
 }
