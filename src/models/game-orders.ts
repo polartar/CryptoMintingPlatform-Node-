@@ -1,9 +1,9 @@
 import { model, Schema, Document } from 'mongoose';
-import { ILootBoxOrder } from '../types';
+import { IGameOrder } from '../types';
 
-export interface ILootBoxOrderDocument extends ILootBoxOrder, Document {}
+export interface IGameOrderDocument extends IGameOrder, Document {}
 
-export const lootBoxOrderSchema = new Schema({
+export const gameOrderSchema = new Schema({
   userId: {
     type: String,
     required: true,
@@ -12,6 +12,16 @@ export const lootBoxOrderSchema = new Schema({
     type: Number,
     required: true,
   },
+  perUnitPriceUsd: {
+    type: Number,
+    required: true,
+  },
+  gameProductId: {
+    type: Schema.Types.ObjectId,
+    ref: 'game-product',
+    required: true,
+  },
+  btcUsdPrice: Number,
   totalBtc: {
     type: Number,
     required: true,
@@ -31,7 +41,7 @@ export const lootBoxOrderSchema = new Schema({
   created: Date,
 });
 
-export const LootBoxOrder = model<ILootBoxOrderDocument>(
-  'loot-box-order',
-  lootBoxOrderSchema,
+export const GameOrder = model<IGameOrderDocument>(
+  'game-order',
+  gameOrderSchema,
 );
