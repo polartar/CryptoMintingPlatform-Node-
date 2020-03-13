@@ -191,7 +191,11 @@ class Resolvers extends ResolverBase {
 
     GameOrder.create(orderDetails);
     const items = await this.getOwnedItems(parent, args, ctx);
-    return items;
+    return {
+      items,
+      transactionHash: orderDetails.txHash,
+      totalBtc: orderDetails.totalBtc,
+    };
   };
 
   getAvailableGameProducts = async (parent: any, args: {}, ctx: Context) => {
