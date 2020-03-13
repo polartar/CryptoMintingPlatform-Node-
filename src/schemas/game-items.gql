@@ -55,6 +55,12 @@ type GameProduct {
   rarity: GameItemRarity
 }
 
+type BuyGameProductsResponse {
+  items: [GameItem!]!
+  transactionHash: String!
+  totalBtc: Float!
+}
+
 type Query {
   ownedItems: [GameItem!]!
   farmBotRequired: FarmBot!
@@ -67,5 +73,5 @@ type Mutation {
     quantity: Int!
     productId: String!
     walletPassword: String!
-  ): [GameItem!]!
+  ): BuyGameProductsResponse!
 }
