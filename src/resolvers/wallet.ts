@@ -86,6 +86,7 @@ class Resolvers extends ResolverBase {
       user.userId,
       ethAddress,
       tokenId,
+      1,
     );
 
     return result;

@@ -35,13 +35,37 @@ type FarmBot {
   requiredPieces: [GameItem!]!
 }
 
+type GameItemRarity {
+  icon: String!
+  label: String!
+  supplyLimit: Int!
+}
+
+type GameProduct {
+  id: String!
+  name: String!
+  coin: String!
+  game: String!
+  nftBaseId: String
+  priceUsd: Float!
+  basePriceUsd: Float!
+  description: String!
+  image: String!
+  quantities: [Int!]!
+  rarity: GameItemRarity
+}
+
 type Query {
   ownedItems: [GameItem!]!
   farmBotRequired: FarmBot!
-  lootBoxPrice: Float!
+  gameProducts: [GameProduct!]!
 }
 
 type Mutation {
   openLootBoxes(lootBoxIds: [String!]): MutationResponse!
-  buyLootBoxes(numLootBoxes: Int!, walletPassword: String!): [GameItem!]!
+  buyGameProducts(
+    quantity: Int!
+    productId: String!
+    walletPassword: String!
+  ): [GameItem!]!
 }
