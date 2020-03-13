@@ -20,5 +20,6 @@ export * from './context';
 export * from './IJwtSignOptions';
 export * from './IItem';
 export * from './IWalletTransaction';
-export * from './ILootBoxOrder';
+export * from './IGameOrder';
 export * from './IGameToken';
+export { gameOptions, gameProductCoins, IGameProduct } from './IGameProduct';

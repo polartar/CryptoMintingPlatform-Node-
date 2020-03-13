@@ -19,11 +19,13 @@ class GameItemsReward {
     userId: string,
     userEthAddress: string,
     tokenId: string,
+    quantity: number,
   ) => {
     const result = await gameItemService.assignItemToUserByTokenId(
       userId,
       userEthAddress,
       tokenId,
+      quantity,
     );
     return result;
   };

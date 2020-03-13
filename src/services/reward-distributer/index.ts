@@ -1,6 +1,5 @@
 import { Logger } from '../../common/logger';
 import { erc20Reward, docReward, gameItemsReward } from './reward-handlers';
-import { LootBoxOrder } from '../../models';
 
 class RewardDistributer {
   public sendReward = async (

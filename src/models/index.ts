@@ -8,4 +8,5 @@ export { default as RewardDistributerConfig } from './rewardDistributerConfig';
 export * from './offers';
 export * from './clicks';
 export * from './user';
-export * from './loot-box-orders';
+export * from './game-orders';
+export * from './game-products';

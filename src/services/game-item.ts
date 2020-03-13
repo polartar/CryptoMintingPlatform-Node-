@@ -47,13 +47,36 @@ class GameItemService extends ServerToServerService {
     userId: string,
     userEthAddress: string,
     tokenId: string,
+    quantity: number,
   ) => {
     const jwtAxios = this.getAxios({ userId });
-    const { data } = await jwtAxios.post(`${this.baseUrl}/${tokenId}`, {
-      userEthAddress,
-      userId,
-    });
-    return data;
+    const { data } = await jwtAxios.post<{ nftBaseId: string }[]>(
+      `${this.baseUrl}/${tokenId}`,
+      {
+        userEthAddress,
+        userId,
+        quantity,
+      },
+    );
+    return data.map(item => item.nftBaseId);
+  };
+
+  getRemaingSupplyForNftBaseId = async (userId: string, nftBaseId: string) => {
+    const jwtAxios = this.getAxios({ userId });
+    const { data } = await jwtAxios.get<{ count: number }>(
+      `${this.baseUrl}/minted/remaining/${nftBaseId}`,
+    );
+
+    return data.count;
+  };
+
+  getRemainingSupplyForRandomItems = async (userId: string) => {
+    const jwtAxios = this.getAxios({ userId });
+    const { data } = await jwtAxios.get<{ remaining: number }>(
+      `${this.baseUrl}/minted/remaining`,
+    );
+
+    return data.remaining;
   };
 }
 

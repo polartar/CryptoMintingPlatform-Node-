@@ -1,17 +1,31 @@
-import { Context, ILootBoxOrder } from '../types';
+import { Context, IGameOrder } from '../types';
 import ResolverBase from '../common/Resolver-Base';
 import { gameItemService } from '../services/game-item';
 import { config } from '../common';
-import { LootBoxOrder } from '../models';
+import { GameOrder, GameProduct, IGameProductDocument } from '../models';
 import { CryptoFavorites } from '../data-sources';
 
 class Resolvers extends ResolverBase {
-  private getLootBoxTotalCost = async (
+  private getOrderDetails = async (
+    product: IGameProductDocument,
     quantity: number,
+    userId: string,
     cryptoFavorites: CryptoFavorites,
-  ) => {
-    const price = await cryptoFavorites.getBtcUsdPrice();
-    return (quantity * (config.costPerLootBox / price)).toFixed(8);
+  ): Promise<IGameOrder> => {
+    const btcUsdPrice = await cryptoFavorites.getBtcUsdPrice();
+    const totalBtc = (quantity * (product.priceUsd / btcUsdPrice)).toFixed(8);
+    return {
+      btcUsdPrice: btcUsdPrice,
+      created: new Date(),
+      gameProductId: product._id,
+      totalBtc: +totalBtc,
+      isUpgradeOrder: false,
+      itemsReceived: [],
+      perUnitPriceUsd: product.priceUsd,
+      quantity,
+      txHash: '',
+      userId,
+    };
   };
 
   getOwnedItems = async (parent: any, args: {}, ctx: Context) => {
@@ -34,6 +48,25 @@ class Resolvers extends ResolverBase {
     } catch (error) {
       throw error;
     }
+  };
+
+  verifyEnoughItemsLeft = async (
+    quantityRequested: number,
+    product: IGameProductDocument,
+    userId: string,
+  ) => {
+    let supplyRemaining;
+    if (product.nftBaseId) {
+      supplyRemaining = await gameItemService.getRemaingSupplyForNftBaseId(
+        userId,
+        product.nftBaseId,
+      );
+    } else {
+      supplyRemaining = await gameItemService.getRemainingSupplyForRandomItems(
+        userId,
+      );
+    }
+    return supplyRemaining > quantityRequested;
   };
 
   openLootboxes = async (
@@ -62,14 +95,50 @@ class Resolvers extends ResolverBase {
     }
   };
 
-  getLootBoxPrice = (parent: any, args: {}, ctx: Context) => {
-    this.requireAuth(ctx.user);
-    return config.costPerLootBox;
+  private getProduct = async (productId: string) => {
+    const notFound = new Error('Product not found');
+    try {
+      const product = await GameProduct.findById(productId).exec();
+      if (!product) throw notFound;
+      return product;
+    } catch (error) {
+      throw notFound;
+    }
   };
 
-  buyLootBoxes = async (
+  private assignItems = async (
+    userId: string,
+    ethAddress: string,
+    quantityRequested: number,
+    nftBaseId: string,
+  ) => {
+    let itemsReceived: string[];
+    if (nftBaseId) {
+      itemsReceived = await gameItemService.assignItemToUserByTokenId(
+        userId,
+        ethAddress,
+        nftBaseId,
+        quantityRequested,
+      );
+    } else {
+      itemsReceived = await gameItemService.assignItemsToUser(
+        userId,
+        ethAddress,
+        quantityRequested,
+      );
+    }
+
+    return itemsReceived;
+  };
+
+  buyGameProducts = async (
     parent: any,
-    args: { numLootBoxes: number; walletPassword: string },
+    args: {
+      numLootBoxes: number;
+      walletPassword: string;
+      quantity: number;
+      productId: string;
+    },
     ctx: Context,
   ) => {
     const {
@@ -77,41 +146,63 @@ class Resolvers extends ResolverBase {
       wallet,
       dataSources: { cryptoFavorites },
     } = ctx;
-    const { numLootBoxes, walletPassword } = args;
     this.requireAuth(user);
+    const { quantity, walletPassword, productId } = args;
     const { wallet: userWallet } = await user.findFromDb();
+    const product = await this.getProduct(productId);
+    const isEnoughLeft = await this.verifyEnoughItemsLeft(
+      quantity,
+      product,
+      user.userId,
+    );
+    if (!isEnoughLeft) {
+      throw new Error('Product out of stock');
+    }
     const ethAddress = userWallet?.ethAddress || '';
     const btcWallet = wallet.coin('BTC');
-    const amount = await this.getLootBoxTotalCost(
-      numLootBoxes,
+    const orderDetails = await this.getOrderDetails(
+      product,
+      quantity,
+      user.userId,
       cryptoFavorites,
     );
-    const outputs = [{ to: config.companyFeeBtcAddresses.arcade, amount }];
+    const outputs = [
+      {
+        to: config.companyFeeBtcAddresses.arcade,
+        amount: orderDetails.totalBtc.toFixed(8),
+      },
+    ];
     const { success, message, transaction } = await btcWallet.send(
       user,
       outputs,
       walletPassword,
     );
+
     if (!success) {
       throw new Error(message || 'Transaction failed');
     }
-    const itemsReceived = await gameItemService.assignItemsToUser(
+    orderDetails.txHash = transaction.id;
+    orderDetails.itemsReceived = await this.assignItems(
       user.userId,
       ethAddress,
-      numLootBoxes,
+      quantity,
+      product.nftBaseId,
     );
-    const newLootBoxOrder: ILootBoxOrder = {
-      isUpgradeOrder: false,
-      quantity: numLootBoxes,
-      totalBtc: +amount,
-      txHash: transaction.id,
-      userId: user.userId,
-      itemsReceived,
-      created: new Date(),
-    };
-    LootBoxOrder.create(newLootBoxOrder);
+
+    GameOrder.create(orderDetails);
     const items = await this.getOwnedItems(parent, args, ctx);
     return items;
+  };
+
+  getAvailableGameProducts = async (parent: any, args: {}, ctx: Context) => {
+    this.requireAuth(ctx.user);
+    const gameProducts = (await GameProduct.find({})
+      .lean()
+      .exec()) as IGameProductDocument[];
+    return gameProducts.map(gameProduct => ({
+      ...gameProduct,
+      id: gameProduct._id,
+    }));
   };
 }
 
@@ -121,10 +212,10 @@ export default {
   Query: {
     ownedItems: resolvers.getOwnedItems,
     farmBotRequired: resolvers.getFarmBotRequiredParts,
-    lootBoxPrice: resolvers.getLootBoxPrice,
+    gameProducts: resolvers.getAvailableGameProducts,
   },
   Mutation: {
     openLootBoxes: resolvers.openLootboxes,
-    buyLootBoxes: resolvers.buyLootBoxes,
+    buyGameProducts: resolvers.buyGameProducts,
   },
 };

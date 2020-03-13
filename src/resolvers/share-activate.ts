@@ -5,10 +5,15 @@ import {
   Context,
   IWalletConfig,
   IUser,
-  ILootBoxOrder,
+  IGameOrder,
 } from '../types';
 import { rewardDistributer } from '../services';
-import { UnclaimedReward, WalletConfig, LootBoxOrder } from '../models';
+import {
+  UnclaimedReward,
+  WalletConfig,
+  GameOrder,
+  GameProduct,
+} from '../models';
 import { logResolver, Logger } from '../common/logger';
 import { WalletApi } from '../wallet-api';
 import { UserApi, SendEmail } from '../data-sources';
@@ -335,14 +340,16 @@ class Resolvers extends ResolverBase {
     }
   };
 
-  private logLootBoxOrder = (
+  private logGameOrder = async (
     quantity: number,
     totalBtc: number,
     txHash: string,
     userId: string,
     itemsReceived: string[],
+    btcUsdPrice: number,
   ) => {
-    const newLootBoxOrder: ILootBoxOrder = {
+    const product = await GameProduct.findOne({ name: 'Loot Box' }).exec();
+    const newGameOrder: IGameOrder = {
       isUpgradeOrder: true,
       quantity,
       totalBtc,
@@ -350,8 +357,11 @@ class Resolvers extends ResolverBase {
       userId,
       itemsReceived,
       created: new Date(),
+      btcUsdPrice,
+      gameProductId: product._id,
+      perUnitPriceUsd: product.priceUsd,
     };
-    return LootBoxOrder.create(newLootBoxOrder);
+    return GameOrder.create(newGameOrder);
   };
 
   shareActivate = async (
@@ -422,12 +432,13 @@ class Resolvers extends ResolverBase {
         logger,
       );
 
-      this.logLootBoxOrder(
+      this.logGameOrder(
         numLootBoxes,
         paymentDetails.btcToCompany,
         transaction.id,
         user.userId,
         rewardResult.itemsRewarded,
+        btcUsdPrice,
       );
 
       this.saveActivationToDb(
