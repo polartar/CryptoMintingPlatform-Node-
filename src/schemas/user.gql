@@ -34,8 +34,14 @@ input UpdateUserInput {
   password: String
 }
 
+type DisplayNameUniqueResponse {
+  unique: Boolean!
+  displayName: String!
+}
+
 type Query {
   profile: UserProfile!
+  displayNameUnique(displayName: String!): DisplayNameUniqueResponse!
 }
 
 type Mutation {

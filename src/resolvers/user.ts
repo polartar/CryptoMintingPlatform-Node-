@@ -39,6 +39,10 @@ class Resolvers extends ResolverBase {
         utmInfo = [],
         language,
       } = args.userInfo;
+      const displayNameValid = await this.checkUniqueDisplayName(displayName);
+      if (!displayNameValid) {
+        throw new Error('Display name is taken or invalid');
+      }
       const firebaseUid = await auth.getFirebaseUid(token, config.hostname);
       logger.debug(`resolvers.auth.createUser.firebaseUid:${firebaseUid}`);
       const { email: userEmail } = await auth.getUser(
@@ -149,6 +153,30 @@ class Resolvers extends ResolverBase {
     );
     return profile;
   };
+
+  private checkUniqueDisplayName = async (displayName: string) => {
+    if (config.supportsDisplayNames && !displayName) {
+      throw new Error('Display name not specified');
+    } else if (!config.supportsDisplayNames) {
+      return true;
+    }
+    const foundUser = await User.findOne({ displayName });
+
+    return !foundUser;
+  };
+
+  public displayNameUnique = (parent: any, args: { displayName: string }) => {
+    const { displayName } = args;
+    if (!config.supportsDisplayNames) {
+      throw new Error('Display names not supported');
+    }
+    const unique = this.checkUniqueDisplayName(displayName);
+
+    return {
+      unique,
+      displayName,
+    };
+  };
 }
 
 export const userResolver = new Resolvers();
@@ -156,6 +184,7 @@ export const userResolver = new Resolvers();
 export default {
   Query: {
     profile: userResolver.getUserProfile,
+    displayNameUnique: userResolver.displayNameUnique,
   },
   Mutation: {
     createUser: userResolver.createUser,

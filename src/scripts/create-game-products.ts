@@ -1,7 +1,9 @@
 import { GameProduct } from '../models';
 import { IGameProduct, gameProductCoins, gameOptions } from '../types';
+import { Types, connect } from 'mongoose';
 
 void (async () => {
+  await connect('');
   await GameProduct.deleteMany({});
 
   const rarity = {
@@ -11,10 +13,11 @@ void (async () => {
       label: 'Legendary',
     },
   };
-  const newProducts: IGameProduct[] = [
+  const newProducts: (IGameProduct & { _id: Types.ObjectId })[] = [
     {
+      _id: Types.ObjectId('5e6ac731a8dad001ef268b81'),
       name: 'Loot Box',
-      description: 'Loot Box',
+      description: '',
       game: gameOptions.townStar,
       image:
         'https://gala-tokens.s3-us-west-2.amazonaws.com/images/sandbox-games/town-star/products/loot-box.png',
@@ -24,8 +27,10 @@ void (async () => {
       coin: gameProductCoins.BTC,
     },
     {
+      _id: Types.ObjectId('5e6ac731a8dad001ef268b82'),
       name: 'FarmBot',
-      description: 'FarmBot',
+      description:
+        'FarmBot mines BoxCoin in the world of Town Star!  Look for locations to mine on  your world map during a play session!',
       game: gameOptions.townStar,
       image:
         'https://gala-tokens.s3-us-west-2.amazonaws.com/images/sandbox-games/town-star/products/farm-bot.png',

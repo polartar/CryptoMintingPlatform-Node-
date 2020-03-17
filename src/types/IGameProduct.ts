@@ -13,7 +13,7 @@ export interface IGameProduct {
   nftBaseId?: string;
   priceUsd: number;
   basePriceUsd: number;
-  description: string;
+  description?: string;
   image: string;
   quantities: number[];
   rarity?: {
