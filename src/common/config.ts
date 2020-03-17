@@ -121,6 +121,10 @@ class Config {
     process.env.COST_PER_LOOT_BOX,
   );
 
+  public readonly supportsDisplayNames =
+    ['arcade', 'gala'].includes(this.brand) ||
+    process.env.SUPPORTS_DISPLAY_NAMES === 'true';
+
   constructor() {
     autoBind(this);
     this.ensureRequiredVariables();
