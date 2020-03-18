@@ -1,6 +1,5 @@
 require('dotenv').config();
 import { createConnection, Schema, Document } from 'mongoose';
-import { config } from '../common';
 import autoBind = require('auto-bind');
 // import { Schema, Document } from 'mongoose'
 
