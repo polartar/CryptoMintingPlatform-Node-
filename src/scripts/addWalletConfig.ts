@@ -1,5 +1,6 @@
 import connections from './connections';
 import { walletConfigSchema, IWalletConfig } from '../models/wallet-config';
+import { logger } from '../common';
 
 void (async () => {
   const arcade = {
@@ -275,9 +276,6 @@ void (async () => {
   const greenConfig = [green.prod, green.local];
   const codexConfig = [codex.prod, codex.local];
 
-  const connectOverrides = {
-    brand: 'connect',
-  };
   const connectConfig = [
     { ...connect.prod, basicWalletBenefits },
     { ...connect.local, basicWalletBenefits },
@@ -302,27 +300,27 @@ void (async () => {
     return connection.model<IWalletConfig>('wallet-config', walletConfigSchema);
   });
 
-  const connectResult = [connectStageModel, connectProdModel].map(async cnx => {
+  [connectStageModel, connectProdModel].map(async cnx => {
     await cnx.deleteMany({});
-    const result = await cnx.insertMany(connectConfig);
-    console.log('Connect Done', { result });
+    await cnx.insertMany(connectConfig);
+    logger.info('Connect Done');
   });
 
-  const greenResult = [greenStageModel, greenProdModel].map(async cnx => {
+  [greenStageModel, greenProdModel].map(async cnx => {
     await cnx.deleteMany({});
-    const result = await cnx.insertMany(greenConfig);
-    console.log('Green Done', { result });
+    await cnx.insertMany(greenConfig);
+    logger.info('Green Done');
   });
 
-  const codexResult = [codexStageModel, codexProdModel].map(async cnx => {
+  [codexStageModel, codexProdModel].map(async cnx => {
     await cnx.deleteMany({});
-    const result = await cnx.insertMany(codexConfig);
-    console.log('Codex Done', { result });
+    await cnx.insertMany(codexConfig);
+    logger.info('Codex Done');
   });
 
-  const arcadeResult = [arcadeStageModel, arcadeProdModel].map(async cnx => {
+  [arcadeStageModel, arcadeProdModel].map(async cnx => {
     await cnx.deleteMany({});
-    const result = await cnx.insertMany(arcadeConfig);
-    console.log('Arcade Done', { result });
+    await cnx.insertMany(arcadeConfig);
+    logger.info('Arcade Done');
   });
 })();
