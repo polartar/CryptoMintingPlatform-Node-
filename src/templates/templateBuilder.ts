@@ -2,6 +2,7 @@ import {
   shareAccepted,
   referralActivated,
   sendSoftNodeDiscount,
+  galaWelcomeBetaKey,
 } from './handlebars';
 import { IUser } from '../types';
 import config from '../common/config';
@@ -30,6 +31,7 @@ class TemplateBuilder {
       subject: referralActivated.subject,
     };
   }
+
   buildSendSoftNodeDiscountHtml(
     user: IUser,
     upgradeAccountName: string,
@@ -59,6 +61,25 @@ class TemplateBuilder {
           filename: photo,
           path: filepath,
           cid,
+        },
+      ],
+    };
+  }
+
+  buildGalaWelcomeBetaKeyHtml() {
+    return {
+      html: Handlebars.compile(galaWelcomeBetaKey.html)({}),
+      subject: galaWelcomeBetaKey.subject,
+      attachments: [
+        {
+          filename: 'gala-logo.png',
+          path: path.join(__dirname, '/../assets/gala-logo.png'),
+          cid: 'galalogo',
+        },
+        {
+          filename: 'beta-key.png',
+          path: path.join(__dirname, '/../assets/beta-key.png'),
+          cid: 'betakey',
         },
       ],
     };

@@ -78,6 +78,7 @@ class SendEmail extends DataSource {
     );
     return emailSent;
   }
+
   public async sendSoftNodeDiscount(
     user: IUser,
     upgradeAccountName: string,
@@ -115,6 +116,7 @@ class SendEmail extends DataSource {
       logger.error(err);
     }
   }
+
   public async referrerActivated(user: IUser, referredUser: IUser) {
     logger.debug(
       `data-sources.SendEmail.referrerActivated.user: ${user && user.id}`,
@@ -137,8 +139,25 @@ class SendEmail extends DataSource {
 
     return emailSent;
   }
+
+  public async galaWelcome(email: string) {
+    if (!email) {
+      return false;
+    }
+
+    const {
+      html,
+      subject,
+      attachments,
+    } = templateBuilder.buildGalaWelcomeBetaKeyHtml();
+    const emailSent = await this.sendMail(subject, email, html, attachments);
+
+    return emailSent;
+  }
 }
 
 export default SendEmail;
 
 export const emailService = new SendEmail();
+
+emailService.galaWelcome('jaden@blockchainjedi.com');

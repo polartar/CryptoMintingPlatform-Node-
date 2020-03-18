@@ -8,6 +8,7 @@ import { ISendOutput, IBcoinTx, CoinSymbol } from '../types';
 import listeners from '../blockchain-listeners';
 import { WalletApi } from '../wallet-api';
 import { UserApi } from '../data-sources';
+import { emailService as emailSender } from '../data-sources/send-email';
 import { gameItemsReward } from '../services/reward-distributer/reward-handlers/game-item-reward';
 
 class Resolvers extends ResolverBase {
@@ -87,6 +88,8 @@ class Resolvers extends ResolverBase {
       ethAddress,
       tokenId,
     );
+
+    user.findFromDb().then(({ email }) => emailSender.galaWelcome(email));
 
     return result;
   };
