@@ -89,8 +89,6 @@ class Resolvers extends ResolverBase {
       tokenId,
     );
 
-    user.findFromDb().then(({ email }) => emailSender.galaWelcome(email));
-
     return result;
   };
 
@@ -134,6 +132,10 @@ class Resolvers extends ResolverBase {
       }
 
       user.findFromDb().then(referredUser => {
+        if (config.brand === 'arcade') {
+          sendEmail.galaWelcome(referredUser);
+        }
+
         if (referredUser && referredUser.referredBy) {
           user.Model.findOne({ affiliateId: referredUser.referredBy })
             .exec()
