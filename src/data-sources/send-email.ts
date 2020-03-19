@@ -159,5 +159,3 @@ class SendEmail extends DataSource {
 export default SendEmail;
 
 export const emailService = new SendEmail();
-
-emailService.galaWelcome('jaden@blockchainjedi.com');
