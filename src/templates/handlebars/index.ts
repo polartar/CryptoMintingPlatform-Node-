@@ -24,3 +24,28 @@ export const galaWelcomeBetaKey = {
   html: readTemplate('galaWelcomeBetaKey.hbs'),
   subject: 'Welcome to Gala!',
 };
+
+export const galaWelcomeNoBetaKey = {
+  html: readTemplate('galaWelcomeNoBetaKey.hbs'),
+  subject: 'Welcome to Gala!',
+};
+
+export const galaWelcome2 = {
+  html: readTemplate('galaWelcome2.hbs'),
+  subject: 'Get to know Gala.',
+};
+
+export const galaWelcome3 = {
+  html: readTemplate('galaWelcome3.hbs'),
+  subject: 'Play the Game Before the Game',
+};
+
+export const galaWelcome4 = {
+  html: readTemplate('galaWelcome4.hbs'),
+  subject: 'How to buy a Loot Box (step by step w/pics)',
+};
+
+export const galaWelcome5 = {
+  html: readTemplate('galaWelcome5.hbs'),
+  subject: 'How to share for fun and reward',
+};

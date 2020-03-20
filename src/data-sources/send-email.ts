@@ -139,36 +139,6 @@ class SendEmail extends DataSource {
 
     return emailSent;
   }
-
-  public async galaWelcome(user: IUser) {
-    if (!user) {
-      return false;
-    }
-
-    logger.debug(`data-sources.SendEmail.galaWelcome.user: ${user && user.id}`);
-
-    try {
-      const {
-        html,
-        subject,
-        attachments,
-      } = templateBuilder.buildGalaWelcomeBetaKeyHtml();
-      const emailSent = await this.sendMail(
-        subject,
-        user.email,
-        html,
-        attachments,
-      );
-
-      logger.debug(
-        `data-sources.SendEmail.galaWelcome.emailSent: ${emailSent}`,
-      );
-
-      return emailSent;
-    } catch (err) {
-      logger.error(err);
-    }
-  }
 }
 
 export default SendEmail;

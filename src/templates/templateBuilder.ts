@@ -3,6 +3,10 @@ import {
   referralActivated,
   sendSoftNodeDiscount,
   galaWelcomeBetaKey,
+  galaWelcome2,
+  galaWelcome3,
+  galaWelcome4,
+  galaWelcome5,
 } from './handlebars';
 import { IUser } from '../types';
 import config from '../common/config';
@@ -66,22 +70,38 @@ class TemplateBuilder {
     };
   }
 
-  buildGalaWelcomeBetaKeyHtml() {
+  buildGalaWelcome1Html() {
     return {
       html: Handlebars.compile(galaWelcomeBetaKey.html)({}),
       subject: galaWelcomeBetaKey.subject,
-      attachments: [
-        {
-          filename: 'gala-logo.png',
-          path: path.join(__dirname, '/../assets/gala-logo.png'),
-          cid: 'galalogo',
-        },
-        {
-          filename: 'beta-key.png',
-          path: path.join(__dirname, '/../assets/beta-key.png'),
-          cid: 'betakey',
-        },
-      ],
+    };
+  }
+
+  buildGalaWelcome2Html() {
+    return {
+      html: Handlebars.compile(galaWelcome2.html)({}),
+      subject: galaWelcome2.subject,
+    };
+  }
+
+  buildGalaWelcome3Html() {
+    return {
+      html: Handlebars.compile(galaWelcome3.html)({}),
+      subject: galaWelcome3.subject,
+    };
+  }
+
+  buildGalaWelcome4Html() {
+    return {
+      html: Handlebars.compile(galaWelcome4.html)({}),
+      subject: galaWelcome4.subject,
+    };
+  }
+
+  buildGalaWelcome5Html() {
+    return {
+      html: Handlebars.compile(galaWelcome5.html)({}),
+      subject: galaWelcome5.subject,
     };
   }
 }
