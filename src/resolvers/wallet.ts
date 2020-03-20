@@ -8,7 +8,7 @@ import { ISendOutput, IBcoinTx, CoinSymbol } from '../types';
 import listeners from '../blockchain-listeners';
 import { WalletApi } from '../wallet-api';
 import { UserApi } from '../data-sources';
-import { emailService as emailSender } from '../data-sources/send-email';
+import { emailScheduler } from '../services/email-scheduler';
 import { gameItemsReward } from '../services/reward-distributer/reward-handlers/game-item-reward';
 
 class Resolvers extends ResolverBase {
@@ -132,9 +132,9 @@ class Resolvers extends ResolverBase {
         );
       }
 
-      user.findFromDb().then(referredUser => {
+      user.findFromDb().then(async referredUser => {
         if (config.brand === 'arcade') {
-          sendEmail.galaWelcome(referredUser);
+          await emailScheduler.scheduleGalaWelcomeEmails(referredUser);
         }
 
         if (referredUser && referredUser.referredBy) {
