@@ -2,6 +2,7 @@ import { eSupportedInterfaces, ICoinMetadata } from '../types';
 import { config } from '.';
 
 import * as erc20Abi from './ABI/erc20.json';
+import * as erc1155Abi from './ABI/erc1155.json';
 
 const walletConfigOverrides: ICoinMetadata[] = [
   {
@@ -38,15 +39,16 @@ const walletConfigOverrides: ICoinMetadata[] = [
     decimalPlaces: 8,
   },
   {
-    walletApi: eSupportedInterfaces.doc,
-    name: 'Arcade',
-    symbol: 'ARCADE',
-    backgroundColor: '#5D3AC5',
+    name: 'Gala',
+    symbol: 'GALA',
+    backgroundColor: '#454545',
     icon:
       'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTUiIGhlaWdodD0iNTUiIHZpZXdCb3g9IjAgMCA1NSA1NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTI3LjY1IDU0LjQ3NWMxNS4wNDItLjIyNiAyNy4wNTItMTIuNjA0IDI2LjgyNS0yNy42NDZDNTQuMjUgMTEuNzg3IDQxLjg3MS0uMjIzIDI2LjgzLjAwMyAxMS43ODcuMjMtLjIyMyAxMi42MDcuMDAzIDI3LjY1LjIzIDQyLjY5MiAxMi42MDcgNTQuNzAyIDI3LjY1IDU0LjQ3NXpNMTQuNTkzIDM5LjU5M3M3LjU4My0xOC40NTkgOC45MDctMjEuMDI5YzEuMzI0LTIuNTcgNy41ODQtMi42ODcgOC42NjcgMCAxLjA4MyAyLjY4NyA4LjQyNiAyMS4wMjkgOC40MjYgMjEuMDI5aC00LjY5NUwyOC43OTYgMjEuMjVjLS40ODEtLjkzNC0xLjU2NC0uOTM0LTIuMDQ2IDBsLTcuNTgzIDE4LjM0MmgtNC41NzR6IiBmaWxsPSIjZmZmIi8+PC9zdmc+',
-    abi: null,
+    abi: erc1155Abi,
+    walletApi: eSupportedInterfaces.erc1155,
+    contractAddress: config.contractAddresses.gala,
     decimalPlaces: 8,
-    contractAddress: null,
+    tokenId: config.tokenIds.gala,
   },
   {
     walletApi: eSupportedInterfaces.doc,
