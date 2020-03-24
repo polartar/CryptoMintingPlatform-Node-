@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import { IUtmInfo } from './IUtmInfo';
 
 export interface IGameOrder {
   userId: string;
@@ -11,4 +12,5 @@ export interface IGameOrder {
   isUpgradeOrder: boolean;
   itemsReceived: string[];
   created: Date;
+  utm: IUtmInfo;
 }

@@ -73,5 +73,6 @@ type Mutation {
     quantity: Int!
     productId: String!
     walletPassword: String!
+    utm: UtmInfo
   ): BuyGameProductsResponse!
 }

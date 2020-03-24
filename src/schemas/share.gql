@@ -51,5 +51,6 @@ type Mutation {
     walletPassword: String
     rewardType: String!
     numLootBoxes: Int
+    utm: UtmInfo
   ): TxSendResponse!
 }
