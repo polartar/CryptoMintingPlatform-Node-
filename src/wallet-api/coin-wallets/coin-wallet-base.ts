@@ -38,6 +38,7 @@ export default abstract class CoinWalletBase {
     name: string;
     icon: string;
     backgroundColor: string;
+    canSendFunds: boolean;
   }>;
 
   abstract getBalance(

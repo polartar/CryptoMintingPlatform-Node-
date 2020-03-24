@@ -70,9 +70,7 @@ class DocWallet extends CoinWalletBase {
   public async getWalletInfo(userApi: UserApi) {
     try {
       logger.debug(
-        `walletApi.coin-wallets.DocWallet.getWalletInfo.userId:${
-          userApi.userId
-        }`,
+        `walletApi.coin-wallets.DocWallet.getWalletInfo.userId:${userApi.userId}`,
       );
       return {
         receiveAddress: '',
@@ -80,6 +78,7 @@ class DocWallet extends CoinWalletBase {
         name: this.name,
         backgroundColor: this.backgroundColor,
         icon: this.icon,
+        canSendFunds: false,
       };
     } catch (error) {
       logger.warn(
@@ -124,9 +123,7 @@ class DocWallet extends CoinWalletBase {
         rewardName: this.rewardName,
       });
       logger.debug(
-        `walletApi.coin-wallets.DocWallet.getTransactions.transactions.length:${
-          transactions.length
-        }`,
+        `walletApi.coin-wallets.DocWallet.getTransactions.transactions.length:${transactions.length}`,
       );
       const formattedTransactions = this.formatTransactions(
         transactions,
@@ -159,9 +156,7 @@ class DocWallet extends CoinWalletBase {
   ): ITransaction[] {
     try {
       logger.debug(
-        `walletApi.coin-wallets.DocWallet.formatTransactions.transactions.length:${
-          transactions.length
-        }`,
+        `walletApi.coin-wallets.DocWallet.formatTransactions.transactions.length:${transactions.length}`,
       );
       logger.debug(
         `walletApi.coin-wallets.DocWallet.formatTransactions.userId:${userId}`,
@@ -203,9 +198,7 @@ class DocWallet extends CoinWalletBase {
   ) {
     try {
       logger.debug(
-        `walletApi.coin-wallets.DocWallet.recoverWallet.userId:${
-          userApi.userId
-        }`,
+        `walletApi.coin-wallets.DocWallet.recoverWallet.userId:${userApi.userId}`,
       );
       return true;
     } catch (error) {

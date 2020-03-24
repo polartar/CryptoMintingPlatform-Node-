@@ -150,6 +150,7 @@ class Erc20API extends EthWallet {
         backgroundColor: this.backgroundColor,
         icon: this.icon,
         blockNumAtCreation,
+        canSendFunds: true,
       };
     } catch (error) {
       logger.warn(
