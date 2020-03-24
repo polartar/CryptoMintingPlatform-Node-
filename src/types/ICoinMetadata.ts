@@ -9,4 +9,5 @@ export default interface ICoinMetadata {
   contractAddress: string | null;
   decimalPlaces: number;
   walletApi: eSupportedInterfaces;
+  tokenId?: string;
 }
