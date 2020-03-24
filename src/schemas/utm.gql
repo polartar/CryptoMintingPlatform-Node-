@@ -1,0 +1,6 @@
+input UtmInfo {
+  medium: String
+  source: String
+  campaign: String
+  term: String
+}

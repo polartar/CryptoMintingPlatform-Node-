@@ -1,5 +1,7 @@
 import * as mongoose from 'mongoose';
 import { crypto } from '../utils';
+import { IUtmInfo } from '../types';
+import { utmSchema } from './schemas';
 
 interface IWalletShares {
   green: number;
@@ -22,6 +24,7 @@ interface IWalletUpgrade {
   lootBoxExtraPaid: number;
   lootBoxesPurchased: number;
   lootBoxPriceUsd: number;
+  utm: IUtmInfo;
 }
 interface IActivatedWallets {
   green: IWalletUpgrade;
@@ -99,6 +102,15 @@ const activatedWalletsSchema = new mongoose.Schema({
   lootBoxExtraPaid: Number,
   lootBoxesPurchased: Number,
   lootBoxPriceUsd: Number,
+  utm: {
+    type: utmSchema,
+    default: {
+      medium: '',
+      source: '',
+      campaign: '',
+      term: '',
+    },
+  },
 });
 
 const walletsActivated = new mongoose.Schema({

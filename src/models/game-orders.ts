@@ -1,5 +1,6 @@
 import { model, Schema, Document } from 'mongoose';
 import { IGameOrder } from '../types';
+import { utmSchema } from './schemas';
 
 export interface IGameOrderDocument extends IGameOrder, Document {}
 
@@ -39,6 +40,15 @@ export const gameOrderSchema = new Schema({
     required: true,
   },
   created: Date,
+  utm: {
+    type: utmSchema,
+    default: {
+      medium: '',
+      source: '',
+      campaign: '',
+      term: '',
+    },
+  },
 });
 
 export const GameOrder = model<IGameOrderDocument>(
