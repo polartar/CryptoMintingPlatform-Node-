@@ -81,12 +81,8 @@ class Config {
 
   public readonly contractAddresses = {
     green: process.env.GREEN_ADDRESS,
-    gala: process.env.GALA_ADDRESS,
+    arcade: process.env.ARCADE_ADDRESS,
   };
-  public readonly tokenIds = {
-    gala: process.env.GALA_TOKEN_ID,
-  };
-
   public pubsub = new PubSub();
   public readonly newTransaction = 'NEW_TRANSACTION';
   public readonly newBalance = 'NEW_BALANCE';
@@ -143,8 +139,7 @@ class Config {
       'PORT',
       'HOSTNAME',
       'CRYPTO_NETWORK',
-      // 'GALA_ADDRESS',
-      // 'GALA_TOKEN_ID',
+      'ARCADE_ADDRESS',
       'GREEN_ADDRESS',
       'BCOIN_WALLET_PORT',
       'BCOIN_WALLET_API_KEY',

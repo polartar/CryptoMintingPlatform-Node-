@@ -1,5 +1,3 @@
-import { utils } from 'ethers';
-
 export default interface IWeb3TransferEvent {
   address: string;
   blockHash: string;
@@ -10,12 +8,9 @@ export default interface IWeb3TransferEvent {
   raw: any;
   removed: boolean;
   returnValues: {
-    from?: string;
-    to?: string;
-    tokens?: any;
-    _value?: utils.BigNumber;
-    _to?: string;
-    _operator?: string;
+    from: string;
+    to: string;
+    tokens: any;
   };
   signature: string;
   transactionHash: string;
