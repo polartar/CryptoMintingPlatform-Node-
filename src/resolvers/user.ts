@@ -51,7 +51,6 @@ class Resolvers extends ResolverBase {
       );
       const email = userEmail.toLowerCase();
       const affiliateId = crypto.md5UrlSafe(email);
-      const url = await bitly.getLink(affiliateId);
       const newUser = new User({
         email,
         firebaseUid,
@@ -65,6 +64,7 @@ class Resolvers extends ResolverBase {
         affiliateId,
         language,
       });
+      const url = await bitly.getLink(newUser);
       newUser.set('wallet.shareLink', url);
       newUser.set('wallet.userCreatedInWallet', true);
       logger.debug(`resolvers.auth.createUser.newUser._id:${newUser._id}`);

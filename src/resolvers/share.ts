@@ -199,8 +199,7 @@ class Resolvers extends ResolverBase {
       if (!userModel) {
         throw new Error('Not found');
       }
-      const { affiliateId } = userModel;
-      const url = await bitly.getLink(affiliateId);
+      const url = await bitly.getLink(userModel);
       userModel.set('wallet.shareLink', url);
       await userModel.save();
       return url;
