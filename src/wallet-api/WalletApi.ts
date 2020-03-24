@@ -120,7 +120,10 @@ export default class WalletApi {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: CONNECT`,
       );
-      return [BTC, ETH, WinX, GALA, GREEN];
+      if (hostName.includes('stage')) {
+        return [BTC, ETH, WinX, GALA, GREEN];
+      }
+      return [BTC, ETH, WinX, GREEN];
     } else if (hostName.includes('codexunited.com')) {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: CODEX`,
@@ -130,7 +133,10 @@ export default class WalletApi {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: GALA`,
       );
-      return [GALA, BTC, ETH];
+      if (hostName.includes('stage')) {
+        return [GALA, BTC, ETH];
+      }
+      return [BTC, ETH];
     } else if (hostName.includes('localhost')) {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: LOCALHOST`,

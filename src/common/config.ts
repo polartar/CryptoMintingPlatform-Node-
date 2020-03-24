@@ -126,7 +126,7 @@ class Config {
   );
 
   public readonly supportsDisplayNames =
-    ['arcade', 'gala', 'localhost'].includes(this.brand) ||
+    ['arcade', 'gala'].includes(this.brand) ||
     process.env.SUPPORTS_DISPLAY_NAMES === 'true';
 
   constructor() {
@@ -143,8 +143,8 @@ class Config {
       'PORT',
       'HOSTNAME',
       'CRYPTO_NETWORK',
-      'GALA_ADDRESS',
-      'GALA_TOKEN_ID',
+      // 'GALA_ADDRESS',
+      // 'GALA_TOKEN_ID',
       'GREEN_ADDRESS',
       'BCOIN_WALLET_PORT',
       'BCOIN_WALLET_API_KEY',
