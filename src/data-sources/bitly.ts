@@ -1,5 +1,6 @@
 import { RESTDataSource, RequestOptions } from 'apollo-datasource-rest';
 import { config, logger } from '../common';
+import { IUser } from '../models/user';
 
 class Bitly extends RESTDataSource {
   baseURL = 'https://api-ssl.bitly.com/v4';
@@ -26,15 +27,17 @@ class Bitly extends RESTDataSource {
     return response.link;
   }
 
-  public async getLink(affiliateId: string) {
+  public async getLink(user: IUser) {
     try {
-      if (!affiliateId) throw new Error('No affiliateID');
-      logger.debug(`data-sources.bitly.getLink.affiliateId: ${affiliateId}`);
-      const encodedAffiliateId = encodeURIComponent(affiliateId);
+      if (!user) throw new Error('No user');
+      logger.debug(
+        `data-sources.bitly.getLink.affiliateId: ${user.affiliateId}`,
+      );
+      const encodedAffiliateId = encodeURIComponent(user.affiliateId);
       logger.debug(
         `data-sources.bitly.getLink.encodedAffiliateId: ${encodedAffiliateId}`,
       );
-      const longUrl = `${config.walletClientDomain}?r=${encodedAffiliateId}`;
+      const longUrl = `${config.walletClientDomain}?r=${encodedAffiliateId}&utm_source=galaappshare&utm_medium=${user.id}&utm_campaign=5e79504ffd8a5636a2c86ed2&utm_term=gala_own_your_game`;
 
       const guid = await this.getGroupId();
       const shortUrl = await this.shortenLongUrl(longUrl, guid);
