@@ -5,6 +5,7 @@ import {
   BtcWallet,
   EthWallet,
   Erc20Wallet,
+  Erc1155Wallet,
   DocWallet,
   CoinWalletBase,
 } from './coin-wallets';
@@ -79,6 +80,12 @@ export default class WalletApi {
           );
           return new Erc20Wallet(coinWalletConfig);
         }
+        case eSupportedInterfaces.erc1155: {
+          logger.debug(
+            `wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${coinWalletConfig.walletApi} => ERC1155`,
+          );
+          return new Erc1155Wallet(coinWalletConfig);
+        }
         case eSupportedInterfaces.doc: {
           logger.debug(
             `wallet-api.coin-wallet.WalletApi.selectWalletInterface: ${coinWalletConfig.walletApi} => Doc`,
@@ -98,7 +105,7 @@ export default class WalletApi {
   }
 
   private selectWalletsFromHostName(hostName: string) {
-    const ARCADE = 'ARCADE';
+    const GALA = 'GALA';
     const GREEN = 'GREEN';
     const BTC = 'BTC';
     const ETH = 'ETH';
@@ -113,7 +120,10 @@ export default class WalletApi {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: CONNECT`,
       );
-      return [BTC, ETH, WinX, ARCADE, GREEN];
+      if (hostName.includes('stage')) {
+        return [BTC, ETH, WinX, GALA, GREEN];
+      }
+      return [BTC, ETH, WinX, GREEN];
     } else if (hostName.includes('codexunited.com')) {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: CODEX`,
@@ -121,14 +131,17 @@ export default class WalletApi {
       return [BTC, ETH, WinX];
     } else if (hostName.includes('arcadeblockchain.com')) {
       logger.debug(
-        `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: ARCADE`,
+        `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: GALA`,
       );
-      return [ARCADE, BTC, ETH];
+      if (hostName.includes('stage')) {
+        return [GALA, BTC, ETH];
+      }
+      return [BTC, ETH];
     } else if (hostName.includes('localhost')) {
       logger.debug(
         `wallet-api.coin-wallet.WalletApi.selectWalletsFromHostName: LOCALHOST`,
       );
-      return [BTC, ETH, GREEN, ARCADE, WinX];
+      return [BTC, ETH, GREEN, GALA, WinX];
     } else if (hostName.includes('blue')) {
       return [BTC, ETH];
     } else {
