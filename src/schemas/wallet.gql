@@ -49,6 +49,7 @@ type Wallet {
   transactions: [Transaction!]!
   feeEstimate: FeeEstimate!
   contractAddress: String
+  canSendFunds: Boolean!
 }
 
 type MutationResponse {
