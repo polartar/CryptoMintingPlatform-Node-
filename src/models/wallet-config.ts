@@ -24,7 +24,7 @@ export interface IWalletConfig extends Document {
 export const walletConfigSchema = new Schema({
   brand: {
     type: String,
-    enum: ['localhost', 'green', 'arcade', 'codex', 'connect'],
+    enum: ['localhost', 'green', 'gala', 'codex', 'connect'],
   },
   referrerReward: {
     type: Number,

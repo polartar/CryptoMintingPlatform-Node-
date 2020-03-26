@@ -7,6 +7,7 @@ import { config, logger } from '../common';
 import { ISendOutput, IBcoinTx, CoinSymbol } from '../types';
 import listeners from '../blockchain-listeners';
 import { WalletApi } from '../wallet-api';
+import Erc1155Wallet from '../wallet-api/coin-wallets/erc1155-wallet';
 import { UserApi } from '../data-sources';
 import { emailScheduler } from '../services/email-scheduler';
 import { gameItemsReward } from '../services/reward-distributer/reward-handlers/game-item-reward';
@@ -57,7 +58,7 @@ class Resolvers extends ResolverBase {
       case 'btc': {
         return userId;
       }
-      case 'arcade': {
+      case 'gala': {
         return userId;
       }
       case 'winx': {
@@ -71,7 +72,7 @@ class Resolvers extends ResolverBase {
 
   private sendBetaKey = async (wallet: WalletApi, user: UserApi) => {
     const { brand } = config;
-    if (!['localhost', 'arcade'].includes(brand)) return;
+    if (!['localhost', 'gala'].includes(brand)) return;
     const { receiveAddress: ethAddress } = await wallet
       .coin('ETH')
       .getWalletInfo(user);
@@ -133,7 +134,7 @@ class Resolvers extends ResolverBase {
       }
 
       user.findFromDb().then(async referredUser => {
-        if (config.brand === 'arcade') {
+        if (config.brand === 'gala') {
           await emailScheduler.scheduleGalaWelcomeEmails(referredUser);
         }
 
@@ -390,6 +391,66 @@ class Resolvers extends ResolverBase {
     }
   };
 
+  sendGameItem = async (
+    parent: any,
+    {
+      coinSymbol,
+      outputs,
+      totpToken,
+      walletPassword,
+    }: {
+      coinSymbol: string;
+      outputs: ISendOutput[];
+      totpToken: string;
+      walletPassword: string;
+    },
+    { user, wallet }: Context,
+  ) => {
+    try {
+      this.requireAuth(user);
+      this.maybeRequireStrongWalletPassword(walletPassword);
+      // const twoFaValid = await user.validateTwoFa(totpToken);
+      // this.requireTwoFa(twoFaValid);
+
+      if (coinSymbol.toLowerCase() !== 'gala') {
+        throw new Error('Can only send game items from Gala.');
+      }
+
+      const walletApi = wallet.coin(coinSymbol) as Erc1155Wallet;
+      const result = await walletApi.transferNonFungibleToken(
+        user,
+        outputs,
+        walletPassword,
+      );
+
+      return result;
+    } catch (error) {
+      logger.warn(`resolvers.wallet.sendTransaction.catch: ${error}`);
+      let message;
+      switch (error.message) {
+        case 'Weak Password': {
+          message = 'Incorrect Password';
+          break;
+        }
+        case 'Invalid two factor auth token': {
+          message = 'Invalid one-time password';
+          break;
+        }
+        case 'Can only send game items from Gala.': {
+          message = error.message;
+          break;
+        }
+        default: {
+          throw error;
+        }
+      }
+      return {
+        success: false,
+        message,
+      };
+    }
+  };
+
   listenForNewBalance = (
     parent: any,
     { coinSymbol }: { coinSymbol: CoinSymbol },
@@ -422,6 +483,7 @@ export default {
     balance: resolvers.getBalance,
   },
   Mutation: {
+    sendGameItem: resolvers.sendGameItem,
     sendTransaction: resolvers.sendTransaction,
     createWallet: resolvers.createWallet,
     recoverWallet: resolvers.recoverWallet,

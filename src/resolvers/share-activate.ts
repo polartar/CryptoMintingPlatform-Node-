@@ -89,7 +89,7 @@ class Resolvers extends ResolverBase {
     numLootBoxes: number = 1,
     rewardConfig: IRewardConfig,
   ) => {
-    if (rewardConfig.rewardCurrency.toLowerCase() === 'arcade') {
+    if (rewardConfig.rewardCurrency.toLowerCase() === 'gala') {
       const extraLootBoxes = (numLootBoxes || 1) > 1 ? numLootBoxes - 1 : 0;
       const lootBoxExtraPaid = extraLootBoxes * config.costPerLootBox;
       return {
@@ -215,7 +215,7 @@ class Resolvers extends ResolverBase {
     const prefix = `wallet.activations.${rewardType}`;
     const permission = `${softnodeType}-soft-node-discount`;
     userDoc.permissions.push(permission);
-    if (rewardType === 'arcade') {
+    if (rewardType === 'gala') {
       userDoc.permissions.push('TOWNSTAR_BETA_ACCESS');
     }
     userDoc.set(`${prefix}.activated`, true);

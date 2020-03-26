@@ -1,12 +1,12 @@
 export default function buildGetUserRewardsPipeline(
   userId: string,
-  rewardName: string,
+  rewardNames: string[],
 ) {
   const pipeline = [
     {
       $match: {
         userId: userId,
-        rewardName: rewardName,
+        rewardName: { $in: rewardNames },
       },
     },
     {

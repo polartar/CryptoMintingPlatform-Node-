@@ -9,6 +9,7 @@ class DocReward {
     ['smart', 'Smart'],
     ['arcade', 'Arc'],
     ['arc', 'Arc'],
+    ['gala', 'GALA'],
   ]);
 
   private getRewardName = (currency: string) => {
