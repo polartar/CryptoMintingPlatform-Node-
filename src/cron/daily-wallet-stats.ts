@@ -46,7 +46,7 @@ class DailyWalletStats {
         rowsToInclude: ['arcade'],
       },
     ],
-    arcade: [
+    gala: [
       {
         sendTo: config.sendWalletReportToArcade,
         rowsToInclude: ['arcade'],
