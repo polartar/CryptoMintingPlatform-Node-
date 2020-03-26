@@ -36,7 +36,7 @@ class Config {
   public readonly companyFeeBtcAddresses: { [key: string]: string } = {
     green: process.env.COMPANY_FEE_BTC_ADDRESS_GREEN,
     winx: process.env.COMPANY_FEE_BTC_ADDRESS_WINX,
-    arcade: process.env.COMPANY_FEE_BTC_ADDRESS_ARCADE,
+    gala: process.env.COMPANY_FEE_BTC_ADDRESS_GALA,
   };
   public readonly cryptoNetwork = process.env.CRYPTO_NETWORK;
   public readonly walletClientDomain = process.env.WALLET_CLIENT_DOMAIN;
@@ -81,8 +81,12 @@ class Config {
 
   public readonly contractAddresses = {
     green: process.env.GREEN_ADDRESS,
-    arcade: process.env.ARCADE_ADDRESS,
+    gala: process.env.GALA_ADDRESS,
   };
+  public readonly tokenIds = {
+    gala: process.env.GALA_TOKEN_ID,
+  };
+
   public pubsub = new PubSub();
   public readonly newTransaction = 'NEW_TRANSACTION';
   public readonly newBalance = 'NEW_BALANCE';
@@ -122,7 +126,7 @@ class Config {
   );
 
   public readonly supportsDisplayNames =
-    ['arcade', 'gala'].includes(this.brand) ||
+    ['gala', 'localhost'].includes(this.brand) ||
     process.env.SUPPORTS_DISPLAY_NAMES === 'true';
 
   constructor() {
@@ -139,7 +143,8 @@ class Config {
       'PORT',
       'HOSTNAME',
       'CRYPTO_NETWORK',
-      'ARCADE_ADDRESS',
+      'GALA_ADDRESS',
+      'GALA_TOKEN_ID',
       'GREEN_ADDRESS',
       'BCOIN_WALLET_PORT',
       'BCOIN_WALLET_API_KEY',
@@ -150,7 +155,7 @@ class Config {
       'ETH_ADD_FOR_ERC20_FEE_CALC',
       'COMPANY_FEE_BTC_ADDRESS_GREEN',
       'COMPANY_FEE_BTC_ADDRESS_WINX',
-      'COMPANY_FEE_BTC_ADDRESS_ARCADE',
+      'COMPANY_FEE_BTC_ADDRESS_GALA',
       'ZENDESK_API_KEY',
       'ERC20_REWARD_DISTRIBUTER_PKEY',
       'SENDGRID_API_KEY',
@@ -194,8 +199,8 @@ class Config {
     if (hostName.includes('codex')) {
       return 'codex';
     }
-    if (hostName.includes('arcade')) {
-      return 'arcade';
+    if (hostName.includes('arcade') || hostName.includes('gala')) {
+      return 'gala';
     }
     if (hostName.includes('blue')) {
       return 'blue';

@@ -5,7 +5,7 @@ import { utmSchema } from './schemas';
 
 interface IWalletShares {
   green: number;
-  arcade: number;
+  gala: number;
   codex: number;
   connect: number;
   [key: string]: number;
@@ -28,7 +28,7 @@ interface IWalletUpgrade {
 }
 interface IActivatedWallets {
   green: IWalletUpgrade;
-  arcade: IWalletUpgrade;
+  gala: IWalletUpgrade;
   winx: IWalletUpgrade;
   [key: string]: IWalletUpgrade;
 }
@@ -116,12 +116,12 @@ const activatedWalletsSchema = new mongoose.Schema({
 const walletsActivated = new mongoose.Schema({
   green: activatedWalletsSchema,
   winx: activatedWalletsSchema,
-  arcade: activatedWalletsSchema,
+  gala: activatedWalletsSchema,
 });
 
 const walletShareSchema = new mongoose.Schema({
   green: Number,
-  arcade: Number,
+  gala: Number,
   connect: Number,
   codex: Number,
   localhost: Number,

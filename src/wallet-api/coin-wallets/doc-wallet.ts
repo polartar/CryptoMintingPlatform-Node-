@@ -11,7 +11,7 @@ import {
 import { UserApi } from '../../data-sources';
 
 class DocWallet extends CoinWalletBase {
-  rewardName: string;
+  rewardNames: string[];
 
   constructor({
     name,
@@ -28,15 +28,15 @@ class DocWallet extends CoinWalletBase {
   private setRewardName() {
     switch (this.symbol.toLowerCase()) {
       case 'winx': {
-        this.rewardName = 'WinX';
+        this.rewardNames = ['WinX'];
         break;
       }
       case 'smart': {
-        this.rewardName = 'Smart';
+        this.rewardNames = ['Smart'];
         break;
       }
-      case 'arcade': {
-        this.rewardName = 'Arc';
+      case 'gala': {
+        this.rewardNames = ['Arc', 'GALA'];
         break;
       }
       default: {
@@ -93,7 +93,7 @@ class DocWallet extends CoinWalletBase {
       `walletApi.coin-wallets.DocWallet.getBalance.userId:${userId}`,
     );
     try {
-      const pipeline = buildGetUserRewardsPipeline(userId, this.rewardName);
+      const pipeline = buildGetUserRewardsPipeline(userId, this.rewardNames);
       const [rewardResponse] = await PromotionalReward.aggregate(pipeline);
       const balance = rewardResponse ? rewardResponse.balance : '0.0';
       logger.debug(
@@ -120,7 +120,7 @@ class DocWallet extends CoinWalletBase {
 
       const transactions = await PromotionalReward.find({
         userId,
-        rewardName: this.rewardName,
+        rewardName: { $in: this.rewardNames },
       });
       logger.debug(
         `walletApi.coin-wallets.DocWallet.getTransactions.transactions.length:${transactions.length}`,
@@ -171,7 +171,7 @@ class DocWallet extends CoinWalletBase {
           fee: '0',
           link: '',
           to: [userId],
-          from: 'ARCADE',
+          from: 'GALA',
           type: 'Deposit',
           amount: amount.toString(),
           total: amount.toString(),

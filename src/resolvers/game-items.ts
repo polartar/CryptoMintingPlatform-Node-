@@ -173,7 +173,7 @@ class Resolvers extends ResolverBase {
     );
     const outputs = [
       {
-        to: config.companyFeeBtcAddresses.arcade,
+        to: config.companyFeeBtcAddresses.gala,
         amount: orderDetails.totalBtc.toFixed(8),
       },
     ];

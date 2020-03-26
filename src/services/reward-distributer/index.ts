@@ -22,7 +22,7 @@ class RewardDistributer {
         ethAddress,
         logger,
       );
-    } else if (rewardCurrencyLowered === 'arcade') {
+    } else if (rewardCurrencyLowered === 'gala') {
       const [resultRewardId, resultItemsRewarded] = await Promise.all([
         docReward.send(rewardCurrency, rewardAmount, userId, logger),
         gameItemsReward.sendRandom(userId, ethAddress, numLootBoxes),

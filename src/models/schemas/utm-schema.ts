@@ -1,4 +1,4 @@
-import { Schema, Document, model } from 'mongoose';
+import { Schema } from 'mongoose';
 import { IUtmInfo } from '../../types';
 
 export const utmSchema = new Schema<IUtmInfo>({

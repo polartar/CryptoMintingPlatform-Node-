@@ -79,7 +79,8 @@ type ValidateMnemonicResponse {
 
 input SendOutput {
   to: String!
-  amount: String!
+  amount: String
+  tokenId: String
 }
 
 type Query {
@@ -92,6 +93,12 @@ type Query {
 type Mutation {
   # If no coinSymbol is provided, all supported wallets will be returned
   sendTransaction(
+    coinSymbol: String
+    outputs: [SendOutput!]!
+    totpToken: String
+    walletPassword: String
+  ): TxSendResponse!
+  sendGameItem(
     coinSymbol: String
     outputs: [SendOutput!]!
     totpToken: String

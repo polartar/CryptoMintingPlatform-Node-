@@ -12,7 +12,7 @@ class Zendesk extends RESTDataSource {
 
   private getBrandId(brand: string) {
     switch (brand.toLowerCase()) {
-      case 'arcade': {
+      case 'gala': {
         return 360002080993;
       }
       case 'codex': {

@@ -114,9 +114,9 @@ class Resolvers extends ResolverBase {
         numberOfActivations: 0,
       };
     }
-    const { arcade, green, winx } = userWallet.activations;
+    const { gala, green, winx } = userWallet.activations;
     let numberOfActivations = 0;
-    const alreadyActivated = Object.entries({ arcade, green, winx })
+    const alreadyActivated = Object.entries({ gala, green, winx })
       .filter(([name, activationData]) => {
         if (activationData && activationData.activated) {
           numberOfActivations++;
