@@ -18,4 +18,12 @@ export const utmSchema = new Schema<IUtmInfo>({
     type: String,
     default: '',
   },
+  content: {
+    type: String,
+    default: '',
+  },
+  name: {
+    type: String,
+    default: '',
+  },
 });

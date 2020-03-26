@@ -3,4 +3,6 @@ input UtmInfo {
   source: String
   campaign: String
   term: String
+  content: String
+  name: String
 }
