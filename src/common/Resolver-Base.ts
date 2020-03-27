@@ -13,6 +13,12 @@ export default abstract class ResolverBase {
     }
   };
 
+  protected requireAdmin = (user: UserApi) => {
+    if (!user && user.role.toLowerCase() !== 'admin') {
+      throw new ForbiddenError('Forbidden');
+    }
+  };
+
   protected requireTwoFa = (twoFaValid: boolean) => {
     const { isDev, bypassTwoFaInDev } = config;
     logger.debug(`common.Resolver-Base.requireTwoFa.twoFaValid:${twoFaValid}`);

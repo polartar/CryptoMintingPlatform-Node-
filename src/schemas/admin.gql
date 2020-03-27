@@ -1,0 +1,7 @@
+type ImpersonationToken {
+  token: String!
+}
+
+type Query {
+  getImpersonationToken(userId: String!): ImpersonationToken!
+}
