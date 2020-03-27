@@ -51,42 +51,42 @@ export default function buildDailyWalletReportPipeline() {
             0,
           ],
         },
-        arcadeTimestamp: {
-          $ifNull: ['$activations.arcade.timestamp', 0],
+        galaTimestamp: {
+          $ifNull: ['$activations.gala.timestamp', 0],
         },
-        arcadeUpgraded: {
-          $cond: ['$activations.arcade.activated', 1, 0],
+        galaUpgraded: {
+          $cond: ['$activations.gala.activated', 1, 0],
         },
-        arcadeUpgradedInLastDay: {
+        galaUpgradedInLastDay: {
           $cond: [
             {
-              $gt: ['$activations.arcade.timestamp', '$oneDayAgo'],
+              $gt: ['$activations.gala.timestamp', '$oneDayAgo'],
             },
             1,
             0,
           ],
         },
-        arcadeBtcToReferrer: {
-          $ifNull: ['$activations.arcade.btcToReferrer', 0],
+        galaBtcToReferrer: {
+          $ifNull: ['$activations.gala.btcToReferrer', 0],
         },
-        arcadeBtcToCompany: {
-          $ifNull: ['$activations.arcade.btcToCompany', 0],
+        galaBtcToCompany: {
+          $ifNull: ['$activations.gala.btcToCompany', 0],
         },
-        arcadeBtcToReferrer24: {
+        galaBtcToReferrer24: {
           $cond: [
             {
-              $gt: ['$activations.arcade.timestamp', '$oneDayAgo'],
+              $gt: ['$activations.gala.timestamp', '$oneDayAgo'],
             },
-            '$activations.arcade.btcToReferrer',
+            '$activations.gala.btcToReferrer',
             0,
           ],
         },
-        arcadeBtcToCompany24: {
+        galaBtcToCompany24: {
           $cond: [
             {
-              $gt: ['$activations.arcade.timestamp', '$oneDayAgo'],
+              $gt: ['$activations.gala.timestamp', '$oneDayAgo'],
             },
-            '$activations.arcade.btcToCompany',
+            '$activations.gala.btcToCompany',
             0,
           ],
         },
@@ -173,29 +173,29 @@ export default function buildDailyWalletReportPipeline() {
     {
       $group: {
         _id: 1,
-        arcadeAccounts24: {
+        galaAccounts24: {
           $sum: '$walletCreatedInLastDay',
         },
-        arcadeUpgraded24: {
-          $sum: '$arcadeUpgradedInLastDay',
+        galaUpgraded24: {
+          $sum: '$galaUpgradedInLastDay',
         },
-        arcadeBtcToReferrer24: {
-          $sum: '$arcadeBtcToReferrer24',
+        galaBtcToReferrer24: {
+          $sum: '$galaBtcToReferrer24',
         },
-        arcadeBtcToCompany24: {
-          $sum: '$arcadeBtcToCompany24',
+        galaBtcToCompany24: {
+          $sum: '$galaBtcToCompany24',
         },
-        arcadeAccountsTotal: {
+        galaAccountsTotal: {
           $sum: 1,
         },
-        arcadeUpgradedTotal: {
-          $sum: '$arcadeUpgraded',
+        galaUpgradedTotal: {
+          $sum: '$galaUpgraded',
         },
-        arcadeBtcToReferrer: {
-          $sum: '$arcadeBtcToReferrer',
+        galaBtcToReferrer: {
+          $sum: '$galaBtcToReferrer',
         },
-        arcadeBtcToCompany: {
-          $sum: '$arcadeBtcToCompany',
+        galaBtcToCompany: {
+          $sum: '$galaBtcToCompany',
         },
         maxDaysWalletCreated: {
           $max: '$daysSinceWalletCreated',
@@ -252,17 +252,17 @@ export default function buildDailyWalletReportPipeline() {
     },
     {
       $addFields: {
-        arcadeAccountsAverage: {
-          $divide: ['$arcadeAccountsTotal', '$maxDaysWalletCreated'],
+        galaAccountsAverage: {
+          $divide: ['$galaAccountsTotal', '$maxDaysWalletCreated'],
         },
-        arcadeUpgradeAverage: {
-          $divide: ['$arcadeUpgradedTotal', '$maxDaysWalletCreated'],
+        galaUpgradeAverage: {
+          $divide: ['$galaUpgradedTotal', '$maxDaysWalletCreated'],
         },
-        arcadeBtcToReferrerAverage: {
-          $divide: ['$arcadeBtcToReferrer', '$maxDaysWalletCreated'],
+        galaBtcToReferrerAverage: {
+          $divide: ['$galaBtcToReferrer', '$maxDaysWalletCreated'],
         },
-        arcadeBtcToCompanyAverage: {
-          $divide: ['$arcadeBtcToCompany', '$maxDaysWalletCreated'],
+        galaBtcToCompanyAverage: {
+          $divide: ['$galaBtcToCompany', '$maxDaysWalletCreated'],
         },
         greenAccountsAverage: {
           $divide: ['$greenAccountsTotal', '$maxDaysWalletCreated'],
@@ -292,19 +292,19 @@ export default function buildDailyWalletReportPipeline() {
     },
     {
       $project: {
-        arcade: {
-          accounts24: '$arcadeAccounts24',
-          upgraded24: '$arcadeUpgraded24',
-          btcToReferrer24: '$arcadeBtcToReferrer24',
-          btcToCompany24: '$arcadeBtcToCompany24',
-          accountsTotal: '$arcadeAccountsTotal',
-          upgradedTotal: '$arcadeUpgradedTotal',
-          btcToReferrer: '$arcadeBtcToReferrer',
-          btcToCompany: '$arcadeBtcToCompany',
-          accountsAverage: '$arcadeAccountsAverage',
-          upgradeAverage: '$arcadeUpgradeAverage',
-          btcToReferrerAverage: '$arcadeBtcToReferrerAverage',
-          btcToCompanyAverage: '$arcadeBtcToCompanyAverage',
+        gala: {
+          accounts24: '$galaAccounts24',
+          upgraded24: '$galaUpgraded24',
+          btcToReferrer24: '$galaBtcToReferrer24',
+          btcToCompany24: '$galaBtcToCompany24',
+          accountsTotal: '$galaAccountsTotal',
+          upgradedTotal: '$galaUpgradedTotal',
+          btcToReferrer: '$galaBtcToReferrer',
+          btcToCompany: '$galaBtcToCompany',
+          accountsAverage: '$galaAccountsAverage',
+          upgradeAverage: '$galaUpgradeAverage',
+          btcToReferrerAverage: '$galaBtcToReferrerAverage',
+          btcToCompanyAverage: '$galaBtcToCompanyAverage',
         },
         green: {
           accounts24: '$greenAccounts24',
