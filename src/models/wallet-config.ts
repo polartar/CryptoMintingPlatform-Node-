@@ -10,7 +10,13 @@ export interface IWalletConfig extends Document {
   rewardCurrency: string;
   rewardAmount: number;
   userBalanceThreshold: number;
-  shareLimit: number;
+  shareLimits: {
+    upgradedAccount: number;
+    softnodeLicense: {
+      softnodeType: string;
+      sharesPerLicense: number;
+    };
+  };
   shareLinkBase: string;
   upgradeBenefits: string[];
   basicWalletBenefits: string[];
@@ -46,9 +52,12 @@ export const walletConfigSchema = new Schema({
     type: Number,
     required: true,
   },
-  shareLimit: {
-    type: Number,
-    required: true,
+  shareLimits: {
+    upgradedAccount: Number,
+    softnodeLicense: {
+      softnodeType: String,
+      sharesPerLicense: Number,
+    },
   },
   shareLinkBase: {
     type: String,

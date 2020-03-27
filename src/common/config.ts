@@ -92,8 +92,8 @@ class Config {
   public readonly newBalance = 'NEW_BALANCE';
   public readonly sendGridApiKey = process.env.SENDGRID_API_KEY;
   public readonly sendGridEmailFrom = process.env.SENDGRID_EMAIL_FROM;
-  public readonly sharesPerSoftNodeLicense = this.normalizeNumber(
-    process.env.SHARES_PER_SOFTNODE_LICENSE,
+  public readonly baseNumberOfShares = this.normalizeNumber(
+    process.env.BASE_NUMBER_OF_SHARES,
   );
   public readonly dailyWalletStatsCronExpression =
     process.env.WALLET_STATS_CRON_EXPRESSION;
@@ -160,7 +160,7 @@ class Config {
       'ERC20_REWARD_DISTRIBUTER_PKEY',
       'SENDGRID_API_KEY',
       'SENDGRID_EMAIL_FROM',
-      'SHARES_PER_SOFTNODE_LICENSE',
+      'BASE_NUMBER_OF_SHARES',
       'WALLET_STATS_CRON_EXPRESSION',
       'ERC20_REWARD_WARN_THRESHOLD',
       'SLACK_TOKEN',
