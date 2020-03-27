@@ -23,7 +23,7 @@ interface IWalletStats {
 }
 
 interface IRawWalletReport {
-  arcade: IWalletStats;
+  gala: IWalletStats;
   green: IWalletStats;
   winx: IWalletStats;
 }
@@ -39,17 +39,17 @@ class DailyWalletStats {
     connect: [
       {
         sendTo: config.sendWalletReportToConnect,
-        rowsToInclude: ['winx', 'green', 'arcade'],
+        rowsToInclude: ['winx', 'green', 'gala'],
       },
       {
         sendTo: config.sendWalletReportToConnectArcade,
-        rowsToInclude: ['arcade'],
+        rowsToInclude: ['gala'],
       },
     ],
     gala: [
       {
         sendTo: config.sendWalletReportToArcade,
-        rowsToInclude: ['arcade'],
+        rowsToInclude: ['gala'],
       },
     ],
     codex: [
@@ -67,7 +67,7 @@ class DailyWalletStats {
     localhost: [
       {
         sendTo: config.sendWalletReportToLocalhost,
-        rowsToInclude: ['winx', 'green', 'arcade'],
+        rowsToInclude: ['winx', 'green', 'gala'],
       },
     ],
   };
@@ -96,7 +96,8 @@ class DailyWalletStats {
     return sendConfig;
   }
 
-  async run(sendConfig: IReportSendConfig[]) {
+  async run(sendConfig: IReportSendConfig[], sendEmail = true) {
+    await this.fixStringifiedDatesAndObjectIds();
     try {
       systemLogger.info('Running daily wallet report cron job');
       const pipeline = buildDailyWalletReportPipeline();
@@ -106,6 +107,9 @@ class DailyWalletStats {
           const formattedJson = this.selectAndFormat(rawResults, rowsToInclude);
           const csv = this.parseJsonToCsv(formattedJson);
           const inlineTable = this.buildInlineTable(csv);
+          if (!sendEmail) {
+            return inlineTable;
+          }
           return emailSender.sendMail(
             `${config.brand} Wallet Report`,
             sendTo,
@@ -117,6 +121,7 @@ class DailyWalletStats {
       systemLogger.info(
         `Daily wallet report results: ${JSON.stringify(results)}`,
       );
+      return results;
     } catch (error) {
       systemLogger.warn(`cron.daily-wallet-stats.catch: ${error}`);
     }
