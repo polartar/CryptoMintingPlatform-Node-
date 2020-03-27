@@ -29,7 +29,7 @@ class TemplateBuilder {
   buildReferrerActivatedHtml(referredUser: IUser, brand: string) {
     return {
       html: Handlebars.compile(referralActivated.html)({
-        referredUser,
+        referredUserFirstName: referredUser.firstName,
         brand,
       }),
       subject: referralActivated.subject,

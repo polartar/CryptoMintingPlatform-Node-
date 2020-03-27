@@ -14,7 +14,7 @@ export default abstract class ResolverBase {
   };
 
   protected requireAdmin = (user: UserApi) => {
-    if (!user && user.role.toLowerCase() !== 'admin') {
+    if (!user || user.role.toLowerCase() !== 'admin') {
       throw new ForbiddenError('Forbidden');
     }
   };
