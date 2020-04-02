@@ -126,8 +126,8 @@ class Config {
   );
 
   public readonly supportsDisplayNames =
-    ['gala', 'localhost'].includes(this.brand) ||
-    process.env.SUPPORTS_DISPLAY_NAMES === 'true';
+    !(process.env.SUPPORTS_DISPLAY_NAMES === 'false') ||
+    ['gala'].includes(this.brand);
 
   constructor() {
     autoBind(this);

@@ -6,7 +6,7 @@ import {
   IWalletConfig,
   IUser,
   IGameOrder,
-  IUtmInfo,
+  IOrderContext,
 } from '../types';
 import { rewardDistributer } from '../services';
 import {
@@ -201,7 +201,7 @@ class Resolvers extends ResolverBase {
       itemsRewarded: string[];
     },
     softnodeType: string,
-    utm: IUtmInfo,
+    orderContext: IOrderContext,
   ) => {
     const {
       transactionId,
@@ -230,7 +230,7 @@ class Resolvers extends ResolverBase {
     userDoc.set(`${prefix}.lootBoxesPurchased`, lootBoxesPurchased);
     userDoc.set(`${prefix}.lootBoxExtraPaid`, lootBoxExtraPaid);
     userDoc.set(`${prefix}.lootBoxPriceUsd`, config.costPerLootBox);
-    userDoc.set(`${prefix}.utm`, utm);
+    userDoc.set(`${prefix}.context`, orderContext);
 
     return userDoc.save();
   };
@@ -350,7 +350,7 @@ class Resolvers extends ResolverBase {
     userId: string,
     itemsReceived: string[],
     btcUsdPrice: number,
-    utm: IUtmInfo,
+    orderContext: IOrderContext,
   ) => {
     const product = await GameProduct.findOne({ name: 'Loot Box' }).exec();
     const newGameOrder: IGameOrder = {
@@ -364,7 +364,7 @@ class Resolvers extends ResolverBase {
       btcUsdPrice,
       gameProductId: product._id,
       perUnitPriceUsd: product.priceUsd,
-      utm,
+      context: orderContext,
     };
     return GameOrder.create(newGameOrder);
   };
@@ -375,7 +375,7 @@ class Resolvers extends ResolverBase {
       walletPassword: string;
       rewardType: string;
       numLootBoxes: number;
-      utm: IUtmInfo;
+      orderContext: IOrderContext;
     },
     {
       wallet,
@@ -385,8 +385,7 @@ class Resolvers extends ResolverBase {
     }: Context,
   ) => {
     const rewardType = args.rewardType.toLowerCase();
-    const emptyUtmArg = { medium: '', source: '', campaign: '', term: '' };
-    const { walletPassword, numLootBoxes, utm = emptyUtmArg } = args;
+    const { walletPassword, numLootBoxes, orderContext = {} } = args;
     logger.obj.debug({ rewardType });
     this.requireAuth(user);
     try {
@@ -446,7 +445,7 @@ class Resolvers extends ResolverBase {
         user.userId,
         rewardResult.itemsRewarded,
         btcUsdPrice,
-        utm,
+        orderContext,
       );
 
       this.saveActivationToDb(
@@ -455,7 +454,7 @@ class Resolvers extends ResolverBase {
         { ...paymentDetails, transactionId: transaction.id, outputs },
         rewardResult,
         rewardConfig.softnodeType,
-        utm,
+        orderContext,
       );
 
       this.emailReferrerAndIncrementUsedShares(

@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import { crypto } from '../utils';
-import { IUtmInfo } from '../types';
-import { utmSchema } from './schemas';
+import { IUtmInfo, IOrderContext } from '../types';
+import { orderContextSchema } from './schemas';
 
 interface IWalletShares {
   green: number;
@@ -71,6 +71,7 @@ export interface IUser extends mongoose.Document {
   softNodeLicenses: ISoftNodeLicenses;
   getNextNumber: () => string | undefined;
   profilePhotoUrl: string;
+  referralContext: IOrderContext;
 }
 
 async function getNextNumber({ firstName, lastName }: IUser) {
@@ -102,15 +103,7 @@ const activatedWalletsSchema = new mongoose.Schema({
   lootBoxExtraPaid: Number,
   lootBoxesPurchased: Number,
   lootBoxPriceUsd: Number,
-  utm: {
-    type: utmSchema,
-    default: {
-      medium: '',
-      source: '',
-      campaign: '',
-      term: '',
-    },
-  },
+  context: orderContextSchema,
 });
 
 const walletsActivated = new mongoose.Schema({
@@ -217,6 +210,7 @@ export const userSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    referralContext: orderContextSchema,
   },
   { id: false },
 );
