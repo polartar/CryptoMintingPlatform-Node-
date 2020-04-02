@@ -20,8 +20,8 @@ input CreateUserInput {
   profilePhotoUrl: String
   phone: String
   referredBy: String
-  utmInfo: [String!]
   language: String
+  referralContext: OrderContext
 }
 
 input UpdateUserInput {

@@ -4,6 +4,7 @@ import { Context } from '../types/context';
 import { UserApi } from '../data-sources/';
 import { User } from '../models';
 import { crypto } from '../utils';
+import { IOrderContext } from '../types';
 
 class Resolvers extends ResolverBase {
   public createUser = async (
@@ -17,9 +18,8 @@ class Resolvers extends ResolverBase {
         profilePhotoUrl: string;
         phone: string;
         phoneCountry: string;
-        referredBy: string;
-        utmInfo: string[];
         language: string;
+        referralContext: IOrderContext;
       };
     },
     context: Context,
@@ -35,9 +35,8 @@ class Resolvers extends ResolverBase {
         displayName,
         profilePhotoUrl,
         phone = null,
-        referredBy = null,
-        utmInfo = [],
         language,
+        referralContext = {},
       } = args.userInfo;
       const displayNameValid = await this.checkUniqueDisplayName(displayName);
       if (!displayNameValid) {
@@ -51,6 +50,14 @@ class Resolvers extends ResolverBase {
       );
       const email = userEmail.toLowerCase();
       const affiliateId = crypto.md5UrlSafe(email);
+      const {
+        utm_campaign = '',
+        utm_medium = '',
+        utm_source = '',
+        utm_keyword = '',
+      } = referralContext;
+      const utmInfo = [utm_campaign, utm_medium, utm_source, utm_keyword];
+      const referredBy = referralContext.referredBy || null;
       const newUser = new User({
         email,
         firebaseUid,
@@ -60,9 +67,10 @@ class Resolvers extends ResolverBase {
         profilePhotoUrl,
         phone,
         referredBy,
-        utmInfo,
         affiliateId,
         language,
+        referralContext,
+        utmInfo,
       });
       const url = await bitly.getLink(newUser);
       newUser.set('wallet.shareLink', url);

@@ -24,3 +24,4 @@ export * from './IWalletTransaction';
 export * from './IGameOrder';
 export * from './IGameToken';
 export * from './IUtmInfo';
+export * from './IOrderContext';
