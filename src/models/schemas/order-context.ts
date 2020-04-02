@@ -6,6 +6,7 @@ export const orderContextSchema = new Schema({
   utm_campaign: String,
   utm_keyword: String,
   utm_term: String,
+  utm_content: String,
   referredBy: String,
   offer: String,
 });
