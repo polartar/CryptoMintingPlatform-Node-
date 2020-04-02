@@ -7,7 +7,7 @@ function readTemplate(templateFileName: string) {
 
 export const shareAccepted = {
   html: readTemplate('shareAccepted.hbs'),
-  subject: 'You referred a new wallet user.',
+  subject: 'You referred a new App user.',
 };
 
 export const referralActivated = {
