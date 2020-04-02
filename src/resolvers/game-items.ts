@@ -1,4 +1,4 @@
-import { Context, IGameOrder, IUtmInfo } from '../types';
+import { Context, IGameOrder, IOrderContext } from '../types';
 import ResolverBase from '../common/Resolver-Base';
 import { gameItemService } from '../services/game-item';
 import { config } from '../common';
@@ -11,7 +11,7 @@ class Resolvers extends ResolverBase {
     quantity: number,
     userId: string,
     cryptoFavorites: CryptoFavorites,
-    utm: IUtmInfo,
+    orderContext: IOrderContext,
   ): Promise<IGameOrder> => {
     const btcUsdPrice = await cryptoFavorites.getBtcUsdPrice();
     const totalBtc = (quantity * (product.priceUsd / btcUsdPrice)).toFixed(8);
@@ -26,7 +26,7 @@ class Resolvers extends ResolverBase {
       quantity,
       txHash: '',
       userId,
-      utm,
+      context: orderContext,
     };
   };
 
@@ -140,7 +140,7 @@ class Resolvers extends ResolverBase {
       walletPassword: string;
       quantity: number;
       productId: string;
-      utm: IUtmInfo;
+      orderContext: IOrderContext;
     },
     ctx: Context,
   ) => {
@@ -150,8 +150,7 @@ class Resolvers extends ResolverBase {
       dataSources: { cryptoFavorites },
     } = ctx;
     this.requireAuth(user);
-    const emptyUtmArg = { medium: '', source: '', campaign: '', term: '' };
-    const { quantity, walletPassword, productId, utm = emptyUtmArg } = args;
+    const { quantity, walletPassword, productId, orderContext = {} } = args;
     const { wallet: userWallet } = await user.findFromDb();
     const product = await this.getProduct(productId);
     const isEnoughLeft = await this.verifyEnoughItemsLeft(
@@ -169,7 +168,7 @@ class Resolvers extends ResolverBase {
       quantity,
       user.userId,
       cryptoFavorites,
-      utm,
+      orderContext,
     );
     const outputs = [
       {
