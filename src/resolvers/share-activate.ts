@@ -48,40 +48,55 @@ class Resolvers extends ResolverBase {
     allRewardConfigs: IWalletConfig[],
   ) => {
     if (!referrer) return false;
-    const sharesPerUpgrade = new Map<string, number>();
-    allRewardConfigs.forEach(({ rewardCurrency, shareLimit }) =>
-      sharesPerUpgrade.set(rewardCurrency.toLowerCase(), shareLimit),
-    );
-    const { softNodeLicenses, wallet } = referrer.toJSON();
+    const { wallet, softNodeLicenses } = referrer.toJSON() as IUser;
 
-    const licenseCount = Object.values(softNodeLicenses || {}).reduce(
-      (acc: number, numLicenses: number) => {
-        return isNaN(+numLicenses) ? acc : acc + numLicenses;
-      },
-      0,
-    ) as number;
+    const sharesPerUpgrade = new Map<string, number>();
+    const sharesPerSoftnodeType = new Map<string, number>();
+
+    allRewardConfigs.forEach(({ rewardCurrency, shareLimits }) => {
+      const { upgradedAccount, softnodeLicense } = shareLimits;
+
+      sharesPerUpgrade.set(rewardCurrency.toLowerCase(), upgradedAccount);
+      sharesPerSoftnodeType.set(
+        softnodeLicense.softnodeType,
+        softnodeLicense.sharesPerLicense,
+      );
+    });
+
     const earnedFromUpgrades = Object.entries(wallet?.activations || {}).reduce(
-      (acc: number, [name, upgrade]: [string, { activated: boolean }]) => {
+      (acc: number, [name, upgrade]) => {
         return upgrade?.activated
           ? sharesPerUpgrade.get(name.toLowerCase()) + acc
           : acc;
       },
       0,
     );
-    const earnedFromUpgradesWithMin =
-      earnedFromUpgrades > 5 ? earnedFromUpgrades : 5;
+
+    const earnedFromSoftnodeLicenses = Object.entries(
+      softNodeLicenses || {},
+    ).reduce((acc: number, [softnodeType, numberOfLicenses]) => {
+      const sharesPerLicense = sharesPerSoftnodeType.get(softnodeType) || 0;
+
+      return acc + sharesPerLicense * numberOfLicenses;
+    }, 0);
+
     const sharesCount = Object.values(wallet?.shares || {}).reduce(
       (acc: number, shares: number) => {
         return isNaN(+shares) ? acc : acc + shares;
       },
       0,
     );
-    const earnedFromSoftnodes = licenseCount * config.sharesPerSoftNodeLicense;
-    const earnedShares = earnedFromSoftnodes + earnedFromUpgradesWithMin;
+
+    const earnedShares =
+      config.baseNumberOfShares +
+      earnedFromUpgrades +
+      earnedFromSoftnodeLicenses;
     const aboveShareLimit = sharesCount >= earnedShares;
+
     if (aboveShareLimit || !referrer?.wallet?.btcAddress) {
       return false;
     }
+
     return true;
   };
 

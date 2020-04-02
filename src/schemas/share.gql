@@ -14,8 +14,6 @@ type ShareOption {
   rewardAmount: Int!
   # How much a user needs for a balance in USD to qualify.
   userBalanceThreshold: Int!
-  # Number of share commissions allowed per user once their wallet is activated.
-  shareLimit: Int!
   upgradeBenefits: [String!]!
   basicWalletBenefits: [String!]!
   upgradeAccountName: String!

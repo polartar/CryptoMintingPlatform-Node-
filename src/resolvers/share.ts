@@ -34,13 +34,15 @@ class Resolvers extends ResolverBase {
 
   private getShareConfigs = async (user: IUser) => {
     try {
-      const { softNodeLicenses } = user.toJSON();
+      const { softNodeLicenses } = user.toJSON() as IUser;
       const {
         alreadyActivated,
         numberOfActivations,
       } = this.getAlreadyActivated(user.wallet);
+
       const available = await WalletConfig.find({ brand: config.brand });
       if (!available.length) throw new Error(`Share config not found.`);
+
       const { unactivated, activated } = available.reduce(
         (accum, current) => {
           if (alreadyActivated.includes(current.rewardCurrency.toLowerCase())) {
@@ -57,24 +59,34 @@ class Resolvers extends ResolverBase {
       );
 
       const sharesFromActivation = activated.reduce(
-        (total, curr) => total + curr.shareLimit,
+        (total, curr) => total + curr.shareLimits.upgradedAccount,
         0,
       );
-      const activationShares =
-        sharesFromActivation >= 5 ? sharesFromActivation : 5;
-      const softNodeShares = Object.values(softNodeLicenses || {}).reduce(
-        (accum: number, curr: number) => {
-          if (isNaN(+curr)) {
-            return accum;
-          }
-          return accum + curr * config.sharesPerSoftNodeLicense;
+
+      const sharesPerSoftnodeType = new Map<string, number>();
+      available.forEach(({ shareLimits }) => {
+        const { softnodeLicense } = shareLimits;
+
+        sharesPerSoftnodeType.set(
+          softnodeLicense.softnodeType,
+          softnodeLicense.sharesPerLicense,
+        );
+      });
+
+      const softNodeShares = Object.entries(softNodeLicenses || {}).reduce(
+        (acc: number, [softnodeType, numberOfLicenses]) => {
+          const sharesPerLicense = sharesPerSoftnodeType.get(softnodeType) || 0;
+
+          return acc + sharesPerLicense * numberOfLicenses;
         },
         0,
-      ) as number;
+      );
+
       return {
         available,
         unactivated,
-        earnedShares: activationShares + softNodeShares,
+        earnedShares:
+          config.baseNumberOfShares + sharesFromActivation + softNodeShares,
         numberOfActivations,
       };
     } catch (error) {
