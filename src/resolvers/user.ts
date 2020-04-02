@@ -55,8 +55,15 @@ class Resolvers extends ResolverBase {
         utm_medium = '',
         utm_source = '',
         utm_keyword = '',
+        utm_content = '',
       } = referralContext;
-      const utmInfo = [utm_campaign, utm_medium, utm_source, utm_keyword];
+      const utmInfo = [
+        utm_campaign,
+        utm_medium,
+        utm_source,
+        utm_keyword,
+        utm_content,
+      ];
       const referredBy = referralContext.referredBy || null;
       const newUser = new User({
         email,

@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import { crypto } from '../utils';
-import { IUtmInfo, IOrderContext } from '../types';
+import { IOrderContext } from '../types';
 import { orderContextSchema } from './schemas';
 
 interface IWalletShares {
@@ -24,7 +24,7 @@ interface IWalletUpgrade {
   lootBoxExtraPaid: number;
   lootBoxesPurchased: number;
   lootBoxPriceUsd: number;
-  utm: IUtmInfo;
+  orderContext: IOrderContext;
 }
 interface IActivatedWallets {
   green: IWalletUpgrade;
