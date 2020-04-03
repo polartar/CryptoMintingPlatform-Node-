@@ -5,6 +5,7 @@ export interface IOrderContext {
   utm_keyword?: string;
   utm_term?: string;
   utm_content?: string;
+  utm_name?: string;
   referredBy?: string;
   offer?: string;
 }
