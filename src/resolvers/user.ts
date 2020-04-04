@@ -38,6 +38,17 @@ class Resolvers extends ResolverBase {
         language,
         referralContext = {},
       } = args.userInfo;
+      const {
+        offer,
+        referredBy,
+        utm_campaign: utmCampaign = '',
+        utm_content: utmContent = '',
+        utm_keyword: utmKeyword = '',
+        utm_medium: utmMedium = '',
+        utm_name: utmName = '',
+        utm_source: utmSource = '',
+        utm_term: utmTerm = '',
+      } = referralContext;
       const displayNameValid = await this.checkUniqueDisplayName(displayName);
       if (!displayNameValid) {
         throw new Error('Display name is taken or invalid');
@@ -50,21 +61,6 @@ class Resolvers extends ResolverBase {
       );
       const email = userEmail.toLowerCase();
       const affiliateId = crypto.md5UrlSafe(email);
-      const {
-        utm_campaign = '',
-        utm_medium = '',
-        utm_source = '',
-        utm_keyword = '',
-        utm_content = '',
-      } = referralContext;
-      const utmInfo = [
-        utm_campaign,
-        utm_medium,
-        utm_source,
-        utm_keyword,
-        utm_content,
-      ];
-      const referredBy = referralContext.referredBy || null;
       const newUser = new User({
         email,
         firebaseUid,
@@ -76,8 +72,17 @@ class Resolvers extends ResolverBase {
         referredBy,
         affiliateId,
         language,
-        referralContext,
-        utmInfo,
+        utmInfo: {
+          offer,
+          referredBy,
+          utmCampaign,
+          utmMedium,
+          utmSource,
+          utmContent,
+          utmKeyword,
+          utmName,
+          utmTerm,
+        },
       });
       const url = await bitly.getLink(newUser);
       newUser.set('wallet.shareLink', url);

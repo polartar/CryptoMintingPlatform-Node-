@@ -57,7 +57,16 @@ export interface IUser extends mongoose.Document {
   displayName: string;
   role: string;
   created: Date;
-  utmInfo: string[];
+  utmInfo?: {
+    utmCampaign?: string;
+    utmMedium?: string;
+    utmSource?: string;
+    utmKeywords?: string;
+    utmContent?: string;
+    utmTerm?: string;
+    utmName?: string;
+    offer?: string;
+  };
   affiliateId: string;
   referredBy: string;
   permissions: string[];
@@ -145,6 +154,17 @@ const walletSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+const utmSchema = new mongoose.Schema({
+  utmCampaign: String,
+  utmMedium: String,
+  utmSource: String,
+  utmKeywords: String,
+  utmContent: String,
+  utmName: String,
+  utmTerm: String,
+  offer: String,
+});
+
 export const userSchema = new mongoose.Schema(
   {
     firstName: String,
@@ -207,10 +227,9 @@ export const userSchema = new mongoose.Schema(
     },
     profilePhotoUrl: String,
     utmInfo: {
-      type: [String],
-      default: [],
+      type: utmSchema,
+      default: {},
     },
-    referralContext: orderContextSchema,
   },
   { id: false },
 );
