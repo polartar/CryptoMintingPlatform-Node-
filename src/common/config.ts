@@ -177,6 +177,7 @@ class Config {
       'AWS_SECRET_ACCESS_KEY',
       'S3_REGION',
       'COST_PER_LOOT_BOX',
+      'SUPPORTS_DISPLAY_NAMES',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
