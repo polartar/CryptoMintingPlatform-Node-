@@ -75,6 +75,7 @@ class Resolvers extends ResolverBase {
 
       const softNodeShares = Object.entries(softNodeLicenses || {}).reduce(
         (acc: number, [softnodeType, numberOfLicenses]) => {
+          if (softnodeType === '_id') return acc;
           const sharesPerLicense = sharesPerSoftnodeType.get(softnodeType) || 0;
 
           return acc + sharesPerLicense * numberOfLicenses;
