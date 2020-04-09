@@ -1,0 +1,83 @@
+input BuySellCoinInput {
+  buyingCoin: String!
+  quantity: Int
+  sellingCoin: Sting!
+}
+type Conversion {
+  buyingCoin: String!
+  quantity: Int
+  sellingCoin: Sting!
+  price: Float!
+  fees: Float
+  expires: Date!
+}
+enum Status {
+  CONVERTING
+  COMPLETE
+}
+type OrderStatus {
+  orderId: String!
+  status: Status!
+  bought: Int
+  sold: Int
+  price: Float
+  quantity: Int
+}
+
+type OpenOrderItem {
+  orderId: String!
+  quantity: String!
+  name: String!
+  description: String!
+  image: String!
+  price: Float!
+  timestamp: Date!
+}
+
+input BuyItem {
+  itemId: String!
+  sellingCoin: String!
+  quantity: Int
+}
+
+input SellItem {
+  itemId: String!
+  price: Float!
+  quantity: Int
+}
+
+type ConvertQueries {
+  status(orderId: String!, walletPassword: String!): Status!
+  pricesAndFees(
+    buySellCoin: BuySellCoinInput!
+    walletPassword: String!
+  ): Conversion!
+  coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!
+  pending(walletPassword: String!): OrderStatus!
+}
+type ConvertMutations {
+  coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!
+  cancel(orderId: String!, walletPassword: String!): OrderStatus!
+}
+type ItemQueries {
+  items(
+    buySellCoin: BuySellCoinInput!
+    walletPassword: String!
+  ): [OpenOrderItem!]
+  buyStatus(orderId: String!, walletPassword: String!): OrderStatus!
+  sellStatus(orderId: String!, walletPassword: String!): OrderStatus!
+}
+type ItemMutations {
+  buy(buyItem: BuyItem!, walletPassword: String!): OrderStatus!
+  sell(sellItem: SellItem!, walletPassword: String!): OrderStatus!
+  sellMany(sellItem: [SellItem!]!, walletPassword: String!): [OrderStatus!]!
+  cancel(orderId: String!, walletPassword: String!): OrderStatus!
+}
+type Query {
+  convert: ConvertQueries
+  item: ItemQueries
+}
+type Mutation {
+  convert: ConvertMutations
+  item: ItemMutations
+}
