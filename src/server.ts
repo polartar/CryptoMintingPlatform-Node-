@@ -28,18 +28,19 @@ class Server {
 
   constructor() {
     autoBind(this);
-    const { isDev, hostname } = config;
+    const { isDev, hostname, isStage } = config;
 
     const typeDefs: DocumentNode = gql(schemas);
     this.walletApi = new WalletApi(hostname);
+    const isGqlDev = isDev || isStage;
 
     const server = new ApolloServer({
       typeDefs,
       resolvers,
       context: this.buildContext,
       dataSources: this.buildDataSources,
-      introspection: isDev,
-      playground: isDev
+      introspection: isGqlDev,
+      playground: isGqlDev
         ? { settings: { 'request.credentials': 'include' } }
         : false,
       subscriptions: {
