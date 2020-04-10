@@ -1,12 +1,12 @@
 input BuySellCoinInput {
   buyingCoin: String!
   quantity: Int
-  sellingCoin: Sting!
+  sellingCoin: String!
 }
 type Conversion {
   buyingCoin: String!
   quantity: Int
-  sellingCoin: Sting!
+  sellingCoin: String!
   price: Float!
   fees: Float
   expires: Date!
