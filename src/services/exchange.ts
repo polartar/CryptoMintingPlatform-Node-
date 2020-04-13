@@ -4,11 +4,6 @@ import { AxiosResponse } from 'axios';
 import {
   OrderStatus,
   IOrderStatus,
-  IOpenOrderItem,
-  IBuyItem,
-  IBuySellCoin,
-  IConversion,
-  ISellItem,
   IExchangeResponse,
   IBalanceResponse,
   IBalanceRequest,
@@ -44,7 +39,7 @@ import {
 } from '../types';
 
 interface IAuthInfo {
-  userpass: string;
+  userpass?: string;
   userId: string;
 }
 
@@ -96,7 +91,16 @@ class ExchangeService extends ServerToServerService {
     }
     return data;
   };
-
+  public getEnabledCoins = async ({ userId }: { userId: string }) => {
+    const jwtAxios = this.getAxios({ userId });
+    const {
+      data: { result },
+    } = await jwtAxios.get<
+      any,
+      AxiosResponse<IExchangeResponse<{ address: string; ticker: string }[]>>
+    >(`${this.baseUrl}/coins`);
+    return result;
+  };
   public getTransactions = async ({
     userId,
     userpass,
@@ -114,12 +118,8 @@ class ExchangeService extends ServerToServerService {
     return result;
   };
 
-  public getFee = async ({
-    userpass,
-    userId,
-    coin,
-  }: IAuthInfo & IGetFeeRequest) => {
-    const jwtAxios = this.getAxios({ userId, userpass });
+  public getFee = async ({ userId, coin }: IAuthInfo & IGetFeeRequest) => {
+    const jwtAxios = this.getAxios({ userId });
     const {
       data: { result },
     } = await jwtAxios.get<
@@ -130,12 +130,11 @@ class ExchangeService extends ServerToServerService {
   };
 
   public getOrderbook = async ({
-    userpass,
     userId,
     base,
     rel,
   }: IOrderbookRequest & IAuthInfo) => {
-    const jwtAxios = this.getAxios({ userId, userpass });
+    const jwtAxios = this.getAxios({ userId });
     const { data } = await jwtAxios.get<any, AxiosResponse<IOrderbookResponse>>(
       `${this.baseUrl}/orderbook/${base}/${rel}`,
     );
@@ -160,12 +159,11 @@ class ExchangeService extends ServerToServerService {
     return data.result;
   };
   public getRecentSwaps = async ({
-    userpass,
     userId,
     limit,
     from_uuid,
   }: IMyRecentSwapsRequest & IAuthInfo) => {
-    const jwtAxios = this.getAxios({ userId, userpass });
+    const jwtAxios = this.getAxios({ userId });
     const { data } = await jwtAxios.get<
       any,
       AxiosResponse<
@@ -191,14 +189,8 @@ class ExchangeService extends ServerToServerService {
     >(`${this.baseUrl}/swap/${uuid}`);
     return result;
   };
-  public getMyOrders = async ({
-    userpass,
-    userId,
-  }: {
-    userpass: string;
-    userId: string;
-  }) => {
-    const jwtAxios = this.getAxios({ userId, userpass });
+  public getMyOrders = async ({ userId }: { userId: string }) => {
+    const jwtAxios = this.getAxios({ userId });
     const {
       data: { result },
     } = await jwtAxios.get<
@@ -208,15 +200,13 @@ class ExchangeService extends ServerToServerService {
     return result;
   };
   public getOrderStatus = async ({
-    userpass,
     userId,
     uuid,
   }: {
-    userpass: string;
     userId: string;
     uuid: string;
   }) => {
-    const jwtAxios = this.getAxios({ userId, userpass });
+    const jwtAxios = this.getAxios({ userId });
     const { data } = await jwtAxios.get<
       any,
       AxiosResponse<OrderStatusResponse>
@@ -292,104 +282,6 @@ class ExchangeService extends ServerToServerService {
         status: OrderStatus.converting,
       };
     }
-  };
-  public convert = {
-    status: async (orderId: string, userId: string) => {
-      const jwtAxios = this.getAxios({ userId });
-      const { data } = await jwtAxios.get<
-        any,
-        AxiosResponse<{ orderId: string; status: OrderStatus }>
-      >(`${this.baseUrl}/convert/status/${orderId}`);
-      return data;
-    },
-    pricesAndFees: async (buySellCoin: IBuySellCoin, userId: string) => {
-      const jwtAxios = this.getAxios({ userId });
-      const { data } = await jwtAxios.post<any, AxiosResponse<IConversion>>(
-        `${this.baseUrl}/convert/prices-and-fees`,
-        buySellCoin,
-      );
-      return data;
-    },
-    coin: async (
-      buySellCoin: IBuySellCoin,
-      userId: string,
-      password: string,
-    ) => {
-      const jwtAxios = this.getAxios({ userId, password });
-      const { data } = await jwtAxios.post<any, AxiosResponse<IOrderStatus>>(
-        `${this.baseUrl}/convert/coin`,
-        buySellCoin,
-      );
-      return data;
-    },
-    completed: async (userId: string) => {
-      const jwtAxios = this.getAxios({ userId });
-      const { data } = await jwtAxios.get<any, AxiosResponse<IOrderStatus[]>>(
-        `${this.baseUrl}/convert/completed`,
-      );
-      return data;
-    },
-    pending: async (userId: string) => {
-      const jwtAxios = this.getAxios({ userId });
-      const { data } = await jwtAxios.get<any, AxiosResponse<IOrderStatus[]>>(
-        `${this.baseUrl}/convert/pending`,
-      );
-      return data;
-    },
-    cancel: async (orderId: string, userId: string, password: string) => {
-      const jwtAxios = this.getAxios({ userId, password });
-      const { data } = await jwtAxios.get<any, AxiosResponse<IOrderStatus>>(
-        `${this.baseUrl}/convert/cancel/${orderId}`,
-      );
-      return data;
-    },
-  };
-  public item = {
-    items: async (userId: string) => {
-      const jwtAxios = this.getAxios({ userId });
-      const { data } = await jwtAxios.get<any, AxiosResponse<IOpenOrderItem[]>>(
-        `${this.baseUrl}/item/`,
-      );
-      return data;
-    },
-    buy: async (buyItem: IBuyItem, userId: string, password: string) => {
-      const jwtAxios = this.getAxios({ userId, password });
-      const { data } = await jwtAxios.post<
-        any,
-        AxiosResponse<{ orderId: string; status: OrderStatus }>
-      >(`${this.baseUrl}/item/buy`, buyItem);
-      return data;
-    },
-    buyStatus: async (orderId: string, userId: string, password: string) => {
-      const jwtAxios = this.getAxios({ userId, password });
-      const { data } = await jwtAxios.get<any, AxiosResponse<IOrderStatus>>(
-        `${this.baseUrl}/item/buy-status/${orderId}`,
-      );
-      return data;
-    },
-    sell: async (sellItem: ISellItem, userId: string, password: string) => {
-      const jwtAxios = this.getAxios({ userId, password });
-      const { data } = await jwtAxios.post<
-        any,
-        AxiosResponse<{ orderId: string; status: OrderStatus }>
-      >(`${this.baseUrl}/item/sell`, sellItem);
-      return data;
-    },
-
-    sellStatus: async (orderId: string, userId: string) => {
-      const jwtAxios = this.getAxios({ userId });
-      const { data } = await jwtAxios.get<any, AxiosResponse<IOrderStatus>>(
-        `${this.baseUrl}/item/sell-status/${orderId}`,
-      );
-      return data;
-    },
-    cancel: async (orderId: string, userId: string, password: string) => {
-      const jwtAxios = this.getAxios({ userId, password });
-      const { data } = await jwtAxios.get<any, AxiosResponse<IOrderStatus>>(
-        `${this.baseUrl}/item/cancel/${orderId}`,
-      );
-      return data;
-    },
   };
 }
 export const exchangeService = new ExchangeService();

@@ -2,6 +2,7 @@ input BuySellCoinInput {
   buyingCoin: String!
   quantity: Int
   sellingCoin: String!
+  price: Float
 }
 type Conversion {
   buyingCoin: String!
@@ -10,6 +11,10 @@ type Conversion {
   price: Float!
   fees: Float
   expires: Date!
+}
+input CompletedInput {
+  from_uuid: String
+  limit: Int
 }
 enum Status {
   CONVERTING
@@ -37,35 +42,38 @@ type OpenOrderItem {
 input BuyItem {
   itemId: String!
   sellingCoin: String!
+  buyingCoin: String!
   quantity: Int
+  price: Float
 }
 
 input SellItem {
   itemId: String!
   price: Float!
   quantity: Int
+  sellingCoin: String!
+  buyingCoin: String!
+}
+type CoinResponse {
+  address: String!
+  ticker: String!
 }
 
 type ConvertQueries {
-  status(orderId: String!, walletPassword: String!): Status!
-  pricesAndFees(
-    buySellCoin: BuySellCoinInput!
-    walletPassword: String!
-  ): Conversion!
-  coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!
-  pending(walletPassword: String!): OrderStatus!
+  status(orderId: String!): Status!
+  pricesAndFees(buySellCoin: BuySellCoinInput!): Conversion!
+  completed(filter: CompletedInput): [OrderStatus!]
+  pending: [OrderStatus!]
+  coins: [CoinResponse!]!
 }
 type ConvertMutations {
   coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!
   cancel(orderId: String!, walletPassword: String!): OrderStatus!
 }
 type ItemQueries {
-  items(
-    buySellCoin: BuySellCoinInput!
-    walletPassword: String!
-  ): [OpenOrderItem!]
-  buyStatus(orderId: String!, walletPassword: String!): OrderStatus!
-  sellStatus(orderId: String!, walletPassword: String!): OrderStatus!
+  items(buySellCoin: BuySellCoinInput!): [OpenOrderItem!]
+  buyStatus(orderId: String!): OrderStatus!
+  sellStatus(orderId: String!): OrderStatus!
 }
 type ItemMutations {
   buy(buyItem: BuyItem!, walletPassword: String!): OrderStatus!
