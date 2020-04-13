@@ -98,7 +98,7 @@ type Mutation {
     totpToken: String
     walletPassword: String
   ): TxSendResponse!
-  sendGameItem(
+  sendGameItems(
     coinSymbol: String
     outputs: [SendOutput!]!
     totpToken: String
