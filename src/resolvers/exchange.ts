@@ -1,38 +1,35 @@
-import { UserApi } from '../data-sources';
-import { WalletApi } from '../wallet-api';
 import { logger } from '../common';
 import { exchangeService } from '../services';
 import ResolverBase from '../common/Resolver-Base';
 import { Context } from '../types/context';
-import { IUserWalletDoc as IUserWallet } from '../models/user';
 import {
   IBuySellCoin,
-  //   IBuyItem,
-  //   ISellItem,
   IConversion,
   IOrderStatus,
   OrderStatus,
-  //   SwapEvents,
   TakerOrMaker,
-  //   OrderStatusResponse,
 } from '../types';
 
 class Resolvers extends ResolverBase {
   public convert = {
+    getCoins: async (parent: any, args: any, { user }: Context) => {
+      const coins = await exchangeService.getEnabledCoins({
+        userId: user.userId,
+      });
+      return coins;
+    },
     status: async (
       parent: any,
-      { orderId, walletPassword }: { orderId: string; walletPassword: string },
+      { orderId }: { orderId: string },
       { user }: Context,
     ) => {
       try {
         const orderStatus = await exchangeService.getOrderStatus({
           userId: user.userId,
-          userpass: walletPassword,
           uuid: orderId,
         });
         if (orderStatus.type === TakerOrMaker.taker) {
           const swap = await exchangeService.getSwapStatus({
-            userpass: walletPassword,
             userId: user.userId,
             uuid: orderStatus.order.request.uuid,
           });
@@ -44,7 +41,6 @@ class Resolvers extends ResolverBase {
           const swapsPromises = Object.values(orderStatus.order.matches).map(
             async match => {
               const swap = await exchangeService.getSwapStatus({
-                userpass: walletPassword,
                 userId: user.userId,
                 uuid: match.request.uuid,
               });
@@ -80,16 +76,12 @@ class Resolvers extends ResolverBase {
     },
     pricesAndFees: async (
       parent: any,
-      {
-        buySellCoin,
-        walletPassword,
-      }: { buySellCoin: IBuySellCoin; walletPassword: string },
+      { buySellCoin }: { buySellCoin: IBuySellCoin; walletPassword: string },
       { user }: Context,
     ): Promise<IConversion> => {
       try {
         const expires = new Date(new Date().getTime() + 1000 * 60 * 5);
         const orders = await exchangeService.getOrderbook({
-          userpass: walletPassword,
           userId: user.userId,
           base: buySellCoin.buyingCoin,
           rel: buySellCoin.sellingCoin,
@@ -98,7 +90,6 @@ class Resolvers extends ResolverBase {
           (orderA, orderB) => orderA.price - orderB.price,
         )[0].price;
         const fee = await exchangeService.getFee({
-          userpass: walletPassword,
           userId: user.userId,
           coin: buySellCoin.sellingCoin,
         });
@@ -144,16 +135,11 @@ class Resolvers extends ResolverBase {
     },
     completed: async (
       parent: any,
-      {
-        walletPassword,
-        from_uuid,
-        limit,
-      }: { walletPassword: string; from_uuid?: string; limit?: number },
+      { from_uuid, limit }: { from_uuid?: string; limit?: number },
       { user }: Context,
     ): Promise<IOrderStatus[]> => {
       try {
         const recentSwaps = await exchangeService.getRecentSwaps({
-          userpass: walletPassword,
           userId: user.userId,
           from_uuid,
           limit,
@@ -170,12 +156,11 @@ class Resolvers extends ResolverBase {
     },
     pending: async (
       parent: any,
-      { walletPassword }: { walletPassword: string },
+      args: any,
       { user }: Context,
     ): Promise<IOrderStatus[]> => {
       try {
         const myOrders = await exchangeService.getMyOrders({
-          userpass: walletPassword,
           userId: user.userId,
         });
         const makerOrders = Object.values(myOrders.maker_orders).map(order => {
@@ -217,15 +202,11 @@ class Resolvers extends ResolverBase {
   public item = {
     items: async (
       parent: any,
-      {
-        buySellCoin,
-        walletPassword,
-      }: { buySellCoin: IBuySellCoin; walletPassword: string },
+      { buySellCoin }: { buySellCoin: IBuySellCoin },
       { user }: Context,
     ) => {
       try {
         const orders = await exchangeService.getOrderbook({
-          userpass: walletPassword,
           userId: user.userId,
           base: buySellCoin.buyingCoin,
           rel: buySellCoin.sellingCoin,
@@ -234,7 +215,6 @@ class Resolvers extends ResolverBase {
           (orderA, orderB) => orderA.price - orderB.price,
         )[0].price;
         const fee = await exchangeService.getFee({
-          userpass: walletPassword,
           userId: user.userId,
           coin: buySellCoin.sellingCoin,
         });
@@ -280,13 +260,12 @@ class Resolvers extends ResolverBase {
     },
     buyStatus: async () => async (
       parent: any,
-      { orderId, walletPassword }: { orderId: string; walletPassword: string },
+      { orderId }: { orderId: string },
       { user }: Context,
     ) => {
       try {
         const orderStatus = await exchangeService.getOrderStatus({
           userId: user.userId,
-          userpass: walletPassword,
           uuid: orderId,
         });
         return orderStatus;
@@ -344,13 +323,12 @@ class Resolvers extends ResolverBase {
     },
     sellStatus: async () => async (
       parent: any,
-      { orderId, walletPassword }: { orderId: string; walletPassword: string },
+      { orderId }: { orderId: string },
       { user }: Context,
     ) => {
       try {
         const orderStatus = await exchangeService.getOrderStatus({
           userId: user.userId,
-          userpass: walletPassword,
           uuid: orderId,
         });
         return orderStatus;
@@ -377,202 +355,6 @@ class Resolvers extends ResolverBase {
       }
     },
   };
-
-  //   public convert = {
-  //     status: async (
-  //       parent: any,
-  //       { orderId }: { orderId: string },
-  //       { user }: Context,
-  //     ) => {
-  //       try {
-  //         const { status } = await exchangeService.convert.status(
-  //           orderId,
-  //           user.userId,
-  //         );
-  //         return status;
-  //       } catch (err) {
-  //         logger.debug(`resolvers.exchange.convert.status.catch ${err}`);
-  //         throw err;
-  //       }
-  //     },
-  //     pricesAndFees: async (
-  //       parent: any,
-  //       { buySellCoin }: { buySellCoin: IBuySellCoin },
-  //       { user }: Context,
-  //     ) => {
-  //       try {
-  //         const conversion = await exchangeService.convert.pricesAndFees(
-  //           buySellCoin,
-  //           user.userId,
-  //         );
-  //         return conversion;
-  //       } catch (err) {
-  //         logger.debug(`resolvers.exchange.convert.pricesAndFees.catch ${err}`);
-  //         throw err;
-  //       }
-  //     },
-  //     coin: async (
-  //       parent: any,
-  //       {
-  //         buySellCoin,
-  //         walletPassword,
-  //       }: { buySellCoin: IBuySellCoin; walletPassword: string },
-  //       { user }: Context,
-  //     ) => {
-  //       try {
-  //         const orderStatus = await exchangeService.convert.coin(
-  //           buySellCoin,
-  //           user.userId,
-  //           walletPassword,
-  //         );
-  //         return orderStatus;
-  //       } catch (err) {
-  //         logger.debug(`resolvers.exchange.convert.coin.catch ${err}`);
-  //         throw err;
-  //       }
-  //     },
-
-  //     completed: async (parent: any, args: any, { user }: Context) => {
-  //       try {
-  //         const completedOrderStatuses = await exchangeService.convert.completed(
-  //           user.userId,
-  //         );
-  //         return completedOrderStatuses;
-  //       } catch (err) {
-  //         logger.debug(`resolvers.exchange.convert.completed.catch ${err}`);
-  //         throw err;
-  //       }
-  //     },
-  //     pending: async (parent: any, args: any, { user }: Context) => {
-  //       try {
-  //         const pendingOrderStatuses = await exchangeService.convert.pending(
-  //           user.userId,
-  //         );
-  //         return pendingOrderStatuses;
-  //       } catch (err) {
-  //         logger.debug(`resolvers.exchange.convert.pending.catch ${err}`);
-  //         throw err;
-  //       }
-  //     },
-  //     cancel: async (
-  //       parent: any,
-  //       { orderId, walletPassword }: { orderId: string; walletPassword: string },
-  //       { user }: Context,
-  //     ) => {
-  //       try {
-  //         const orderStatus = await exchangeService.convert.cancel(
-  //           orderId,
-  //           user.userId,
-  //           walletPassword,
-  //         );
-  //         return orderStatus;
-  //       } catch (err) {
-  //         logger.debug(`resolvers.exchange.convert.cancel.catch ${err}`);
-  //         throw err;
-  //       }
-  //     },
-  //   };
-  //   public item = {
-  //     items: async (parent: any, args: any, { user }: Context) => {
-  //       try {
-  //         const openOrderItems = await exchangeService.item.items(user.userId);
-  //         return openOrderItems;
-  //       } catch (err) {
-  //         logger.debug(`resolvers.exchange.item.items.catch ${err}`);
-  //         throw err;
-  //       }
-  //     },
-  //     buy: async (
-  //       parent: any,
-  //       {
-  //         buyItem,
-  //         walletPassword,
-  //       }: { buyItem: IBuyItem; walletPassword: string },
-  //       { user }: Context,
-  //     ) => {
-  //       try {
-  //         const orderStatus = await exchangeService.item.buy(
-  //           buyItem,
-  //           user.userId,
-  //           walletPassword,
-  //         );
-  //         return orderStatus;
-  //       } catch (err) {
-  //         logger.debug(`resolvers.exchange.item.buy.catch ${err}`);
-  //         throw err;
-  //       }
-  //     },
-  //     buyStatus: async (
-  //       parent: any,
-  //       { orderId, walletPassword }: { orderId: string; walletPassword: string },
-  //       { user }: Context,
-  //     ) => {
-  //       try {
-  //         const orderStatus = await exchangeService.item.buyStatus(
-  //           orderId,
-  //           user.userId,
-  //           walletPassword,
-  //         );
-  //         return orderStatus;
-  //       } catch (err) {
-  //         logger.debug(`resolvers.exchange.item.buyStatus.catch ${err}`);
-  //         throw err;
-  //       }
-  //     },
-  //     sell: async (
-  //       parent: any,
-  //       {
-  //         sellItem,
-  //         walletPassword,
-  //       }: { sellItem: ISellItem; walletPassword: string },
-  //       { user }: Context,
-  //     ) => {
-  //       try {
-  //         const orderStatus = await exchangeService.item.sell(
-  //           sellItem,
-  //           user.userId,
-  //           walletPassword,
-  //         );
-  //         return orderStatus;
-  //       } catch (err) {
-  //         logger.debug(`resolvers.exchange.item.sell.catch ${err}`);
-  //         throw err;
-  //       }
-  //     },
-  //     sellStatus: async (
-  //       parent: any,
-  //       { orderId }: { orderId: string },
-  //       { user }: Context,
-  //     ) => {
-  //       try {
-  //         const orderStatus = await exchangeService.item.sellStatus(
-  //           orderId,
-  //           user.userId,
-  //         );
-  //         return orderStatus;
-  //       } catch (err) {
-  //         logger.debug(`resolvers.exchange.item.sell.catch ${err}`);
-  //         throw err;
-  //       }
-  //     },
-  //     cancel: async (
-  //       parent: any,
-  //       { orderId, walletPassword }: { orderId: string; walletPassword: string },
-  //       { user }: Context,
-  //     ) => {
-  //       try {
-  //         const orderStatus = await exchangeService.item.cancel(
-  //           orderId,
-  //           user.userId,
-  //           walletPassword,
-  //         );
-  //         return orderStatus;
-  //       } catch (err) {
-  //         logger.debug(`resolvers.exchange.item.cancel.catch ${err}`);
-  //         throw err;
-  //       }
-  //     },
-  //   };
 }
 
 const resolvers = new Resolvers();
@@ -584,6 +366,7 @@ export default {
       pricesAndFess: resolvers.convert.pricesAndFees,
       completed: resolvers.convert.completed,
       pending: resolvers.convert.pending,
+      coins: resolvers.convert.getCoins,
     },
     item: {
       items: resolvers.item.items,
