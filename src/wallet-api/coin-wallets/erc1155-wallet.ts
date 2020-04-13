@@ -324,23 +324,26 @@ class Erc1155API extends EthWallet {
     }
   }
 
-  private async requireItemAndEtherToSend(
+  private async requireItemsAndEtherToSend(
     userApi: UserApi,
     address: string,
-    tokenId: string,
+    tokenIds: string[],
   ) {
     try {
       const { parseEther } = utils;
-      const [ownsToken, feeEstimate, etherBalance] = await Promise.all([
-        this.ownsToken(address, tokenId),
+      const [feeEstimate, etherBalance, ownsTokens] = await Promise.all([
         this.estimateFee(userApi),
         this.provider.getBalance(address),
+        Promise.all(tokenIds.map(tokenId => this.ownsToken(address, tokenId))),
       ]);
-      const hasEnoughEther = etherBalance.gt(
-        parseEther(feeEstimate.estimatedFee),
-      );
 
-      if (!ownsToken) {
+      const totalFee = +feeEstimate.estimatedFee * tokenIds.length;
+
+      const hasEnoughEther = etherBalance.gt(parseEther(totalFee.toString()));
+
+      const ownsAllTokens = ownsTokens.every(ownsToken => ownsToken);
+
+      if (!ownsAllTokens) {
         throw new Error(`Does not own specified token`);
       }
       if (!hasEnoughEther) {
@@ -354,29 +357,34 @@ class Erc1155API extends EthWallet {
     }
   }
 
-  async transferNonFungibleToken(
+  async transferNonFungibleTokens(
     userApi: UserApi,
     outputs: ISendOutput[],
     walletPassword: string,
   ) {
-    const [{ to, tokenId }] = outputs;
+    const tokenIds = outputs.map(o => o.tokenId);
+    const [{ to }] = outputs;
+
+    if (outputs.some(output => output.to !== to)) {
+      throw new Error('Can only transfer to a single address');
+    }
 
     try {
       const { nonce, ethAddress } = await this.getEthAddress(userApi);
       const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
       const privateKey = this.decrypt(encryptedPrivateKey, walletPassword);
       const wallet = new ethers.Wallet(privateKey, this.provider);
-      await this.requireItemAndEtherToSend(userApi, ethAddress, tokenId);
+      await this.requireItemsAndEtherToSend(userApi, ethAddress, tokenIds);
       const contract = new ethers.Contract(
         this.contractAddress,
         this.abi,
         wallet,
       );
-      const transaction = await contract.safeTransferFrom(
+      const transaction = await contract.safeBatchTransferFrom(
         ethAddress,
         to,
-        tokenId,
-        '0x0',
+        tokenIds,
+        Array(tokenIds.length).fill('0x0'),
         '0x0',
         { nonce },
       );

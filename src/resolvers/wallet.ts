@@ -391,7 +391,7 @@ class Resolvers extends ResolverBase {
     }
   };
 
-  sendGameItem = async (
+  sendGameItems = async (
     parent: any,
     {
       coinSymbol,
@@ -417,7 +417,7 @@ class Resolvers extends ResolverBase {
       }
 
       const walletApi = wallet.coin(coinSymbol) as Erc1155Wallet;
-      const result = await walletApi.transferNonFungibleToken(
+      const result = await walletApi.transferNonFungibleTokens(
         user,
         outputs,
         walletPassword,
@@ -483,7 +483,7 @@ export default {
     balance: resolvers.getBalance,
   },
   Mutation: {
-    sendGameItem: resolvers.sendGameItem,
+    sendGameItems: resolvers.sendGameItems,
     sendTransaction: resolvers.sendTransaction,
     createWallet: resolvers.createWallet,
     recoverWallet: resolvers.recoverWallet,
