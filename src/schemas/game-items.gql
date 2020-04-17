@@ -18,6 +18,8 @@ type GameItem {
   withdrawalWaitTime: Int!
   galaFee: Float!
   quantityNeeded: Int
+  hexcode: String!
+  label: String!
   items: [GameSubItem!]
 }
 
@@ -39,6 +41,7 @@ type GameItemRarity {
   icon: String!
   label: String!
   supplyLimit: Int!
+  hexcode: String!
 }
 
 type GameProduct {

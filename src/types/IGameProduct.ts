@@ -20,5 +20,6 @@ export interface IGameProduct {
     icon: string;
     label: string;
     supplyLimit: number;
+    hexcode: string;
   };
 }
