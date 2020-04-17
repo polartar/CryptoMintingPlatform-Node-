@@ -61,7 +61,7 @@ export interface IUser extends mongoose.Document {
     utmCampaign?: string;
     utmMedium?: string;
     utmSource?: string;
-    utmKeywords?: string;
+    utmKeyword?: string;
     utmContent?: string;
     utmTerm?: string;
     utmName?: string;
@@ -158,7 +158,7 @@ const utmSchema = new mongoose.Schema({
   utmCampaign: String,
   utmMedium: String,
   utmSource: String,
-  utmKeywords: String,
+  utmKeyword: String,
   utmContent: String,
   utmName: String,
   utmTerm: String,

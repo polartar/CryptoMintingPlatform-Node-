@@ -11,6 +11,7 @@ void (async () => {
       icon:
         'https://gala-tokens.s3.amazonaws.com/images/sandbox-games/town-star/rarity/legendary.png',
       label: 'Legendary',
+      hexcode: '#FABB00',
     },
   };
   const newProducts: (IGameProduct & { _id: Types.ObjectId })[] = [

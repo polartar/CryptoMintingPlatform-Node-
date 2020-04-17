@@ -55,6 +55,10 @@ const gameProductSchema = new Schema({
         type: Number,
         required: true,
       },
+      hexcode: {
+        type: String,
+        required: true,
+      },
     },
     default: null,
   },
