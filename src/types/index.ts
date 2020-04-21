@@ -39,4 +39,6 @@ export * from './exchange-api/IOrderbook';
 export * from './exchange-api/ISell';
 export * from './exchange-api/ISwap';
 export * from './exchange-api/IOrders';
+export * from './exchange-api/IMarkets';
+export * from './exchange-api/ITicks';
 export * from './IOrderContext';

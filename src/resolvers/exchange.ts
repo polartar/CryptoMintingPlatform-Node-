@@ -198,6 +198,35 @@ class Resolvers extends ResolverBase {
         throw err;
       }
     },
+    ticks: async (parent: any, args: any, { user }: Context) => {
+      try {
+        const { ticks } = await exchangeService.getTickers({
+          userId: user.userId,
+        });
+        return ticks;
+        // .map(tick => {
+        //   return {
+        //     buyingCoin: tick.rel,
+        //     sellingCoin: tick.base,
+        //     price: tick.lastPrice,
+        //   };
+        // });
+      } catch (err) {
+        logger.debug(`resolvers.exchange.convert.ticks.catch ${err}`);
+        throw err;
+      }
+    },
+    markets: async (parent: any, args: any, { user }: Context) => {
+      try {
+        const { markets } = await exchangeService.getMarkets({
+          userId: user.userId,
+        });
+        return markets;
+      } catch (err) {
+        logger.debug(`resolvers.exchange.convert.markets.catch ${err}`);
+        throw err;
+      }
+    },
   };
   public item = {
     items: async (
@@ -367,6 +396,8 @@ export default {
       completed: resolvers.convert.completed,
       pending: resolvers.convert.pending,
       coins: resolvers.convert.getCoins,
+      ticks: resolvers.convert.ticks,
+      markets: resolvers.convert.markets,
     },
     item: {
       items: resolvers.item.items,
