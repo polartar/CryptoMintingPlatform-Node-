@@ -20,6 +20,28 @@ enum Status {
   CONVERTING
   COMPLETE
 }
+type Tick {
+  base: String!
+  rel: String!
+  token_id: Int
+  symbol: String!
+  lastPrice: Float!
+  timestamp: Int!
+}
+type Symbol {
+  base: String!
+  rel: String!
+  symbol: String!
+  decimals: Float
+  precision: Float
+  last: Float!
+  timestamp: Int!
+}
+type Market {
+  coin: String!
+  relationships: [Symbol!]
+  timestamp: Int!
+}
 type OrderStatus {
   orderId: String!
   status: Status!
@@ -65,6 +87,8 @@ type ConvertQueries {
   completed(filter: CompletedInput): [OrderStatus!]
   pending: [OrderStatus!]
   coins: [CoinResponse!]!
+  markets: [Market!]!
+  ticks: [Tick!]!
 }
 type ConvertMutations {
   coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!

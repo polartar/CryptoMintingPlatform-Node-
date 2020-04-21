@@ -36,6 +36,8 @@ import {
   isSellError,
   IMyRecentSwapsError,
   isMyRecentSwapsError,
+  IMarketsResponse,
+  ITicksResponse,
 } from '../types';
 
 interface IAuthInfo {
@@ -117,7 +119,26 @@ class ExchangeService extends ServerToServerService {
     >(`${this.baseUrl}/transactions/${coin}/${limit}/${from_id}`);
     return result;
   };
-
+  public getMarkets = async ({ userId }: IAuthInfo) => {
+    const jwtAxios = this.getAxios({ userId });
+    const {
+      data: { result },
+    } = await jwtAxios.get<
+      any,
+      AxiosResponse<IExchangeResponse<IMarketsResponse>>
+    >(`${this.baseUrl}/markets`);
+    return result;
+  };
+  public getTickers = async ({ userId }: IAuthInfo) => {
+    const jwtAxios = this.getAxios({ userId });
+    const {
+      data: { result },
+    } = await jwtAxios.get<
+      any,
+      AxiosResponse<IExchangeResponse<ITicksResponse>>
+    >(`${this.baseUrl}/markets`);
+    return result;
+  };
   public getFee = async ({ userId, coin }: IAuthInfo & IGetFeeRequest) => {
     const jwtAxios = this.getAxios({ userId });
     const {
