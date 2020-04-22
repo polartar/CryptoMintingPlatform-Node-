@@ -1,12 +1,12 @@
 input BuySellCoinInput {
   buyingCoin: String!
-  quantity: Int
+  quantity: Float
   sellingCoin: String!
   price: Float
 }
 type Conversion {
   buyingCoin: String!
-  quantity: Int
+  quantity: Float
   sellingCoin: String!
   price: Float!
   fees: Float
@@ -14,7 +14,7 @@ type Conversion {
 }
 input CompletedInput {
   from_uuid: String
-  limit: Int
+  limit: Float
 }
 enum Status {
   CONVERTING
@@ -23,10 +23,10 @@ enum Status {
 type Tick {
   base: String!
   rel: String!
-  token_id: Int
+  token_id: Float
   symbol: String!
   lastPrice: Float!
-  timestamp: Int!
+  timestamp: Float!
 }
 type Symbol {
   base: String!
@@ -36,20 +36,20 @@ type Symbol {
   precision: Float
   last: Float!
   lastPrice: Float
-  timestamp: Int!
+  timestamp: Float!
 }
 type Market {
   coin: String!
   relationships: [Symbol!]
-  timestamp: Int!
+  timestamp: Float!
 }
 type OrderStatus {
   orderId: String!
   status: Status!
-  bought: Int
-  sold: Int
+  bought: Float
+  sold: Float
   price: Float
-  quantity: Int
+  quantity: Float
 }
 
 type OpenOrderItem {
@@ -66,14 +66,14 @@ input BuyItem {
   itemId: String!
   sellingCoin: String!
   buyingCoin: String!
-  quantity: Int
+  quantity: Float
   price: Float
 }
 
 input SellItem {
   itemId: String!
   price: Float!
-  quantity: Int
+  quantity: Float
   sellingCoin: String!
   buyingCoin: String!
 }
