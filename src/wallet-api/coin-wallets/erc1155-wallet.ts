@@ -282,7 +282,7 @@ class Erc1155API extends EthWallet {
     }
   }
 
-  private async ownsToken(address: string, tokenId: string) {
+  private async ownsToken(address: string, tokenId: utils.BigNumber) {
     const tokenOwner = await this.contract.ownerOf(tokenId);
 
     return tokenOwner === address;
@@ -327,7 +327,7 @@ class Erc1155API extends EthWallet {
   private async requireItemsAndEtherToSend(
     userApi: UserApi,
     address: string,
-    tokenIds: string[],
+    tokenIds: utils.BigNumber[],
   ) {
     try {
       const { parseEther } = utils;
@@ -362,7 +362,7 @@ class Erc1155API extends EthWallet {
     outputs: ISendOutput[],
     walletPassword: string,
   ) {
-    const tokenIds = outputs.map(o => o.tokenId);
+    const tokenIds = outputs.map(o => utils.bigNumberify(o.tokenId));
     const [{ to }] = outputs;
 
     if (outputs.some(output => output.to !== to)) {
