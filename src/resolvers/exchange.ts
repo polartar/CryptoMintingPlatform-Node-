@@ -198,30 +198,26 @@ class Resolvers extends ResolverBase {
         throw err;
       }
     },
-    ticks: async (parent: any, args: any, { user }: Context) => {
+    ticks: async (parent: any, args: any, ctx: Context) => {
       try {
-        const { ticks } = await exchangeService.getTickers({
-          userId: user.userId,
-        });
+        const { ticks } = await exchangeService.getTicks();
         return ticks;
-        // .map(tick => {
-        //   return {
-        //     buyingCoin: tick.rel,
-        //     sellingCoin: tick.base,
-        //     price: tick.lastPrice,
-        //   };
-        // });
       } catch (err) {
         logger.debug(`resolvers.exchange.convert.ticks.catch ${err}`);
         throw err;
       }
     },
-    markets: async (parent: any, args: any, { user }: Context) => {
+    markets: async (parent: any, args: any, ctx: Context) => {
       try {
-        const { markets } = await exchangeService.getMarkets({
-          userId: user.userId,
-        });
-        return markets;
+        const { markets } = await exchangeService.getMarkets();
+        console.log({ markets });
+        return markets.map(market => ({
+          ...market,
+          relationships: market.relationships.map(relationship => ({
+            ...relationship,
+            lastPrice: relationship.last,
+          })),
+        }));
       } catch (err) {
         logger.debug(`resolvers.exchange.convert.markets.catch ${err}`);
         throw err;
@@ -386,35 +382,46 @@ class Resolvers extends ResolverBase {
   };
 }
 
-const resolvers = new Resolvers();
+// const resolvers = new Resolvers();
 
-export default {
-  Query: {
-    convert: {
-      status: resolvers.convert.status,
-      pricesAndFess: resolvers.convert.pricesAndFees,
-      completed: resolvers.convert.completed,
-      pending: resolvers.convert.pending,
-      coins: resolvers.convert.getCoins,
-      ticks: resolvers.convert.ticks,
-      markets: resolvers.convert.markets,
-    },
-    item: {
-      items: resolvers.item.items,
-      buyStatus: resolvers.item.buyStatus,
-      sellStatus: resolvers.item.sellStatus,
-    },
-  },
-  Mutation: {
-    convert: {
-      coin: resolvers.convert.coin,
-      cancel: resolvers.convert.cancel,
-    },
-    item: {
-      buy: resolvers.item.buy,
-      sell: resolvers.item.sell,
-      cancel: resolvers.item.cancel,
-      sellMany: resolvers.item.sellMany,
-    },
-  },
-};
+// export default {
+//   // Convert: {
+//   //   status: resolvers.convert.status,
+//   //   pricesAndFees: resolvers.convert.pricesAndFees,
+//   //   completed: resolvers.convert.completed,
+//   //   pending: resolvers.convert.pending,
+//   //   coins: resolvers.convert.getCoins,
+//   //   ticks: resolvers.convert.ticks,
+//   //   markets: resolvers.convert.markets,
+//   // },
+//   Query: {
+//     markets: resolvers.convert.markets,
+//     ticks: resolvers.convert.ticks,
+//     convert: {
+//       status: resolvers.convert.status,
+//       pricesAndFees: resolvers.convert.pricesAndFees,
+//       completed: resolvers.convert.completed,
+//       pending: resolvers.convert.pending,
+//       coins: resolvers.convert.getCoins,
+//       ticks: resolvers.convert.ticks,
+//       markets: resolvers.convert.markets,
+//     },
+//     item: {
+//       items: resolvers.item.items,
+//       buyStatus: resolvers.item.buyStatus,
+//       sellStatus: resolvers.item.sellStatus,
+//     },
+//   },
+//   Mutation: {
+//     convert: {
+//       coin: resolvers.convert.coin,
+//       cancel: resolvers.convert.cancel,
+//     },
+//     item: {
+//       buy: resolvers.item.buy,
+//       sell: resolvers.item.sell,
+//       cancel: resolvers.item.cancel,
+//       sellMany: resolvers.item.sellMany,
+//     },
+//   },
+// };
