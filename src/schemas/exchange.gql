@@ -35,6 +35,7 @@ type Symbol {
   decimals: Float
   precision: Float
   last: Float!
+  lastPrice: Float
   timestamp: Int!
 }
 type Market {
@@ -105,11 +106,50 @@ type ItemMutations {
   sellMany(sellItem: [SellItem!]!, walletPassword: String!): [OrderStatus!]!
   cancel(orderId: String!, walletPassword: String!): OrderStatus!
 }
+input GetPriceInput {
+  base: String!
+  token_id: Float
+  rel: String!
+  quantity_base: Float
+  buy_or_sell: String!
+}
+type Price {
+  base: String!
+  rel: String!
+  token_id: Float
+  symbol: String!
+  price: Float!
+  quantity: Float
+  timestamp: Int!
+  usdValue: Float!
+}
+type Fee {
+  coin: String!
+  amount: Float!
+  usdAmount: Float
+  token_id: Float
+}
+type GetPriceResponse {
+  price: Price!
+  fees: Fee!
+}
 type Query {
-  convert: ConvertQueries
-  item: ItemQueries
+  markets: [Market!]!
+  ticks: [Tick!]!
+  status(orderId: String!): Status!
+  pricesAndFees(getPriceInput: GetPriceInput!): GetPriceResponse!
+  completed(filter: CompletedInput): [OrderStatus!]
+  pending: [OrderStatus!]
+  coins: [CoinResponse!]!
+  items(buySellCoin: BuySellCoinInput!): [OpenOrderItem!]
+  buyStatus(orderId: String!): OrderStatus!
+  sellStatus(orderId: String!): OrderStatus!
 }
 type Mutation {
-  convert: ConvertMutations
-  item: ItemMutations
+  coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!
+  cancelConvert(orderId: String!, walletPassword: String!): OrderStatus!
+  buy(buyItem: BuyItem!, walletPassword: String!): OrderStatus!
+  sell(sellItem: SellItem!, walletPassword: String!): OrderStatus!
+  sellMany(sellItem: [SellItem!]!, walletPassword: String!): [OrderStatus!]!
+  cancelItem(orderId: String!, walletPassword: String!): OrderStatus!
 }

@@ -38,6 +38,8 @@ import {
   isMyRecentSwapsError,
   IMarketsResponse,
   ITicksResponse,
+  IGetPrice,
+  IGetPriceResponse,
 } from '../types';
 
 interface IAuthInfo {
@@ -46,7 +48,7 @@ interface IAuthInfo {
 }
 
 class ExchangeService extends ServerToServerService {
-  private baseUrl = `${config.exchangeUrl}/api/v1`;
+  private baseUrl = `${config.exchangeUrl}`;
   public balance = async ({
     userId,
     coin,
@@ -119,25 +121,22 @@ class ExchangeService extends ServerToServerService {
     >(`${this.baseUrl}/transactions/${coin}/${limit}/${from_id}`);
     return result;
   };
-  public getMarkets = async ({ userId }: IAuthInfo) => {
-    const jwtAxios = this.getAxios({ userId });
-    const {
-      data: { result },
-    } = await jwtAxios.get<
-      any,
-      AxiosResponse<IExchangeResponse<IMarketsResponse>>
-    >(`${this.baseUrl}/markets`);
-    return result;
+  public getMarkets = async () => {
+    const jwtAxios = this.getAxios({});
+
+    const { data } = await jwtAxios.get<any, AxiosResponse<IMarketsResponse>>(
+      `${this.baseUrl}/markets`,
+    );
+
+    return data;
   };
-  public getTickers = async ({ userId }: IAuthInfo) => {
-    const jwtAxios = this.getAxios({ userId });
-    const {
-      data: { result },
-    } = await jwtAxios.get<
-      any,
-      AxiosResponse<IExchangeResponse<ITicksResponse>>
-    >(`${this.baseUrl}/markets`);
-    return result;
+  public getTicks = async () => {
+    const jwtAxios = this.getAxios({});
+    const { data } = await jwtAxios.get<any, AxiosResponse<ITicksResponse>>(
+      `${this.baseUrl}/ticks`,
+    );
+
+    return data;
   };
   public getFee = async ({ userId, coin }: IAuthInfo & IGetFeeRequest) => {
     const jwtAxios = this.getAxios({ userId });
@@ -156,8 +155,29 @@ class ExchangeService extends ServerToServerService {
     rel,
   }: IOrderbookRequest & IAuthInfo) => {
     const jwtAxios = this.getAxios({ userId });
-    const { data } = await jwtAxios.get<any, AxiosResponse<IOrderbookResponse>>(
-      `${this.baseUrl}/orderbook/${base}/${rel}`,
+    const { data } = await jwtAxios.post<
+      any,
+      AxiosResponse<IOrderbookResponse>
+    >(`${this.baseUrl}/orderbook`, { base, rel });
+    return data;
+  };
+  public getPrice = async ({
+    base,
+    token_id,
+    rel,
+    quantity_base,
+    buy_or_sell,
+  }: IGetPrice) => {
+    const jwtAxios = this.getAxios({});
+    const { data } = await jwtAxios.post<any, AxiosResponse<IGetPriceResponse>>(
+      `${this.baseUrl}/get-price`,
+      {
+        base,
+        rel,
+        token_id,
+        quantity_base,
+        buy_or_sell,
+      },
     );
     return data;
   };
