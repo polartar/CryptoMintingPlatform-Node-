@@ -84,7 +84,7 @@ class Resolvers extends ResolverBase {
       buy_or_sell,
     }: {
       base: string;
-      token_id?: number;
+      token_id?: string;
       rel: string;
       quantity_base: number;
       buy_or_sell: BuySell;

@@ -23,7 +23,7 @@ enum Status {
 type Tick {
   base: String!
   rel: String!
-  token_id: Float
+  token_id: String
   symbol: String!
   lastPrice: Float!
   timestamp: Float!
@@ -108,7 +108,7 @@ type ItemMutations {
 }
 input GetPriceInput {
   base: String!
-  token_id: Float
+  token_id: String
   rel: String!
   quantity_base: Float
   buy_or_sell: String!
@@ -116,7 +116,7 @@ input GetPriceInput {
 type Price {
   base: String!
   rel: String!
-  token_id: Float
+  token_id: String
   symbol: String!
   price: Float!
   quantity: Float
@@ -127,7 +127,7 @@ type Fee {
   coin: String!
   amount: Float!
   usdAmount: Float
-  token_id: Float
+  token_id: String
 }
 type GetPriceResponse {
   price: Price!
