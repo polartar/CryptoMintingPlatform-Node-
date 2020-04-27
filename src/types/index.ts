@@ -42,3 +42,4 @@ export * from './exchange-api/IOrders';
 export * from './exchange-api/IMarkets';
 export * from './exchange-api/ITicks';
 export * from './IOrderContext';
+export * from './IUniqueItem';
