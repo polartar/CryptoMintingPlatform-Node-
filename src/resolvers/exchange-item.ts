@@ -2,7 +2,18 @@ import { logger } from '../common';
 import { exchangeService } from '../services';
 import ResolverBase from '../common/Resolver-Base';
 import { Context } from '../types/context';
-import { IBuySellCoin, IOrderStatus, OrderStatus } from '../types';
+import { GameProduct, IGameProductDocument } from '../models';
+import { getDateFromAge } from '../utils';
+import {
+  IBuySellCoin,
+  IOrderStatus,
+  OrderStatus,
+  IItemQueryInput,
+  SortBy,
+  IOrderResponse,
+  IUniqueItem,
+  IExchangeItem,
+} from '../types';
 
 class Resolvers extends ResolverBase {
   items = async (
@@ -34,6 +45,125 @@ class Resolvers extends ResolverBase {
       logger.debug(`resolvers.exchange.item.items.catch ${err}`);
       throw err;
     }
+  };
+  listedGameItems = async (
+    parent: any,
+    itemQueryInput: IItemQueryInput,
+    ctx: Context,
+  ) => {
+    const orderbook = await exchangeService.getItems(itemQueryInput);
+    const itemsByNftId: {
+      [index: string]: {
+        uniqueItems: IUniqueItem[];
+        quantity: number;
+        pricesSummed: number;
+      };
+    } = this.categorizeItems(orderbook.asks, orderbook.timestamp);
+    const allItems = await Promise.all(
+      Object.keys(itemsByNftId).map(nftId =>
+        this.getItemByNftId(itemsByNftId, orderbook.rel, itemQueryInput, nftId),
+      ),
+    );
+    return allItems
+      .map(item => {
+        return { ...item, avgPrice: item.pricesSummed / item.quantity };
+      })
+      .sort((itemA, itemB) => {
+        return this.sortProducts(itemA, itemB, itemQueryInput);
+      });
+  };
+  getItemByNftId = async (
+    itemsByNftId: {
+      [index: string]: {
+        uniqueItems: IUniqueItem[];
+        quantity: number;
+        pricesSummed: number;
+      };
+    },
+    coin: string,
+    itemQueryInput: IItemQueryInput,
+    nftId: string,
+  ) => {
+    const productInfo = (await GameProduct.findOne({
+      nftBaseId: nftId,
+    })
+      .lean()
+      .exec()) as IGameProductDocument;
+    return {
+      ...productInfo,
+      items: itemsByNftId[nftId].uniqueItems.sort((itemA, itemB) => {
+        return this.sortUniqueItems(itemA, itemB, itemQueryInput);
+      }),
+      coin,
+      quantity: itemsByNftId[nftId].quantity,
+      pricesSummed: itemsByNftId[nftId].pricesSummed,
+      icon: productInfo.rarity.icon,
+      id: productInfo._id,
+    };
+  };
+  sortUniqueItems = (
+    itemA: IUniqueItem,
+    itemB: IUniqueItem,
+    itemQueryInput: IItemQueryInput,
+  ) => {
+    const multiplier = itemQueryInput.highOrLow;
+    switch (itemQueryInput.sortBy) {
+      case SortBy.date:
+        return (
+          itemA.dateListed.getTime() - multiplier * itemB.dateListed.getTime()
+        );
+      case SortBy.price:
+        return itemA.listPrice - multiplier * itemB.listPrice;
+      default:
+        return itemA.listPrice - multiplier * itemB.listPrice;
+    }
+  };
+  sortProducts = (
+    itemA: IExchangeItem,
+    itemB: IExchangeItem,
+    itemQueryInput: IItemQueryInput,
+  ) => {
+    const multiplier = itemQueryInput.highOrLow;
+    switch (itemQueryInput.sortBy) {
+      case SortBy.nftBaseId:
+        if (itemA.nftBaseId < itemB.nftBaseId) {
+          return -1;
+        }
+        if (itemA.nftBaseId < itemB.nftBaseId) {
+          return 1;
+        }
+        return 0;
+
+      case SortBy.price:
+        return itemA.avgPrice - multiplier * itemB.avgPrice;
+      default:
+        return itemA.avgPrice - multiplier * itemB.avgPrice;
+    }
+  };
+  categorizeItems = (orders: IOrderResponse[], timestamp: number) => {
+    return orders.reduce((accum, item) => {
+      if (!accum[item.nftBaseId]) {
+        accum[item.nftBaseId] = {
+          uniqueItems: [],
+          quantity: 0,
+          pricesSummed: 0,
+        };
+      }
+      const uniqueItem = {
+        token_id: item.token_id,
+        nftBaseId: item.nftBaseId,
+        seller: item.userId,
+        dateListed: getDateFromAge({
+          date: new Date(timestamp),
+          age: item.age,
+        }),
+        listPrice: item.price,
+      };
+      accum[item.nftBaseId].uniqueItems.push(uniqueItem);
+      accum[item.nftBaseId].quantity += item.maxvolume;
+      accum[item.nftBaseId].pricesSummed += item.price;
+      return accum;
+    }, {} as { [index: string]: { uniqueItems: IUniqueItem[]; quantity: number; pricesSummed: number } });
   };
   buy = async (
     parent: any,
@@ -168,6 +298,8 @@ export default {
     items: resolvers.items,
     buyStatus: resolvers.buyStatus,
     sellStatus: resolvers.sellStatus,
+    listedGameItems: resolvers.listedGameItems,
+    // listedGameProducts: resolvers.listedGameProducts,
   },
   Mutation: {
     buy: resolvers.buy,

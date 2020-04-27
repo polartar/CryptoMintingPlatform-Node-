@@ -40,6 +40,7 @@ import {
   ITicksResponse,
   IGetPrice,
   IGetPriceResponse,
+  IItemQueryInput,
 } from '../types';
 
 interface IAuthInfo {
@@ -255,6 +256,34 @@ class ExchangeService extends ServerToServerService {
     if (isOrderError(data)) {
       throw data.error;
     }
+    return data;
+  };
+  public getItems = async ({
+    nftBaseId,
+    userId,
+    tokenId,
+    sortBy,
+  }: IItemQueryInput) => {
+    const jwtAxios = this.getAxios({});
+    const { data } = await jwtAxios.post<
+      any,
+      AxiosResponse<IOrderbookResponse>
+    >(`${this.baseUrl}/order-book/all-items`, { base: 'GALA', rel: 'GALA' });
+
+    return data;
+  };
+  public getAggregatedItems = async ({
+    nftBaseId,
+    userId,
+    tokenId,
+    sortBy,
+  }: IItemQueryInput) => {
+    const jwtAxios = this.getAxios({});
+    const { data } = await jwtAxios.post<
+      any,
+      AxiosResponse<IOrderbookResponse>
+    >(`${this.baseUrl}/order-book/all-items`);
+
     return data;
   };
   public extractOrderStatusFromSwapEvents = (swaps: ISwapStatusResponse[]) => {

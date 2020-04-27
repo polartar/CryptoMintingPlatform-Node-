@@ -62,7 +62,7 @@ type OpenOrderItem {
   timestamp: Date!
 }
 
-input BuyItem {
+input BuyItemInput {
   itemId: String!
   sellingCoin: String!
   buyingCoin: String!
@@ -70,7 +70,7 @@ input BuyItem {
   price: Float
 }
 
-input SellItem {
+input SellItemInput {
   itemId: String!
   price: Float!
   quantity: Float
@@ -80,31 +80,6 @@ input SellItem {
 type CoinResponse {
   address: String!
   ticker: String!
-}
-
-type ConvertQueries {
-  status(orderId: String!): Status!
-  pricesAndFees(buySellCoin: BuySellCoinInput!): Conversion!
-  completed(filter: CompletedInput): [OrderStatus!]
-  pending: [OrderStatus!]
-  coins: [CoinResponse!]!
-  markets: [Market!]!
-  ticks: [Tick!]!
-}
-type ConvertMutations {
-  coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!
-  cancel(orderId: String!, walletPassword: String!): OrderStatus!
-}
-type ItemQueries {
-  items(buySellCoin: BuySellCoinInput!): [OpenOrderItem!]
-  buyStatus(orderId: String!): OrderStatus!
-  sellStatus(orderId: String!): OrderStatus!
-}
-type ItemMutations {
-  buy(buyItem: BuyItem!, walletPassword: String!): OrderStatus!
-  sell(sellItem: SellItem!, walletPassword: String!): OrderStatus!
-  sellMany(sellItem: [SellItem!]!, walletPassword: String!): [OrderStatus!]!
-  cancel(orderId: String!, walletPassword: String!): OrderStatus!
 }
 input GetPriceInput {
   base: String!
@@ -133,6 +108,34 @@ type GetPriceResponse {
   price: Price!
   fees: Fee!
 }
+input ItemQueryInput {
+  nftBaseId: String
+  tokenId: String
+  userId: String
+  sortBy: String
+}
+type ExchangeItem {
+  id: String
+  game: String!
+  name: String!
+  nftBaseId: String!
+  coin: String!
+  description: String
+  image: String!
+  icon: String!
+  rarity: GameItemRarity!
+  quantity: Int
+  avgPrice: Float
+  items: [UniqueItem]
+}
+type UniqueItem {
+  token_id: String
+  nftBaseId: String!
+  seller: String!
+  dateListed: Int
+  listPrice: Float
+}
+
 type Query {
   markets: [Market!]!
   ticks: [Tick!]!
@@ -144,12 +147,17 @@ type Query {
   items(buySellCoin: BuySellCoinInput!): [OpenOrderItem!]
   buyStatus(orderId: String!): OrderStatus!
   sellStatus(orderId: String!): OrderStatus!
+  listedGameItems(itemQuery: ItemQueryInput): [ExchangeItem!]
+  listedGameProducts(itemQuery: ItemQueryInput): [ExchangeItem!]
 }
 type Mutation {
   coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!
   cancelConvert(orderId: String!, walletPassword: String!): OrderStatus!
-  buy(buyItem: BuyItem!, walletPassword: String!): OrderStatus!
-  sell(sellItem: SellItem!, walletPassword: String!): OrderStatus!
-  sellMany(sellItem: [SellItem!]!, walletPassword: String!): [OrderStatus!]!
+  buy(buyItemInput: BuyItemInput!, walletPassword: String!): OrderStatus!
+  sell(sellItemInput: SellItemInput!, walletPassword: String!): OrderStatus!
+  sellMany(
+    sellItemInput: [SellItemInput!]!
+    walletPassword: String!
+  ): [OrderStatus!]!
   cancelItem(orderId: String!, walletPassword: String!): OrderStatus!
 }
