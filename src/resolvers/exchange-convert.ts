@@ -77,21 +77,20 @@ class Resolvers extends ResolverBase {
   pricesAndFees = async (
     parent: any,
     {
-      base,
-      token_id,
-      rel,
-      quantity_base,
-      buy_or_sell,
+      getPriceInput,
     }: {
-      base: string;
-      token_id?: string;
-      rel: string;
-      quantity_base: number;
-      buy_or_sell: BuySell;
+      getPriceInput: {
+        base: string;
+        token_id?: string;
+        rel: string;
+        quantity_base: number;
+        buy_or_sell: BuySell;
+      };
     },
     ctx: Context,
   ): Promise<IGetPriceResponse> => {
     try {
+      const { base, token_id, rel, quantity_base, buy_or_sell } = getPriceInput;
       return exchangeService.getPrice({
         base,
         token_id,

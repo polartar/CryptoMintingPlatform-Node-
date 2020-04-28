@@ -26,7 +26,7 @@ type Tick {
   token_id: String
   symbol: String!
   lastPrice: Float!
-  timestamp: Float!
+  timestamp: Date!
 }
 type Symbol {
   base: String!
@@ -36,12 +36,12 @@ type Symbol {
   precision: Float
   last: Float!
   lastPrice: Float
-  timestamp: Float!
+  timestamp: Date!
 }
 type Market {
   coin: String!
   relationships: [Symbol!]
-  timestamp: Float!
+  timestamp: Date!
 }
 type OrderStatus {
   orderId: String!
@@ -95,7 +95,7 @@ type Price {
   symbol: String!
   price: Float!
   quantity: Float
-  timestamp: Int!
+  timestamp: Date!
   usdValue: Float!
 }
 type Fee {
@@ -132,7 +132,7 @@ type UniqueItem {
   token_id: String
   nftBaseId: String!
   seller: String!
-  dateListed: Int
+  dateListed: Date
   listPrice: Float
 }
 
