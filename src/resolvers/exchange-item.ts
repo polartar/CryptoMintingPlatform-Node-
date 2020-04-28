@@ -48,7 +48,7 @@ class Resolvers extends ResolverBase {
   };
   listedGameItems = async (
     parent: any,
-    itemQueryInput: IItemQueryInput,
+    { itemQueryInput }: { itemQueryInput: IItemQueryInput },
     ctx: Context,
   ) => {
     const orderbook = await exchangeService.getItems(itemQueryInput);
