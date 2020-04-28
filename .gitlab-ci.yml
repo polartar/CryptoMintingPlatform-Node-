@@ -43,6 +43,7 @@ Deploy CONNECT Staging:
     SERVER_HOSTKEYS: $MASTER_STAGE_SERVER_HOSTKEYS
     DEPLOY_APP_REPLACE: wallet-server-connect
     NODE_PORT_REPLACE: 3720
+    DEPLOY_PORT: 22100
     ENV: $CONNECT_ENV
   extends:
     - .bb_rsync_staging_jwt_firebase
@@ -53,6 +54,7 @@ Deploy GREEN Staging:
     SERVER_HOSTKEYS: $MASTER_STAGE_SERVER_HOSTKEYS
     DEPLOY_APP_REPLACE: wallet-server-green
     NODE_PORT_REPLACE: 3721
+    DEPLOY_PORT: 22100
     ENV: $GREEN_ENV
   extends:
     - .bb_rsync_staging_jwt_firebase
@@ -63,6 +65,7 @@ Deploy CODEX Staging:
     SERVER_HOSTKEYS: $MASTER_STAGE_SERVER_HOSTKEYS
     DEPLOY_APP_REPLACE: wallet-server-codex
     NODE_PORT_REPLACE: 3722
+    DEPLOY_PORT: 22100
     ENV: $CODEX_ENV
   extends:
     - .bb_rsync_staging_jwt_firebase
@@ -73,6 +76,7 @@ Deploy ARCADE Staging:
     SERVER_HOSTKEYS: $MASTER_STAGE_SERVER_HOSTKEYS
     DEPLOY_APP_REPLACE: wallet-server-arcade
     NODE_PORT_REPLACE: 3723
+    DEPLOY_PORT: 22100
     ENV: $ARCADE_ENV
   extends:
     - .bb_rsync_staging_jwt_firebase
