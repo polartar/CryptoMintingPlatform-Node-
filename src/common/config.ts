@@ -116,6 +116,7 @@ class Config {
     process.env.SEND_WALLET_REPORT_TO_LOCALHOST;
   public readonly gameItemServiceUrl = process.env.GAME_ITEM_SERVICE_URL;
   public readonly galaGamingApiUrl = process.env.GALA_GAMING_API_URL;
+  public readonly nodeSelectorUrl = process.env.NODE_SELECTOR_URL;
   public readonly exchangeUrl = process.env.EXCHANGE_URL;
 
   public readonly s3Bucket = process.env.S3_BUCKET;
