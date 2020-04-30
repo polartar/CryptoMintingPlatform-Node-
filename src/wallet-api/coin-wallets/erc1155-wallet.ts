@@ -8,6 +8,7 @@ import {
   ISendOutput,
 } from '../../types';
 import { UserApi } from '../../data-sources';
+import nodeSelector from '../../services/node-selector';
 const Web3 = require('web3');
 
 class Erc1155API extends EthWallet {
@@ -380,7 +381,13 @@ class Erc1155API extends EthWallet {
         this.abi,
         wallet,
       );
+
+      const signature = await nodeSelector.getNodeToMineTransaction();
+
       const transaction = await contract.safeBatchTransferFrom(
+        signature.nodeHardwareLicenseId,
+        utils.bigNumberify(signature.nonce),
+        signature.signature,
         ethAddress,
         to,
         tokenIds,
@@ -457,7 +464,13 @@ class Erc1155API extends EthWallet {
         this.abi,
         wallet,
       );
+
+      const signature = await nodeSelector.getNodeToMineTransaction();
+
       const transaction = await contract.safeTransferFrom(
+        signature.nodeHardwareLicenseId,
+        utils.bigNumberify(signature.nonce),
+        signature.signature,
         ethAddress,
         to,
         this.tokenId,
@@ -465,6 +478,7 @@ class Erc1155API extends EthWallet {
         '0x0',
         { nonce },
       );
+
       await userApi.incrementTxCount();
       this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
 
