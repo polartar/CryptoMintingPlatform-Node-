@@ -137,20 +137,22 @@ type UniqueItem {
   dateListed: Date
   listPrice: Float
 }
-
+input PendingInput {
+  base: String
+  rel: String
+  tokenId: String
+}
 type Query {
   markets: [Market!]!
   ticks: [Tick!]!
   status(orderId: String!): Status!
   pricesAndFees(getPriceInput: GetPriceInput!): GetPriceResponse!
   completed(filter: CompletedInput): [OrderStatus!]
-  pending: [OrderStatus!]
-  coins: [CoinResponse!]!
+  pending(pendingInput: PendingInput): [OrderStatus!]
   items(buySellCoin: BuySellCoinInput!): [OpenOrderItem!]
   buyStatus(orderId: String!): OrderStatus!
   sellStatus(orderId: String!): OrderStatus!
   listedGameItems(itemQueryInput: ItemQueryInput): [ExchangeItem!]
-  listedGameProducts(itemQueryInput: ItemQueryInput): [ExchangeItem!]
 }
 type Mutation {
   coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!
