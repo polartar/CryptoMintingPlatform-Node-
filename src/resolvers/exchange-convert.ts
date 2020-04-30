@@ -8,8 +8,6 @@ import {
   OrderStatus,
   IGetPriceResponse,
   IGetPrice,
-  IOrderbookResponse,
-  IMySwapHistory,
 } from '../types';
 
 class Resolvers extends ResolverBase {
