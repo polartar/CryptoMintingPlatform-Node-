@@ -1,16 +1,13 @@
 import { config } from '../common';
 import { ServerToServerService } from './server-to-server';
-import { IItem, IErc1155Token } from '../types';
-import { AxiosResponse } from 'axios';
+import { IItem } from '../types';
 
 class GameItemService extends ServerToServerService {
   baseUrl = `${config.gameItemServiceUrl}/items`;
 
   getUserItems = async (userId: string) => {
     const jwtAxios = this.getAxios({ userId });
-    const { data } = await jwtAxios.get<any, AxiosResponse<IErc1155Token[]>>(
-      `${this.baseUrl}/${userId}`,
-    );
+    const { data } = await jwtAxios.get(`${this.baseUrl}/${userId}`);
 
     return data;
   };
