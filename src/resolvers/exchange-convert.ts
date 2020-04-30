@@ -6,7 +6,6 @@ import {
   IBuySellCoin,
   IOrderStatus,
   OrderStatus,
-  TakerOrMaker,
   IGetPriceResponse,
   IGetPrice,
   IMyOrdersResponse,
@@ -144,29 +143,33 @@ class Resolvers extends ResolverBase {
   };
   pending = async (
     parent: any,
-    { base, rel, tokenId }: { base: string; rel: string; tokenId: string },
+    {
+      pendingInput,
+    }: { pendingInput: { base: string; rel: string; tokenId: string } },
     { user }: Context,
   ): Promise<IOrderStatus[]> => {
     try {
+      const { base, rel, tokenId } = pendingInput;
       const myOrders = await exchangeService.getMyOrders({
         userId: user.userId,
         base,
         rel,
-        tokenId,
+        tokenId: +tokenId,
       });
-      const makerOrders = Object.values(myOrders.maker_orders).map(order => {
-        return exchangeService.extractOrderInfoFromMyOrder({
-          order,
-          type: TakerOrMaker.maker,
-        });
-      });
-      const takerOrders = Object.values(myOrders.taker_orders).map(order => {
-        return exchangeService.extractOrderInfoFromMyOrder({
-          order,
-          type: TakerOrMaker.taker,
-        });
-      });
-      return [...makerOrders, ...takerOrders];
+      //   const makerOrders = Object.values(myOrders.maker_orders).map(order => {
+      //     return exchangeService.extractOrderInfoFromMyOrder({
+      //       order,
+      //       type: TakerOrMaker.maker,
+      //     });
+      //   });
+      //   const takerOrders = Object.values(myOrders.taker_orders).map(order => {
+      //     return exchangeService.extractOrderInfoFromMyOrder({
+      //       order,
+      //       type: TakerOrMaker.taker,
+      //     });
+      //   });
+      //   return [...makerOrders, ...takerOrders];
+      return (myOrders as unknown) as Promise<IOrderStatus[]>;
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.pending.catch ${err}`);
       throw err;
