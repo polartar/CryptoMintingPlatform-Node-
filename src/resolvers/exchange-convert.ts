@@ -13,12 +13,6 @@ import {
 } from '../types';
 
 class Resolvers extends ResolverBase {
-  getCoins = async (parent: any, args: any, { user }: Context) => {
-    const coins = await exchangeService.getEnabledCoins({
-      userId: user.userId,
-    });
-    return coins;
-  };
   status = async (
     parent: any,
     { orderId }: { orderId: string },
@@ -142,14 +136,6 @@ class Resolvers extends ResolverBase {
       const closedOrders = await exchangeService.getClosedOrders({
         userId: user.userId,
       });
-      //   const recentSwaps = await exchangeService.getClosedOrders({
-      //     userId: user.userId,
-      //   });
-      //   return exchangeService
-      //     .extractOrderStatusFromSwapEvents(recentSwaps.swaps)
-      //     .filter(({ status }) => {
-      //       return status === OrderStatus.complete;
-      //     });
       return closedOrders;
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.completed.catch ${err}`);
@@ -158,7 +144,7 @@ class Resolvers extends ResolverBase {
   };
   pending = async (
     parent: any,
-    { base, rel, tokenId }: any,
+    { base, rel, tokenId }: { base: string; rel: string; tokenId: string },
     { user }: Context,
   ): Promise<IOrderStatus[]> => {
     try {
@@ -239,7 +225,6 @@ export default {
     pricesAndFees: resolvers.pricesAndFees,
     completed: resolvers.completed,
     pending: resolvers.pending,
-    coins: resolvers.getCoins,
   },
   Mutation: {
     coin: resolvers.coin,

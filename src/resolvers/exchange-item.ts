@@ -23,7 +23,6 @@ class Resolvers extends ResolverBase {
   ) => {
     try {
       const orders = await exchangeService.getOrderbook({
-        // userId: user.userId,
         base: buySellCoin.buyingCoin,
         rel: buySellCoin.sellingCoin,
       });

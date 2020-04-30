@@ -93,7 +93,7 @@ class ExchangeService extends ServerToServerService {
   }: ICancelOrderRequest & IAuthInfo) => {
     const jwtAxios = this.getAxios({ userId, walletPassword });
     const { data } = await jwtAxios.post<any, AxiosResponse<CancelResponse>>(
-      `${this.baseUrl}/cancel`,
+      `${this.authUrl}/cancel`,
       { uuid },
     );
     if (isCancelOrderError(data)) {
@@ -101,32 +101,6 @@ class ExchangeService extends ServerToServerService {
     }
     return data;
   };
-  public getEnabledCoins = async ({ userId }: { userId: string }) => {
-    const jwtAxios = this.getAxios({ userId });
-    const {
-      data: { result },
-    } = await jwtAxios.get<
-      any,
-      AxiosResponse<IExchangeResponse<{ address: string; ticker: string }[]>>
-    >(`${this.baseUrl}/coins`);
-    return result;
-  };
-  // public getTransactions = async ({
-  //   userId,
-  //   walletPassword,
-  //   coin,
-  //   limit,
-  //   from_id,
-  // }: IListTransactionsRequest & IAuthInfo) => {
-  //   const jwtAxios = this.getAxios({ userId, walletPassword });
-  //   const {
-  //     data: { result },
-  //   } = await jwtAxios.get<
-  //     any,
-  //     AxiosResponse<IExchangeResponse<IListTransactionsResponse>>
-  //   >(`${this.baseUrl}/transactions/${coin}/${limit}/${from_id}`);
-  //   return result;
-  // };
   public getMarkets = async () => {
     const jwtAxios = this.getAxios({});
 
@@ -222,36 +196,6 @@ class ExchangeService extends ServerToServerService {
     }
     return data.result;
   };
-  // public getRecentSwaps = async ({
-  //   userId,
-  //   limit,
-  //   from_uuid,
-  // }: IMyRecentSwapsRequest & IAuthInfo) => {
-  //   const jwtAxios = this.getAxios({ userId });
-  //   const { data } = await jwtAxios.get<
-  //     any,
-  //     AxiosResponse<
-  //       IExchangeResponse<IMyRecentSwapsResponse> | IMyRecentSwapsError
-  //     >
-  //   >(`${this.baseUrl}/swaps/${limit}/${from_uuid}`);
-  //   if (isMyRecentSwapsError(data)) {
-  //     throw data.error;
-  //   }
-  //   return data.result;
-  // };
-  // public getSwapStatus = async ({
-  //   userId,
-  //   uuid,
-  // }: ISwapStatusRequest & IAuthInfo) => {
-  //   const jwtAxios = this.getAxios({ userId });
-  //   const {
-  //     data: { result },
-  //   } = await jwtAxios.get<
-  //     any,
-  //     AxiosResponse<IExchangeResponse<ISwapStatusResponse>>
-  //   >(`${this.baseUrl}/swap/${uuid}`);
-  //   return result;
-  // };
   public getMyOrders = async ({
     userId,
     base,
@@ -355,20 +299,6 @@ class ExchangeService extends ServerToServerService {
       any,
       AxiosResponse<IOrderbookResponse>
     >(`${this.pubUrl}/order-book/all`, itemQuery);
-
-    return data;
-  };
-  public getAggregatedItems = async ({
-    nftBaseId,
-    userId,
-    tokenId,
-    sortBy,
-  }: IItemQueryInput) => {
-    const jwtAxios = this.getAxios({});
-    const { data } = await jwtAxios.post<
-      any,
-      AxiosResponse<IOrderbookResponse>
-    >(`${this.baseUrl}/order-book/all-items`);
 
     return data;
   };
