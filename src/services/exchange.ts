@@ -10,17 +10,11 @@ import {
   IBuyRequest,
   IBuyResponse,
   ICancelOrderRequest,
-  IListTransactionsRequest,
-  IListTransactionsResponse,
-  IGetFeeRequest,
   IGetFeeResponse,
   IOrderbookRequest,
   IOrderbookResponse,
   ISellRequest,
   ISellResponse,
-  IMyRecentSwapsRequest,
-  IMyRecentSwapsResponse,
-  ISwapStatusRequest,
   ISwapStatusResponse,
   ExchangeEvent,
   SwapEvents,
@@ -34,8 +28,6 @@ import {
   isBuyError,
   ISellError,
   isSellError,
-  IMyRecentSwapsError,
-  isMyRecentSwapsError,
   IMarketsResponse,
   ITicksResponse,
   IGetPrice,
@@ -44,37 +36,50 @@ import {
 } from '../types';
 
 interface IAuthInfo {
-  userpass?: string;
+  walletPassword: string;
   userId: string;
 }
 
 class ExchangeService extends ServerToServerService {
   private baseUrl = `${config.exchangeUrl}`;
+  private pubUrl = `${this.baseUrl}/pub`;
+  private authUrl = `${this.baseUrl}/auth`;
   public balance = async ({
     userId,
     coin,
-    userpass,
+    walletPassword,
+    tokenId,
+    rel,
+    walletAddress,
   }: IAuthInfo & IBalanceRequest) => {
-    const jwtAxios = this.getAxios({ userId, userpass });
-    const { data } = await jwtAxios.get<any, AxiosResponse<IBalanceResponse>>(
-      `${this.baseUrl}/balance/${coin}`,
+    const jwtAxios = this.getAxios({ userId, walletPassword });
+    const { data } = await jwtAxios.post<any, AxiosResponse<IBalanceResponse>>(
+      `${this.authUrl}/get-balance`,
+      { userId, walletPassword, coin, tokenId, rel, walletAddress },
     );
     return data;
   };
 
   public buy = async ({
     userId,
-    userpass,
+    walletPassword,
     base,
     rel,
-    volume,
+    quantityBase,
     price,
   }: IBuyRequest & IAuthInfo) => {
-    const jwtAxios = this.getAxios({ userId, userpass });
+    const jwtAxios = this.getAxios({ userId, walletPassword });
     const { data } = await jwtAxios.post<
       any,
       AxiosResponse<IExchangeResponse<IBuyResponse> | IBuyError>
-    >(`${this.baseUrl}/buy`, { base, rel, volume, price });
+    >(`${this.authUrl}/buy`, {
+      base,
+      rel,
+      quantityBase,
+      price,
+      userId,
+      walletPassword,
+    });
     if (isBuyError(data)) {
       throw data.error;
     }
@@ -82,11 +87,11 @@ class ExchangeService extends ServerToServerService {
   };
 
   public cancel = async ({
-    userpass,
+    walletPassword,
     userId,
     uuid,
   }: ICancelOrderRequest & IAuthInfo) => {
-    const jwtAxios = this.getAxios({ userId, userpass });
+    const jwtAxios = this.getAxios({ userId, walletPassword });
     const { data } = await jwtAxios.post<any, AxiosResponse<CancelResponse>>(
       `${this.baseUrl}/cancel`,
       { uuid },
@@ -106,27 +111,27 @@ class ExchangeService extends ServerToServerService {
     >(`${this.baseUrl}/coins`);
     return result;
   };
-  public getTransactions = async ({
-    userId,
-    userpass,
-    coin,
-    limit,
-    from_id,
-  }: IListTransactionsRequest & IAuthInfo) => {
-    const jwtAxios = this.getAxios({ userId, userpass });
-    const {
-      data: { result },
-    } = await jwtAxios.get<
-      any,
-      AxiosResponse<IExchangeResponse<IListTransactionsResponse>>
-    >(`${this.baseUrl}/transactions/${coin}/${limit}/${from_id}`);
-    return result;
-  };
+  // public getTransactions = async ({
+  //   userId,
+  //   walletPassword,
+  //   coin,
+  //   limit,
+  //   from_id,
+  // }: IListTransactionsRequest & IAuthInfo) => {
+  //   const jwtAxios = this.getAxios({ userId, walletPassword });
+  //   const {
+  //     data: { result },
+  //   } = await jwtAxios.get<
+  //     any,
+  //     AxiosResponse<IExchangeResponse<IListTransactionsResponse>>
+  //   >(`${this.baseUrl}/transactions/${coin}/${limit}/${from_id}`);
+  //   return result;
+  // };
   public getMarkets = async () => {
     const jwtAxios = this.getAxios({});
 
     const { data } = await jwtAxios.get<any, AxiosResponse<IMarketsResponse>>(
-      `${this.baseUrl}/markets`,
+      `${this.pubUrl}/markets`,
     );
 
     return data;
@@ -134,111 +139,197 @@ class ExchangeService extends ServerToServerService {
   public getTicks = async () => {
     const jwtAxios = this.getAxios({});
     const { data } = await jwtAxios.get<any, AxiosResponse<ITicksResponse>>(
-      `${this.baseUrl}/ticks`,
+      `${this.pubUrl}/ticks`,
     );
 
     return data;
   };
-  public getFee = async ({ userId, coin }: IAuthInfo & IGetFeeRequest) => {
-    const jwtAxios = this.getAxios({ userId });
+  public getFee = async () => {
+    const jwtAxios = this.getAxios({});
     const {
       data: { result },
     } = await jwtAxios.get<
       any,
       AxiosResponse<IExchangeResponse<IGetFeeResponse>>
-    >(`${this.baseUrl}/fee/${coin}`);
+    >(`${this.pubUrl}/get-fees`);
     return result;
   };
 
-  public getOrderbook = async ({
-    userId,
-    base,
-    rel,
-  }: IOrderbookRequest & IAuthInfo) => {
-    const jwtAxios = this.getAxios({ userId });
+  public getOrderbook = async ({ base, rel, tokenId }: IOrderbookRequest) => {
+    const jwtAxios = this.getAxios({});
     const { data } = await jwtAxios.post<
       any,
       AxiosResponse<IOrderbookResponse>
-    >(`${this.baseUrl}/orderbook`, { base, rel });
+    >(`${this.pubUrl}/order-book/all`, { base, rel, tokenId });
     return data;
   };
   public getPrice = async ({
     base,
-    token_id,
+    tokenId,
     rel,
-    quantity_base,
-    buy_or_sell,
+    quantityBase,
+    buyOrSell,
   }: IGetPrice) => {
     const jwtAxios = this.getAxios({});
     const { data } = await jwtAxios.post<any, AxiosResponse<IGetPriceResponse>>(
-      `${this.baseUrl}/get-price`,
+      `${this.pubUrl}/get-price`,
       {
         base,
         rel,
-        token_id,
-        quantity_base,
-        buy_or_sell,
+        tokenId,
+        quantityBase,
+        buyOrSell,
       },
     );
     return data;
   };
+  public getOrderbookByNft = async ({
+    base,
+    rel,
+    nftBaseId,
+  }: IOrderbookRequest & { nftBaseId: number }) => {
+    const jwtAxios = this.getAxios({});
+    const { data } = await jwtAxios.post<
+      any,
+      AxiosResponse<IOrderbookResponse>
+    >(`${this.pubUrl}/order-book/by-nft`, { base, rel, nftBaseId });
+    return data;
+  };
   public sell = async ({
     userId,
-    userpass,
+    walletPassword,
     base,
     rel,
     price,
-    volume,
+    quantityBase,
+    tokenId,
   }: ISellRequest & IAuthInfo) => {
-    const jwtAxios = this.getAxios({ userId, userpass });
+    const jwtAxios = this.getAxios({ userId, walletPassword });
     const { data } = await jwtAxios.post<
       any,
       AxiosResponse<IExchangeResponse<ISellResponse> | ISellError>
-    >(`${this.baseUrl}/sell`, { base, rel, volume, price });
+    >(`${this.authUrl}/sell`, {
+      base,
+      rel,
+      quantityBase,
+      tokenId,
+      price,
+      userId,
+      walletPassword,
+    });
     if (isSellError(data)) {
       throw data.error;
     }
     return data.result;
   };
-  public getRecentSwaps = async ({
+  // public getRecentSwaps = async ({
+  //   userId,
+  //   limit,
+  //   from_uuid,
+  // }: IMyRecentSwapsRequest & IAuthInfo) => {
+  //   const jwtAxios = this.getAxios({ userId });
+  //   const { data } = await jwtAxios.get<
+  //     any,
+  //     AxiosResponse<
+  //       IExchangeResponse<IMyRecentSwapsResponse> | IMyRecentSwapsError
+  //     >
+  //   >(`${this.baseUrl}/swaps/${limit}/${from_uuid}`);
+  //   if (isMyRecentSwapsError(data)) {
+  //     throw data.error;
+  //   }
+  //   return data.result;
+  // };
+  // public getSwapStatus = async ({
+  //   userId,
+  //   uuid,
+  // }: ISwapStatusRequest & IAuthInfo) => {
+  //   const jwtAxios = this.getAxios({ userId });
+  //   const {
+  //     data: { result },
+  //   } = await jwtAxios.get<
+  //     any,
+  //     AxiosResponse<IExchangeResponse<ISwapStatusResponse>>
+  //   >(`${this.baseUrl}/swap/${uuid}`);
+  //   return result;
+  // };
+  public getMyOrders = async ({
     userId,
-    limit,
-    from_uuid,
-  }: IMyRecentSwapsRequest & IAuthInfo) => {
+    base,
+    rel,
+    tokenId,
+  }: {
+    userId: string;
+    base?: string;
+    rel?: string;
+    tokenId?: string;
+  }) => {
     const jwtAxios = this.getAxios({ userId });
-    const { data } = await jwtAxios.get<
-      any,
-      AxiosResponse<
-        IExchangeResponse<IMyRecentSwapsResponse> | IMyRecentSwapsError
-      >
-    >(`${this.baseUrl}/swaps/${limit}/${from_uuid}`);
-    if (isMyRecentSwapsError(data)) {
-      throw data.error;
-    }
-    return data.result;
-  };
-  public getSwapStatus = async ({
-    userId,
-    userpass,
-    uuid,
-  }: ISwapStatusRequest & IAuthInfo) => {
-    const jwtAxios = this.getAxios({ userId, userpass });
     const {
       data: { result },
-    } = await jwtAxios.get<
-      any,
-      AxiosResponse<IExchangeResponse<ISwapStatusResponse>>
-    >(`${this.baseUrl}/swap/${uuid}`);
-    return result;
-  };
-  public getMyOrders = async ({ userId }: { userId: string }) => {
-    const jwtAxios = this.getAxios({ userId });
-    const {
-      data: { result },
-    } = await jwtAxios.get<
+    } = await jwtAxios.post<
       any,
       AxiosResponse<IExchangeResponse<IMyOrdersResponse>>
-    >(`${this.baseUrl}/orders`);
+    >(`${this.authUrl}/my-orders/open`, { userId, base, rel, tokenId });
+    return result;
+  };
+  public getMyOrdersByNftBaseId = async ({
+    userId,
+    base,
+    rel,
+    nftBaseId,
+  }: {
+    userId: string;
+    base: string;
+    rel: string;
+    nftBaseId: number;
+  }) => {
+    const jwtAxios = this.getAxios({ userId });
+    const {
+      data: { result },
+    } = await jwtAxios.post<
+      any,
+      AxiosResponse<IExchangeResponse<IMyOrdersResponse>>
+    >(`${this.authUrl}/my-orders/by-nft`, { userId, base, rel, nftBaseId });
+    return result;
+  };
+  getClosedOrders = async ({
+    userId,
+    base,
+    rel,
+    tokenId,
+  }: {
+    userId: string;
+    base?: string;
+    rel?: string;
+    tokenId?: number;
+  }) => {
+    const jwtAxios = this.getAxios({ userId });
+    const {
+      data: { result },
+    } = await jwtAxios.post<
+      any,
+      AxiosResponse<IExchangeResponse<IMyOrdersResponse>>
+    >(`${this.authUrl}/my-orders/closed`, { userId, base, rel, tokenId });
+    return result;
+  };
+  getOpenOrders = async ({
+    userId,
+    base,
+    rel,
+    tokenId,
+  }: {
+    userId: string;
+    base: string;
+    rel: string;
+    tokenId: number;
+  }) => {
+    const jwtAxios = this.getAxios({ userId });
+    const {
+      data: { result },
+    } = await jwtAxios.post<
+      any,
+      AxiosResponse<IExchangeResponse<IMyOrdersResponse>>
+    >(`${this.authUrl}/my-orders/closed`, { userId, base, rel, tokenId });
     return result;
   };
   public getOrderStatus = async ({
@@ -249,26 +340,21 @@ class ExchangeService extends ServerToServerService {
     uuid: string;
   }) => {
     const jwtAxios = this.getAxios({ userId });
-    const { data } = await jwtAxios.get<
+    const { data } = await jwtAxios.post<
       any,
       AxiosResponse<OrderStatusResponse>
-    >(`${this.baseUrl}/order/${uuid}`);
+    >(`${this.authUrl}/my-orders/detail`, { userId, uuid });
     if (isOrderError(data)) {
       throw data.error;
     }
     return data;
   };
-  public getItems = async ({
-    nftBaseId,
-    userId,
-    tokenId,
-    sortBy,
-  }: IItemQueryInput) => {
+  public getItems = async (itemQuery: IItemQueryInput) => {
     const jwtAxios = this.getAxios({});
     const { data } = await jwtAxios.post<
       any,
       AxiosResponse<IOrderbookResponse>
-    >(`${this.baseUrl}/order-book/all-items`, { base: 'GALA', rel: 'GALA' });
+    >(`${this.pubUrl}/order-book/all`, itemQuery);
 
     return data;
   };
@@ -283,6 +369,31 @@ class ExchangeService extends ServerToServerService {
       any,
       AxiosResponse<IOrderbookResponse>
     >(`${this.baseUrl}/order-book/all-items`);
+
+    return data;
+  };
+  public getHistory = async () => {
+    const jwtAxios = this.getAxios({});
+    const { data } = await jwtAxios.get<any, AxiosResponse<IOrderbookResponse>>(
+      `${this.pubUrl}/history`,
+    );
+
+    return data;
+  };
+  public getHistorySummary = async ({
+    base,
+    rel,
+    nftBaseId,
+  }: {
+    base: string;
+    rel: string;
+    nftBaseId: number;
+  }) => {
+    const jwtAxios = this.getAxios({});
+    const { data } = await jwtAxios.post<
+      any,
+      AxiosResponse<IOrderbookResponse>
+    >(`${this.pubUrl}/history/summary`, { base, rel, nftBaseId });
 
     return data;
   };

@@ -16,9 +16,9 @@ export enum BuySell {
 export interface IGetPrice {
   base: string;
   rel: string;
-  token_id?: string;
-  quantity_base: number;
-  buy_or_sell: BuySell;
+  tokenId?: string;
+  quantityBase: number;
+  buyOrSell: BuySell;
 }
 
 export interface IPrice {
