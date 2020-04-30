@@ -205,9 +205,9 @@ class ExchangeService extends ServerToServerService {
     userId: string;
     base?: string;
     rel?: string;
-    tokenId?: string;
+    tokenId?: number;
   }) => {
-    const jwtAxios = this.getAxios({ userId });
+    const jwtAxios = this.getAxios({});
     const {
       data: { result },
     } = await jwtAxios.post<
