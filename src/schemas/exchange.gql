@@ -136,6 +136,7 @@ type UniqueItem {
   seller: String!
   dateListed: Date
   listPrice: Float
+  orderId: String!
 }
 input PendingInput {
   base: String

@@ -29,4 +29,5 @@ export interface IOrderResponse {
   zcredits: number; // the zeroconf deposit amount
   nftBaseId: string;
   token_id: string;
+  uuid: string;
 }
