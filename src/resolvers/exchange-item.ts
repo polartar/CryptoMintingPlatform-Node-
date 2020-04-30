@@ -87,7 +87,6 @@ class Resolvers extends ResolverBase {
         );
       });
   };
-
   buy = async (
     parent: any,
     {
@@ -239,6 +238,7 @@ class Resolvers extends ResolverBase {
           metaInfoByNftBaseId[order.nftBaseId] = metaInfo;
           console.log({ metaInfo });
         }
+        console.log({ item: metaInfoByNftBaseId[order.nftBaseId] });
         return {
           ...metaInfoByNftBaseId[order.nftBaseId],
           coin: order.otherCoin,
@@ -355,6 +355,7 @@ class Resolvers extends ResolverBase {
     items: IUniqueItem[],
     userApi: UserApi,
   ) => {
+    console.log({ items });
     const sellers: { [index: string]: string } = {};
     return Promise.all(
       items.map(async item => {
@@ -429,7 +430,6 @@ export default {
     listedGameItems: resolvers.listedGameItems,
     userItemsSold: resolvers.getSoldItems,
     userItemsPurchased: resolvers.getPurchasedItems,
-    // listedGameProducts: resolvers.listedGameProducts,
   },
   Mutation: {
     buy: resolvers.buy,
