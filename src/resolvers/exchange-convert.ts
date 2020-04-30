@@ -8,7 +8,6 @@ import {
   OrderStatus,
   IGetPriceResponse,
   IGetPrice,
-  IMyOrdersResponse,
 } from '../types';
 
 class Resolvers extends ResolverBase {
@@ -127,15 +126,25 @@ class Resolvers extends ResolverBase {
     {
       from_uuid,
       limit,
-      walletPassword,
-    }: { from_uuid?: string; limit?: number; walletPassword: string },
+      base,
+      rel,
+    }: { from_uuid?: string; limit?: number; base?: string; rel?: string },
     { user }: Context,
-  ): Promise<IMyOrdersResponse> => {
+  ): Promise<IOrderStatus[]> => {
     try {
       const closedOrders = await exchangeService.getClosedOrders({
         userId: user.userId,
+        base,
+        rel,
       });
-      return closedOrders;
+      return closedOrders.swaps.map(swap => ({
+        orderId: swap.uuid,
+        status: OrderStatus.complete,
+        bought: swap.otherCoin,
+        sold: swap.myCoin,
+        quantity: swap.otherAmount,
+        price: swap.myAmount,
+      }));
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.completed.catch ${err}`);
       throw err;
@@ -150,26 +159,20 @@ class Resolvers extends ResolverBase {
   ): Promise<IOrderStatus[]> => {
     try {
       const { base, rel, tokenId } = pendingInput;
-      const myOrders = await exchangeService.getMyOrders({
+      const myOrders = await exchangeService.getOpenOrders({
         userId: user.userId,
         base,
         rel,
         tokenId: +tokenId,
       });
-      //   const makerOrders = Object.values(myOrders.maker_orders).map(order => {
-      //     return exchangeService.extractOrderInfoFromMyOrder({
-      //       order,
-      //       type: TakerOrMaker.maker,
-      //     });
-      //   });
-      //   const takerOrders = Object.values(myOrders.taker_orders).map(order => {
-      //     return exchangeService.extractOrderInfoFromMyOrder({
-      //       order,
-      //       type: TakerOrMaker.taker,
-      //     });
-      //   });
-      //   return [...makerOrders, ...takerOrders];
-      return (myOrders as unknown) as Promise<IOrderStatus[]>;
+      return myOrders.swaps.map(swap => ({
+        orderId: swap.uuid,
+        status: OrderStatus.converting,
+        bought: swap.otherCoin,
+        sold: swap.myCoin,
+        quantity: swap.otherAmount,
+        price: swap.myAmount,
+      }));
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.pending.catch ${err}`);
       throw err;

@@ -5,4 +5,5 @@ export interface IUniqueItem {
   dateListed: Date;
   //   priceUsd: number;
   listPrice: number;
+  orderId: string;
 }

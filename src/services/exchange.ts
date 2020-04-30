@@ -33,6 +33,7 @@ import {
   IGetPrice,
   IGetPriceResponse,
   IItemQueryInput,
+  IMySwapHistory,
 } from '../types';
 
 interface IAuthInfo {
@@ -248,13 +249,11 @@ class ExchangeService extends ServerToServerService {
     tokenId?: number;
   }) => {
     const jwtAxios = this.getAxios({ userId });
-    const {
-      data: { result },
-    } = await jwtAxios.post<
-      any,
-      AxiosResponse<IExchangeResponse<IMyOrdersResponse>>
-    >(`${this.authUrl}/my-orders/closed`, { userId, base, rel, tokenId });
-    return result;
+    const { data } = await jwtAxios.post<any, AxiosResponse<IMySwapHistory>>(
+      `${this.authUrl}/my-orders/closed`,
+      { userId, base, rel, tokenId },
+    );
+    return data;
   };
   getOpenOrders = async ({
     userId,
@@ -263,18 +262,16 @@ class ExchangeService extends ServerToServerService {
     tokenId,
   }: {
     userId: string;
-    base: string;
-    rel: string;
-    tokenId: number;
+    base?: string;
+    rel?: string;
+    tokenId?: number;
   }) => {
     const jwtAxios = this.getAxios({ userId });
-    const {
-      data: { result },
-    } = await jwtAxios.post<
-      any,
-      AxiosResponse<IExchangeResponse<IMyOrdersResponse>>
-    >(`${this.authUrl}/my-orders/closed`, { userId, base, rel, tokenId });
-    return result;
+    const { data } = await jwtAxios.post<any, AxiosResponse<IMySwapHistory>>(
+      `${this.authUrl}/my-orders/open`,
+      { userId, base, rel, tokenId },
+    );
+    return data;
   };
   public getOrderStatus = async ({
     userId,
@@ -310,6 +307,14 @@ class ExchangeService extends ServerToServerService {
 
     return data;
   };
+  // public getSold = async ({userId}:{userId:string}) => {
+  //   const jwtAxios = this.getAxios({});
+  //   const { data } = await jwtAxios.get<any, AxiosResponse<IOrderbookResponse>>(
+  //     `${this.authUrl}/history`,
+  //   );
+
+  //   return data;
+  // }
   public getHistorySummary = async ({
     base,
     rel,
