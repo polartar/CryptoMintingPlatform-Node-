@@ -142,6 +142,17 @@ input PendingInput {
   rel: String
   tokenId: String
 }
+type UserItemsSold {
+  count: Int!
+  items: [ItemSold!]
+}
+type ItemSold {
+  image: String!
+  name: String!
+  coin: String!
+  dateSold: Date!
+  salePrice: Float!
+}
 type Query {
   markets: [Market!]!
   ticks: [Tick!]!
@@ -153,6 +164,8 @@ type Query {
   buyStatus(orderId: String!): OrderStatus!
   sellStatus(orderId: String!): OrderStatus!
   listedGameItems(itemQueryInput: ItemQueryInput): [ExchangeItem!]
+  userItemsSold: UserItemsSold!
+  userItemsPurchased: UserItemsSold!
 }
 type Mutation {
   coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!

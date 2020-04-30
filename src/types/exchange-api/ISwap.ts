@@ -1,5 +1,20 @@
 import { IWithdraw } from './IWithdraw';
+export interface IMySwapHistory {
+  swaps: IMySwapHistoryDetail[];
+  timestamp: number;
+}
 
+export interface IMySwapHistoryDetail {
+  uuid: string;
+  base: string;
+  rel: string;
+  nftBaseId: number;
+  myCoin: string;
+  myAmount: number;
+  otherCoin: string;
+  otherAmount: number;
+  startedAt: number;
+}
 export interface ISwapStatusRequest {
   uuid: string; // the uuid of swap, typically received from the buy/sell call --GOES IN PARAMS
 }
