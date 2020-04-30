@@ -2,13 +2,7 @@ import { logger } from '../common';
 import { exchangeService } from '../services';
 import ResolverBase from '../common/Resolver-Base';
 import { Context } from '../types/context';
-import {
-  GameProduct,
-  IGameProductDocument,
-  IErc1155TokenDocument,
-  Erc1155TokenModel,
-  IUser,
-} from '../models';
+import { IErc1155TokenDocument, Erc1155TokenModel, IUser } from '../models';
 import { getDateFromAge } from '../utils';
 import {
   IBuySellCoin,
