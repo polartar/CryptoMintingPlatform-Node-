@@ -23,20 +23,17 @@ class Resolvers extends ResolverBase {
   ) => {
     try {
       const orders = await exchangeService.getOrderbook({
-        userId: user.userId,
+        // userId: user.userId,
         base: buySellCoin.buyingCoin,
         rel: buySellCoin.sellingCoin,
       });
       const lowestPrice = orders.asks.sort(
         (orderA, orderB) => orderA.price - orderB.price,
       )[0].price;
-      const fee = await exchangeService.getFee({
-        userId: user.userId,
-        coin: buySellCoin.sellingCoin,
-      });
+      //   const fee = await exchangeService.getFee();
       return {
         price: lowestPrice,
-        fees: fee.amount,
+        // fees: fee.amount,
         expires: new Date(),
         buyingCoin: buySellCoin.buyingCoin,
         sellingCoin: buySellCoin.sellingCoin,
@@ -52,6 +49,7 @@ class Resolvers extends ResolverBase {
     ctx: Context,
   ) => {
     const orderbook = await exchangeService.getItems(itemQueryInput);
+
     const itemsByNftId: {
       [index: string]: {
         uniqueItems: IUniqueItem[];
@@ -59,6 +57,7 @@ class Resolvers extends ResolverBase {
         pricesSummed: number;
       };
     } = this.categorizeItems(orderbook.asks, orderbook.timestamp);
+
     const allItems = await Promise.all(
       Object.keys(itemsByNftId).map(nftId =>
         this.getItemByNftId(itemsByNftId, orderbook.rel, itemQueryInput, nftId),
@@ -89,6 +88,7 @@ class Resolvers extends ResolverBase {
     })
       .lean()
       .exec()) as IGameProductDocument;
+
     return {
       ...productInfo,
       items: itemsByNftId[nftId].uniqueItems.sort((itemA, itemB) => {
@@ -162,6 +162,7 @@ class Resolvers extends ResolverBase {
       accum[item.nftBaseId].uniqueItems.push(uniqueItem);
       accum[item.nftBaseId].quantity += item.maxvolume;
       accum[item.nftBaseId].pricesSummed += item.price;
+
       return accum;
     }, {} as { [index: string]: { uniqueItems: IUniqueItem[]; quantity: number; pricesSummed: number } });
   };
@@ -176,11 +177,12 @@ class Resolvers extends ResolverBase {
     try {
       const { uuid, base_amount, rel_amount } = await exchangeService.buy({
         userId: user.userId,
-        userpass: walletPassword,
+        walletPassword,
         base: buySellCoin.buyingCoin,
         rel: buySellCoin.sellingCoin,
-        volume: buySellCoin.quantity.toString(),
-        price: buySellCoin.price.toString(),
+        quantityBase: buySellCoin.quantity,
+        tokenId: buySellCoin.tokenId,
+        price: buySellCoin.price,
       });
       return {
         orderId: uuid,
@@ -220,11 +222,12 @@ class Resolvers extends ResolverBase {
     try {
       const { uuid, base_amount, rel_amount } = await exchangeService.sell({
         userId: user.userId,
-        userpass: walletPassword,
-        base: buySellCoin.sellingCoin,
-        rel: buySellCoin.buyingCoin,
-        volume: buySellCoin.quantity.toString(),
-        price: buySellCoin.price.toString(),
+        walletPassword,
+        base: buySellCoin.buyingCoin,
+        rel: buySellCoin.sellingCoin,
+        quantityBase: buySellCoin.quantity,
+        tokenId: buySellCoin.tokenId,
+        price: buySellCoin.price,
       });
       return {
         orderId: uuid,
@@ -279,7 +282,7 @@ class Resolvers extends ResolverBase {
   ) => {
     try {
       const cancelStatus = await exchangeService.cancel({
-        userpass: walletPassword,
+        walletPassword,
         userId: user.userId,
         uuid: orderId,
       });

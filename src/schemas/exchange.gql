@@ -83,10 +83,10 @@ type CoinResponse {
 }
 input GetPriceInput {
   base: String!
-  token_id: String
+  tokenId: String
   rel: String!
-  quantity_base: Float
-  buy_or_sell: String!
+  quantityBase: Float
+  buyOrSell: String!
 }
 type Price {
   base: String!
@@ -109,6 +109,8 @@ type GetPriceResponse {
   fees: Fee!
 }
 input ItemQueryInput {
+  base: String!
+  rel: String!
   nftBaseId: String
   tokenId: String
   userId: String
@@ -147,8 +149,8 @@ type Query {
   items(buySellCoin: BuySellCoinInput!): [OpenOrderItem!]
   buyStatus(orderId: String!): OrderStatus!
   sellStatus(orderId: String!): OrderStatus!
-  listedGameItems(itemQuery: ItemQueryInput): [ExchangeItem!]
-  listedGameProducts(itemQuery: ItemQueryInput): [ExchangeItem!]
+  listedGameItems(itemQueryInput: ItemQueryInput): [ExchangeItem!]
+  listedGameProducts(itemQueryInput: ItemQueryInput): [ExchangeItem!]
 }
 type Mutation {
   coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!

@@ -1,6 +1,7 @@
 export interface IOrderbookRequest {
   base: string; // base currency of a pair
   rel: string; // "related" currency, also can be called "quote currency" according to exchange terms
+  tokenId?: string;
 }
 
 export interface IOrderbookResponse {

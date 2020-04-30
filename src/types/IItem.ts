@@ -24,6 +24,8 @@ export enum HighOrLow {
   low = -1,
 }
 export interface IItemQueryInput {
+  base: string;
+  rel: string;
   nftBaseId?: string;
   tokenId?: string;
   userId?: string;

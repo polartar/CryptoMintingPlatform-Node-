@@ -8,7 +8,8 @@ import {
   OrderStatus,
   TakerOrMaker,
   IGetPriceResponse,
-  BuySell,
+  IGetPrice,
+  IMyOrdersResponse,
 } from '../types';
 
 class Resolvers extends ResolverBase {
@@ -28,47 +29,49 @@ class Resolvers extends ResolverBase {
         userId: user.userId,
         uuid: orderId,
       });
-      if (orderStatus.type === TakerOrMaker.taker) {
-        const swap = await exchangeService.getSwapStatus({
-          userId: user.userId,
-          uuid: orderStatus.order.request.uuid,
-        });
-        return {
-          status: exchangeService.extractSwapStatusFromSwapEvents(swap),
-          orderId: orderStatus.order.request.uuid,
-        };
-      } else if (orderStatus.type === TakerOrMaker.maker) {
-        const swapsPromises = Object.values(orderStatus.order.matches).map(
-          async match => {
-            const swap = await exchangeService.getSwapStatus({
-              userId: user.userId,
-              uuid: match.request.uuid,
-            });
-            const swapStatus = exchangeService.extractSwapStatusFromSwapEvents(
-              swap,
-            );
-            return swapStatus;
-          },
-        );
-        const swaps = await Promise.all(swapsPromises);
-        const oneSwapIsStillConverting = swaps.find(status => {
-          return status === OrderStatus.converting;
-        });
-        if (
-          orderStatus.order.available_amount === '0' &&
-          !oneSwapIsStillConverting
-        ) {
-          return {
-            status: OrderStatus.complete,
-            orderId: orderStatus.order.uuid,
-          };
-        } else {
-          return {
-            status: OrderStatus.converting,
-            orderId: orderStatus.order.uuid,
-          };
-        }
-      }
+      return orderStatus;
+      //   if (orderStatus.type === TakerOrMaker.taker) {
+      //     const swap = await exchangeService.getOrderStatus({
+      //       userId: user.userId,
+      //       uuid: orderStatus.order.request.uuid,
+      //       walletPassword
+      //     });
+      //     return {
+      //       status: exchangeService.extractSwapStatusFromSwapEvents(swap),
+      //       orderId: orderStatus.order.request.uuid,
+      //     };
+      //   } else if (orderStatus.type === TakerOrMaker.maker) {
+      //     const swapsPromises = Object.values(orderStatus.order.matches).map(
+      //       async match => {
+      //         const swap = await exchangeService.getSwapStatus({
+      //           userId: user.userId,
+      //           uuid: match.request.uuid,
+      //         });
+      //         const swapStatus = exchangeService.extractSwapStatusFromSwapEvents(
+      //           swap,
+      //         );
+      //         return swapStatus;
+      //       },
+      //     );
+      //     const swaps = await Promise.all(swapsPromises);
+      //     const oneSwapIsStillConverting = swaps.find(status => {
+      //       return status === OrderStatus.converting;
+      //     });
+      //     if (
+      //       orderStatus.order.available_amount === '0' &&
+      //       !oneSwapIsStillConverting
+      //     ) {
+      //       return {
+      //         status: OrderStatus.complete,
+      //         orderId: orderStatus.order.uuid,
+      //       };
+      //     } else {
+      //       return {
+      //         status: OrderStatus.converting,
+      //         orderId: orderStatus.order.uuid,
+      //       };
+      //     }
+      //   }
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.status.catch ${err}`);
       throw err;
@@ -79,24 +82,18 @@ class Resolvers extends ResolverBase {
     {
       getPriceInput,
     }: {
-      getPriceInput: {
-        base: string;
-        token_id?: string;
-        rel: string;
-        quantity_base: number;
-        buy_or_sell: BuySell;
-      };
+      getPriceInput: IGetPrice;
     },
     ctx: Context,
   ): Promise<IGetPriceResponse> => {
     try {
-      const { base, token_id, rel, quantity_base, buy_or_sell } = getPriceInput;
+      const { base, tokenId, rel, quantityBase, buyOrSell } = getPriceInput;
       return exchangeService.getPrice({
         base,
-        token_id,
+        tokenId,
         rel,
-        quantity_base,
-        buy_or_sell,
+        quantityBase,
+        buyOrSell,
       });
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.pricesAndFees.catch ${err}`);
@@ -114,11 +111,12 @@ class Resolvers extends ResolverBase {
     try {
       const { uuid, base_amount, rel_amount } = await exchangeService.buy({
         userId: user.userId,
-        userpass: walletPassword,
+        walletPassword,
         base: buySellCoin.buyingCoin,
         rel: buySellCoin.sellingCoin,
-        volume: buySellCoin.quantity.toString(),
-        price: buySellCoin.price.toString(),
+        quantityBase: buySellCoin.quantity,
+        tokenId: buySellCoin.tokenId,
+        price: buySellCoin.price,
       });
       return {
         orderId: uuid,
@@ -133,20 +131,26 @@ class Resolvers extends ResolverBase {
   };
   completed = async (
     parent: any,
-    { from_uuid, limit }: { from_uuid?: string; limit?: number },
+    {
+      from_uuid,
+      limit,
+      walletPassword,
+    }: { from_uuid?: string; limit?: number; walletPassword: string },
     { user }: Context,
-  ): Promise<IOrderStatus[]> => {
+  ): Promise<IMyOrdersResponse> => {
     try {
-      const recentSwaps = await exchangeService.getRecentSwaps({
+      const closedOrders = await exchangeService.getClosedOrders({
         userId: user.userId,
-        from_uuid,
-        limit,
       });
-      return exchangeService
-        .extractOrderStatusFromSwapEvents(recentSwaps.swaps)
-        .filter(({ status }) => {
-          return status === OrderStatus.complete;
-        });
+      //   const recentSwaps = await exchangeService.getClosedOrders({
+      //     userId: user.userId,
+      //   });
+      //   return exchangeService
+      //     .extractOrderStatusFromSwapEvents(recentSwaps.swaps)
+      //     .filter(({ status }) => {
+      //       return status === OrderStatus.complete;
+      //     });
+      return closedOrders;
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.completed.catch ${err}`);
       throw err;
@@ -154,12 +158,15 @@ class Resolvers extends ResolverBase {
   };
   pending = async (
     parent: any,
-    args: any,
+    { base, rel, tokenId }: any,
     { user }: Context,
   ): Promise<IOrderStatus[]> => {
     try {
       const myOrders = await exchangeService.getMyOrders({
         userId: user.userId,
+        base,
+        rel,
+        tokenId,
       });
       const makerOrders = Object.values(myOrders.maker_orders).map(order => {
         return exchangeService.extractOrderInfoFromMyOrder({
@@ -186,7 +193,7 @@ class Resolvers extends ResolverBase {
   ) => {
     try {
       const cancelStatus = await exchangeService.cancel({
-        userpass: walletPassword,
+        walletPassword,
         userId: user.userId,
         uuid: orderId,
       });
