@@ -1,5 +1,5 @@
 type GameSubItem {
-  tokenId: String!
+  tokenId: String
   aquisitionType: String!
   dateAquired: Int!
   gameItemId: String!
