@@ -1,13 +1,14 @@
 type GameSubItem {
-  id: String!
+  tokenId: String!
   aquisitionType: String!
   dateAquired: Int!
   gameItemId: String!
   lootBoxId: String
+  isListed: Boolean!
 }
 
 type GameItem {
-  id: String
+  nftBaseId: String
   name: String!
   description: String!
   image: String!
@@ -17,9 +18,10 @@ type GameItem {
   tradeWaitTime: Int!
   withdrawalWaitTime: Int!
   galaFee: Float!
-  quantityNeeded: Int
+  # quantityNeeded: Int
   hexcode: String
   label: String!
+  rarity: GameItemRarity
   items: [GameSubItem!]
 }
 
