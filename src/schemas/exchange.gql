@@ -63,7 +63,7 @@ type OpenOrderItem {
 }
 
 input BuyItemInput {
-  itemId: String!
+  tokenId: String!
   sellingCoin: String!
   buyingCoin: String!
   quantity: Float
@@ -71,7 +71,7 @@ input BuyItemInput {
 }
 
 input SellItemInput {
-  itemId: String!
+  tokenId: String!
   price: Float!
   quantity: Float
   sellingCoin: String!

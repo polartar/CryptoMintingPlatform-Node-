@@ -68,23 +68,25 @@ class ExchangeService extends ServerToServerService {
     rel,
     quantityBase,
     price,
+    tokenId,
   }: IBuyRequest & IAuthInfo) => {
     const jwtAxios = this.getAxios({ userId, walletPassword });
-    const { data } = await jwtAxios.post<
-      any,
-      AxiosResponse<IExchangeResponse<IBuyResponse> | IBuyError>
-    >(`${this.authUrl}/buy`, {
-      base,
-      rel,
-      quantityBase,
-      price,
-      userId,
-      walletPassword,
-    });
-    if (isBuyError(data)) {
-      throw data.error;
-    }
-    return data.result;
+    const { data } = await jwtAxios.post<any, AxiosResponse<IBuyResponse>>(
+      `${this.authUrl}/buy`,
+      {
+        base,
+        rel,
+        quantityBase,
+        price,
+        userId,
+        walletPassword,
+        tokenId,
+      },
+    );
+    // if (isBuyError(data)) {
+    //   throw data.error;
+    // }
+    return data;
   };
 
   public cancel = async ({
@@ -180,22 +182,22 @@ class ExchangeService extends ServerToServerService {
     tokenId,
   }: ISellRequest & IAuthInfo) => {
     const jwtAxios = this.getAxios({ userId, walletPassword });
-    const { data } = await jwtAxios.post<
-      any,
-      AxiosResponse<IExchangeResponse<ISellResponse> | ISellError>
-    >(`${this.authUrl}/sell`, {
-      base,
-      rel,
-      quantityBase,
-      tokenId,
-      price,
-      userId,
-      walletPassword,
-    });
-    if (isSellError(data)) {
-      throw data.error;
-    }
-    return data.result;
+    const { data } = await jwtAxios.post<any, AxiosResponse<ISellResponse>>(
+      `${this.authUrl}/sell`,
+      {
+        base,
+        rel,
+        quantityBase,
+        tokenId,
+        price,
+        userId,
+        walletPassword,
+      },
+    );
+    // if (isSellError(data)) {
+    //   throw data.error;
+    // }
+    return data;
   };
   public getMyOrders = async ({
     userId,
