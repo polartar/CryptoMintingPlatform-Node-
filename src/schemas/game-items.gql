@@ -42,7 +42,7 @@ type FarmBot {
 type GameItemRarity {
   icon: String!
   label: String!
-  supplyLimit: Int!
+  supplyLimit: Int
   hexcode: String
 }
 
