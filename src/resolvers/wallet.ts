@@ -50,26 +50,6 @@ class Resolvers extends ResolverBase {
     if (!isValidMnemonic) throw Error('Invalid recovery phrase');
   };
 
-  private selectUserIdOrAddress = (
-    userId: string,
-    parent: { symbol: string; receiveAddress: string },
-  ) => {
-    switch (parent.symbol.toLowerCase()) {
-      case 'btc': {
-        return userId;
-      }
-      case 'gala': {
-        return userId;
-      }
-      case 'winx': {
-        return userId;
-      }
-      default: {
-        return parent.receiveAddress;
-      }
-    }
-  };
-
   private sendBetaKey = async (wallet: WalletApi, user: UserApi) => {
     const { brand } = config;
     if (!['localhost', 'gala'].includes(brand)) return;
@@ -210,9 +190,10 @@ class Resolvers extends ResolverBase {
   getBalance = async (parent: any, args: {}, { user, wallet }: Context) => {
     this.requireAuth(user);
     try {
-      const userIdOrAddress = this.selectUserIdOrAddress(user.userId, parent);
       const walletApi = wallet.coin(parent.symbol);
-      const walletResult = await walletApi.getBalance(userIdOrAddress);
+      const walletResult = await walletApi.getBalance(
+        parent.lookupTransactionsBy,
+      );
       return walletResult;
     } catch (error) {
       logger.debug(`resolvers.wallet.getBalance.catch: ${error}`);
@@ -291,16 +272,16 @@ class Resolvers extends ResolverBase {
       symbol: string;
       receiveAddress: string;
       blockNumAtCreation: number;
+      lookupTransactionsBy: string;
     },
     args: any,
     { user, wallet }: Context,
   ) => {
     this.requireAuth(user);
     try {
-      const userIdOrAddress = this.selectUserIdOrAddress(user.userId, parent);
       const walletApi = wallet.coin(parent.symbol);
       const transactions = await walletApi.getTransactions(
-        userIdOrAddress,
+        parent.lookupTransactionsBy,
         parent.blockNumAtCreation,
       );
       return transactions;

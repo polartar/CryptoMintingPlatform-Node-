@@ -164,6 +164,7 @@ class Erc1155API extends EthWallet {
         icon: this.icon,
         blockNumAtCreation,
         canSendFunds: true,
+        lookupTransactionsBy: ethAddress,
       };
     } catch (error) {
       logger.warn(

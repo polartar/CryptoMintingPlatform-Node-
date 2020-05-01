@@ -137,6 +137,7 @@ class EthWallet extends CoinWalletBase {
         backgroundColor: this.backgroundColor,
         icon: this.icon,
         canSendFunds: true,
+        lookupTransactionsBy: ethAddress,
       };
     } catch (error) {
       logger.warn(
