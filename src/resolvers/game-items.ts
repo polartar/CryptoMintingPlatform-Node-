@@ -1,7 +1,7 @@
-import { Context, IGameOrder, IOrderContext } from '../types';
+import { Context, IGameOrder, IOrderContext, IErc1155Token } from '../types';
 import ResolverBase from '../common/Resolver-Base';
 import { gameItemService } from '../services/game-item';
-// import { exchangeService } from '../services';
+import { exchangeService } from '../services';
 import { config } from '../common';
 import { GameOrder, GameProduct, IGameProductDocument } from '../models';
 import { CryptoFavorites } from '../data-sources';
@@ -34,16 +34,25 @@ class Resolvers extends ResolverBase {
   getOwnedItems = async (parent: any, args: {}, { user }: Context) => {
     this.requireAuth(user);
     try {
-      const items = await gameItemService.getUserItems(user.userId);
+      const items = (await gameItemService.getUserItems(
+        user.userId,
+      )) as IErc1155Token[];
       // const listedItems = await exchangeService.getOpenOrders({
       //   userId: user.userId,
       // });
 
-      // return items.map(item => {
-      //   const isListed = listedItems.swaps.findIndex((swap) => {
-      //     swap
-      //   })
-      // })
+      //  items.reduce((accum, item) => {
+      //    if(accum[])
+      //   const isListed = listedItems.swaps.findIndex(swap => {
+      //     return swap.token_id === item.tokenId;
+      //   });
+
+      //   return {
+      //     ...item,
+      //     tokenId:item.tokenId,
+      //     isListed: isListed === -1 ? false : true,
+      //   };
+      // });
       return items;
     } catch (error) {
       throw error;
