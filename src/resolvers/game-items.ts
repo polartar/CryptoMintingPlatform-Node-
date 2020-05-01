@@ -52,14 +52,14 @@ class Resolvers extends ResolverBase {
         },
         items: userItem.items.map(item => {
           // DUMMY DATA FROM BRANT ISN'T WORKING, SO THIS CODE ASSIGNS RANDOM VALUE FOR ISLISTED IF THE SWAPS DON'T HAVE A TOKENID, REFACTOR!!
-          let isListed;
-          if (!listedItems.swaps.filter(swap => swap.token_id).length) {
-            isListed = Math.random() > 0.5 ? true : false;
-          } else {
-            isListed = listedItems.swaps.findIndex(swap => {
-              return swap.token_id === item.id;
-            });
-          }
+
+          // if (!listedItems.swaps.filter(swap => swap.token_id).length) {
+          //   isListed = Math.random() > 0.5 ? true : false;
+          // } else {
+          const isListed = listedItems.swaps.findIndex(swap => {
+            return swap.token_id === item.id;
+          });
+          // }
           return {
             ...item,
             tokenId: item.id,
