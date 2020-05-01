@@ -323,6 +323,7 @@ class Resolvers extends ResolverBase {
       items: items.sort((itemA, itemB) => {
         return this.sortUniqueItems(itemA, itemB, highOrLow, sortBy);
       }),
+      nftBaseId: productInfo.tokenId,
       coin,
       quantity: itemsByNftId[nftId].quantity,
       pricesSummed: itemsByNftId[nftId].pricesSummed,
