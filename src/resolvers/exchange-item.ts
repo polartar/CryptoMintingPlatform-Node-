@@ -233,12 +233,9 @@ class Resolvers extends ResolverBase {
       } = {};
       const itemsPromises = closedOrders.swaps.map(async order => {
         if (!metaInfoByNftBaseId[order.nftBaseId]) {
-          console.log({ nftBaseId: order.nftBaseId });
           const metaInfo = await this.getItemByNftId(order.nftBaseId + '');
           metaInfoByNftBaseId[order.nftBaseId] = metaInfo;
-          console.log({ metaInfo });
         }
-        console.log({ item: metaInfoByNftBaseId[order.nftBaseId] });
         return {
           ...metaInfoByNftBaseId[order.nftBaseId],
           coin: order.otherCoin,
@@ -318,6 +315,7 @@ class Resolvers extends ResolverBase {
       itemsByNftId[nftId].uniqueItems,
       userApi,
     );
+
     return {
       ...productInfo,
       items: items.sort((itemA, itemB) => {
@@ -356,7 +354,6 @@ class Resolvers extends ResolverBase {
     items: IUniqueItem[],
     userApi: UserApi,
   ) => {
-    console.log({ items });
     const sellers: { [index: string]: string } = {};
     return Promise.all(
       items.map(async item => {
