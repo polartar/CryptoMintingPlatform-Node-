@@ -93,7 +93,7 @@ class ExchangeService extends ServerToServerService {
     const jwtAxios = this.getAxios({ userId, walletPassword });
     const { data } = await jwtAxios.post<any, AxiosResponse<CancelResponse>>(
       `${this.authUrl}/cancel`,
-      { uuid },
+      { uuid, userId, walletPassword },
     );
     if (isCancelOrderError(data)) {
       throw data.error;
