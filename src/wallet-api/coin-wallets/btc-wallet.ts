@@ -306,6 +306,7 @@ class BtcWallet extends CoinWalletBase {
         backgroundColor: this.backgroundColor,
         icon: this.icon,
         canSendFunds: true,
+        lookupTransactionsBy: userApi.userId,
       };
     } catch (error) {
       logger.warn(

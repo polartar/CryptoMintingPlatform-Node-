@@ -79,6 +79,7 @@ class DocWallet extends CoinWalletBase {
         backgroundColor: this.backgroundColor,
         icon: this.icon,
         canSendFunds: false,
+        lookupTransactionsBy: userApi.userId,
       };
     } catch (error) {
       logger.warn(

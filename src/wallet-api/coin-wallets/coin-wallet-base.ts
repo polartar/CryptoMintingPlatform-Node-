@@ -39,6 +39,7 @@ export default abstract class CoinWalletBase {
     icon: string;
     backgroundColor: string;
     canSendFunds: boolean;
+    lookupTransactionsBy: string;
   }>;
 
   abstract getBalance(
