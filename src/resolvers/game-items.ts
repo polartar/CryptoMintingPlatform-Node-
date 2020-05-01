@@ -2,7 +2,7 @@ import { Context, IGameOrder, IOrderContext } from '../types';
 import ResolverBase from '../common/Resolver-Base';
 import { gameItemService } from '../services/game-item';
 import { exchangeService } from '../services';
-import { config, logger } from '../common';
+import { config } from '../common';
 import { GameOrder, GameProduct, IGameProductDocument } from '../models';
 import { CryptoFavorites } from '../data-sources';
 class Resolvers extends ResolverBase {
