@@ -394,7 +394,7 @@ class Erc1155API extends EthWallet {
         tokenIds,
         Array(tokenIds.length).fill('0x0'),
         '0x0',
-        { nonce },
+        { nonce, gasLimit: 75000 },
       );
       await userApi.incrementTxCount();
       this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
@@ -477,7 +477,7 @@ class Erc1155API extends EthWallet {
         this.tokenId,
         amount,
         '0x0',
-        { nonce },
+        { nonce, gasLimit: 75000 },
       );
 
       await userApi.incrementTxCount();
