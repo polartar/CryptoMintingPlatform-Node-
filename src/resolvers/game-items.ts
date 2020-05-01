@@ -37,23 +37,20 @@ class Resolvers extends ResolverBase {
       const items = (await gameItemService.getUserItems(
         user.userId,
       )) as IErc1155Token[];
-      // const listedItems = await exchangeService.getOpenOrders({
-      //   userId: user.userId,
-      // });
+      const listedItems = await exchangeService.getOpenOrders({
+        userId: user.userId,
+      });
 
-      //  items.reduce((accum, item) => {
-      //    if(accum[])
-      //   const isListed = listedItems.swaps.findIndex(swap => {
-      //     return swap.token_id === item.tokenId;
-      //   });
-
-      //   return {
-      //     ...item,
-      //     tokenId:item.tokenId,
-      //     isListed: isListed === -1 ? false : true,
-      //   };
-      // });
-      return items;
+      return items.map(item => {
+        const isListed = listedItems.swaps.findIndex(swap => {
+          return swap.token_id === item.tokenId;
+        });
+        return {
+          ...item,
+          tokenId: item.tokenId,
+          isListed: isListed === -1 ? false : true,
+        };
+      });
     } catch (error) {
       throw error;
     }
