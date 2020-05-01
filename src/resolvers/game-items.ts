@@ -2,7 +2,7 @@ import { Context, IGameOrder, IOrderContext } from '../types';
 import ResolverBase from '../common/Resolver-Base';
 import { gameItemService } from '../services/game-item';
 import { exchangeService } from '../services';
-import { config, logger } from '../common';
+import { config } from '../common';
 import { GameOrder, GameProduct, IGameProductDocument } from '../models';
 import { CryptoFavorites } from '../data-sources';
 class Resolvers extends ResolverBase {
@@ -34,14 +34,12 @@ class Resolvers extends ResolverBase {
     this.requireAuth(user);
     try {
       const userItems = await gameItemService.getUserItems(user.userId);
-      logger.debug(`${JSON.stringify(userItems)}`);
       const listedItems = await exchangeService.getOpenOrders({
         userId: user.userId,
         base: 'a',
         rel: 'a',
         tokenId: 0,
       });
-      logger.debug(`${JSON.stringify(listedItems)}`);
       return userItems.map(userItem => ({
         ...userItem,
         nftBaseId: userItem.id,
@@ -51,15 +49,9 @@ class Resolvers extends ResolverBase {
           icon: userItem.icon,
         },
         items: userItem.items.map(item => {
-          // DUMMY DATA FROM BRANT ISN'T WORKING, SO THIS CODE ASSIGNS RANDOM VALUE FOR ISLISTED IF THE SWAPS DON'T HAVE A TOKENID, REFACTOR!!
-          let isListed;
-          if (!listedItems.swaps.filter(swap => swap.token_id).length) {
-            isListed = Math.random() > 0.5 ? true : false;
-          } else {
-            isListed = listedItems.swaps.findIndex(swap => {
-              return swap.token_id === item.id;
-            });
-          }
+          const isListed = listedItems.swaps.findIndex(swap => {
+            return swap.token_id === item.id;
+          });
           return {
             ...item,
             tokenId: item.id,

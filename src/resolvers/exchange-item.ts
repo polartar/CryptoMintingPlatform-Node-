@@ -90,20 +90,20 @@ class Resolvers extends ResolverBase {
   buy = async (
     parent: any,
     {
-      buySellCoin,
+      buyItemInput,
       walletPassword,
-    }: { buySellCoin: IBuySellCoin; walletPassword: string },
+    }: { buyItemInput: IBuySellCoin; walletPassword: string },
     { user }: Context,
   ): Promise<IOrderStatus> => {
     try {
       const { uuid, base_amount, rel_amount } = await exchangeService.buy({
         userId: user.userId,
         walletPassword,
-        base: buySellCoin.buyingCoin,
-        rel: buySellCoin.sellingCoin,
-        quantityBase: buySellCoin.quantity,
-        tokenId: buySellCoin.tokenId,
-        price: buySellCoin.price,
+        base: buyItemInput.buyingCoin,
+        rel: buyItemInput.sellingCoin,
+        quantityBase: buyItemInput.quantity,
+        tokenId: +buyItemInput.tokenId,
+        price: buyItemInput.price,
       });
       return {
         orderId: uuid,
@@ -135,20 +135,20 @@ class Resolvers extends ResolverBase {
   sell = async (
     parent: any,
     {
-      buySellCoin,
+      sellItemInput,
       walletPassword,
-    }: { buySellCoin: IBuySellCoin; walletPassword: string },
+    }: { sellItemInput: IBuySellCoin; walletPassword: string },
     { user }: Context,
   ): Promise<IOrderStatus> => {
     try {
       const { uuid, base_amount, rel_amount } = await exchangeService.sell({
         userId: user.userId,
         walletPassword,
-        base: buySellCoin.buyingCoin,
-        rel: buySellCoin.sellingCoin,
-        quantityBase: buySellCoin.quantity,
-        tokenId: buySellCoin.tokenId,
-        price: buySellCoin.price,
+        base: sellItemInput.buyingCoin,
+        rel: sellItemInput.sellingCoin,
+        quantityBase: sellItemInput.quantity,
+        tokenId: +sellItemInput.tokenId,
+        price: sellItemInput.price,
       });
       return {
         orderId: uuid,
@@ -171,8 +171,8 @@ class Resolvers extends ResolverBase {
   ) => {
     try {
       return Promise.all(
-        buySellCoins.map(buySellCoin => {
-          return this.sell('', { buySellCoin, walletPassword }, context);
+        buySellCoins.map(sellItemInput => {
+          return this.sell('', { sellItemInput, walletPassword }, context);
         }),
       );
     } catch (err) {
