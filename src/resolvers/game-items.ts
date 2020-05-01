@@ -1,4 +1,4 @@
-import { Context, IGameOrder, IOrderContext, IErc1155Token } from '../types';
+import { Context, IGameOrder, IOrderContext } from '../types';
 import ResolverBase from '../common/Resolver-Base';
 import { gameItemService } from '../services/game-item';
 import { exchangeService } from '../services';
