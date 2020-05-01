@@ -262,9 +262,9 @@ class ExchangeService extends ServerToServerService {
     tokenId,
   }: {
     userId: string;
-    base?: string;
-    rel?: string;
-    tokenId?: number;
+    base: string;
+    rel: string;
+    tokenId: number;
   }) => {
     const jwtAxios = this.getAxios({ userId });
     const { data } = await jwtAxios.post<any, AxiosResponse<IMySwapHistory>>(

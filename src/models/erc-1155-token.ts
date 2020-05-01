@@ -9,6 +9,7 @@ const erc1155TokenSchema = new Schema({
   description: String,
   image: String,
   decimals: String,
+  nftBaseId: String,
   properties: {
     rarity: {
       icon: String,

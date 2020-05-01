@@ -29,6 +29,7 @@ export * from './IBuyItem';
 export * from './IBuySellCoin';
 export * from './IConversion';
 export * from './ISellItem';
+export * from './IGetUserItem';
 export * from './IErc1155Token';
 export * from './exchange-api/IBalance';
 export * from './exchange-api/IBuy';
