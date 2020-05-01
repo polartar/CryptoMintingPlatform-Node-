@@ -162,6 +162,11 @@ type ItemSold {
   dateSold: Date!
   salePrice: Float!
 }
+type MarketHighLow {
+  high: String
+  low: String
+  coin: String
+}
 type Query {
   markets: [Market!]!
   ticks: [Tick!]!
@@ -175,6 +180,7 @@ type Query {
   listedGameItems(itemQueryInput: ItemQueryInput): [ExchangeItem!]
   userItemsSold: UserItemsSold!
   userItemsPurchased: UserItemsSold!
+  marketHighLow(nftBaseId: String!): MarketHighLow
 }
 type Mutation {
   coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!

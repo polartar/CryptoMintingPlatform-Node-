@@ -285,6 +285,29 @@ class Resolvers extends ResolverBase {
       throw err;
     }
   };
+  marketHighLow = async (
+    parent: any,
+    {
+      nftBaseId,
+      base = galaCName,
+      rel = galaIName,
+      since,
+    }: { nftBaseId: number; base?: string; rel?: string; since?: Date },
+    ctx: Context,
+  ) => {
+    try {
+      const marketHighLow = exchangeService.getHistorySummary({
+        nftBaseId,
+        base,
+        rel,
+        since,
+      });
+      return marketHighLow;
+    } catch (err) {
+      logger.debug(`resolvers.exchange.item.marketHighLow.catch ${err}`);
+      throw err;
+    }
+  };
   getItemByNftId = (nftBaseId: string) => {
     return Erc1155TokenModel.findOne({
       tokenId: nftBaseId,
@@ -428,6 +451,7 @@ export default {
     listedGameItems: resolvers.listedGameItems,
     userItemsSold: resolvers.getSoldItems,
     userItemsPurchased: resolvers.getPurchasedItems,
+    marketHighLow: resolvers.marketHighLow,
   },
   Mutation: {
     buy: resolvers.buy,
