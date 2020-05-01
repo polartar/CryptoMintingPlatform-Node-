@@ -125,10 +125,18 @@ type ExchangeItem {
   description: String
   image: String!
   icon: String!
-  rarity: GameItemRarity!
   quantity: Int
   avgPrice: Float
+  properties: ItemProperties
   items: [UniqueItem]
+}
+type ItemProperties {
+  game: String
+  farmbot: ItemPropertiesFarmbot
+  rarity: GameItemRarity
+}
+type ItemPropertiesFarmbot {
+  requiredQty: Int
 }
 type UniqueItem {
   token_id: String
