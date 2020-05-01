@@ -18,7 +18,7 @@ type GameItem {
   tradeWaitTime: Int!
   withdrawalWaitTime: Int!
   galaFee: Float!
-  # quantityNeeded: Int
+  quantityNeeded: Int
   hexcode: String
   label: String!
   rarity: GameItemRarity

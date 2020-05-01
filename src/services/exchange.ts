@@ -319,16 +319,18 @@ class ExchangeService extends ServerToServerService {
     base,
     rel,
     nftBaseId,
+    since,
   }: {
     base: string;
     rel: string;
     nftBaseId: number;
+    since?: Date;
   }) => {
     const jwtAxios = this.getAxios({});
     const { data } = await jwtAxios.post<
       any,
-      AxiosResponse<IOrderbookResponse>
-    >(`${this.pubUrl}/history/summary`, { base, rel, nftBaseId });
+      AxiosResponse<{ coin: string; high: number; low: number }>
+    >(`${this.pubUrl}/history/summary`, { base, rel, nftBaseId, since });
 
     return data;
   };
