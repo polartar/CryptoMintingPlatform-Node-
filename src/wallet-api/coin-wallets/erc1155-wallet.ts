@@ -392,7 +392,7 @@ class Erc1155API extends EthWallet {
         ethAddress,
         to,
         tokenIds,
-        Array(tokenIds.length).fill('0x0'),
+        Array(tokenIds.length).fill('1'),
         { nonce, gasLimit: 150000 },
       );
       await userApi.incrementTxCount();
