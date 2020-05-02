@@ -50,7 +50,7 @@ class Resolvers extends ResolverBase {
         },
         items: userItem.items.map((item: any) => {
           const isListed = item.id
-            ? listedItems.swaps.findIndex(swap => {
+            ? !!listedItems.swaps.find(swap => {
                 return swap.token_id === item.id;
               })
             : false;
@@ -58,7 +58,7 @@ class Resolvers extends ResolverBase {
           return {
             ...item,
             tokenId: item.id,
-            isListed: isListed === -1 ? false : true,
+            isListed,
           };
         }),
       }));
