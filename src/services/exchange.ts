@@ -204,7 +204,7 @@ class ExchangeService extends ServerToServerService {
     userId: string;
     base?: string;
     rel?: string;
-    tokenId?: number;
+    tokenId?: string;
   }) => {
     const jwtAxios = this.getAxios({});
     const {
@@ -244,7 +244,7 @@ class ExchangeService extends ServerToServerService {
     userId: string;
     base?: string;
     rel?: string;
-    tokenId?: number;
+    tokenId?: string;
   }) => {
     const jwtAxios = this.getAxios({ userId });
     const { data } = await jwtAxios.post<any, AxiosResponse<IMySwapHistory>>(
@@ -262,7 +262,7 @@ class ExchangeService extends ServerToServerService {
     userId: string;
     base: string;
     rel: string;
-    tokenId: number;
+    tokenId: string;
   }) => {
     const jwtAxios = this.getAxios({ userId });
     const { data } = await jwtAxios.post<any, AxiosResponse<IMySwapHistory>>(
@@ -321,7 +321,7 @@ class ExchangeService extends ServerToServerService {
   }: {
     base: string;
     rel: string;
-    nftBaseId: number;
+    nftBaseId: string;
     since?: Date;
   }) => {
     const jwtAxios = this.getAxios({});

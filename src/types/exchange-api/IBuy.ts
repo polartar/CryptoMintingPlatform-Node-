@@ -1,7 +1,7 @@
 export interface IBuyRequest {
   base: string; // the name of the coin the user desires to receive
   rel: string; // the name of the coin the user desires to sell
-  tokenId: number;
+  tokenId: string;
   quantityBase: number; // the amount of coins the user is willing to receive of the base coin
   price?: number; // the price in rel the user is willing to pay per one unit of the base coin
 }

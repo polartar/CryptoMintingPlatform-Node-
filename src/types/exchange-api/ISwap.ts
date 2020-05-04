@@ -8,7 +8,7 @@ export interface IMySwapHistoryDetail {
   uuid: string;
   base: string;
   rel: string;
-  nftBaseId: number;
+  nftBaseId: string;
   myCoin: string;
   myAmount: number;
   otherCoin: string;

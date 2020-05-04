@@ -38,7 +38,7 @@ class Resolvers extends ResolverBase {
         userId: user.userId,
         base: 'a',
         rel: 'a',
-        tokenId: 0,
+        tokenId: '0',
       });
       return userItems.map((userItem: any) => ({
         ...userItem,

@@ -105,7 +105,7 @@ class Resolvers extends ResolverBase {
         base: buyItemInput.buyingCoin,
         rel: buyItemInput.sellingCoin,
         quantityBase: buyItemInput.quantity,
-        tokenId: +buyItemInput.tokenId,
+        tokenId: buyItemInput.tokenId,
         price: buyItemInput.price,
       });
       return {
@@ -150,7 +150,7 @@ class Resolvers extends ResolverBase {
         base: sellItemInput.buyingCoin,
         rel: sellItemInput.sellingCoin,
         quantityBase: sellItemInput.quantity,
-        tokenId: +sellItemInput.tokenId,
+        tokenId: sellItemInput.tokenId,
         price: sellItemInput.price,
       });
       return {
@@ -218,7 +218,7 @@ class Resolvers extends ResolverBase {
   };
   getCompletedSwaps = async (
     parent: any,
-    { base, rel, tokenId }: { base: string; rel: string; tokenId?: number },
+    { base, rel, tokenId }: { base: string; rel: string; tokenId?: string },
     { user }: Context,
   ) => {
     try {
@@ -262,7 +262,7 @@ class Resolvers extends ResolverBase {
       base = galaIName,
       rel = galaCName,
       tokenId,
-    }: { base: string; rel: string; tokenId?: number },
+    }: { base: string; rel: string; tokenId?: string },
     ctx: Context,
   ) => {
     try {
@@ -278,7 +278,7 @@ class Resolvers extends ResolverBase {
       base = galaCName,
       rel = galaIName,
       tokenId,
-    }: { base: string; rel: string; tokenId?: number },
+    }: { base: string; rel: string; tokenId?: string },
     ctx: Context,
   ) => {
     try {
@@ -294,7 +294,7 @@ class Resolvers extends ResolverBase {
       marketHighLowInput,
     }: {
       marketHighLowInput: {
-        nftBaseId: number;
+        nftBaseId: string;
         base?: string;
         rel?: string;
         since?: Date;
