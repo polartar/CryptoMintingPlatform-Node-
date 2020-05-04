@@ -6,7 +6,7 @@ export interface IErc1155Token {
   description: string;
   image: string;
   decimals: string;
-  nftBaseId: string;
+  baseId: string;
   properties: {
     rarity: {
       icon: string;

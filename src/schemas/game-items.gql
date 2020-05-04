@@ -5,6 +5,7 @@ type GameSubItem {
   gameItemId: String!
   lootBoxId: String
   isListed: Boolean!
+  orderId: String
 }
 
 type GameItem {
