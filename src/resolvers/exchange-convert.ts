@@ -198,7 +198,7 @@ class Resolvers extends ResolverBase {
   ticks = async (parent: any, args: any, ctx: Context) => {
     try {
       const { ticks } = await exchangeService.getTicks();
-      return ticks;
+      return ticks.slice(0, 20);
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.ticks.catch ${err}`);
       throw err;
@@ -207,13 +207,15 @@ class Resolvers extends ResolverBase {
   markets = async (parent: any, args: any, ctx: Context) => {
     try {
       const { markets } = await exchangeService.getMarkets();
-      return markets.map(market => ({
-        ...market,
-        relationships: market.relationships.map(relationship => ({
-          ...relationship,
-          lastPrice: relationship.last,
-        })),
-      }));
+      return markets
+        .map(market => ({
+          ...market,
+          relationships: market.relationships.map(relationship => ({
+            ...relationship,
+            lastPrice: relationship.last,
+          })),
+        }))
+        .slice(0, 20);
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.markets.catch ${err}`);
       throw err;
