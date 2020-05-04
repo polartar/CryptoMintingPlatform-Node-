@@ -58,7 +58,7 @@ class Resolvers extends ResolverBase {
       .getWalletInfo(user);
 
     const tokenId =
-      '0x8000000000000000000000000000001e00000000000000000000000000000000';
+      '0x8000000000000000000000000000001f00000000000000000000000000000000';
     const qtyOwned = await gameItemsReward.getQuantityOwned(
       user.userId,
       tokenId,
