@@ -85,7 +85,8 @@ class Resolvers extends ResolverBase {
           itemQueryInput.highOrLow,
           itemQueryInput.sortBy,
         );
-      });
+      })
+      .slice(0, 20);
   };
   buy = async (
     parent: any,
