@@ -323,7 +323,7 @@ class Resolvers extends ResolverBase {
   };
   getItemByNftId = (nftBaseId: string) => {
     return Erc1155TokenModel.findOne({
-      tokenId: nftBaseId,
+      baseId: nftBaseId,
     })
       .lean()
       .exec() as Promise<IErc1155TokenDocument>;
