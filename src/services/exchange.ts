@@ -160,7 +160,7 @@ class ExchangeService extends ServerToServerService {
     base,
     rel,
     nftBaseId,
-  }: IOrderbookRequest & { nftBaseId: number }) => {
+  }: IOrderbookRequest & { nftBaseId: string }) => {
     const jwtAxios = this.getAxios({});
     const { data } = await jwtAxios.post<
       any,
@@ -224,7 +224,7 @@ class ExchangeService extends ServerToServerService {
     userId: string;
     base: string;
     rel: string;
-    nftBaseId: number;
+    nftBaseId: string;
   }) => {
     const jwtAxios = this.getAxios({ userId });
     const {
