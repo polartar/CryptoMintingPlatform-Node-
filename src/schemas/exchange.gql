@@ -3,6 +3,7 @@ input BuySellCoinInput {
   quantity: Float
   sellingCoin: String!
   price: Float
+  tokenId: String
 }
 type Conversion {
   buyingCoin: String!

@@ -107,7 +107,7 @@ class Resolvers extends ResolverBase {
         base: buySellCoin.buyingCoin,
         rel: buySellCoin.sellingCoin,
         quantityBase: buySellCoin.quantity,
-        tokenId: buySellCoin.tokenId,
+        tokenId: +buySellCoin.tokenId,
         price: buySellCoin.price,
       });
       return {
