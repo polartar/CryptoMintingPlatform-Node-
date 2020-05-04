@@ -173,6 +173,12 @@ type MarketHighLow {
   low: String
   coin: String
 }
+input MarketHighLowInput {
+  nftBaseId: String!
+  base: String
+  rel: String
+  since: Date
+}
 type Query {
   markets: [Market!]!
   ticks: [Tick!]!
@@ -186,7 +192,7 @@ type Query {
   listedGameItems(itemQueryInput: ItemQueryInput): [ExchangeItem!]
   userItemsSold: UserItemsSold!
   userItemsPurchased: UserItemsSold!
-  marketHighLow(nftBaseId: String!): MarketHighLow
+  marketHighLow(marketHighLowInput: MarketHighLowInput!): MarketHighLow
 }
 type Mutation {
   coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!

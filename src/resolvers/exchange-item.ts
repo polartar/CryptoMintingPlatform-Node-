@@ -291,14 +291,24 @@ class Resolvers extends ResolverBase {
   marketHighLow = async (
     parent: any,
     {
-      nftBaseId,
-      base = galaCName,
-      rel = galaIName,
-      since,
-    }: { nftBaseId: number; base?: string; rel?: string; since?: Date },
+      marketHighLowInput,
+    }: {
+      marketHighLowInput: {
+        nftBaseId: number;
+        base?: string;
+        rel?: string;
+        since?: Date;
+      };
+    },
     ctx: Context,
   ) => {
     try {
+      const {
+        nftBaseId,
+        base = galaCName,
+        rel = galaIName,
+        since,
+      } = marketHighLowInput;
       const marketHighLow = exchangeService.getHistorySummary({
         nftBaseId,
         base,
