@@ -73,7 +73,7 @@ input BuyItemInput {
 input SellItemInput {
   tokenId: String!
   price: Float!
-  quantity: Float
+  quantity: Float!
   sellingCoin: String!
   buyingCoin: String!
 }
@@ -193,7 +193,7 @@ type Mutation {
   buy(buyItemInput: BuyItemInput!, walletPassword: String!): OrderStatus!
   sell(sellItemInput: SellItemInput!, walletPassword: String!): OrderStatus!
   sellMany(
-    sellItemInput: [SellItemInput!]!
+    sellManyItemInput: [SellItemInput!]!
     walletPassword: String!
   ): [OrderStatus!]!
   cancelItem(orderId: String!, walletPassword: String!): OrderStatus!

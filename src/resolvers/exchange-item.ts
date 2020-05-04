@@ -167,14 +167,14 @@ class Resolvers extends ResolverBase {
   sellMany = (
     parent: any,
     {
-      buySellCoins,
+      sellManyItemInput,
       walletPassword,
-    }: { buySellCoins: IBuySellCoin[]; walletPassword: string },
+    }: { sellManyItemInput: IBuySellCoin[]; walletPassword: string },
     context: Context,
   ) => {
     try {
       return Promise.all(
-        buySellCoins.map(sellItemInput => {
+        sellManyItemInput.map(sellItemInput => {
           return this.sell('', { sellItemInput, walletPassword }, context);
         }),
       );
