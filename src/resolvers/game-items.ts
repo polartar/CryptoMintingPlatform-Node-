@@ -49,16 +49,17 @@ class Resolvers extends ResolverBase {
           icon: userItem.icon,
         },
         items: userItem.items.map((item: any) => {
-          const isListed = item.id
-            ? !!listedItems.swaps.find(swap => {
-                return swap.token_id === item.id;
-              })
-            : false;
+          const listedItem = listedItems.swaps.find(swap => {
+            return swap.token_id === item.id;
+          });
 
+          const isListed = item.id ? !!listedItem : false;
+          const orderId = item.id && isListed ? listedItem.uuid : undefined;
           return {
             ...item,
             tokenId: item.id,
             isListed,
+            orderId,
           };
         }),
       }));

@@ -14,6 +14,8 @@ import {
   IUniqueItem,
   IExchangeItem,
   HighOrLow,
+  SortDirection,
+  RarityLabel,
 } from '../types';
 import { UserApi } from '../data-sources';
 const galaCName = 'GALA-C';
@@ -82,7 +84,7 @@ class Resolvers extends ResolverBase {
         return this.sortProducts(
           itemA,
           itemB,
-          itemQueryInput.highOrLow,
+          itemQueryInput.direction,
           itemQueryInput.sortBy,
         );
       })
@@ -392,22 +394,29 @@ class Resolvers extends ResolverBase {
   sortProducts = (
     itemA: IExchangeItem,
     itemB: IExchangeItem,
-    highOrLow: HighOrLow = 1,
+    sortDirection: SortDirection = SortDirection.ascending,
     sortBy?: SortBy,
   ) => {
-    const multiplier = highOrLow;
+    const multiplier = sortDirection === SortDirection.ascending ? 1 : -1;
     switch (sortBy) {
       case SortBy.nftBaseId:
         if (itemA.nftBaseId < itemB.nftBaseId) {
           return -1;
         }
-        if (itemA.nftBaseId < itemB.nftBaseId) {
+        if (itemA.nftBaseId > itemB.nftBaseId) {
           return 1;
         }
         return 0;
 
       case SortBy.price:
         return itemA.avgPrice - multiplier * itemB.avgPrice;
+      case SortBy.quantity:
+        return itemA.quantity - multiplier * itemB.quantity;
+      case SortBy.rarity:
+        return (
+          RarityLabel[itemA.rarity.label] -
+          multiplier * RarityLabel[itemB.rarity.label]
+        );
       default:
         return itemA.avgPrice - multiplier * itemB.avgPrice;
     }

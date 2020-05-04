@@ -108,6 +108,10 @@ type GetPriceResponse {
   price: Price!
   fees: Fee!
 }
+enum SortDirection {
+  ascending
+  descending
+}
 input ItemQueryInput {
   base: String!
   rel: String!
@@ -115,6 +119,7 @@ input ItemQueryInput {
   tokenId: String
   userId: String
   sortBy: String
+  direction: SortDirection
 }
 type ExchangeItem {
   id: String
