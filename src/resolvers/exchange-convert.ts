@@ -163,7 +163,7 @@ class Resolvers extends ResolverBase {
         userId: user.userId,
         base,
         rel,
-        tokenId: +tokenId,
+        tokenId: tokenId,
       });
       return myOrders.swaps.map(swap => ({
         orderId: swap.uuid,

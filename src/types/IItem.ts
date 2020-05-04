@@ -14,14 +14,27 @@ export interface IItem {
   walletTransaction?: IWalletTransaction;
 }
 export enum SortBy {
-  price = 'PRICE',
+  price = 'price',
   date = 'DATE',
   nftBaseId = 'NFT-BASE-ID',
+  quantity = 'quantity',
+  rarity = 'rarity',
   // quantity = 'QUANTITY',
 }
 export enum HighOrLow {
   high = 1,
   low = -1,
+}
+export enum SortDirection {
+  ascending = 'ascending',
+  descending = 'descending',
+}
+export enum RarityLabel {
+  Common = 1,
+  Uncommon,
+  Rare,
+  Epic,
+  Legendary,
 }
 export interface IItemQueryInput {
   base: string;
@@ -31,6 +44,7 @@ export interface IItemQueryInput {
   userId?: string;
   sortBy?: SortBy;
   highOrLow?: HighOrLow;
+  direction?: SortDirection;
 }
 export interface IGetItemsResponse {
   nftBaseId: string;
@@ -56,7 +70,11 @@ export interface IExchangeItem {
   description?: string;
   image: string;
   icon: string;
-  rarity?: { icon: string; label: string; supplyLimit: number };
+  rarity?: {
+    icon: string;
+    label: keyof typeof RarityLabel;
+    supplyLimit: number;
+  };
   quantity: number;
   avgPrice: number;
   items: IUniqueItem[];
