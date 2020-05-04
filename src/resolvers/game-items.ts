@@ -40,7 +40,7 @@ class Resolvers extends ResolverBase {
         rel: 'a',
         tokenId: 0,
       });
-      return userItems.map(userItem => ({
+      return userItems.map((userItem: any) => ({
         ...userItem,
         nftBaseId: userItem.id,
         rarity: {
@@ -48,14 +48,17 @@ class Resolvers extends ResolverBase {
           label: userItem.label,
           icon: userItem.icon,
         },
-        items: userItem.items.map(item => {
-          const isListed = listedItems.swaps.findIndex(swap => {
-            return swap.token_id === item.id;
-          });
+        items: userItem.items.map((item: any) => {
+          const isListed = item.id
+            ? !!listedItems.swaps.find(swap => {
+                return swap.token_id === item.id;
+              })
+            : false;
+
           return {
             ...item,
             tokenId: item.id,
-            isListed: isListed === -1 ? false : true,
+            isListed,
           };
         }),
       }));
