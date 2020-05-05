@@ -34,18 +34,18 @@ class Resolvers extends ResolverBase {
     this.requireAuth(user);
     try {
       const userItems = await gameItemService.getUserItems(user.userId);
-      console.log({ userItems });
+
       const closedOrders = await exchangeService.getClosedOrders({
         userId: user.userId,
       });
-      console.log({ closedSwaps: closedOrders.swaps });
+
       const listedItems = await exchangeService.getOpenOrders({
         userId: user.userId,
         base: 'a',
         rel: 'a',
         tokenId: '0',
       });
-      console.log({ listedSwaps: listedItems.swaps });
+
       return userItems.map(userItem => {
         return {
           ...userItem,
