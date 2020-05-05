@@ -70,11 +70,14 @@ export interface IExchangeItem {
   description?: string;
   image: string;
   icon: string;
-  rarity?: {
-    icon: string;
-    label: keyof typeof RarityLabel;
-    supplyLimit: number;
+  properties: {
+    rarity?: {
+      icon: string;
+      label: keyof typeof RarityLabel;
+      supplyLimit: number;
+    };
   };
+
   quantity: number;
   avgPrice: number;
   items: IUniqueItem[];
