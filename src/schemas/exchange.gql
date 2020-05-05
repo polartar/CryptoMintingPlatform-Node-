@@ -169,8 +169,8 @@ type ItemSold {
   salePrice: Float!
 }
 type MarketHighLow {
-  high: String
-  low: String
+  high: Float
+  low: Float
   coin: String
 }
 input MarketHighLowInput {

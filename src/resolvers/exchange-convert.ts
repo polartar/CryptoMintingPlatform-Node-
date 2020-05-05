@@ -101,7 +101,7 @@ class Resolvers extends ResolverBase {
     { user }: Context,
   ): Promise<IOrderStatus> => {
     try {
-      const { uuid, base_amount, rel_amount } = await exchangeService.buy({
+      const { uuid, baseAmount, relAmount } = await exchangeService.buy({
         userId: user.userId,
         walletPassword,
         base: buySellCoin.buyingCoin,
@@ -113,8 +113,8 @@ class Resolvers extends ResolverBase {
       return {
         orderId: uuid,
         status: OrderStatus.converting,
-        bought: base_amount,
-        sold: rel_amount,
+        bought: baseAmount,
+        sold: relAmount,
       };
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.coin.catch ${err}`);

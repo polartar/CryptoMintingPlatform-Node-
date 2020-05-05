@@ -30,6 +30,7 @@ import {
   IGetPriceResponse,
   IItemQueryInput,
   IMySwapHistory,
+  IGetHistorySummaryResponse,
 } from '../types';
 
 interface IAuthInfo {
@@ -327,7 +328,7 @@ class ExchangeService extends ServerToServerService {
     const jwtAxios = this.getAxios({});
     const { data } = await jwtAxios.post<
       any,
-      AxiosResponse<{ coin: string; high: number; low: number }>
+      AxiosResponse<IGetHistorySummaryResponse>
     >(`${this.pubUrl}/history/summary`, { base, rel, nftBaseId, since });
 
     return data;
