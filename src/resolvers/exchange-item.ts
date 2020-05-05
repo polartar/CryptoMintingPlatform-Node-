@@ -315,7 +315,7 @@ class Resolvers extends ResolverBase {
         rel,
         since,
       });
-      console.log({ marketHighLow });
+
       return {
         high: marketHighLow.currHighOnBook,
         low: marketHighLow.currLowOnBook,
