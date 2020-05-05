@@ -1,6 +1,8 @@
 import * as winston from 'winston';
 require('winston-mongodb');
 import { config } from '..';
+const LEVEL = Symbol.for('level');
+const MESSAGE = Symbol.for('message');
 
 const logger = winston.createLogger();
 const colorizer = winston.format.colorize();
@@ -14,6 +16,38 @@ if (process.env.NODE_ENV === 'production' && config.mongodbUri) {
       db: config.mongodbUri,
       collection: 'wallet-logs',
       storeHost: true,
+    }),
+  );
+} else if (!!process.env.VSCODE_PID) {
+  logger.add(
+    new winston.transports.Console({
+      level: process.env.LOG_LEVEL,
+      format: winston.format.combine(
+        winston.format.simple(),
+        winston.format.printf(
+          msg =>
+            colorizer.colorize(msg.level, `${msg.level}: `) + `${msg.message}`,
+        ),
+      ),
+      log(info, callback) {
+        // tslint:disable-next-line:no-invalid-this
+        setImmediate(() => this.emit('logged', info));
+        // tslint:disable-next-line:no-invalid-this
+        if (this.stderrLevels[info[LEVEL]]) {
+          console.error(info[MESSAGE]);
+
+          if (callback) {
+            callback();
+          }
+          return;
+        }
+
+        console.log(info[MESSAGE]);
+
+        if (callback) {
+          callback();
+        }
+      },
     }),
   );
 } else {
