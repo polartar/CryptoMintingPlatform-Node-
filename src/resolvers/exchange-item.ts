@@ -175,7 +175,7 @@ class Resolvers extends ResolverBase {
     try {
       return Promise.all(
         sellManyItemInput.map(sellItemInput => {
-          return this.sell('', { sellItemInput, walletPassword }, context);
+          return this.sell(parent, { sellItemInput, walletPassword }, context);
         }),
       );
     } catch (err) {
@@ -305,17 +305,22 @@ class Resolvers extends ResolverBase {
     try {
       const {
         nftBaseId,
-        base = galaCName,
-        rel = galaIName,
+        base = galaIName,
+        rel = galaCName,
         since,
       } = marketHighLowInput;
-      const marketHighLow = exchangeService.getHistorySummary({
+      const marketHighLow = await exchangeService.getHistorySummary({
         nftBaseId,
         base,
         rel,
         since,
       });
-      return marketHighLow;
+      console.log({ marketHighLow });
+      return {
+        high: marketHighLow.currHighOnBook,
+        low: marketHighLow.currLowOnBook,
+        coin: marketHighLow.rel,
+      };
     } catch (err) {
       logger.debug(`resolvers.exchange.item.marketHighLow.catch ${err}`);
       throw err;
