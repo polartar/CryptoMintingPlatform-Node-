@@ -101,7 +101,7 @@ class Resolvers extends ResolverBase {
     { user }: Context,
   ): Promise<IOrderStatus> => {
     try {
-      const { uuid, base_amount, rel_amount } = await exchangeService.buy({
+      const { uuid, baseAmount, relAmount } = await exchangeService.buy({
         userId: user.userId,
         walletPassword,
         base: buySellCoin.buyingCoin,
@@ -113,8 +113,8 @@ class Resolvers extends ResolverBase {
       return {
         orderId: uuid,
         status: OrderStatus.converting,
-        bought: base_amount,
-        sold: rel_amount,
+        bought: baseAmount,
+        sold: relAmount,
       };
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.coin.catch ${err}`);
@@ -163,7 +163,7 @@ class Resolvers extends ResolverBase {
         userId: user.userId,
         base,
         rel,
-        tokenId: +tokenId,
+        tokenId: tokenId,
       });
       return myOrders.swaps.map(swap => ({
         orderId: swap.uuid,
@@ -198,7 +198,7 @@ class Resolvers extends ResolverBase {
   ticks = async (parent: any, args: any, ctx: Context) => {
     try {
       const { ticks } = await exchangeService.getTicks();
-      return ticks;
+      return ticks.slice(0, 20);
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.ticks.catch ${err}`);
       throw err;
@@ -207,13 +207,15 @@ class Resolvers extends ResolverBase {
   markets = async (parent: any, args: any, ctx: Context) => {
     try {
       const { markets } = await exchangeService.getMarkets();
-      return markets.map(market => ({
-        ...market,
-        relationships: market.relationships.map(relationship => ({
-          ...relationship,
-          lastPrice: relationship.last,
-        })),
-      }));
+      return markets
+        .map(market => ({
+          ...market,
+          relationships: market.relationships.map(relationship => ({
+            ...relationship,
+            lastPrice: relationship.last,
+          })),
+        }))
+        .slice(0, 20);
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.markets.catch ${err}`);
       throw err;

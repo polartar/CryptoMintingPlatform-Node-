@@ -1,3 +1,4 @@
+import { RarityLabel } from './';
 export interface IErc1155Token {
   createdBy: string;
   tokenId: string;
@@ -6,11 +7,11 @@ export interface IErc1155Token {
   description: string;
   image: string;
   decimals: string;
-  nftBaseId: string;
+  baseId: string;
   properties: {
     rarity: {
       icon: string;
-      label: string;
+      label: keyof typeof RarityLabel;
       hexcode: string;
       supplyLimit: number;
     };

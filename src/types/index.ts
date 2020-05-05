@@ -43,5 +43,6 @@ export * from './exchange-api/ISwap';
 export * from './exchange-api/IOrders';
 export * from './exchange-api/IMarkets';
 export * from './exchange-api/ITicks';
+export * from './exchange-api/IHistorySummary';
 export * from './IOrderContext';
 export * from './IUniqueItem';

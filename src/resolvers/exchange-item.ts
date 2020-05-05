@@ -14,6 +14,8 @@ import {
   IUniqueItem,
   IExchangeItem,
   HighOrLow,
+  SortDirection,
+  RarityLabel,
 } from '../types';
 import { UserApi } from '../data-sources';
 const galaCName = 'GALA-C';
@@ -82,10 +84,11 @@ class Resolvers extends ResolverBase {
         return this.sortProducts(
           itemA,
           itemB,
-          itemQueryInput.highOrLow,
+          itemQueryInput.direction,
           itemQueryInput.sortBy,
         );
-      });
+      })
+      .slice(0, 20);
   };
   buy = async (
     parent: any,
@@ -96,20 +99,20 @@ class Resolvers extends ResolverBase {
     { user }: Context,
   ): Promise<IOrderStatus> => {
     try {
-      const { uuid, base_amount, rel_amount } = await exchangeService.buy({
+      const { uuid, baseAmount, relAmount } = await exchangeService.buy({
         userId: user.userId,
         walletPassword,
         base: buyItemInput.buyingCoin,
         rel: buyItemInput.sellingCoin,
         quantityBase: buyItemInput.quantity,
-        tokenId: +buyItemInput.tokenId,
+        tokenId: buyItemInput.tokenId,
         price: buyItemInput.price,
       });
       return {
         orderId: uuid,
         status: OrderStatus.converting,
-        bought: base_amount,
-        sold: rel_amount,
+        bought: baseAmount,
+        sold: relAmount,
       };
     } catch (err) {
       logger.debug(`resolvers.exchange.item.buy.catch ${err}`);
@@ -147,7 +150,7 @@ class Resolvers extends ResolverBase {
         base: sellItemInput.buyingCoin,
         rel: sellItemInput.sellingCoin,
         quantityBase: sellItemInput.quantity,
-        tokenId: +sellItemInput.tokenId,
+        tokenId: sellItemInput.tokenId,
         price: sellItemInput.price,
       });
       return {
@@ -164,15 +167,15 @@ class Resolvers extends ResolverBase {
   sellMany = (
     parent: any,
     {
-      buySellCoins,
+      sellManyItemInput,
       walletPassword,
-    }: { buySellCoins: IBuySellCoin[]; walletPassword: string },
+    }: { sellManyItemInput: IBuySellCoin[]; walletPassword: string },
     context: Context,
   ) => {
     try {
       return Promise.all(
-        buySellCoins.map(sellItemInput => {
-          return this.sell('', { sellItemInput, walletPassword }, context);
+        sellManyItemInput.map(sellItemInput => {
+          return this.sell(parent, { sellItemInput, walletPassword }, context);
         }),
       );
     } catch (err) {
@@ -215,7 +218,7 @@ class Resolvers extends ResolverBase {
   };
   getCompletedSwaps = async (
     parent: any,
-    { base, rel, tokenId }: { base: string; rel: string; tokenId?: number },
+    { base, rel, tokenId }: { base: string; rel: string; tokenId?: string },
     { user }: Context,
   ) => {
     try {
@@ -259,7 +262,7 @@ class Resolvers extends ResolverBase {
       base = galaIName,
       rel = galaCName,
       tokenId,
-    }: { base: string; rel: string; tokenId?: number },
+    }: { base: string; rel: string; tokenId?: string },
     ctx: Context,
   ) => {
     try {
@@ -275,7 +278,7 @@ class Resolvers extends ResolverBase {
       base = galaCName,
       rel = galaIName,
       tokenId,
-    }: { base: string; rel: string; tokenId?: number },
+    }: { base: string; rel: string; tokenId?: string },
     ctx: Context,
   ) => {
     try {
@@ -288,21 +291,36 @@ class Resolvers extends ResolverBase {
   marketHighLow = async (
     parent: any,
     {
-      nftBaseId,
-      base = galaCName,
-      rel = galaIName,
-      since,
-    }: { nftBaseId: number; base?: string; rel?: string; since?: Date },
+      marketHighLowInput,
+    }: {
+      marketHighLowInput: {
+        nftBaseId: string;
+        base?: string;
+        rel?: string;
+        since?: Date;
+      };
+    },
     ctx: Context,
   ) => {
     try {
-      const marketHighLow = exchangeService.getHistorySummary({
+      const {
+        nftBaseId,
+        base = galaIName,
+        rel = galaCName,
+        since,
+      } = marketHighLowInput;
+      const marketHighLow = await exchangeService.getHistorySummary({
         nftBaseId,
         base,
         rel,
         since,
       });
-      return marketHighLow;
+
+      return {
+        high: marketHighLow.currHighOnBook,
+        low: marketHighLow.currLowOnBook,
+        coin: marketHighLow.rel,
+      };
     } catch (err) {
       logger.debug(`resolvers.exchange.item.marketHighLow.catch ${err}`);
       throw err;
@@ -310,7 +328,7 @@ class Resolvers extends ResolverBase {
   };
   getItemByNftId = (nftBaseId: string) => {
     return Erc1155TokenModel.findOne({
-      tokenId: nftBaseId,
+      baseId: nftBaseId,
     })
       .lean()
       .exec() as Promise<IErc1155TokenDocument>;
@@ -344,7 +362,7 @@ class Resolvers extends ResolverBase {
       items: items.sort((itemA, itemB) => {
         return this.sortUniqueItems(itemA, itemB, highOrLow, sortBy);
       }),
-      nftBaseId: productInfo.tokenId,
+      nftBaseId: productInfo.baseId,
       coin,
       quantity: itemsByNftId[nftId].quantity,
       pricesSummed: itemsByNftId[nftId].pricesSummed,
@@ -391,24 +409,31 @@ class Resolvers extends ResolverBase {
   sortProducts = (
     itemA: IExchangeItem,
     itemB: IExchangeItem,
-    highOrLow: HighOrLow = 1,
+    sortDirection: SortDirection = SortDirection.ascending,
     sortBy?: SortBy,
   ) => {
-    const multiplier = highOrLow;
+    const multiplier = sortDirection === SortDirection.ascending ? 1 : -1;
     switch (sortBy) {
       case SortBy.nftBaseId:
         if (itemA.nftBaseId < itemB.nftBaseId) {
           return -1;
         }
-        if (itemA.nftBaseId < itemB.nftBaseId) {
+        if (itemA.nftBaseId > itemB.nftBaseId) {
           return 1;
         }
         return 0;
 
       case SortBy.price:
-        return itemA.avgPrice - multiplier * itemB.avgPrice;
+        return multiplier * itemA.avgPrice - multiplier * itemB.avgPrice;
+      case SortBy.quantity:
+        return multiplier * itemA.quantity - multiplier * itemB.quantity;
+      case SortBy.rarity:
+        return (
+          multiplier * RarityLabel[itemA.properties.rarity.label] -
+          multiplier * RarityLabel[itemB.properties.rarity.label]
+        );
       default:
-        return itemA.avgPrice - multiplier * itemB.avgPrice;
+        return multiplier * itemA.avgPrice - multiplier * itemB.avgPrice;
     }
   };
 

@@ -3,6 +3,7 @@ input BuySellCoinInput {
   quantity: Float
   sellingCoin: String!
   price: Float
+  tokenId: String
 }
 type Conversion {
   buyingCoin: String!
@@ -73,7 +74,7 @@ input BuyItemInput {
 input SellItemInput {
   tokenId: String!
   price: Float!
-  quantity: Float
+  quantity: Float!
   sellingCoin: String!
   buyingCoin: String!
 }
@@ -85,7 +86,7 @@ input GetPriceInput {
   base: String!
   tokenId: String
   rel: String!
-  quantityBase: Float
+  quantityBase: Float!
   buyOrSell: String!
 }
 type Price {
@@ -108,6 +109,10 @@ type GetPriceResponse {
   price: Price!
   fees: Fee!
 }
+enum SortDirection {
+  ascending
+  descending
+}
 input ItemQueryInput {
   base: String!
   rel: String!
@@ -115,6 +120,7 @@ input ItemQueryInput {
   tokenId: String
   userId: String
   sortBy: String
+  direction: SortDirection
 }
 type ExchangeItem {
   id: String
@@ -163,9 +169,15 @@ type ItemSold {
   salePrice: Float!
 }
 type MarketHighLow {
-  high: String
-  low: String
+  high: Float
+  low: Float
   coin: String
+}
+input MarketHighLowInput {
+  nftBaseId: String!
+  base: String
+  rel: String
+  since: Date
 }
 type Query {
   markets: [Market!]!
@@ -180,7 +192,7 @@ type Query {
   listedGameItems(itemQueryInput: ItemQueryInput): [ExchangeItem!]
   userItemsSold: UserItemsSold!
   userItemsPurchased: UserItemsSold!
-  marketHighLow(nftBaseId: String!): MarketHighLow
+  marketHighLow(marketHighLowInput: MarketHighLowInput!): MarketHighLow
 }
 type Mutation {
   coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!
@@ -188,7 +200,7 @@ type Mutation {
   buy(buyItemInput: BuyItemInput!, walletPassword: String!): OrderStatus!
   sell(sellItemInput: SellItemInput!, walletPassword: String!): OrderStatus!
   sellMany(
-    sellItemInput: [SellItemInput!]!
+    sellManyItemInput: [SellItemInput!]!
     walletPassword: String!
   ): [OrderStatus!]!
   cancelItem(orderId: String!, walletPassword: String!): OrderStatus!

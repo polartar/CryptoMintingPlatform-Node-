@@ -30,6 +30,7 @@ import {
   IGetPriceResponse,
   IItemQueryInput,
   IMySwapHistory,
+  IGetHistorySummaryResponse,
 } from '../types';
 
 interface IAuthInfo {
@@ -160,7 +161,7 @@ class ExchangeService extends ServerToServerService {
     base,
     rel,
     nftBaseId,
-  }: IOrderbookRequest & { nftBaseId: number }) => {
+  }: IOrderbookRequest & { nftBaseId: string }) => {
     const jwtAxios = this.getAxios({});
     const { data } = await jwtAxios.post<
       any,
@@ -204,7 +205,7 @@ class ExchangeService extends ServerToServerService {
     userId: string;
     base?: string;
     rel?: string;
-    tokenId?: number;
+    tokenId?: string;
   }) => {
     const jwtAxios = this.getAxios({});
     const {
@@ -224,7 +225,7 @@ class ExchangeService extends ServerToServerService {
     userId: string;
     base: string;
     rel: string;
-    nftBaseId: number;
+    nftBaseId: string;
   }) => {
     const jwtAxios = this.getAxios({ userId });
     const {
@@ -244,7 +245,7 @@ class ExchangeService extends ServerToServerService {
     userId: string;
     base?: string;
     rel?: string;
-    tokenId?: number;
+    tokenId?: string;
   }) => {
     const jwtAxios = this.getAxios({ userId });
     const { data } = await jwtAxios.post<any, AxiosResponse<IMySwapHistory>>(
@@ -262,7 +263,7 @@ class ExchangeService extends ServerToServerService {
     userId: string;
     base: string;
     rel: string;
-    tokenId: number;
+    tokenId: string;
   }) => {
     const jwtAxios = this.getAxios({ userId });
     const { data } = await jwtAxios.post<any, AxiosResponse<IMySwapHistory>>(
@@ -321,13 +322,13 @@ class ExchangeService extends ServerToServerService {
   }: {
     base: string;
     rel: string;
-    nftBaseId: number;
+    nftBaseId: string;
     since?: Date;
   }) => {
     const jwtAxios = this.getAxios({});
     const { data } = await jwtAxios.post<
       any,
-      AxiosResponse<{ coin: string; high: number; low: number }>
+      AxiosResponse<IGetHistorySummaryResponse>
     >(`${this.pubUrl}/history/summary`, { base, rel, nftBaseId, since });
 
     return data;
