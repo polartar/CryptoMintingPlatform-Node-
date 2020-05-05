@@ -1,6 +1,7 @@
 type GameSubItem {
   tokenId: String
   aquisitionType: String!
+  purchasePrice: Float
   dateAquired: Int!
   gameItemId: String!
   lootBoxId: String

@@ -34,35 +34,48 @@ class Resolvers extends ResolverBase {
     this.requireAuth(user);
     try {
       const userItems = await gameItemService.getUserItems(user.userId);
+
+      const closedOrders = await exchangeService.getClosedOrders({
+        userId: user.userId,
+      });
+
       const listedItems = await exchangeService.getOpenOrders({
         userId: user.userId,
         base: 'a',
         rel: 'a',
         tokenId: '0',
       });
-      return userItems.map((userItem: any) => ({
-        ...userItem,
-        nftBaseId: userItem.id,
-        rarity: {
-          hexcode: userItem.hexcode,
-          label: userItem.label,
-          icon: userItem.icon,
-        },
-        items: userItem.items.map((item: any) => {
-          const listedItem = listedItems.swaps.find(swap => {
-            return swap.token_id === item.id;
-          });
 
-          const isListed = item.id ? !!listedItem : false;
-          const orderId = item.id && isListed ? listedItem.uuid : undefined;
-          return {
-            ...item,
-            tokenId: item.id,
-            isListed,
-            orderId,
-          };
-        }),
-      }));
+      return userItems.map(userItem => {
+        return {
+          ...userItem,
+          nftBaseId: userItem.id,
+          rarity: {
+            hexcode: userItem.hexcode,
+            label: userItem.label,
+            icon: userItem.icon,
+          },
+          items: userItem.items.map(item => {
+            const listedItem = listedItems.swaps.find(swap => {
+              return swap.token_id === item.id;
+            });
+            const purchasedOrder = closedOrders.swaps
+              .sort((swapA, swapB) => {
+                return swapA.startedAt - swapB.startedAt;
+              })
+              .find(swap => swap.token_id === userItem.id);
+            const isListed = item.id ? !!listedItem : false;
+            const orderId = item.id && isListed ? listedItem.uuid : undefined;
+            return {
+              ...item,
+              tokenId: item.id,
+              isListed,
+              orderId,
+              purchasePrice: purchasedOrder?.myAmount,
+            };
+          }),
+        };
+      });
     } catch (error) {
       throw error;
     }
