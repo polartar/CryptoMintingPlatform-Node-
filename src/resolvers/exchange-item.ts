@@ -424,16 +424,16 @@ class Resolvers extends ResolverBase {
         return 0;
 
       case SortBy.price:
-        return itemA.avgPrice - multiplier * itemB.avgPrice;
+        return multiplier * itemA.avgPrice - multiplier * itemB.avgPrice;
       case SortBy.quantity:
-        return itemA.quantity - multiplier * itemB.quantity;
+        return multiplier * itemA.quantity - multiplier * itemB.quantity;
       case SortBy.rarity:
         return (
-          RarityLabel[itemA.rarity.label] -
-          multiplier * RarityLabel[itemB.rarity.label]
+          multiplier * RarityLabel[itemA.properties.rarity.label] -
+          multiplier * RarityLabel[itemB.properties.rarity.label]
         );
       default:
-        return itemA.avgPrice - multiplier * itemB.avgPrice;
+        return multiplier * itemA.avgPrice - multiplier * itemB.avgPrice;
     }
   };
 
