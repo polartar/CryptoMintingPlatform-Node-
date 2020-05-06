@@ -189,7 +189,7 @@ class Resolvers extends ResolverBase {
         userId: user.userId,
         uuid: orderId,
       });
-      return cancelStatus;
+      return { result: cancelStatus.result };
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.cancel.catch ${err}`);
       throw err;
