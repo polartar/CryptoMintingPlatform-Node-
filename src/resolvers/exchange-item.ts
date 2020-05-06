@@ -68,6 +68,7 @@ class Resolvers extends ResolverBase {
       orderbook.timestamp,
       itemQueryInput.userId,
       itemQueryInput.tokenId,
+      itemQueryInput.nftBaseId,
     );
 
     const allItems = await Promise.all(
@@ -452,6 +453,13 @@ class Resolvers extends ResolverBase {
     nftBaseId?: string,
   ) => {
     return orders.reduce((accum, item) => {
+      if (
+        (userId && item.userId !== userId) ||
+        (tokenId && item.token_id !== tokenId) ||
+        (nftBaseId && item.nftBaseId !== nftBaseId)
+      ) {
+        return accum;
+      }
       if (!accum[item.nftBaseId]) {
         accum[item.nftBaseId] = {
           uniqueItems: [],
@@ -470,15 +478,9 @@ class Resolvers extends ResolverBase {
         listPrice: item.price,
         orderId: item.uuid,
       };
-      if (
-        (!userId || item.userId === userId) &&
-        (!tokenId || item.token_id === tokenId) &&
-        (!nftBaseId || item.nftBaseId === nftBaseId)
-      ) {
-        accum[item.nftBaseId].uniqueItems.push(uniqueItem);
-        accum[item.nftBaseId].quantity += item.maxvolume;
-        accum[item.nftBaseId].pricesSummed += item.price;
-      }
+      accum[item.nftBaseId].uniqueItems.push(uniqueItem);
+      accum[item.nftBaseId].quantity += item.maxvolume;
+      accum[item.nftBaseId].pricesSummed += item.price;
       return accum;
     }, {} as { [index: string]: { uniqueItems: IUniqueItem[]; quantity: number; pricesSummed: number } });
   };
