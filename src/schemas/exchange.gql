@@ -173,6 +173,9 @@ type MarketHighLow {
   low: Float
   coin: String
 }
+type CancelResult {
+  result: String!
+}
 input MarketHighLowInput {
   nftBaseId: String!
   base: String
@@ -196,12 +199,12 @@ type Query {
 }
 type Mutation {
   coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!
-  cancelConvert(orderId: String!, walletPassword: String!): OrderStatus!
+  cancelConvert(orderId: String!, walletPassword: String!): CancelResult!
   buy(buyItemInput: BuyItemInput!, walletPassword: String!): OrderStatus!
   sell(sellItemInput: SellItemInput!, walletPassword: String!): OrderStatus!
   sellMany(
     sellManyItemInput: [SellItemInput!]!
     walletPassword: String!
   ): [OrderStatus!]!
-  cancelItem(orderId: String!, walletPassword: String!): OrderStatus!
+  cancelItem(orderId: String!, walletPassword: String!): CancelResult!
 }
