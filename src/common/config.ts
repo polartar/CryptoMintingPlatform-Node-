@@ -101,7 +101,6 @@ class Config {
   public readonly erc20RewardWarnThreshold = this.normalizeNumber(
     process.env.ERC20_REWARD_WARN_THRESHOLD,
   );
-  public readonly slackToken = process.env.SLACK_TOKEN;
   public readonly sendWalletReportToConnect =
     process.env.SEND_WALLET_REPORT_TO_CONNECT;
   public readonly sendWalletReportToConnectArcade =
@@ -165,7 +164,6 @@ class Config {
       'BASE_NUMBER_OF_SHARES',
       'WALLET_STATS_CRON_EXPRESSION',
       'ERC20_REWARD_WARN_THRESHOLD',
-      'SLACK_TOKEN',
       'SEND_WALLET_REPORT_TO_CONNECT',
       'SEND_WALLET_REPORT_TO_CONNECTARCADE',
       'SEND_WALLET_REPORT_TO_ARCADE',
