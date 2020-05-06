@@ -63,7 +63,12 @@ class Resolvers extends ResolverBase {
         quantity: number;
         pricesSummed: number;
       };
-    } = this.categorizeItems(orderbook.asks, orderbook.timestamp);
+    } = this.categorizeAndFilterItems(
+      orderbook.asks,
+      orderbook.timestamp,
+      itemQueryInput.userId,
+      itemQueryInput.tokenId,
+    );
 
     const allItems = await Promise.all(
       Object.keys(itemsByNftId).map(nftId =>
@@ -210,7 +215,9 @@ class Resolvers extends ResolverBase {
         userId: user.userId,
         uuid: orderId,
       });
-      return cancelStatus;
+      return {
+        orderId: cancelStatus.result,
+      };
     } catch (err) {
       logger.debug(`resolvers.exchange.item.cancel.catch ${err}`);
       throw err;
@@ -437,7 +444,13 @@ class Resolvers extends ResolverBase {
     }
   };
 
-  categorizeItems = (orders: IOrderResponse[], timestamp: number) => {
+  categorizeAndFilterItems = (
+    orders: IOrderResponse[],
+    timestamp: number,
+    userId?: string,
+    tokenId?: string,
+    nftBaseId?: string,
+  ) => {
     return orders.reduce((accum, item) => {
       if (!accum[item.nftBaseId]) {
         accum[item.nftBaseId] = {
@@ -457,10 +470,15 @@ class Resolvers extends ResolverBase {
         listPrice: item.price,
         orderId: item.uuid,
       };
-      accum[item.nftBaseId].uniqueItems.push(uniqueItem);
-      accum[item.nftBaseId].quantity += item.maxvolume;
-      accum[item.nftBaseId].pricesSummed += item.price;
-
+      if (
+        (!userId || item.userId === userId) &&
+        (!tokenId || item.token_id === tokenId) &&
+        (!nftBaseId || item.nftBaseId === nftBaseId)
+      ) {
+        accum[item.nftBaseId].uniqueItems.push(uniqueItem);
+        accum[item.nftBaseId].quantity += item.maxvolume;
+        accum[item.nftBaseId].pricesSummed += item.price;
+      }
       return accum;
     }, {} as { [index: string]: { uniqueItems: IUniqueItem[]; quantity: number; pricesSummed: number } });
   };
