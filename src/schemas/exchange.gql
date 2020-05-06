@@ -102,12 +102,11 @@ type Price {
 type Fee {
   coin: String!
   amount: Float!
-  usdAmount: Float
-  token_id: String
+  tokenId: String
 }
 type GetPriceResponse {
   price: Price!
-  fees: Fee!
+  fees: [Fee!]!
 }
 enum SortDirection {
   ascending
@@ -196,6 +195,7 @@ type Query {
   userItemsSold: UserItemsSold!
   userItemsPurchased: UserItemsSold!
   marketHighLow(marketHighLowInput: MarketHighLowInput!): MarketHighLow
+  fees(coin: String!): [Fee!]!
 }
 type Mutation {
   coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!

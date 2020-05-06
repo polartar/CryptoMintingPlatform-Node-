@@ -118,15 +118,12 @@ class ExchangeService extends ServerToServerService {
 
     return data;
   };
-  public getFee = async () => {
+  public getFee = async ({ coin }: { coin: string }) => {
     const jwtAxios = this.getAxios({});
-    const {
-      data: { result },
-    } = await jwtAxios.get<
-      any,
-      AxiosResponse<IExchangeResponse<IGetFeeResponse>>
-    >(`${this.pubUrl}/get-fees`);
-    return result;
+    const { data } = await jwtAxios.get<any, AxiosResponse<IGetFeeResponse[]>>(
+      `${this.pubUrl}/get-fees/${coin}`,
+    );
+    return data;
   };
 
   public getOrderbook = async ({ base, rel, tokenId }: IOrderbookRequest) => {

@@ -8,6 +8,7 @@ import {
   OrderStatus,
   IGetPriceResponse,
   IGetPrice,
+  IGetFeeResponse,
 } from '../types';
 
 class Resolvers extends ResolverBase {
@@ -22,48 +23,6 @@ class Resolvers extends ResolverBase {
         uuid: orderId,
       });
       return orderStatus;
-      //   if (orderStatus.type === TakerOrMaker.taker) {
-      //     const swap = await exchangeService.getOrderStatus({
-      //       userId: user.userId,
-      //       uuid: orderStatus.order.request.uuid,
-      //       walletPassword
-      //     });
-      //     return {
-      //       status: exchangeService.extractSwapStatusFromSwapEvents(swap),
-      //       orderId: orderStatus.order.request.uuid,
-      //     };
-      //   } else if (orderStatus.type === TakerOrMaker.maker) {
-      //     const swapsPromises = Object.values(orderStatus.order.matches).map(
-      //       async match => {
-      //         const swap = await exchangeService.getSwapStatus({
-      //           userId: user.userId,
-      //           uuid: match.request.uuid,
-      //         });
-      //         const swapStatus = exchangeService.extractSwapStatusFromSwapEvents(
-      //           swap,
-      //         );
-      //         return swapStatus;
-      //       },
-      //     );
-      //     const swaps = await Promise.all(swapsPromises);
-      //     const oneSwapIsStillConverting = swaps.find(status => {
-      //       return status === OrderStatus.converting;
-      //     });
-      //     if (
-      //       orderStatus.order.available_amount === '0' &&
-      //       !oneSwapIsStillConverting
-      //     ) {
-      //       return {
-      //         status: OrderStatus.complete,
-      //         orderId: orderStatus.order.uuid,
-      //       };
-      //     } else {
-      //       return {
-      //         status: OrderStatus.converting,
-      //         orderId: orderStatus.order.uuid,
-      //       };
-      //     }
-      //   }
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.status.catch ${err}`);
       throw err;
@@ -86,6 +45,24 @@ class Resolvers extends ResolverBase {
         rel,
         quantityBase,
         buyOrSell,
+      });
+    } catch (err) {
+      logger.debug(`resolvers.exchange.convert.pricesAndFees.catch ${err}`);
+      throw err;
+    }
+  };
+  fees = async (
+    parent: any,
+    {
+      coin,
+    }: {
+      coin: string;
+    },
+    ctx: Context,
+  ): Promise<IGetFeeResponse[]> => {
+    try {
+      return exchangeService.getFee({
+        coin,
       });
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.pricesAndFees.catch ${err}`);
@@ -233,6 +210,7 @@ export default {
     pricesAndFees: resolvers.pricesAndFees,
     completed: resolvers.completed,
     pending: resolvers.pending,
+    fees: resolvers.fees,
   },
   Mutation: {
     coin: resolvers.coin,
