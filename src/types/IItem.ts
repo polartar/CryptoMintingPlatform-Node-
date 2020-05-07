@@ -49,7 +49,7 @@ export interface IItemQueryInput {
 export interface IGetItemsResponse {
   nftBaseId: string;
   coin: string;
-  token_id: string;
+  tokenId: string;
   seller: string;
   timestamp: number;
   listPrice: number;

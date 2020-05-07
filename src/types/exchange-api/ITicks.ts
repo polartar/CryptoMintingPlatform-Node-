@@ -9,7 +9,7 @@ export interface ITicksResponse {
 export interface ITick {
   base: string;
   rel: string;
-  token_id: string;
+  tokenId: string;
   symbol: string;
   lastPrice: number; // rel per base
   timestamp: number;

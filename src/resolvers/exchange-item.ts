@@ -453,7 +453,7 @@ class Resolvers extends ResolverBase {
     return orders.reduce((accum, item) => {
       if (
         (userId && item.userId !== userId) ||
-        (tokenId && item.token_id !== tokenId) ||
+        (tokenId && item.tokenId !== tokenId) ||
         (nftBaseId && item.nftBaseId !== nftBaseId)
       ) {
         return accum;
@@ -466,7 +466,7 @@ class Resolvers extends ResolverBase {
         };
       }
       const uniqueItem = {
-        token_id: item.token_id,
+        tokenId: item.tokenId,
         nftBaseId: item.nftBaseId,
         seller: item.userId,
         dateListed: getDateFromAge({

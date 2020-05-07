@@ -23,7 +23,7 @@ export interface IGetPrice {
 export interface IPrice {
   base: string;
   rel: string;
-  token_id: string;
+  tokenId: string;
   symbol: string;
   price: number;
   quantity: number;
