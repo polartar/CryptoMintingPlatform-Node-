@@ -65,7 +65,7 @@ class Resolvers extends ResolverBase {
         coin,
       });
     } catch (err) {
-      logger.debug(`resolvers.exchange.convert.pricesAndFees.catch ${err}`);
+      logger.debug(`resolvers.exchange.convert.fees.catch ${err}`);
       throw err;
     }
   };
