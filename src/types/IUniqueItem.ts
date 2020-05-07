@@ -1,5 +1,5 @@
 export interface IUniqueItem {
-  token_id: string;
+  tokenId: string;
   nftBaseId: string;
   seller: string;
   dateListed: Date;

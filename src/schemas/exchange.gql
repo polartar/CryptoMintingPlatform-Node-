@@ -24,7 +24,7 @@ enum Status {
 type Tick {
   base: String!
   rel: String!
-  token_id: String
+  tokenId: String
   symbol: String!
   lastPrice: Float!
   timestamp: Date!
@@ -92,7 +92,7 @@ input GetPriceInput {
 type Price {
   base: String!
   rel: String!
-  token_id: String
+  tokenId: String
   symbol: String!
   price: Float!
   quantity: Float
@@ -102,6 +102,7 @@ type Price {
 type Fee {
   coin: String!
   amount: Float!
+  feeType: String
   tokenId: String
 }
 type GetPriceResponse {
@@ -144,7 +145,7 @@ type ItemPropertiesFarmbot {
   requiredQty: Int
 }
 type UniqueItem {
-  token_id: String
+  tokenId: String
   nftBaseId: String!
   seller: String!
   dateListed: Date

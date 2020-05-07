@@ -28,6 +28,6 @@ export interface IOrderResponse {
   age: number; // the age of the offer (in seconds)
   zcredits: number; // the zeroconf deposit amount
   nftBaseId: string;
-  token_id: string;
+  tokenId: string;
   uuid: string;
 }

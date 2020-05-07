@@ -6,6 +6,7 @@ export interface IGetFeeResponse {
   coin: string; // the fee will be paid from the user's balance of this coin. This coin name may differ from the requested coin. For example ERC20 fees are paid by ETH (gas)
   amount: number; // the approximate fee amount to be paid per swap transaction
   tokenId?: string;
+  feeType?: string;
 }
 export enum BuySell {
   Buy = 'Buy',
@@ -23,7 +24,7 @@ export interface IGetPrice {
 export interface IPrice {
   base: string;
   rel: string;
-  token_id: string;
+  tokenId: string;
   symbol: string;
   price: number;
   quantity: number;

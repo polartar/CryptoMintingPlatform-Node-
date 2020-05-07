@@ -57,13 +57,13 @@ class Resolvers extends ResolverBase {
           },
           items: userItem.items.map(item => {
             const listedItem = listedItems.swaps.find(swap => {
-              return swap.token_id === item.id;
+              return swap.tokenId === item.id;
             });
             const purchasedOrder = closedOrders.swaps
               .sort((swapA, swapB) => {
                 return swapA.startedAt - swapB.startedAt;
               })
-              .find(swap => swap.token_id === userItem.id);
+              .find(swap => swap.tokenId === userItem.id);
             const isListed = item.id ? !!listedItem : false;
             const orderId = item.id && isListed ? listedItem.uuid : undefined;
             return {

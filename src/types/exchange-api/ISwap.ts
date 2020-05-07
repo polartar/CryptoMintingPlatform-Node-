@@ -14,7 +14,7 @@ export interface IMySwapHistoryDetail {
   otherCoin: string;
   otherAmount: number;
   startedAt: number;
-  token_id: string;
+  tokenId: string;
 }
 export interface ISwapStatusRequest {
   uuid: string; // the uuid of swap, typically received from the buy/sell call --GOES IN PARAMS
