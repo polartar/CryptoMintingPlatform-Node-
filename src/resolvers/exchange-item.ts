@@ -102,9 +102,15 @@ class Resolvers extends ResolverBase {
       buyItemInput,
       walletPassword,
     }: { buyItemInput: IBuySellCoin; walletPassword: string },
-    { user }: Context,
+    { user, wallet }: Context,
   ): Promise<IOrderStatus> => {
     try {
+      await this.validateWalletPassword({
+        password: walletPassword,
+        symbol: buyItemInput.sellingCoin,
+        walletApi: wallet,
+        user,
+      });
       const { uuid, baseAmount, relAmount } = await exchangeService.buy({
         userId: user.userId,
         walletPassword,
@@ -147,9 +153,15 @@ class Resolvers extends ResolverBase {
       sellItemInput,
       walletPassword,
     }: { sellItemInput: IBuySellCoin; walletPassword: string },
-    { user }: Context,
+    { user, wallet }: Context,
   ): Promise<IOrderStatus> => {
     try {
+      await this.validateWalletPassword({
+        password: walletPassword,
+        symbol: sellItemInput.sellingCoin,
+        walletApi: wallet,
+        user,
+      });
       const { uuid, base_amount, rel_amount } = await exchangeService.sell({
         userId: user.userId,
         walletPassword,
@@ -170,7 +182,7 @@ class Resolvers extends ResolverBase {
       throw err;
     }
   };
-  sellMany = (
+  sellMany = async (
     parent: any,
     {
       sellManyItemInput,
@@ -208,9 +220,15 @@ class Resolvers extends ResolverBase {
   cancel = async (
     parent: any,
     { orderId, walletPassword }: { orderId: string; walletPassword: string },
-    { user }: Context,
+    { user, wallet }: Context,
   ) => {
     try {
+      await this.validateWalletPassword({
+        password: walletPassword,
+        symbol: '',
+        walletApi: wallet,
+        user,
+      });
       const cancelStatus = await exchangeService.cancel({
         walletPassword,
         userId: user.userId,

@@ -435,6 +435,18 @@ class EthWallet extends CoinWalletBase {
       throw error;
     }
   }
+  public checkPassword = async (userApi: UserApi, password: string) => {
+    try {
+      const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
+      const decryptedPrivateKey = this.decrypt(encryptedPrivateKey, password);
+      return !!decryptedPrivateKey;
+    } catch (error) {
+      logger.warn(
+        `walletApi.coin-wallets.EthWallet.checkPassword.catch:${error}`,
+      );
+      return false;
+    }
+  };
 }
 
 export default EthWallet;

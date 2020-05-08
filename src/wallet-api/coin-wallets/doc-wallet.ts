@@ -209,6 +209,9 @@ class DocWallet extends CoinWalletBase {
       throw error;
     }
   }
+  public checkPassword() {
+    return Promise.reject('Incorrect password');
+  }
 }
 
 export default DocWallet;
