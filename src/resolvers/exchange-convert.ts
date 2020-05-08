@@ -10,6 +10,7 @@ import {
   IGetPrice,
   IGetFeeResponse,
 } from '../types';
+import { BtcWallet, EthWallet } from '../wallet-api/coin-wallets';
 
 class Resolvers extends ResolverBase {
   status = async (
@@ -75,9 +76,16 @@ class Resolvers extends ResolverBase {
       buySellCoin,
       walletPassword,
     }: { buySellCoin: IBuySellCoin; walletPassword: string },
-    { user }: Context,
+    { user, wallet }: Context,
   ): Promise<IOrderStatus> => {
     try {
+      await this.validateWalletPassword({
+        password: walletPassword,
+        symbol: buySellCoin.sellingCoin,
+        walletApi: wallet,
+        user,
+      });
+
       const { uuid, baseAmount, relAmount } = await exchangeService.buy({
         userId: user.userId,
         walletPassword,
@@ -158,9 +166,15 @@ class Resolvers extends ResolverBase {
   cancel = async (
     parent: any,
     { orderId, walletPassword }: { orderId: string; walletPassword: string },
-    { user }: Context,
+    { user, wallet }: Context,
   ) => {
     try {
+      await this.validateWalletPassword({
+        password: walletPassword,
+        symbol: '',
+        walletApi: wallet,
+        user,
+      });
       const cancelStatus = await exchangeService.cancel({
         walletPassword,
         userId: user.userId,

@@ -2,10 +2,69 @@ import { AuthenticationError, ForbiddenError } from 'apollo-server-express';
 import { UserApi } from '../data-sources';
 import { config } from '../common';
 import { crypto } from '../utils';
+import { Context } from '../types/context';
 import logger from './logger/winston-logger';
 
 export default abstract class ResolverBase {
   // Common method to throw an graphQL auth error if the user is null
+  protected validateWalletPassword = async (
+    {
+      password,
+      walletApi,
+      user,
+      symbol,
+    }: {
+      password: string;
+      symbol?: string;
+      walletApi: Context['wallet'];
+      user: Context['user'];
+    },
+    failedSymbols: string[] = [],
+  ): Promise<boolean> => {
+    try {
+      const wallet = walletApi.coin(symbol);
+
+      const check = await wallet.checkPassword(user, password);
+      if (!check) {
+        throw Error(`Incorrect password for ${symbol} wallet`);
+      }
+      return check;
+    } catch (err) {
+      try {
+        failedSymbols.push(symbol);
+        if (symbol !== 'ETH' && !failedSymbols.includes('ETH')) {
+          return this.validateWalletPassword(
+            {
+              password,
+              symbol: 'ETH',
+              walletApi,
+              user,
+            },
+            failedSymbols,
+          );
+        } else if (symbol !== 'BTC' && !failedSymbols.includes('BTC')) {
+          return this.validateWalletPassword(
+            {
+              password,
+              symbol: 'BTC',
+              walletApi,
+              user,
+            },
+            failedSymbols,
+          );
+        }
+      } catch (error) {
+        logger.warn(
+          `resolvers.exchange.convert.validateWalletPassword.catch ${err}, password check for all symbols failed`,
+        );
+        throw error;
+      }
+      logger.warn(
+        `resolvers.exchange.convert.validateWalletPassword.catch ${err}`,
+      );
+      throw err;
+    }
+  };
   protected requireAuth = (user: UserApi) => {
     if (!user) {
       logger.debug(`common.Resolver-Base.!user`);

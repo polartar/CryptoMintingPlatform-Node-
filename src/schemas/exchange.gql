@@ -1,6 +1,6 @@
 input BuySellCoinInput {
   buyingCoin: String!
-  quantity: Float
+  quantity: Float!
   sellingCoin: String!
   price: Float
   tokenId: String
