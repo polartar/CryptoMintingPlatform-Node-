@@ -25,7 +25,12 @@ export const gameOrderSchema = new Schema({
   btcUsdPrice: Number,
   totalBtc: {
     type: Number,
-    required: true,
+    required: false,
+  },
+  galaUsdPrice: Number,
+  totalGala: {
+    type: Number,
+    required: false,
   },
   txHash: {
     type: String,

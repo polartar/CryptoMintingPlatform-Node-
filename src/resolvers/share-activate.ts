@@ -5,7 +5,7 @@ import {
   Context,
   IWalletConfig,
   IUser,
-  IGameOrder,
+  IGameOrderBtc,
   IOrderContext,
 } from '../types';
 import { rewardDistributer } from '../services';
@@ -367,8 +367,8 @@ class Resolvers extends ResolverBase {
     btcUsdPrice: number,
     orderContext: IOrderContext,
   ) => {
-    const product = await GameProduct.findOne({ name: 'Loot Box' }).exec();
-    const newGameOrder: IGameOrder = {
+    const product = await GameProduct.findOne({ name: 'FarmBot Crate' }).exec();
+    const newGameOrder: IGameOrderBtc = {
       isUpgradeOrder: true,
       quantity,
       totalBtc,

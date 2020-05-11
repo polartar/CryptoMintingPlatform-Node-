@@ -29,15 +29,12 @@ Thumbs.db
 npm-debug.log
 
 # Envs
-.env
-.env.stage
-.env.production
+.env**
 
 # Firebase Keys
 service-accounts.json
-jwtrsa-private.key
-jwtrsa-public.pem
 serviceAccountKey.json
+jwtrsa**
 
 # Personal notes
 credentials.ts

@@ -28,7 +28,7 @@ class GameItemService extends ServerToServerService {
       quantity,
     });
 
-    return data.map((item: IItem) => item.nftBaseId);
+    return data.map((item: IItem) => item.baseId);
   };
 
   getFarmBotRequiredItems = async (userId: string) => {
