@@ -6,7 +6,7 @@ export interface IItem {
   image: string;
   name: string;
   game: string;
-  nftBaseId: string;
+  baseId: string;
   properties: {
     farmbot: { requiredQty: number };
     rarity: { icon: string; label: string; supplyLimit: number };

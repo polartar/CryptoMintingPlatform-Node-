@@ -29,4 +29,5 @@ class NodeSelector extends ServerToServerService {
   };
 }
 
-export default new NodeSelector();
+export const nodeSelector = new NodeSelector();
+export default nodeSelector;

@@ -1,13 +1,13 @@
 import { Types } from 'mongoose';
 import { IOrderContext } from './IOrderContext';
 
-export interface IGameOrder {
+export interface IGameOrderBtc {
   userId: string;
   quantity: number;
   perUnitPriceUsd: number;
   gameProductId: Types.ObjectId | string;
-  galaUsdPrice: number;
-  totalGala: number;
+  btcUsdPrice: number;
+  totalBtc: number;
   txHash: string;
   isUpgradeOrder: boolean;
   itemsReceived: string[];

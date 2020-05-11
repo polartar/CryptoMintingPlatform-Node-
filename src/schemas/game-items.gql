@@ -65,7 +65,7 @@ type GameProduct {
 type BuyGameProductsResponse {
   items: [GameItem!]!
   transactionHash: String!
-  totalBtc: Float!
+  totalGala: Float!
 }
 
 type Query {

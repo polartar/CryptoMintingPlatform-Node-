@@ -4,22 +4,20 @@ import { gameItemService } from '../services/game-item';
 import { exchangeService } from '../services';
 import { config } from '../common';
 import { GameOrder, GameProduct, IGameProductDocument } from '../models';
-import { CryptoFavorites } from '../data-sources';
 class Resolvers extends ResolverBase {
   private getOrderDetails = async (
     product: IGameProductDocument,
     quantity: number,
     userId: string,
-    cryptoFavorites: CryptoFavorites,
     orderContext: IOrderContext,
   ): Promise<IGameOrder> => {
-    const btcUsdPrice = await cryptoFavorites.getBtcUsdPrice();
-    const totalBtc = (quantity * (product.priceUsd / btcUsdPrice)).toFixed(8);
+    const galaUsdPrice = 0.05; // TODO: pull this value from the api-dex server eventually
+    const totalGala = (quantity * (product.priceUsd / galaUsdPrice)).toFixed(8);
     return {
-      btcUsdPrice: btcUsdPrice,
+      galaUsdPrice: galaUsdPrice,
       created: new Date(),
       gameProductId: product._id,
-      totalBtc: +totalBtc,
+      totalGala: +totalGala,
       isUpgradeOrder: false,
       itemsReceived: [],
       perUnitPriceUsd: product.priceUsd,
@@ -185,11 +183,7 @@ class Resolvers extends ResolverBase {
     },
     ctx: Context,
   ) => {
-    const {
-      user,
-      wallet,
-      dataSources: { cryptoFavorites },
-    } = ctx;
+    const { user, wallet } = ctx;
     this.requireAuth(user);
     const { quantity, walletPassword, productId, orderContext = {} } = args;
     const { wallet: userWallet } = await user.findFromDb();
@@ -203,21 +197,20 @@ class Resolvers extends ResolverBase {
       throw new Error('Product out of stock');
     }
     const ethAddress = userWallet?.ethAddress || '';
-    const btcWallet = wallet.coin('BTC');
+    const galaWallet = wallet.coin('GALA');
     const orderDetails = await this.getOrderDetails(
       product,
       quantity,
       user.userId,
-      cryptoFavorites,
       orderContext,
     );
     const outputs = [
       {
-        to: config.companyFeeBtcAddresses.gala,
-        amount: orderDetails.totalBtc.toFixed(8),
+        to: config.companyFeeGalaAddress,
+        amount: orderDetails.totalGala.toFixed(8),
       },
     ];
-    const { success, message, transaction } = await btcWallet.send(
+    const { success, message, transaction } = await galaWallet.send(
       user,
       outputs,
       walletPassword,
@@ -239,7 +232,7 @@ class Resolvers extends ResolverBase {
     return {
       items,
       transactionHash: orderDetails.txHash,
-      totalBtc: orderDetails.totalBtc,
+      totalGala: orderDetails.totalGala,
     };
   };
 
