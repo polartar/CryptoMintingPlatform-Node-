@@ -20,15 +20,7 @@ void (async () => {
   const provider = new providers.JsonRpcProvider(appConfig.ethNodeUrl);
   const wallet = Wallet.fromMnemonic(env.MNEMONIC).connect(provider);
   const contract = new Contract(env.GALA_ADDRESS, abi, wallet);
-  const {
-    nodeHardwareLicenseId,
-    nonce,
-    signature,
-  } = await nodeSelector.getNodeToMineTransaction();
   const { hash, wait } = await contract.mintFungible(
-    nodeHardwareLicenseId,
-    bigNumberify(nonce),
-    signature,
     tokenId,
     addresses,
     amounts,

@@ -2,30 +2,25 @@ import { config } from '../common';
 import { ServerToServerService } from './server-to-server';
 
 interface SignatureResponse {
-  selectedNode: {
-    userId: string;
-    licenseId: string;
-    machineId: string;
-    address: string;
-  };
-  signature: {
-    signature: string;
-    nodeHardwareLicenseId: string;
-    nonce: string;
-  };
+  transactionHash: string;
+  userId: string;
+  licenseId: string;
+  machineId: string;
+  address: string;
 }
 
 class NodeSelector extends ServerToServerService {
   baseUrl = `${config.nodeSelectorUrl}`;
 
-  public getNodeToMineTransaction = async () => {
+  public assignNodeToMineTransaction = async (transactionHash: string) => {
     const jwtAxios = this.getAxios({ role: 'system' });
 
-    const { data } = await jwtAxios.get<SignatureResponse>(
+    const { data } = await jwtAxios.post<SignatureResponse>(
       `${this.baseUrl}/node`,
+      { transactionHash },
     );
 
-    return data.signature;
+    return data;
   };
 }
 
