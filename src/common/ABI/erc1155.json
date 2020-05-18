@@ -233,30 +233,6 @@
     "inputs": [
       {
         "indexed": false,
-        "name": "_nodeHardwareLicenseId",
-        "type": "string"
-      }
-    ],
-    "name": "NodeAssigned",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "_signer",
-        "type": "address"
-      }
-    ],
-    "name": "NodeSigner",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "name": "_creator",
         "type": "address"
       }
@@ -291,24 +267,16 @@
     "constant": false,
     "inputs": [
       {
-        "name": "nodeHardwareLicenseId",
-        "type": "string"
-      },
-      {
-        "name": "sigNonce",
-        "type": "uint256"
-      },
-      {
-        "name": "signature",
-        "type": "bytes"
-      },
-      {
         "name": "_type",
         "type": "uint256"
       },
       {
         "name": "_to",
         "type": "address[]"
+      },
+      {
+        "name": "_data",
+        "type": "bytes"
       }
     ],
     "name": "mintNonFungible",
@@ -321,18 +289,6 @@
     "constant": false,
     "inputs": [
       {
-        "name": "nodeHardwareLicenseId",
-        "type": "string"
-      },
-      {
-        "name": "sigNonce",
-        "type": "uint256"
-      },
-      {
-        "name": "signature",
-        "type": "bytes"
-      },
-      {
         "name": "_id",
         "type": "uint256"
       },
@@ -343,6 +299,10 @@
       {
         "name": "_quantities",
         "type": "uint256[]"
+      },
+      {
+        "name": "_data",
+        "type": "bytes"
       }
     ],
     "name": "mintFungible",
@@ -354,18 +314,6 @@
   {
     "constant": false,
     "inputs": [
-      {
-        "name": "nodeHardwareLicenseId",
-        "type": "string"
-      },
-      {
-        "name": "sigNonce",
-        "type": "uint256"
-      },
-      {
-        "name": "signature",
-        "type": "bytes"
-      },
       {
         "name": "_from",
         "type": "address"
@@ -397,18 +345,6 @@
     "constant": false,
     "inputs": [
       {
-        "name": "nodeHardwareLicenseId",
-        "type": "string"
-      },
-      {
-        "name": "sigNonce",
-        "type": "uint256"
-      },
-      {
-        "name": "signature",
-        "type": "bytes"
-      },
-      {
         "name": "_from",
         "type": "address"
       },
@@ -423,6 +359,10 @@
       {
         "name": "_values",
         "type": "uint256[]"
+      },
+      {
+        "name": "_data",
+        "type": "bytes"
       }
     ],
     "name": "safeBatchTransferFrom",
@@ -736,35 +676,7 @@
         "type": "address[]"
       }
     ],
-    "name": "batchAuthorizeNodeSigners",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_addresses",
-        "type": "address[]"
-      }
-    ],
     "name": "batchDeauthorizeCreators",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_addresses",
-        "type": "address[]"
-      }
-    ],
-    "name": "batchDeauthorizeNodeSigners",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

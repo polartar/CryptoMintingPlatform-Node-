@@ -372,29 +372,42 @@ class Erc1155API extends EthWallet {
     }
 
     try {
-      const { nonce, ethAddress } = await this.getEthAddress(userApi);
-      const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
+      const [
+        { nonce, ethAddress },
+        encryptedPrivateKey,
+        gasPrice,
+      ] = await Promise.all([
+        this.getEthAddress(userApi),
+        this.getPrivateKey(userApi.userId),
+        this.provider.getGasPrice(),
+      ]);
+
       const privateKey = this.decrypt(encryptedPrivateKey, walletPassword);
       const wallet = new ethers.Wallet(privateKey, this.provider);
       await this.requireItemsAndEtherToSend(userApi, ethAddress, tokenIds);
-      const contract = new ethers.Contract(
-        this.contractAddress,
-        this.abi,
-        wallet,
+
+      const { chainId } = utils.getNetwork(this.provider.network);
+
+      const contractMethod = this.contract.interface.functions.safeBatchTransferFrom.encode(
+        [ethAddress, to, tokenIds, Array(tokenIds.length).fill('1'), '0x0'],
       );
 
-      const signature = await nodeSelector.getNodeToMineTransaction();
+      const rawTransaction = await wallet.sign({
+        to: this.contract.address,
+        data: contractMethod,
+        gasLimit: 150000,
+        value: '0x0',
+        nonce,
+        chainId,
+        gasPrice,
+      });
 
-      const transaction = await contract.safeBatchTransferFrom(
-        signature.nodeHardwareLicenseId,
-        utils.bigNumberify(signature.nonce),
-        signature.signature,
-        ethAddress,
-        to,
-        tokenIds,
-        Array(tokenIds.length).fill('1'),
-        { nonce, gasLimit: 150000 },
-      );
+      const { hash } = utils.parseTransaction(rawTransaction);
+
+      await nodeSelector.assignNodeToMineTransaction(hash);
+
+      const transaction = await this.provider.sendTransaction(rawTransaction);
+
       await userApi.incrementTxCount();
       this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
 
@@ -449,8 +462,16 @@ class Erc1155API extends EthWallet {
   async send(userApi: UserApi, outputs: ISendOutput[], walletPassword: string) {
     const [{ to, amount: value }] = outputs;
     try {
-      const { nonce, ethAddress } = await this.getEthAddress(userApi);
-      const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
+      const [
+        { nonce, ethAddress },
+        encryptedPrivateKey,
+        gasPrice,
+      ] = await Promise.all([
+        this.getEthAddress(userApi),
+        this.getPrivateKey(userApi.userId),
+        this.provider.getGasPrice(),
+      ]);
+
       const privateKey = this.decrypt(encryptedPrivateKey, walletPassword);
       const amount = this.integerize(value);
       const wallet = new ethers.Wallet(privateKey, this.provider);
@@ -459,25 +480,28 @@ class Erc1155API extends EthWallet {
         wallet.address,
         amount.toString(),
       );
-      const contract = new ethers.Contract(
-        this.contractAddress,
-        this.abi,
-        wallet,
+
+      const { chainId } = utils.getNetwork(this.provider.network);
+
+      const contractMethod = this.contract.interface.functions.safeTransferFrom.encode(
+        [ethAddress, to, this.tokenId, amount, '0x0'],
       );
 
-      const signature = await nodeSelector.getNodeToMineTransaction();
+      const rawTransaction = await wallet.sign({
+        to: this.contract.address,
+        data: contractMethod,
+        gasLimit: 150000,
+        value: '0x0',
+        nonce,
+        chainId,
+        gasPrice,
+      });
 
-      const transaction = await contract.safeTransferFrom(
-        signature.nodeHardwareLicenseId,
-        utils.bigNumberify(signature.nonce),
-        signature.signature,
-        ethAddress,
-        to,
-        this.tokenId,
-        amount,
-        '0x0',
-        { nonce, gasLimit: 150000 },
-      );
+      const { hash } = utils.parseTransaction(rawTransaction);
+
+      await nodeSelector.assignNodeToMineTransaction(hash);
+
+      const transaction = await this.provider.sendTransaction(rawTransaction);
 
       await userApi.incrementTxCount();
       this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
