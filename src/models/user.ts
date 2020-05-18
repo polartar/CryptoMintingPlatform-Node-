@@ -11,6 +11,11 @@ interface IWalletShares {
   [key: string]: number;
 }
 
+interface IReferrerReward {
+  amount: number;
+  txId: string;
+}
+
 interface IWalletUpgrade {
   activated: boolean;
   activationTxHash: string;
@@ -25,6 +30,12 @@ interface IWalletUpgrade {
   lootBoxesPurchased: number;
   lootBoxPriceUsd: number;
   orderContext: IOrderContext;
+  referrerReward: {
+    btc: IReferrerReward;
+    gala: IReferrerReward;
+    winX: IReferrerReward;
+    green: IReferrerReward;
+  };
 }
 interface IActivatedWallets {
   green: IWalletUpgrade;
@@ -96,6 +107,15 @@ async function getNextNumber({ firstName, lastName }: IUser) {
   }
   return undefined;
 }
+
+const referrerRewardSchema = new mongoose.Schema(
+  {
+    amount: Number,
+    txId: String,
+  },
+  { timestamps: true },
+);
+
 const activatedWalletsSchema = new mongoose.Schema({
   activated: {
     type: Boolean,
@@ -113,6 +133,12 @@ const activatedWalletsSchema = new mongoose.Schema({
   lootBoxesPurchased: Number,
   lootBoxPriceUsd: Number,
   context: orderContextSchema,
+  referrerReward: {
+    btc: referrerRewardSchema,
+    gala: referrerRewardSchema,
+    winX: referrerRewardSchema,
+    green: referrerRewardSchema,
+  },
 });
 
 const walletsActivated = new mongoose.Schema({

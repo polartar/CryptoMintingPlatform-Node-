@@ -38,12 +38,12 @@ interface IRewardConfig {
 }
 
 class Resolvers extends ResolverBase {
-  private usdToBtc = (btcUsdPrice: number, amount: number) => {
+  protected usdToBtc = (btcUsdPrice: number, amount: number) => {
     const btcPriceInCents = Math.round(btcUsdPrice * 100);
     return Math.round(amount * 100) / btcPriceInCents;
   };
 
-  private isReferrerEligible = (
+  protected isReferrerEligible = (
     referrer: IUser,
     allRewardConfigs: IWalletConfig[],
   ) => {
@@ -100,7 +100,7 @@ class Resolvers extends ResolverBase {
     return true;
   };
 
-  private getExtraCostForLootBoxes = (
+  protected getExtraCostForLootBoxes = (
     numLootBoxes: number = 1,
     rewardConfig: IRewardConfig,
   ) => {
@@ -118,7 +118,7 @@ class Resolvers extends ResolverBase {
     };
   };
 
-  private getPaymentDetails = (
+  protected getPaymentDetails = (
     rewardConfig: IRewardConfig,
     btcPrice: number,
     referrer: IUser,
@@ -160,7 +160,7 @@ class Resolvers extends ResolverBase {
     };
   };
 
-  private logMissedReferrerBtcReward = async (
+  protected logMissedReferrerBtcReward = async (
     referrer: IUser,
     referrerMissedBtc: number,
   ) => {
@@ -177,7 +177,7 @@ class Resolvers extends ResolverBase {
     }
   };
 
-  private async getOutputs(
+  protected async getOutputs(
     btcToCompany: number,
     btcToReferrer: number,
     referrerBtcAddress: string,
@@ -203,7 +203,7 @@ class Resolvers extends ResolverBase {
     return outputs;
   }
 
-  private saveActivationToDb = (
+  protected saveActivationToDb = (
     userDoc: IUser,
     rewardType: string,
     paymentDetails: IActivationPayment & {
@@ -237,6 +237,8 @@ class Resolvers extends ResolverBase {
     userDoc.set(`${prefix}.activationTxHash`, transactionId);
     userDoc.set(`${prefix}.btcUsdPrice`, btcUsdPrice);
     userDoc.set(`${prefix}.btcToReferrer`, btcToReferrer);
+    userDoc.set(`${prefix}.referrerReward.btc.amount`, btcToReferrer);
+    userDoc.set(`${prefix}.referrerReward.btc.txId`, transactionId);
     userDoc.set(`${prefix}.btcToCompany`, btcToCompany);
     userDoc.set(`${prefix}.timestamp`, new Date());
     userDoc.set(`${prefix}.amountRewarded`, amountRewarded);
@@ -250,14 +252,14 @@ class Resolvers extends ResolverBase {
     return userDoc.save();
   };
 
-  private getAllRewardConfigs = async () => {
+  protected getAllRewardConfigs = async () => {
     const { brand } = config;
     const rewardConfigs = await WalletConfig.find({ brand });
 
     return rewardConfigs;
   };
 
-  private selectRewardConfig = (
+  protected selectRewardConfig = (
     rewardType: string,
     rewardConfigs: IWalletConfig[],
   ): IRewardConfig => {
@@ -315,7 +317,7 @@ class Resolvers extends ResolverBase {
     return transaction;
   };
 
-  private sendRewards = async (
+  protected sendRewards = async (
     user: IUser,
     rewardConfig: IRewardConfig,
     numLootBoxes: number,
@@ -343,7 +345,7 @@ class Resolvers extends ResolverBase {
     return rewardResult;
   };
 
-  private emailReferrerAndIncrementUsedShares = (
+  protected emailReferrerAndIncrementUsedShares = (
     referrer: IUser,
     userReferred: IUser,
     outputsLength: number,
@@ -358,7 +360,7 @@ class Resolvers extends ResolverBase {
     }
   };
 
-  private logGameOrder = async (
+  protected logGameOrder = async (
     quantity: number,
     totalBtc: number,
     txHash: string,

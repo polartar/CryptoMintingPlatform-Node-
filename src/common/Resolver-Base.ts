@@ -119,4 +119,38 @@ export default abstract class ResolverBase {
     crypto.decrypt(encryptedText, secret);
 
   protected hash = (value: string) => crypto.hash(value);
+
+  protected requireBrand = () => {
+    const { brand } = config;
+    return {
+      toBe: (expectedBrand: string) => {
+        if (brand === 'localhost') return;
+        if (expectedBrand.toLowerCase() !== brand.toLowerCase()) {
+          throw new Error(`Query/Mutation not available for ${expectedBrand}`);
+        }
+      },
+      toNotBe: (expectedBrand: string) => {
+        if (brand === 'localhost') return;
+        if (expectedBrand.toLowerCase() === brand.toLowerCase()) {
+          throw new Error(`Query/Mutation not available for ${expectedBrand}`);
+        }
+      },
+      toBeIn: (expectedBrands: string[]) => {
+        if (brand === 'localhost') return;
+        if (!expectedBrands.includes(brand)) {
+          throw new Error(
+            `Query/Mutation not available for ${expectedBrands.join(', ')}`,
+          );
+        }
+      },
+      toNotBeIn: (expectedBrands: string[]) => {
+        if (brand === 'localhost') return;
+        if (expectedBrands.includes(brand)) {
+          throw new Error(
+            `Query/Mutation not available for ${expectedBrands.join(', ')}`,
+          );
+        }
+      },
+    };
+  };
 }
