@@ -2,7 +2,7 @@ import { logger } from '../common';
 import { exchangeService } from '../services';
 import ResolverBase from '../common/Resolver-Base';
 import { Context } from '../types/context';
-import { IErc1155TokenDocument, Erc1155TokenModel, IUser } from '../models';
+import { IErc1155TokenDocument, Erc1155Token, IUser } from '../models';
 import { getDateFromAge } from '../utils';
 import {
   IBuySellCoin,
@@ -351,7 +351,7 @@ class Resolvers extends ResolverBase {
     }
   };
   getItemByNftId = (nftBaseId: string) => {
-    return Erc1155TokenModel.findOne({
+    return Erc1155Token.findOne({
       baseId: nftBaseId,
     })
       .lean()

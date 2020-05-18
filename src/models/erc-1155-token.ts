@@ -27,7 +27,7 @@ const erc1155TokenSchema = new Schema({
   },
 });
 
-export const Erc1155TokenModel = model<IErc1155TokenDocument>(
+export const Erc1155Token = model<IErc1155TokenDocument>(
   'erc1155-token',
   erc1155TokenSchema,
 );
