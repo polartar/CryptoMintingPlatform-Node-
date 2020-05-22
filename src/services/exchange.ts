@@ -139,6 +139,7 @@ class ExchangeService extends ServerToServerService {
     tokenId,
     rel,
     quantityBase,
+    quantityRel,
     buyOrSell,
   }: IGetPrice) => {
     const jwtAxios = this.getAxios({});
@@ -149,6 +150,7 @@ class ExchangeService extends ServerToServerService {
         rel,
         tokenId,
         quantityBase,
+        quantityRel,
         buyOrSell,
       },
     );
