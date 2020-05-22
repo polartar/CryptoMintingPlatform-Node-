@@ -86,7 +86,8 @@ input GetPriceInput {
   base: String!
   tokenId: String
   rel: String!
-  quantityBase: Float!
+  quantityBase: Float
+  quantityRel: Float
   buyOrSell: String!
 }
 type Price {

@@ -39,12 +39,20 @@ class Resolvers extends ResolverBase {
     ctx: Context,
   ): Promise<IGetPriceResponse> => {
     try {
-      const { base, tokenId, rel, quantityBase, buyOrSell } = getPriceInput;
-      return exchangeService.getPrice({
+      const {
         base,
         tokenId,
         rel,
         quantityBase,
+        quantityRel,
+        buyOrSell,
+      } = getPriceInput;
+      return exchangeService.getPrice({
+        base,
+        tokenId,
+        rel,
+        quantityBase: quantityBase || 0,
+        quantityRel: quantityRel || 0,
         buyOrSell,
       });
     } catch (err) {

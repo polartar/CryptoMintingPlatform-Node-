@@ -17,7 +17,8 @@ export interface IGetPrice {
   base: string;
   rel: string;
   tokenId?: string;
-  quantityBase: number;
+  quantityBase?: number;
+  quantityRel?: number;
   buyOrSell: BuySell;
 }
 
