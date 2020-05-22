@@ -128,8 +128,8 @@ class Resolvers extends ResolverBase {
         return {
           orderId: uuid,
           status: OrderStatus.converting,
-          baseAmount,
-          relAmount,
+          bought: baseAmount,
+          sold: relAmount,
         };
       } else {
         const { uuid, base_amount, rel_amount } = await exchangeService.sell(
@@ -138,8 +138,8 @@ class Resolvers extends ResolverBase {
         return {
           orderId: uuid,
           status: OrderStatus.converting,
-          baseAmount: base_amount,
-          relAmount: rel_amount,
+          bought: base_amount,
+          sold: rel_amount,
         };
       }
     } catch (err) {
