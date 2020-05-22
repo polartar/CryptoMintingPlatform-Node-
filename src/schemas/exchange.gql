@@ -169,7 +169,7 @@ type Query {
   pricesAndFees(getPriceInput: GetPriceInput!): GetPriceResponse!
   completed(filter: CompletedInput): [OrderStatus!]
   pending(pendingInput: PendingInput): [OrderStatus!]
-  items(BuySellInput: BuySellInput!): [OpenOrderItem!]
+  items(buySellInput: BuySellInput!): [OpenOrderItem!]
   buyStatus(orderId: String!): OrderStatus!
   sellStatus(orderId: String!): OrderStatus!
   listedGameItems(itemQueryInput: ItemQueryInput): [ExchangeItem!]
@@ -180,7 +180,7 @@ type Query {
 }
 type Mutation {
   cancelConvert(orderId: String!, walletPassword: String!): CancelResult!
-  buySell(BuySellInput: BuySellInput!, walletPassword: String!): OrderStatus!
+  buySell(buySellInput: BuySellInput!, walletPassword: String!): OrderStatus!
   sellMany(
     sellManyItemInput: [BuySellInput!]!
     walletPassword: String!
