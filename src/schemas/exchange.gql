@@ -1,18 +1,12 @@
-input BuySellCoinInput {
-  buyingCoin: String!
-  quantity: Float!
-  sellingCoin: String!
+input BuySellInput {
+  buyOrSell: String!
+  base: String!
+  rel: String!
+  quantityBase: Float!
   price: Float
   tokenId: String
 }
-type Conversion {
-  buyingCoin: String!
-  quantity: Float
-  sellingCoin: String!
-  price: Float!
-  fees: Float
-  expires: Date!
-}
+
 input CompletedInput {
   from_uuid: String
   limit: Float
@@ -63,21 +57,6 @@ type OpenOrderItem {
   timestamp: Date!
 }
 
-input BuyItemInput {
-  tokenId: String!
-  sellingCoin: String!
-  buyingCoin: String!
-  quantity: Float
-  price: Float
-}
-
-input SellItemInput {
-  tokenId: String!
-  price: Float!
-  quantity: Float!
-  sellingCoin: String!
-  buyingCoin: String!
-}
 type CoinResponse {
   address: String!
   ticker: String!
@@ -86,7 +65,8 @@ input GetPriceInput {
   base: String!
   tokenId: String
   rel: String!
-  quantityBase: Float!
+  quantityBase: Float
+  quantityRel: Float
   buyOrSell: String!
 }
 type Price {
@@ -189,7 +169,7 @@ type Query {
   pricesAndFees(getPriceInput: GetPriceInput!): GetPriceResponse!
   completed(filter: CompletedInput): [OrderStatus!]
   pending(pendingInput: PendingInput): [OrderStatus!]
-  items(buySellCoin: BuySellCoinInput!): [OpenOrderItem!]
+  items(BuySellInput: BuySellInput!): [OpenOrderItem!]
   buyStatus(orderId: String!): OrderStatus!
   sellStatus(orderId: String!): OrderStatus!
   listedGameItems(itemQueryInput: ItemQueryInput): [ExchangeItem!]
@@ -199,12 +179,10 @@ type Query {
   fees(coin: String!): [Fee!]!
 }
 type Mutation {
-  coin(buySellCoin: BuySellCoinInput!, walletPassword: String!): OrderStatus!
   cancelConvert(orderId: String!, walletPassword: String!): CancelResult!
-  buy(buyItemInput: BuyItemInput!, walletPassword: String!): OrderStatus!
-  sell(sellItemInput: SellItemInput!, walletPassword: String!): OrderStatus!
+  buySell(BuySellInput: BuySellInput!, walletPassword: String!): OrderStatus!
   sellMany(
-    sellManyItemInput: [SellItemInput!]!
+    sellManyItemInput: [BuySellInput!]!
     walletPassword: String!
   ): [OrderStatus!]!
   cancelItem(orderId: String!, walletPassword: String!): CancelResult!
