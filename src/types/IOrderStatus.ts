@@ -8,8 +8,8 @@ export enum OrderStatus {
 export interface IOrderStatus {
   orderId: string;
   status: OrderStatus;
-  bought?: string;
-  sold?: string;
+  baseAmount?: string;
+  relAmount?: string;
   price?: number;
   quantity?: number;
 }

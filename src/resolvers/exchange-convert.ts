@@ -3,7 +3,6 @@ import { exchangeService } from '../services';
 import ResolverBase from '../common/Resolver-Base';
 import { Context } from '../types/context';
 import {
-  IBuySellCoin,
   IOrderStatus,
   OrderStatus,
   IGetPriceResponse,
@@ -75,42 +74,6 @@ class Resolvers extends ResolverBase {
       });
     } catch (err) {
       logger.debug(`resolvers.exchange.convert.fees.catch ${err}`);
-      throw err;
-    }
-  };
-  coin = async (
-    parent: any,
-    {
-      buySellCoin,
-      walletPassword,
-    }: { buySellCoin: IBuySellCoin; walletPassword: string },
-    { user, wallet }: Context,
-  ): Promise<IOrderStatus> => {
-    try {
-      await this.validateWalletPassword({
-        password: walletPassword,
-        symbol: buySellCoin.sellingCoin,
-        walletApi: wallet,
-        user,
-      });
-
-      const { uuid, baseAmount, relAmount } = await exchangeService.buy({
-        userId: user.userId,
-        walletPassword,
-        base: buySellCoin.buyingCoin,
-        rel: buySellCoin.sellingCoin,
-        quantityBase: buySellCoin.quantity,
-        tokenId: buySellCoin.tokenId,
-        price: buySellCoin.price,
-      });
-      return {
-        orderId: uuid,
-        status: OrderStatus.converting,
-        bought: baseAmount,
-        sold: relAmount,
-      };
-    } catch (err) {
-      logger.debug(`resolvers.exchange.convert.coin.catch ${err}`);
       throw err;
     }
   };
@@ -235,7 +198,6 @@ export default {
     fees: resolvers.fees,
   },
   Mutation: {
-    coin: resolvers.coin,
     cancelConvert: resolvers.cancel,
   },
 };
