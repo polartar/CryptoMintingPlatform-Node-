@@ -25,6 +25,7 @@ class Config {
     process.env.BYPASS_TWOFA_IN_DEV &&
     process.env.BYPASS_TWOFA_IN_DEV.toLowerCase() === 'true';
   public readonly apiKeyServiceUrl = process.env.API_KEY_SERVICE_URL;
+  public readonly blockfunnelsUrl = process.env.BLOCKFUNNELS_URL;
   public readonly isDev = process.env.NODE_ENV !== 'production';
   public readonly isStage = process.env.IS_STAGE === 'true';
   public readonly etherScanApiKey = process.env.ETHERSCAN_API_KEY;

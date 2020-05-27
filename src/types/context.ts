@@ -7,6 +7,7 @@ import {
   Bitly,
   Zendesk,
   SendEmail,
+  Blockfunnels,
 } from '../data-sources/';
 import { WalletApi } from '../wallet-api';
 export interface IUserClaims {
@@ -28,6 +29,7 @@ export interface Context {
     bitly: Bitly;
     zendesk: Zendesk;
     sendEmail: SendEmail;
+    blockfunnels: Blockfunnels;
   };
   user: UserApi | null;
   logger: Logger;
