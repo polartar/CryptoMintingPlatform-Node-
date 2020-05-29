@@ -3,7 +3,8 @@ export interface ISellRequest {
   rel: string; // the name of the coin the user desires to receive
   tokenId: string;
   price?: number; // the price in rel the user is willing to receive per one unit of the base coin
-  quantityBase: number; // the amount of coins the user is willing to sell of the base coin
+  quantityBase?: number; // the amount of coins the user is willing to sell of the base coin
+  quantityRel?: number;
 }
 
 export interface ISellResponse {

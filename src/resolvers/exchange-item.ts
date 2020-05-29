@@ -116,7 +116,8 @@ class Resolvers extends ResolverBase {
         walletPassword,
         base: buySellInput.base,
         rel: buySellInput.rel,
-        quantityBase: buySellInput.quantity,
+        quantityBase: buySellInput.quantityBase,
+        quantityRel: buySellInput.quantityRel,
         tokenId: buySellInput.tokenId,
         price: buySellInput.price,
       };
