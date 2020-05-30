@@ -32,8 +32,8 @@ class Config {
     process.env.CLIENT_SECRET_KEY_REQUIRED !== undefined &&
     process.env.CLIENT_SECRET_KEY_REQUIRED === 'true';
   public readonly erc20FeeCalcAddress = process.env.ETH_ADD_FOR_ERC20_FEE_CALC;
-  public readonly erc20RewardDistributerPkey =
-    process.env.ERC20_REWARD_DISTRIBUTER_PKEY;
+  public readonly rewardDistributerPkey =
+    process.env.REWARD_DISTRIBUTOR_ETH_PKEY;
   public readonly companyFeeBtcAddresses: { [key: string]: string } = {
     green: process.env.COMPANY_FEE_BTC_ADDRESS_GREEN,
     winx: process.env.COMPANY_FEE_BTC_ADDRESS_WINX,
@@ -99,8 +99,8 @@ class Config {
   );
   public readonly dailyWalletStatsCronExpression =
     process.env.WALLET_STATS_CRON_EXPRESSION;
-  public readonly erc20RewardWarnThreshold = this.normalizeNumber(
-    process.env.ERC20_REWARD_WARN_THRESHOLD,
+  public readonly rewardWarnThreshold = this.normalizeNumber(
+    process.env.REWARD_WARN_THRESHOLD,
   );
   public readonly sendWalletReportToConnect =
     process.env.SEND_WALLET_REPORT_TO_CONNECT;
@@ -131,6 +131,8 @@ class Config {
   public readonly supportsDisplayNames =
     process.env.SUPPORTS_DISPLAY_NAMES === 'true';
 
+  public readonly alertApiUrls: string[] = JSON.parse(process.env.ALERT_API_URLS);
+
   constructor() {
     autoBind(this);
     this.ensureRequiredVariables();
@@ -160,12 +162,12 @@ class Config {
       'COMPANY_FEE_BTC_ADDRESS_GALA',
       'COMPANY_FEE_GALA_ADDRESS',
       'ZENDESK_API_KEY',
-      'ERC20_REWARD_DISTRIBUTER_PKEY',
+      'REWARD_DISTRIBUTOR_ETH_PKEY',
       'SENDGRID_API_KEY',
       'SENDGRID_EMAIL_FROM',
       'BASE_NUMBER_OF_SHARES',
       'WALLET_STATS_CRON_EXPRESSION',
-      'ERC20_REWARD_WARN_THRESHOLD',
+      'REWARD_WARN_THRESHOLD',
       'SEND_WALLET_REPORT_TO_CONNECT',
       'SEND_WALLET_REPORT_TO_CONNECTARCADE',
       'SEND_WALLET_REPORT_TO_ARCADE',
@@ -182,6 +184,7 @@ class Config {
       'S3_REGION',
       'COST_PER_LOOT_BOX',
       'SUPPORTS_DISPLAY_NAMES',
+      'ALERT_API_URLS',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
