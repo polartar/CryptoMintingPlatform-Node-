@@ -182,6 +182,7 @@ class Config {
       'S3_REGION',
       'COST_PER_LOOT_BOX',
       'SUPPORTS_DISPLAY_NAMES',
+      'NODE_SELECTOR_URL',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
