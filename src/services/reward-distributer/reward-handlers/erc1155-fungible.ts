@@ -38,7 +38,12 @@ export class Erc1155FungibleReward extends BaseReward {
           '0x0',
         ],
       );
-      const transaction = await this.sendContractTransaction(data);
+      const transaction = await this.sendContractTransaction(
+        data,
+        250000,
+        'Gala',
+        user.id,
+      );
 
       transaction
         .wait(1)

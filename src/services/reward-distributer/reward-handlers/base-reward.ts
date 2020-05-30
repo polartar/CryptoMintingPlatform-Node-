@@ -9,7 +9,7 @@ import { ICoinMetadata } from '../../../types';
 import { IUser } from '@blockbrothers/firebasebb/dist/src/types';
 import { RewardDistributerConfig } from '../../../models';
 import { bigNumberify } from 'ethers/utils';
-import nodeSelector from '../../node-selector';
+import { nodeSelector, transactionService } from '../../';
 
 export abstract class BaseReward {
   rewardWarnThreshold = bigNumberify(config.rewardWarnThreshold);
@@ -95,17 +95,15 @@ export abstract class BaseReward {
     symbol: string,
   ) => {
     this.alertService.postMessage(
-      `Low on ${symbol}!\nSend ${symbol} to ${
-        this.rewardDistributerWallet.address
-      } ASAP!\nCurrent balance: ${utils.formatEther(
-        currentBalance,
-      )} ${symbol}.\nEstimated ${txsRemaining} transactions until empty.`,
+      `Low on ${symbol}!\nSend ${symbol} to ${this.rewardDistributerWallet.address} ASAP!\nCurrent balance: ${currentBalance} ${symbol}.\nEstimated ${txsRemaining} transactions until empty.`,
     );
   };
 
   protected sendContractTransaction = async (
     data: string,
     gasLimit = 250000,
+    fromUserId: string,
+    toUserId?: string,
   ) => {
     const [nonce, gasPrice] = await Promise.all([
       this.getNextNonce(),
@@ -120,10 +118,14 @@ export abstract class BaseReward {
       gasPrice,
       chainId: this.chainId,
     });
-    const { hash } = utils.parseTransaction(transaction);
-    await nodeSelector.assignNodeToMineTransaction(hash);
+    const parsedTx = utils.parseTransaction(transaction);
+    await nodeSelector.assignNodeToMineTransaction(parsedTx.hash);
     const txResponse = await this.ethProvider.sendTransaction(transaction);
-
+    await transactionService.savePendingErc1155Transaction(
+      txResponse,
+      fromUserId,
+      toUserId,
+    );
     return txResponse;
   };
   abstract checkRewardThresholdAndAlert: () => Promise<boolean>;
