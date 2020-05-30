@@ -12,7 +12,7 @@ variables:
   STAGE_URI_CODEX: 'stage0.walletsrv.codexunited.com'
 
   # ARACDE
-  PROD_URI_ARCADE: 'walletsrv.arcadeblockchain.com'
+  PROD_URI_ARCADE: 'n0.walletsrv.arcadeblockchain.com'
   STAGE_URI_ARCADE: 'stage0.walletsrv.arcadeblockchain.com'
 
   LOG_LINES: 125 # Bump this number to view more lines in the log with each run.
