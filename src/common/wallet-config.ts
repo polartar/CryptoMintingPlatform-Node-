@@ -63,4 +63,11 @@ const walletConfigOverrides: ICoinMetadata[] = [
   },
 ];
 
+export const coinSymbolToCoinConfig = new Map<string, ICoinMetadata>(
+  walletConfigOverrides.map(walletConf => [
+    walletConf.symbol.toLowerCase(),
+    walletConf,
+  ]),
+);
+
 export default walletConfigOverrides;
