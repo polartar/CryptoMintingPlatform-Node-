@@ -339,9 +339,10 @@ class Erc1155API extends EthWallet {
         Promise.all(tokenIds.map(tokenId => this.ownsToken(address, tokenId))),
       ]);
 
-      const totalFee = +feeEstimate.estimatedFee * tokenIds.length;
-
-      const hasEnoughEther = etherBalance.gt(parseEther(totalFee.toString()));
+      const totalFee = parseEther(feeEstimate.estimatedFee).mul(
+        tokenIds.length,
+      );
+      const hasEnoughEther = etherBalance.gt(totalFee);
 
       const ownsAllTokens = ownsTokens.every(ownsToken => ownsToken);
 
