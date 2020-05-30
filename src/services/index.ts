@@ -5,3 +5,4 @@ export { default as s3Service } from './s3';
 export * from './game-item';
 export * from './exchange';
 export * from './node-selector';
+export * from './transaction';
