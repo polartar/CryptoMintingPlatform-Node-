@@ -20,8 +20,11 @@ export class Erc1155FungibleReward extends WalletReward {
     this.tokenId = utils.bigNumberify(this.rewardConfig.tokenId);
   }
 
-  sendRewardToAccount = async (user: IUser, amount: utils.BigNumber) => {
-    const ethAddress = user?.wallet?.ethAddress;
+  sendRewardToAccount = async (
+    userId: string,
+    ethAddress: string,
+    amount: utils.BigNumber,
+  ) => {
     try {
       if (!ethAddress)
         throw new Error(
@@ -44,7 +47,7 @@ export class Erc1155FungibleReward extends WalletReward {
         data,
         250000,
         'Gala',
-        user.id,
+        userId,
       );
 
       transaction

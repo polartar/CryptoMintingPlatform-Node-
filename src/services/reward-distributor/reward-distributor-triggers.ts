@@ -21,6 +21,8 @@ const {
 } = ItemTokenName;
 
 class RewardTrigger {
+  getUserHelper = (user: IUser) => new UserHelper(user);
+
   private actionRewards = new Map<RewardActions, BaseReward[]>([
     [
       RewardActions.WALLET_CREATED,
@@ -62,15 +64,12 @@ class RewardTrigger {
 
   triggerAction = (
     action: RewardActions,
-    user: IUser,
+    userHelper: UserHelper,
     triggerValues?: IRewardTriggerValues,
   ) => {
     const rewards = this.actionRewards.get(action);
-    const userWithReferrer = new UserHelper(user);
     return Promise.all(
-      rewards.map(reward =>
-        reward.triggerReward(userWithReferrer, triggerValues),
-      ),
+      rewards.map(reward => reward.triggerReward(userHelper, triggerValues)),
     );
   };
 }

@@ -10,6 +10,7 @@ import { bigNumberify } from 'ethers/utils';
 import { nodeSelector, transactionService } from '../..';
 import { UserHelper } from '../../../utils';
 import { config, logger, AlertService } from '../../../common';
+import { IWalletReferralCountAggregate } from '../../../pipelines';
 
 export abstract class BaseReward {
   protected rewardWarnThreshold = bigNumberify(config.rewardWarnThreshold);
@@ -177,7 +178,7 @@ export abstract class BaseReward {
       this.amountToUser.gt(0) &&
       this.checkIfUserValueRequirementMet(triggerValues.user || 0)
     ) {
-      this.sendRewardToAccount(user.self, this.amountToUser);
+      this.sendRewardToUser(user.self, this.amountToUser);
     }
     if (
       this.amountToReferrer.gt(0) &&
@@ -185,13 +186,25 @@ export abstract class BaseReward {
     ) {
       const referrer = await user.getReferrer();
       if (referrer) {
-        this.sendRewardToAccount(referrer, this.amountToReferrer);
+        this.sendRewardToReferrer(referrer, this.amountToReferrer);
       }
     }
   };
 
-  protected abstract sendRewardToAccount: (
-    user: IUser,
+  abstract sendRewardToAccount: (
+    userId: string,
+    ethAddress: string,
     amount: utils.BigNumber,
   ) => Promise<void>;
+
+  protected sendRewardToReferrer = async (
+    user: IWalletReferralCountAggregate,
+    amount: utils.BigNumber,
+  ) => {
+    return this.sendRewardToAccount(user.id, user.ethAddress, amount);
+  };
+
+  protected sendRewardToUser = async (user: IUser, amount: utils.BigNumber) => {
+    return this.sendRewardToAccount(user.id, user?.wallet?.ethAddress, amount);
+  };
 }

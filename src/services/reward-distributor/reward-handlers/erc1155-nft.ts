@@ -4,7 +4,6 @@ import {
   ItemTokenName,
   IRewardTriggerConfig,
 } from '../../../types';
-import { IUser } from '@blockbrothers/firebasebb/dist/src/types';
 import { ItemReward } from '.';
 import { WalletTransaction } from '../../../models';
 import {
@@ -50,16 +49,19 @@ export class Erc1155NFTReward extends ItemReward {
     }
   };
 
-  sendRewardToAccount = async (user: IUser, amount: utils.BigNumber) => {
-    const ethAddress = user?.wallet?.ethAddress;
+  sendRewardToAccount = async (
+    userId: string,
+    ethAddress: string,
+    amount: utils.BigNumber,
+  ) => {
     try {
       if (!ethAddress)
         throw new Error(
           `User ethAddress required to send ${this.rewardConfig.name}`,
         );
 
-      const result = await gameItemService.assignItemToUserByTokenId(
-        user.id,
+      await gameItemService.assignItemToUserByTokenId(
+        userId,
         ethAddress,
         this.tokenId.toString(),
         amount.toNumber(),
