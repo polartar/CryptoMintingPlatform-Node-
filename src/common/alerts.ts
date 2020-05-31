@@ -2,7 +2,7 @@ import { config } from '../common';
 import { ServerToServerService } from '../services/server-to-server';
 
 export class AlertService extends ServerToServerService {
-  roomName: string;
+  private roomName: string;
   constructor(roomName: string) {
     super();
     this.roomName = roomName;

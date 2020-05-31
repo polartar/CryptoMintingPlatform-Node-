@@ -10,7 +10,7 @@ import { WalletApi } from '../wallet-api';
 import Erc1155Wallet from '../wallet-api/coin-wallets/erc1155-wallet';
 import { UserApi } from '../data-sources';
 import { emailScheduler } from '../services/email-scheduler';
-import { gameItemsReward } from '../services/reward-distributer/reward-handlers/game-item-reward';
+import { gameItemsReward } from '../services/reward-distributor/reward-handlers/game-item-reward';
 
 class Resolvers extends ResolverBase {
   private saveWalletPassword = async (

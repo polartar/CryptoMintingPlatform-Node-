@@ -4,8 +4,18 @@ import * as supportedFavoriteOptions from '../data/supportedFavoriteOptions.json
 import { PubSub } from 'apollo-server-express';
 import keys from './keys';
 import { Connection, createConnection } from 'mongoose';
+import { ItemTokenName } from '../types/ItemTokenName';
 
 dotenv.config({ path: '.env' });
+
+const {
+  ALFA_FOUNTAIN_GOOD,
+  BETA_KEY,
+  ALFA_FOUNTAIN_GREAT,
+  ALFA_FOUNTAIN_MAJESTIC,
+  ALFA_FOUNTAIN_OK,
+  TRUCK_WITH_FLAMES,
+} = ItemTokenName;
 
 class Config {
   public readonly nodeEnv = process.env.NODE_ENV;
@@ -85,8 +95,14 @@ class Config {
     green: process.env.GREEN_ADDRESS,
     gala: process.env.GALA_ADDRESS,
   };
-  public readonly tokenIds = {
+  public readonly tokenIds: { [key: string]: string } = {
     gala: process.env.GALA_TOKEN_ID,
+    [BETA_KEY]: process.env.BETA_KEY_TOKEN_ID,
+    [ALFA_FOUNTAIN_OK]: process.env.ALFA_OK_TOKEN_ID,
+    [ALFA_FOUNTAIN_GOOD]: process.env.ALFA_GOOD_TOKEN_ID,
+    [ALFA_FOUNTAIN_GREAT]: process.env.ALFA_GREAT_TOKEN_ID,
+    [ALFA_FOUNTAIN_MAJESTIC]: process.env.ALFA_MAJESTIC_TOKEN_ID,
+    [TRUCK_WITH_FLAMES]: 'dont forget to upload token ID',
   };
 
   public pubsub = new PubSub();
@@ -131,7 +147,9 @@ class Config {
   public readonly supportsDisplayNames =
     process.env.SUPPORTS_DISPLAY_NAMES === 'true';
 
-  public readonly alertApiUrls: string[] = JSON.parse(process.env.ALERT_API_URLS);
+  public readonly alertApiUrls: string[] = JSON.parse(
+    process.env.ALERT_API_URLS,
+  );
 
   constructor() {
     autoBind(this);
@@ -185,6 +203,13 @@ class Config {
       'COST_PER_LOOT_BOX',
       'SUPPORTS_DISPLAY_NAMES',
       'ALERT_API_URLS',
+      'NODE_SELECTOR_URL',
+      'GALA_TOKEN_ID',
+      'BETA_KEY_TOKEN_ID',
+      'ALFA_OK_TOKEN_ID',
+      'ALFA_GOOD_TOKEN_ID',
+      'ALFA_GREAT_TOKEN_ID',
+      'ALFA_MAJESTIC_TOKEN_ID',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(

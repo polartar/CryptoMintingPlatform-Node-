@@ -7,3 +7,4 @@ export {
   coinSymbolToCoinConfig,
 } from './wallet-config';
 export { AlertService } from './alerts';
+export { itemRewardConfig } from './item-reward-config';
