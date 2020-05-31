@@ -13,7 +13,7 @@ const {
   ALFA_FOUNTAIN_GOOD,
   ALFA_FOUNTAIN_GREAT,
   ALFA_FOUNTAIN_MAJESTIC,
-  TRUCK_WITH_FLAMES,
+  EXPRESS_DEPOT,
 } = ItemTokenName;
 
 const betaKey = {
@@ -82,16 +82,16 @@ const alfaFountainMajestic = {
   supplyWarnThreshold: 100,
 };
 
-const truckWithFlames = {
+const expressDepot = {
   walletApi: eSupportedInterfaces.erc1155,
-  name: 'Truck with Flames',
+  name: 'Express Depot',
   backgroundColor: '#FFFFFF',
   icon:
-    'https://gala-tokens.s3-us-west-2.amazonaws.com/images/sandbox-games/town-star/alfa-fountain/truck-with-flames.png',
+    'https://gala-tokens.s3-us-west-2.amazonaws.com/images/sandbox-games/town-star/express-depot/express-depot.png',
   abi: erc1155Abi,
   decimalPlaces: 0,
   contractAddress: contractAddresses.gala,
-  tokenId: tokenIds[TRUCK_WITH_FLAMES],
+  tokenId: tokenIds[EXPRESS_DEPOT],
   symbol: '',
   supplyWarnThreshold: 1000,
 };
@@ -102,5 +102,5 @@ export const itemRewardConfig = new Map<ItemTokenName, IRewardItemMetadata>([
   [ALFA_FOUNTAIN_GOOD, alfaFountainGood],
   [ALFA_FOUNTAIN_GREAT, alfaFountainGreat],
   [ALFA_FOUNTAIN_MAJESTIC, alfaFountainMajestic],
-  [TRUCK_WITH_FLAMES, truckWithFlames],
+  [EXPRESS_DEPOT, expressDepot],
 ]);

@@ -14,7 +14,7 @@ const {
   ALFA_FOUNTAIN_GREAT,
   ALFA_FOUNTAIN_MAJESTIC,
   ALFA_FOUNTAIN_OK,
-  TRUCK_WITH_FLAMES,
+  EXPRESS_DEPOT,
 } = ItemTokenName;
 
 class Config {
@@ -102,7 +102,7 @@ class Config {
     [ALFA_FOUNTAIN_GOOD]: process.env.ALFA_GOOD_TOKEN_ID,
     [ALFA_FOUNTAIN_GREAT]: process.env.ALFA_GREAT_TOKEN_ID,
     [ALFA_FOUNTAIN_MAJESTIC]: process.env.ALFA_MAJESTIC_TOKEN_ID,
-    [TRUCK_WITH_FLAMES]: 'dont forget to upload token ID',
+    [EXPRESS_DEPOT]: process.env.EXPRESS_DEPOT_TOKEN_ID,
   };
 
   public pubsub = new PubSub();
@@ -210,6 +210,7 @@ class Config {
       'ALFA_GOOD_TOKEN_ID',
       'ALFA_GREAT_TOKEN_ID',
       'ALFA_MAJESTIC_TOKEN_ID',
+      'EXPRESS_DEPOT_TOKEN_ID',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
