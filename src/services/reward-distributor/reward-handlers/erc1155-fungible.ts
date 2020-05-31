@@ -1,8 +1,7 @@
 import { utils } from 'ethers';
-import { eSupportedInterfaces, IRewardAmounts } from '../../../types';
+import { eSupportedInterfaces, IRewardTriggerConfig } from '../../../types';
 import { IUser } from '@blockbrothers/firebasebb/dist/src/types';
 import { WalletReward } from '.';
-import { UserWithReferrer } from '../../../utils';
 
 export class Erc1155FungibleReward extends WalletReward {
   logPath = 'services.rewardDistributer.rewardHandlers.erc20Reward';
@@ -10,10 +9,9 @@ export class Erc1155FungibleReward extends WalletReward {
 
   constructor(
     rewardCurrency: string,
-    amounts: IRewardAmounts,
-    valueRequired?: number,
+    rewardTriggerConfig: IRewardTriggerConfig,
   ) {
-    super(rewardCurrency, amounts, valueRequired);
+    super(rewardCurrency, rewardTriggerConfig);
     if (this.rewardConfig.walletApi !== eSupportedInterfaces.erc1155) {
       throw new Error(
         'Incorrect configuration provided for ERC1155FungibleReward',
@@ -22,24 +20,7 @@ export class Erc1155FungibleReward extends WalletReward {
     this.tokenId = utils.bigNumberify(this.rewardConfig.tokenId);
   }
 
-  triggerReward = async (user: UserWithReferrer, value?: number) => {
-    if (this.checkIfValueRequirementMet(value)) {
-      if (this.amountToUser.gt(0)) {
-        this.sendRewardToAccount(user.self, this.amountToUser);
-      }
-      if (this.amountToReferrer.gt(0)) {
-        const referrer = await user.getReferrer();
-        if (referrer) {
-          this.sendRewardToAccount(referrer, this.amountToReferrer);
-        }
-      }
-    }
-  };
-
-  private sendRewardToAccount = async (
-    user: IUser,
-    amount: utils.BigNumber,
-  ) => {
+  sendRewardToAccount = async (user: IUser, amount: utils.BigNumber) => {
     const ethAddress = user?.wallet?.ethAddress;
     try {
       if (!ethAddress)
@@ -78,8 +59,6 @@ export class Erc1155FungibleReward extends WalletReward {
         });
       const { hash } = transaction;
       this.logger.debug('hash', hash);
-
-      return hash;
     } catch (error) {
       this.logger.warn('error', error.toString());
       throw error;

@@ -1,13 +1,12 @@
 import { BaseReward } from './base-reward';
 import { coinSymbolToCoinConfig } from '../../../common';
-import { IRewardAmounts } from '../../../types';
+import { IRewardTriggerConfig } from '../../../types';
 
 export abstract class WalletReward extends BaseReward {
   constructor(
     currencySymbol: string,
-    amounts: IRewardAmounts,
-    valueRequired?: number,
+    rewardTriggerConfig: IRewardTriggerConfig,
   ) {
-    super(coinSymbolToCoinConfig.get(currencySymbol), amounts, valueRequired);
+    super(coinSymbolToCoinConfig.get(currencySymbol), rewardTriggerConfig);
   }
 }

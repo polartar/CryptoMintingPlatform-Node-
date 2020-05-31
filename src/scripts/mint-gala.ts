@@ -1,8 +1,7 @@
 import { providers, Wallet, Contract, utils } from 'ethers';
 import { config as appConfig } from '../common';
 import env from './script-config';
-import abi = require('../common/ABI/erc1155.json');
-import { nodeSelector } from '../services';
+const abi = require('../common/ABI/erc1155.json') as any[];
 
 const { bigNumberify, parseUnits } = utils;
 

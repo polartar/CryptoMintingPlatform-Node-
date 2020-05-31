@@ -49,5 +49,4 @@ export * from './IOrderContext';
 export * from './IUniqueItem';
 export * from './ItemTokenName';
 export * from './IRewardItemMetadata';
-export * from './IRewardAmounts';
-export * from './RewardActions';
+export * from './IRewardTrigger';

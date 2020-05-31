@@ -1,10 +1,15 @@
-import { IUser, ItemTokenName, RewardActions } from '../../types';
+import {
+  IUser,
+  ItemTokenName,
+  RewardActions,
+  IRewardTriggerValues,
+} from '../../types';
 import {
   BaseReward,
   Erc1155FungibleReward,
   Erc1155NFTReward,
 } from './reward-handlers';
-import { UserWithReferrer } from '../../utils';
+import { UserHelper } from '../../utils';
 
 const {
   ALFA_FOUNTAIN_OK,
@@ -12,50 +17,62 @@ const {
   ALFA_FOUNTAIN_GREAT,
   ALFA_FOUNTAIN_MAJESTIC,
   BETA_KEY,
-  TRUCK_WITH_FLAMES,
+  EXPRESS_DEPOT,
 } = ItemTokenName;
 
 class RewardTrigger {
-  actionRewards = new Map<RewardActions, BaseReward[]>([
+  private actionRewards = new Map<RewardActions, BaseReward[]>([
     [
       RewardActions.WALLET_CREATED,
       [
         new Erc1155FungibleReward('GALA', {
-          amountToUser: '100',
-          amountToReferrer: '100',
+          amount: { toReferrer: 100, toUser: 100 },
         }),
-        new Erc1155NFTReward(BETA_KEY, { amountToUser: '1' }),
-        new Erc1155NFTReward(ALFA_FOUNTAIN_OK, { amountToReferrer: '1' }, 1),
-        new Erc1155NFTReward(ALFA_FOUNTAIN_GOOD, { amountToReferrer: '1' }, 10),
-        new Erc1155NFTReward(
-          ALFA_FOUNTAIN_GREAT,
-          { amountToReferrer: '1' },
-          50,
-        ),
-        new Erc1155NFTReward(
-          ALFA_FOUNTAIN_MAJESTIC,
-          { amountToReferrer: '1' },
-          100,
-        ),
+        new Erc1155NFTReward(BETA_KEY, {
+          amount: { toUser: 1 },
+        }),
+        new Erc1155NFTReward(ALFA_FOUNTAIN_OK, {
+          amount: { toReferrer: 1 },
+          valuesRequired: { referrer: 1 },
+        }),
+        new Erc1155NFTReward(ALFA_FOUNTAIN_GOOD, {
+          amount: { toReferrer: 1 },
+          valuesRequired: { referrer: 10 },
+        }),
+        new Erc1155NFTReward(ALFA_FOUNTAIN_GREAT, {
+          amount: { toReferrer: 1 },
+          valuesRequired: { referrer: 50 },
+        }),
+        new Erc1155NFTReward(ALFA_FOUNTAIN_MAJESTIC, {
+          amount: { toReferrer: 1 },
+          valuesRequired: { referrer: 100 },
+        }),
       ],
     ],
     [
       RewardActions.UPGRADED,
       [
         new Erc1155FungibleReward('GALA', {
-          amountToUser: '100',
-          amountToReferrer: '100',
+          amount: { toUser: 100, toReferrer: 100 },
         }),
-        new Erc1155NFTReward(TRUCK_WITH_FLAMES, { amountToUser: '1' }),
+        new Erc1155NFTReward(EXPRESS_DEPOT, { amount: { toUser: 1 } }),
       ],
     ],
   ]);
 
-  triggerAction = (action: RewardActions, user: IUser, value?: number) => {
+  triggerAction = (
+    action: RewardActions,
+    user: IUser,
+    triggerValues?: IRewardTriggerValues,
+  ) => {
     const rewards = this.actionRewards.get(action);
-    const userWithReferrer = new UserWithReferrer(user);
+    const userWithReferrer = new UserHelper(user);
     return Promise.all(
-      rewards.map(reward => reward.triggerReward(userWithReferrer, value)),
+      rewards.map(reward =>
+        reward.triggerReward(userWithReferrer, triggerValues),
+      ),
     );
   };
 }
+
+export const rewardTrigger = new RewardTrigger();

@@ -1,13 +1,10 @@
 import { IUser } from '../types';
 import { User } from '../models';
 
-export class UserWithReferrer {
-  self: IUser;
+export class UserHelper {
   private referrer: IUser;
 
-  constructor(user: IUser) {
-    this.self = user;
-  }
+  constructor(public self: IUser) {}
 
   getReferrer = async () => {
     if (this.referrer) return this.referrer;

@@ -1,53 +1,61 @@
 import { providers, utils, Contract, Wallet, constants } from 'ethers';
-import { ICoinMetadata, IRewardAmounts } from '../../../types';
+import {
+  ICoinMetadata,
+  IRewardTriggerValues,
+  IRewardTriggerConfig,
+  IUser,
+} from '../../../types';
 import { RewardDistributerConfig } from '../../../models';
 import { bigNumberify } from 'ethers/utils';
 import { nodeSelector, transactionService } from '../..';
-import { UserWithReferrer } from '../../../utils';
+import { UserHelper } from '../../../utils';
 import { config, logger, AlertService } from '../../../common';
 
 export abstract class BaseReward {
-  rewardWarnThreshold = bigNumberify(config.rewardWarnThreshold);
-  amountToUser: utils.BigNumber;
-  amountToReferrer: utils.BigNumber;
-  rewardConfig: ICoinMetadata;
-  contract: Contract;
-  rewardDistributerWallet: Wallet;
-  logPath: string;
-  ethProvider = new providers.JsonRpcProvider(config.ethNodeUrl);
-  alertService = new AlertService(
+  protected rewardWarnThreshold = bigNumberify(config.rewardWarnThreshold);
+  protected amountToUser: utils.BigNumber;
+  protected amountToReferrer: utils.BigNumber;
+  protected rewardConfig: ICoinMetadata;
+  protected contract: Contract;
+  protected rewardDistributerWallet: Wallet;
+  protected logPath: string;
+  protected ethProvider = new providers.JsonRpcProvider(config.ethNodeUrl);
+  protected alertService = new AlertService(
     config.isStage ? 'wallet-monitoring-stage' : 'wallet-monitoring',
   );
-  rewardDistributerWalletEthBalance: utils.BigNumber;
-  chainId = utils.getNetwork(this.ethProvider.network).chainId;
-  requiredValue: number;
-  totalAmountPerAction: utils.BigNumber;
+  protected rewardDistributerWalletEthBalance: utils.BigNumber;
+  protected chainId = utils.getNetwork(this.ethProvider.network).chainId;
+  protected requiredValues: IRewardTriggerValues;
+  protected totalAmountPerAction: utils.BigNumber;
 
   constructor(
     rewardConfig: ICoinMetadata,
-    amounts: IRewardAmounts,
-    requiredValue?: number,
+    triggerConfig: IRewardTriggerConfig,
   ) {
-    this.rewardConfig = rewardConfig;
-    this.requiredValue = requiredValue;
     const { decimalPlaces } = rewardConfig;
+    const { valuesRequired, amount } = triggerConfig;
+    this.rewardConfig = rewardConfig;
+    this.requiredValues = {
+      referrer: valuesRequired.referrer || 0,
+      user: valuesRequired.user || 0,
+    };
 
-    if (amounts.amountToUser) {
+    if (amount.toUser > 0) {
       this.amountToUser =
         decimalPlaces > 0
           ? utils.parseUnits(
-              amounts.amountToUser,
+              amount.toUser.toString(),
               this.rewardConfig.decimalPlaces,
             )
           : constants.One;
     } else {
       this.amountToUser = constants.Zero;
     }
-    if (amounts.amountToReferrer) {
+    if (amount.toReferrer > 0) {
       this.amountToReferrer =
         decimalPlaces > 0
           ? utils.parseUnits(
-              amounts.amountToUser,
+              amount.toReferrer.toString(),
               this.rewardConfig.decimalPlaces,
             )
           : constants.One;
@@ -122,8 +130,12 @@ export abstract class BaseReward {
     );
   };
 
-  protected checkIfValueRequirementMet = (value: number) => {
-    return this.requiredValue && value >= this.requiredValue;
+  protected checkIfUserValueRequirementMet = (value: number) => {
+    return value >= this.requiredValues.user;
+  };
+
+  protected checkIfReferrerValueRequirementMet = (value: number) => {
+    return value >= this.requiredValues.referrer;
   };
 
   protected sendContractTransaction = async (
@@ -156,8 +168,30 @@ export abstract class BaseReward {
     return txResponse;
   };
   abstract checkRewardThresholdAndAlert: () => Promise<boolean>;
-  abstract triggerReward: (
-    user: UserWithReferrer,
-    value?: number,
+
+  triggerReward = async (
+    user: UserHelper,
+    triggerValues: IRewardTriggerValues = {},
+  ) => {
+    if (
+      this.amountToUser.gt(0) &&
+      this.checkIfUserValueRequirementMet(triggerValues.user || 0)
+    ) {
+      this.sendRewardToAccount(user.self, this.amountToUser);
+    }
+    if (
+      this.amountToReferrer.gt(0) &&
+      this.checkIfReferrerValueRequirementMet(triggerValues.referrer || 0)
+    ) {
+      const referrer = await user.getReferrer();
+      if (referrer) {
+        this.sendRewardToAccount(referrer, this.amountToReferrer);
+      }
+    }
+  };
+
+  protected abstract sendRewardToAccount: (
+    user: IUser,
+    amount: utils.BigNumber,
   ) => Promise<void>;
 }

@@ -1,6 +1,6 @@
 import { providers, Wallet, Contract, utils } from 'ethers';
 import env from './script-config';
-import abi = require('../common/ABI/erc1155.json');
+const abi = require('../common/ABI/erc1155.json') as any[];
 import { logger } from '../common';
 
 const { GALA_ADDRESS, MNEMONIC, ETH_NODE_URL } = env;

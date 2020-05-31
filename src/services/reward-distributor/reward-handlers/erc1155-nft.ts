@@ -2,7 +2,7 @@ import { utils } from 'ethers';
 import {
   eSupportedInterfaces,
   ItemTokenName,
-  IRewardAmounts,
+  IRewardTriggerConfig,
 } from '../../../types';
 import { IUser } from '@blockbrothers/firebasebb/dist/src/types';
 import { ItemReward } from '.';
@@ -13,7 +13,7 @@ import {
   availableRewardTokenSupplyPipeline,
   IRewardTokenSupply,
 } from '../../../pipelines';
-import { UserWithReferrer } from '../../../utils';
+import { gameItemService } from '../../../services';
 
 export class Erc1155NFTReward extends ItemReward {
   logPath = 'services.rewardDistributer.rewardHandlers.erc20Reward';
@@ -21,10 +21,9 @@ export class Erc1155NFTReward extends ItemReward {
 
   constructor(
     itemName: ItemTokenName,
-    amounts: IRewardAmounts,
-    requiredValue?: number,
+    rewardTriggerConfig: IRewardTriggerConfig,
   ) {
-    super(itemName, amounts, requiredValue);
+    super(itemName, rewardTriggerConfig);
     if (this.rewardConfig.walletApi !== eSupportedInterfaces.erc1155) {
       throw new Error('Incorrect configuration provided for ERC1155NFTReward');
     }
@@ -51,71 +50,20 @@ export class Erc1155NFTReward extends ItemReward {
     }
   };
 
-  triggerReward = async (user: UserWithReferrer, value?: number) => {
-    if (this.checkIfValueRequirementMet(value)) {
-      if (this.amountToUser.gt(0)) {
-        this.sendRewardToAccount(user.self, this.amountToUser);
-      }
-      if (this.amountToReferrer.gt(0)) {
-        const referrer = await user.getReferrer();
-        this.sendRewardToAccount(referrer, this.amountToReferrer);
-      }
-    }
-  };
-
-  private sendRewardToAccount = async (
-    user: IUser,
-    amount: utils.BigNumber,
-  ) => {
+  sendRewardToAccount = async (user: IUser, amount: utils.BigNumber) => {
     const ethAddress = user?.wallet?.ethAddress;
     try {
       if (!ethAddress)
         throw new Error(
           `User ethAddress required to send ${this.rewardConfig.name}`,
         );
-      const nonce = await this.getNextNonce();
-      const tokenId = this.getNextTokenId();
-      if (!tokenId) {
-        this.alertService.postMessage(
-          `WARN: no token found to send to user.\n
-          userId: ${user.id}\n
-          tokenName: ${this.rewardConfig.name}\n
-          baseId: ${this.rewardConfig.tokenId}\n`,
-        );
-      }
-      this.logger.debug('contractAddress', this.contract.address);
-      this.logger.debug('amount', amount.toString());
-      this.logger.debug('nonce', nonce.toString());
-      const data = await this.contract.interface.functions.safeTransferFrom.encode(
-        [
-          this.rewardDistributerWallet.address,
-          ethAddress,
-          this.tokenId,
-          amount,
-          '0x0',
-        ],
-      );
-      const transaction = await this.sendContractTransaction(
-        data,
-        250000,
-        'Gala',
+
+      const result = await gameItemService.assignItemToUserByTokenId(
         user.id,
+        ethAddress,
+        this.tokenId.toString(),
+        amount.toNumber(),
       );
-
-      transaction
-        .wait(1)
-        .then(({ transactionHash }) => {
-          this.logger.debug('receiptTxhash', transactionHash);
-          this.checkRewardThresholdAndAlert();
-          this.checkGasThresholdAndAlert();
-        })
-        .catch((error: Error) => {
-          this.logger.warn('error', error.toString());
-        });
-      const { hash } = transaction;
-      this.logger.debug('hash', hash);
-
-      return hash;
     } catch (error) {
       this.logger.warn('error', error.toString());
       throw error;
