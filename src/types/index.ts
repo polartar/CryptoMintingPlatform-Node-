@@ -47,3 +47,6 @@ export * from './exchange-api/ITicks';
 export * from './exchange-api/IHistorySummary';
 export * from './IOrderContext';
 export * from './IUniqueItem';
+export * from './ItemTokenName';
+export * from './IRewardItemMetadata';
+export * from './IRewardTrigger';
