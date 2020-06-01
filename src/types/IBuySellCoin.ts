@@ -1,7 +1,9 @@
 export interface IBuySellCoin {
-  buyingCoin: string;
-  quantity?: number;
+  buyOrSell: string;
+  base: string;
+  quantityBase?: number;
+  quantityRel?: number;
   tokenId?: string;
-  sellingCoin: string;
+  rel: string;
   price?: number;
 }

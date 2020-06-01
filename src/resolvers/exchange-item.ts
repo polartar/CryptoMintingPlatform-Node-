@@ -24,13 +24,13 @@ const galaIName = 'GALA-I';
 class Resolvers extends ResolverBase {
   items = async (
     parent: any,
-    { buySellCoin }: { buySellCoin: IBuySellCoin },
+    { BuySellInput }: { BuySellInput: IBuySellCoin },
     { user }: Context,
   ) => {
     try {
       const orders = await exchangeService.getOrderbook({
-        base: buySellCoin.buyingCoin,
-        rel: buySellCoin.sellingCoin,
+        base: BuySellInput.base,
+        rel: BuySellInput.rel,
       });
       const lowestPrice = orders.asks.sort(
         (orderA, orderB) => orderA.price - orderB.price,
@@ -40,8 +40,8 @@ class Resolvers extends ResolverBase {
         price: lowestPrice,
         // fees: fee.amount,
         expires: new Date(),
-        buyingCoin: buySellCoin.buyingCoin,
-        sellingCoin: buySellCoin.sellingCoin,
+        base: BuySellInput.base,
+        rel: BuySellInput.rel,
       };
     } catch (err) {
       logger.debug(`resolvers.exchange.item.items.catch ${err}`);
@@ -96,38 +96,55 @@ class Resolvers extends ResolverBase {
       })
       .slice(0, 20);
   };
-  buy = async (
+  buySell = async (
     parent: any,
     {
-      buyItemInput,
+      buySellInput,
       walletPassword,
-    }: { buyItemInput: IBuySellCoin; walletPassword: string },
+    }: { buySellInput: IBuySellCoin; walletPassword: string },
     { user, wallet }: Context,
   ): Promise<IOrderStatus> => {
     try {
       await this.validateWalletPassword({
         password: walletPassword,
-        symbol: buyItemInput.sellingCoin,
+        symbol: buySellInput.rel,
         walletApi: wallet,
         user,
       });
-      const { uuid, baseAmount, relAmount } = await exchangeService.buy({
+      const payload = {
         userId: user.userId,
         walletPassword,
-        base: buyItemInput.buyingCoin,
-        rel: buyItemInput.sellingCoin,
-        quantityBase: buyItemInput.quantity,
-        tokenId: buyItemInput.tokenId,
-        price: buyItemInput.price,
-      });
-      return {
-        orderId: uuid,
-        status: OrderStatus.converting,
-        bought: baseAmount,
-        sold: relAmount,
+        base: buySellInput.base,
+        rel: buySellInput.rel,
+        quantityBase: buySellInput.quantityBase,
+        quantityRel: buySellInput.quantityRel,
+        tokenId: buySellInput.tokenId,
+        price: buySellInput.price,
       };
+
+      if (buySellInput.buyOrSell === 'Buy') {
+        const { uuid, baseAmount, relAmount } = await exchangeService.buy(
+          payload,
+        );
+        return {
+          orderId: uuid,
+          status: OrderStatus.converting,
+          bought: baseAmount,
+          sold: relAmount,
+        };
+      } else {
+        const { uuid, base_amount, rel_amount } = await exchangeService.sell(
+          payload,
+        );
+        return {
+          orderId: uuid,
+          status: OrderStatus.converting,
+          bought: base_amount,
+          sold: rel_amount,
+        };
+      }
     } catch (err) {
-      logger.debug(`resolvers.exchange.item.buy.catch ${err}`);
+      logger.debug(`resolvers.exchange.item.buySell.catch ${err}`);
       throw err;
     }
   };
@@ -147,41 +164,7 @@ class Resolvers extends ResolverBase {
       throw err;
     }
   };
-  sell = async (
-    parent: any,
-    {
-      sellItemInput,
-      walletPassword,
-    }: { sellItemInput: IBuySellCoin; walletPassword: string },
-    { user, wallet }: Context,
-  ): Promise<IOrderStatus> => {
-    try {
-      await this.validateWalletPassword({
-        password: walletPassword,
-        symbol: sellItemInput.sellingCoin,
-        walletApi: wallet,
-        user,
-      });
-      const { uuid, base_amount, rel_amount } = await exchangeService.sell({
-        userId: user.userId,
-        walletPassword,
-        base: sellItemInput.buyingCoin,
-        rel: sellItemInput.sellingCoin,
-        quantityBase: sellItemInput.quantity,
-        tokenId: sellItemInput.tokenId,
-        price: sellItemInput.price,
-      });
-      return {
-        orderId: uuid,
-        status: OrderStatus.converting,
-        bought: base_amount,
-        sold: rel_amount,
-      };
-    } catch (err) {
-      logger.debug(`resolvers.exchange.item.sell.catch ${err}`);
-      throw err;
-    }
-  };
+
   sellMany = async (
     parent: any,
     {
@@ -192,8 +175,12 @@ class Resolvers extends ResolverBase {
   ) => {
     try {
       return Promise.all(
-        sellManyItemInput.map(sellItemInput => {
-          return this.sell(parent, { sellItemInput, walletPassword }, context);
+        sellManyItemInput.map(buySellInput => {
+          return this.buySell(
+            parent,
+            { buySellInput, walletPassword },
+            context,
+          );
         }),
       );
     } catch (err) {
@@ -515,8 +502,7 @@ export default {
     marketHighLow: resolvers.marketHighLow,
   },
   Mutation: {
-    buy: resolvers.buy,
-    sell: resolvers.sell,
+    buySell: resolvers.buySell,
     cancelItem: resolvers.cancel,
     sellMany: resolvers.sellMany,
   },
