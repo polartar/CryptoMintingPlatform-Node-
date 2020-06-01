@@ -1,10 +1,10 @@
 import { utils } from 'ethers';
 import { eSupportedInterfaces, IRewardTriggerConfig } from '../../../types';
-import { IUser } from '@blockbrothers/firebasebb/dist/src/types';
 import { WalletReward } from '.';
+import { IRewardAudit } from '../../../models';
 
 export class Erc1155FungibleReward extends WalletReward {
-  logPath = 'services.rewardDistributer.rewardHandlers.erc20Reward';
+  logPath = 'services.rewardDistributer.rewardHandlers.erc1155Fungible';
   tokenId: utils.BigNumber;
 
   constructor(
@@ -24,16 +24,36 @@ export class Erc1155FungibleReward extends WalletReward {
     userId: string,
     ethAddress: string,
     amount: utils.BigNumber,
+    valueSent: number,
   ) => {
+    const audit: IRewardAudit = {
+      amountSent: amount.toString(),
+      rewardType: 'ERC1155-Fungible',
+      userEthAddress: ethAddress,
+      userId: userId,
+      valueSent,
+    };
     try {
       if (!ethAddress)
         throw new Error(
           `User ethAddress required to send ${this.rewardConfig.name}`,
         );
-      const nonce = await this.getNextNonce();
+
+      const block = await this.ethProvider.getBlockNumber();
+      console.log(block);
       this.logger.debug('contractAddress', this.contract.address);
       this.logger.debug('amount', amount.toString());
-      this.logger.debug('nonce', nonce.toString());
+      this.logger.info(
+        'fungibleReward',
+        `${[
+          this.rewardConfig.name,
+          this.rewardConfig.tokenId.toString(),
+          userId,
+          ethAddress,
+          amount.toString(),
+        ].join(', ')}`,
+      );
+
       const data = await this.contract.interface.functions.safeTransferFrom.encode(
         [
           this.rewardDistributerWallet.address,
@@ -49,7 +69,8 @@ export class Erc1155FungibleReward extends WalletReward {
         'Gala',
         userId,
       );
-
+      audit.txHash = transaction.hash;
+      this.saveRewardAudit(audit);
       transaction
         .wait(1)
         .then(({ transactionHash }) => {
@@ -58,20 +79,21 @@ export class Erc1155FungibleReward extends WalletReward {
           this.checkGasThresholdAndAlert();
         })
         .catch((error: Error) => {
-          this.logger.warn('error', error.toString());
+          this.logger.warn('transaction.catch', error.toString());
         });
       const { hash } = transaction;
       this.logger.debug('hash', hash);
     } catch (error) {
-      this.logger.warn('error', error.toString());
+      this.logger.warn('sendRewardToAccount.catch', error.toString());
+      this.saveRewardAudit({ ...audit, error: error.stack });
       throw error;
     }
   };
 
   checkRewardThresholdAndAlert = async () => {
     const tokenBalance = await this.contract.balanceOf(
-      this.tokenId,
       this.rewardDistributerWallet.address,
+      this.tokenId,
     );
     const estTokenTxsRemaining = tokenBalance.div(this.totalAmountPerAction);
     const lowOnTokens = estTokenTxsRemaining.lte(this.rewardWarnThreshold);

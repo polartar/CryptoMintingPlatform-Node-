@@ -5,7 +5,11 @@ import {
   IRewardTriggerConfig,
   IUser,
 } from '../../../types';
-import { RewardDistributerConfig } from '../../../models';
+import {
+  RewardDistributerConfig,
+  IRewardAudit,
+  RewardAudit,
+} from '../../../models';
 import { bigNumberify } from 'ethers/utils';
 import { nodeSelector, transactionService } from '../..';
 import { UserHelper } from '../../../utils';
@@ -25,7 +29,9 @@ export abstract class BaseReward {
     config.isStage ? 'wallet-monitoring-stage' : 'wallet-monitoring',
   );
   protected rewardDistributerWalletEthBalance: utils.BigNumber;
-  protected chainId = utils.getNetwork(this.ethProvider.network).chainId;
+  protected chainId = config.cryptoNetwork.toLowerCase().includes('main')
+    ? 1
+    : 3;
   protected requiredValues: IRewardTriggerValues;
   protected totalAmountPerAction: utils.BigNumber;
 
@@ -35,10 +41,11 @@ export abstract class BaseReward {
   ) {
     const { decimalPlaces } = rewardConfig;
     const { valuesRequired, amount } = triggerConfig;
+    this.ethProvider;
     this.rewardConfig = rewardConfig;
     this.requiredValues = {
-      referrer: valuesRequired.referrer || 0,
-      user: valuesRequired.user || 0,
+      referrer: valuesRequired?.referrer || 0,
+      user: valuesRequired?.user || 0,
     };
 
     if (amount.toUser > 0) {
@@ -80,6 +87,9 @@ export abstract class BaseReward {
   }
 
   logger = {
+    info: (key: string, value: string) => {
+      logger.info(`${this.logPath}.${key}: ${value}`);
+    },
     debug: (key: string, value: string) => {
       logger.debug(`${this.logPath}.${key}: ${value}`);
     },
@@ -178,7 +188,7 @@ export abstract class BaseReward {
       this.amountToUser.gt(0) &&
       this.checkIfUserValueRequirementMet(triggerValues.user || 0)
     ) {
-      this.sendRewardToUser(user.self, this.amountToUser);
+      this.sendRewardToUser(user.self, this.amountToUser, triggerValues.user);
     }
     if (
       this.amountToReferrer.gt(0) &&
@@ -186,7 +196,11 @@ export abstract class BaseReward {
     ) {
       const referrer = await user.getReferrer();
       if (referrer) {
-        this.sendRewardToReferrer(referrer, this.amountToReferrer);
+        this.sendRewardToReferrer(
+          referrer,
+          this.amountToReferrer,
+          triggerValues.referrer,
+        );
       }
     }
   };
@@ -195,16 +209,44 @@ export abstract class BaseReward {
     userId: string,
     ethAddress: string,
     amount: utils.BigNumber,
+    valueSent: number,
   ) => Promise<void>;
 
   protected sendRewardToReferrer = async (
     user: IWalletReferralCountAggregate,
     amount: utils.BigNumber,
+    valueSent?: number,
   ) => {
-    return this.sendRewardToAccount(user.id, user.ethAddress, amount);
+    return this.sendRewardToAccount(
+      user.id,
+      user.ethAddress,
+      amount,
+      valueSent,
+    );
   };
 
-  protected sendRewardToUser = async (user: IUser, amount: utils.BigNumber) => {
-    return this.sendRewardToAccount(user.id, user?.wallet?.ethAddress, amount);
+  protected sendRewardToUser = async (
+    user: IUser,
+    amount: utils.BigNumber,
+    valueSent: number,
+  ) => {
+    return this.sendRewardToAccount(
+      user.id,
+      user?.wallet?.ethAddress,
+      amount,
+      valueSent,
+    );
+  };
+
+  protected saveRewardAudit = (audit: IRewardAudit) => {
+    return RewardAudit.create({
+      rewardWalletAddress: this.rewardDistributerWallet.address,
+      contractAddress: this.contract.address,
+      rewardName: this.rewardConfig.name,
+      decimalPlaces: this.rewardConfig.decimalPlaces,
+      amountToReferrer: this.amountToReferrer.toString(),
+      amountToUser: this.amountToUser.toString(),
+      ...audit,
+    });
   };
 }

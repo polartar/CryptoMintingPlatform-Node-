@@ -55,7 +55,7 @@ class RewardTrigger {
       RewardActions.UPGRADED,
       [
         new Erc1155FungibleReward('GALA', {
-          amount: { toUser: 100, toReferrer: 100 },
+          amount: { toUser: 100 },
         }),
         new Erc1155NFTReward(EXPRESS_DEPOT, { amount: { toUser: 1 } }),
       ],

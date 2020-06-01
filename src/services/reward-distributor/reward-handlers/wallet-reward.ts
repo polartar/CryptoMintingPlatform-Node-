@@ -7,6 +7,9 @@ export abstract class WalletReward extends BaseReward {
     currencySymbol: string,
     rewardTriggerConfig: IRewardTriggerConfig,
   ) {
-    super(coinSymbolToCoinConfig.get(currencySymbol), rewardTriggerConfig);
+    super(
+      coinSymbolToCoinConfig.get(currencySymbol.toLowerCase()),
+      rewardTriggerConfig,
+    );
   }
 }

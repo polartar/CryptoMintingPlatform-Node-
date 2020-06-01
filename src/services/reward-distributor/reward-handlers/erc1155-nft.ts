@@ -5,7 +5,7 @@ import {
   IRewardTriggerConfig,
 } from '../../../types';
 import { ItemReward } from '.';
-import { WalletTransaction } from '../../../models';
+import { WalletTransaction, IRewardAudit } from '../../../models';
 import {
   availableRewardTokensPipeline,
   ITokenIdsAvailable,
@@ -15,7 +15,7 @@ import {
 import { gameItemService } from '../../../services';
 
 export class Erc1155NFTReward extends ItemReward {
-  logPath = 'services.rewardDistributer.rewardHandlers.erc20Reward';
+  logPath = 'services.rewardDistributer.rewardHandlers.erc1155-nft';
   tokenId: utils.BigNumber;
 
   constructor(
@@ -53,12 +53,34 @@ export class Erc1155NFTReward extends ItemReward {
     userId: string,
     ethAddress: string,
     amount: utils.BigNumber,
+    valueSent: number,
   ) => {
+    const audit: IRewardAudit = {
+      amountSent: amount.toString(),
+      rewardType: 'ERC1155-NFT',
+      userEthAddress: ethAddress,
+      userId: userId,
+      valueSent,
+      txHash: '',
+      error: '',
+    };
     try {
       if (!ethAddress)
         throw new Error(
           `User ethAddress required to send ${this.rewardConfig.name}`,
         );
+      this.logger.info(
+        'nftReward',
+        `${[
+          this.rewardConfig.name,
+          this.rewardConfig.tokenId.toString(),
+          userId,
+          ethAddress,
+          amount.toString(),
+        ].join(', ')}`,
+      );
+
+      this.saveRewardAudit(audit);
 
       await gameItemService.assignItemToUserByTokenId(
         userId,
@@ -67,7 +89,8 @@ export class Erc1155NFTReward extends ItemReward {
         amount.toNumber(),
       );
     } catch (error) {
-      this.logger.warn('error', error.toString());
+      this.logger.warn('sendRewardToAccount.catch', error.toString());
+      this.saveRewardAudit({ ...audit, error: error.stack });
       throw error;
     }
   };
