@@ -37,7 +37,7 @@ interface IRewardConfig {
   upgradeAccountName: string;
 }
 
-class Resolvers extends ResolverBase {
+export class ShareActivateResolvers extends ResolverBase {
   protected usdToBtc = (btcUsdPrice: number, amount: number) => {
     const btcPriceInCents = Math.round(btcUsdPrice * 100);
     return Math.round(amount * 100) / btcPriceInCents;
@@ -492,7 +492,7 @@ class Resolvers extends ResolverBase {
   };
 }
 
-const resolvers = new Resolvers();
+const resolvers = new ShareActivateResolvers();
 
 export default logResolver({
   Mutation: {

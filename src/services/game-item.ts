@@ -65,6 +65,21 @@ class GameItemService extends ServerToServerService {
     return data.map(item => item.nftBaseId);
   };
 
+  assignItemToUserByTokenIdLimitOne = async (
+    userId: string,
+    userEthAddress: string,
+    tokenBaseIds: string[],
+  ) => {
+    const jwtAxios = this.getAxios({ userId });
+    const url = `${this.baseUrl}/add/limit-one`;
+    const { data } = await jwtAxios.post<{ tokenId: string }[]>(url, {
+      userEthAddress,
+      itemIds: tokenBaseIds,
+      userId,
+    });
+    return data.map(item => item.tokenId);
+  };
+
   getRemaingSupplyForNftBaseId = async (userId: string, nftBaseId: string) => {
     const jwtAxios = this.getAxios({ userId });
     const { data } = await jwtAxios.get<{ count: number }>(

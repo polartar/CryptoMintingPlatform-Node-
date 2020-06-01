@@ -7,12 +7,11 @@ import {
 import { ItemReward } from '.';
 import { WalletTransaction, IRewardAudit } from '../../../models';
 import {
-  availableRewardTokensPipeline,
-  ITokenIdsAvailable,
   availableRewardTokenSupplyPipeline,
   IRewardTokenSupply,
 } from '../../../pipelines';
 import { gameItemService } from '../../../services';
+import { logger } from 'handlebars';
 
 export class Erc1155NFTReward extends ItemReward {
   logPath = 'services.rewardDistributer.rewardHandlers.erc1155-nft';
@@ -28,26 +27,6 @@ export class Erc1155NFTReward extends ItemReward {
     }
     this.tokenId = utils.bigNumberify(this.rewardConfig.tokenId);
   }
-
-  getNextTokenId = async () => {
-    const tokenIdsFromIndexer = (await WalletTransaction.aggregate(
-      availableRewardTokensPipeline(
-        this.rewardDistributerWallet.address,
-        this.rewardConfig.tokenId,
-      ),
-    )) as ITokenIdsAvailable[];
-    for (const availableToken of tokenIdsFromIndexer) {
-      const token = utils.bigNumberify(availableToken.tokenId);
-      const owner = await this.contract.ownerOf(token);
-      if (owner === this.rewardDistributerWallet.address) {
-        return token;
-      } else {
-        this.alertService.postMessage(
-          `WARN: ${availableToken.tokenId} identified for reward, but not owned by reward distributer`,
-        );
-      }
-    }
-  };
 
   sendRewardToAccount = async (
     userId: string,
@@ -80,14 +59,19 @@ export class Erc1155NFTReward extends ItemReward {
         ].join(', ')}`,
       );
 
-      this.saveRewardAudit(audit);
-
-      await gameItemService.assignItemToUserByTokenId(
-        userId,
-        ethAddress,
-        this.tokenId.toString(),
-        amount.toNumber(),
-      );
+      try {
+        const [
+          result,
+        ] = await gameItemService.assignItemToUserByTokenIdLimitOne(
+          userId,
+          ethAddress,
+          [this.tokenId.toHexString()],
+        );
+        audit.txHash = result;
+        this.saveRewardAudit(audit);
+      } catch (error) {
+        this.logger.warn('sendRewardToAccount.catch', error.stack);
+      }
     } catch (error) {
       this.logger.warn('sendRewardToAccount.catch', error.toString());
       this.saveRewardAudit({ ...audit, error: error.stack });
