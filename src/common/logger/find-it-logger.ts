@@ -7,8 +7,8 @@ export const logDebug = (
   meta?: { [key: string]: string | number },
 ) => {
   if (meta) {
-    console.log(`+++++${methodName}::${label}=${value}`);
+    logger.debug(`+++++${methodName}::${label}=${value}`, { meta });
   } else {
-    console.log(`+++++${methodName}::${label}=${value}`);
+    logger.debug(`+++++${methodName}::${label}=${value}`);
   }
 };
