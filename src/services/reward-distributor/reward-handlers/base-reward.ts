@@ -13,14 +13,14 @@ import {
 import { bigNumberify } from 'ethers/utils';
 import { nodeSelector, transactionService } from '../..';
 import { UserHelper } from '../../../utils';
-import { config, logger, AlertService } from '../../../common';
+import { config, logger, AlertService, logDebug } from '../../../common';
 import { IWalletReferralCountAggregate } from '../../../pipelines';
 
 export abstract class BaseReward {
+  rewardConfig: ICoinMetadata;
   protected rewardWarnThreshold = bigNumberify(config.rewardWarnThreshold);
   protected amountToUser: utils.BigNumber;
   protected amountToReferrer: utils.BigNumber;
-  protected rewardConfig: ICoinMetadata;
   protected contract: Contract;
   protected rewardDistributerWallet: Wallet;
   protected logPath: string;
@@ -198,47 +198,31 @@ export abstract class BaseReward {
     user: UserHelper,
     triggerValues: IRewardTriggerValues = {},
   ) => {
-    this.logger.debug(
+    logDebug('triggerReward', 'userId', user.self.id);
+    logDebug('triggerReward', 'triggerValues.user', triggerValues.user);
+    logDebug('triggerReward', 'triggerValues.referrer', triggerValues.referrer);
+    logDebug('triggerReward', 'amountToUser', this.amountToUser.toString());
+    logDebug(
       'triggerReward',
-      [
-        this.rewardConfig.name,
-        this.rewardConfig.tokenId,
-        user.self.id,
-        this.amountToUser.toString(),
-        this.amountToReferrer.toString(),
-        triggerValues.user,
-      ].join(','),
+      'amountToReferrer',
+      this.amountToReferrer.toString(),
     );
 
     if (
       this.amountToUser.gt(0) &&
       this.checkIfUserValueRequirementMet(triggerValues.user || 0)
     ) {
-      this.logger.debug(
-        'triggerReward.sendRewardToUser',
-        `${[
-          this.rewardConfig.name,
-          user.self.id,
-          this.amountToUser.toString(),
-          triggerValues.user,
-        ].join(',')}`,
-      );
+      logDebug('triggerReward', 'sendToUser.name', this.rewardConfig.name);
       this.sendRewardToUser(user.self, this.amountToUser, triggerValues.user);
     }
     if (
       this.amountToReferrer.gt(0) &&
       this.checkIfReferrerValueRequirementMet(triggerValues.referrer || 0)
     ) {
+      logDebug('triggerReward', 'sendToReferrer.name', this.rewardConfig.name);
       const referrer = await user.getReferrer();
+      logDebug('triggerReward', 'referrer', !!referrer);
       if (referrer) {
-        this.logger.debug(
-          'triggerReward.sendRewardToUser',
-          `${[
-            referrer.id,
-            this.amountToReferrer.toString(),
-            triggerValues.referrer,
-          ].join(',')}`,
-        );
         this.sendRewardToReferrer(
           referrer,
           this.amountToReferrer,
@@ -260,6 +244,10 @@ export abstract class BaseReward {
     amount: utils.BigNumber,
     valueSent?: number,
   ) => {
+    logDebug('sendRewardToReferrer', 'this.name', this.rewardConfig.name);
+    logDebug('sendRewardToReferrer', 'user.id', user.id);
+    logDebug('sendRewardToReferrer', 'user.ethAddress', user.ethAddress);
+    logDebug('sendRewardToReferrer', 'amount', amount.toString());
     return this.sendRewardToAccount(
       user.id,
       user.ethAddress,
@@ -273,6 +261,10 @@ export abstract class BaseReward {
     amount: utils.BigNumber,
     valueSent: number,
   ) => {
+    logDebug('sendRewardToUser', 'this.name', this.rewardConfig.name);
+    logDebug('sendRewardToUser', 'user.id', user.id);
+    logDebug('sendRewardToUser', 'user.ethAddress', user?.wallet?.ethAddress);
+    logDebug('sendRewardToUser', 'amount', amount.toString());
     return this.sendRewardToAccount(
       user.id,
       user?.wallet?.ethAddress,

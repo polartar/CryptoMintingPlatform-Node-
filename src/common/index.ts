@@ -8,3 +8,4 @@ export {
 } from './wallet-config';
 export { AlertService } from './alerts';
 export { itemRewardConfig } from './item-reward-config';
+export { logDebug } from './logger';

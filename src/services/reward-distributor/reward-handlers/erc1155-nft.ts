@@ -11,7 +11,7 @@ import {
   IRewardTokenSupply,
 } from '../../../pipelines';
 import { gameItemService } from '../../../services';
-import { logger } from 'handlebars';
+import { logDebug } from '../../../common';
 
 export class Erc1155NFTReward extends ItemReward {
   logPath = 'services.rewardDistributer.rewardHandlers.erc1155-nft';
@@ -34,6 +34,11 @@ export class Erc1155NFTReward extends ItemReward {
     amount: utils.BigNumber,
     valueSent: number,
   ) => {
+    logDebug('sendRewardToAccount', 'name', this.rewardConfig.name);
+    logDebug('sendRewardToAccount', 'ethAddress', ethAddress);
+    logDebug('sendRewardToAccount', 'userId', userId);
+    logDebug('sendRewardToAccount', 'amount', amount.toString());
+    logDebug('sendRewardToAccount', 'valueSent', valueSent);
     const audit: IRewardAudit = {
       amountSent: amount.toString(),
       rewardType: 'ERC1155-NFT',
@@ -48,17 +53,8 @@ export class Erc1155NFTReward extends ItemReward {
         throw new Error(
           `User ethAddress required to send ${this.rewardConfig.name}`,
         );
-      this.logger.info(
-        'nftReward',
-        `${[
-          this.rewardConfig.name,
-          this.rewardConfig.tokenId.toString(),
-          userId,
-          ethAddress,
-          amount.toString(),
-        ].join(', ')}`,
-      );
 
+      logDebug('sendRewardToAccount', 'gameItemService', 'before');
       try {
         const [
           result,
@@ -67,9 +63,12 @@ export class Erc1155NFTReward extends ItemReward {
           ethAddress,
           [this.tokenId.toHexString()],
         );
+        logDebug('sendRewardToAccount', 'gameItemService', 'after');
+        logDebug('sendRewardToAccount', 'txHash', audit.txHash);
         audit.txHash = result;
         this.saveRewardAudit(audit);
       } catch (error) {
+        logDebug('sendRewardToAccount', 'error', error.stack);
         this.logger.warn('sendRewardToAccount.catch', error.stack);
       }
     } catch (error) {
