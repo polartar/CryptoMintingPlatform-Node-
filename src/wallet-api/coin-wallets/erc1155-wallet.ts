@@ -83,9 +83,11 @@ class Erc1155API extends EthWallet {
       };
       return feeData;
     } catch (error) {
-      logger.warn(
-        `walletApi.coin-wallets.Erc1155Wallet.estimateFee.catch:${error}`,
-      );
+      if (!error.message.includes('always failing transaction')) {
+        logger.warn(
+          `walletApi.coin-wallets.Erc1155Wallet.estimateFee.catch:${error}`,
+        );
+      }
       const backupFeeEstimate = this.toEther(
         this.FALLBACK_GAS_VALUE.mul(gasPrice),
       );

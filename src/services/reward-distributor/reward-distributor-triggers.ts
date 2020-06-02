@@ -10,6 +10,7 @@ import {
   Erc1155NFTReward,
 } from './reward-handlers';
 import { UserHelper } from '../../utils';
+import { logger } from '../../common';
 
 const {
   ALFA_FOUNTAIN_OK,
@@ -67,7 +68,16 @@ class RewardTrigger {
     userHelper: UserHelper,
     triggerValues?: IRewardTriggerValues,
   ) => {
+    logger.debug(
+      'services.rewardDistributer.rewardDistributerTriggers.triggerAction.action',
+      action,
+    );
+    logger.debug(
+      'services.rewardDistributer.rewardDistributerTriggers.triggerAction.userHelper.id',
+      userHelper.self.id,
+    );
     const rewards = this.actionRewards.get(action);
+
     return Promise.all(
       rewards.map(reward => reward.triggerReward(userHelper, triggerValues)),
     );

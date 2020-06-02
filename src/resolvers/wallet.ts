@@ -94,15 +94,14 @@ class Resolvers extends ResolverBase {
         if (['gala', 'connect'].includes(config.brand)) {
           const userHelper = rewardTrigger.getUserHelper(referredUser);
           const referrer = await userHelper.getReferrer();
-          if (referrer) {
-            await rewardTrigger.triggerAction(
-              RewardActions.WALLET_CREATED,
-              userHelper,
-              {
-                referrer: referrer.referralsWithWallet,
-              },
-            );
-          }
+          const triggerValue = referrer
+            ? { referrer: referrer.referralsWithWallet }
+            : undefined;
+          await rewardTrigger.triggerAction(
+            RewardActions.WALLET_CREATED,
+            userHelper,
+            triggerValue,
+          );
         }
 
         if (referredUser && referredUser.referredBy) {

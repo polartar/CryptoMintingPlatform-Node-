@@ -112,7 +112,7 @@ export abstract class BaseReward {
       );
     }
     const { nonce } = distrubuterConfig;
-
+    this.logger.debug('nonce', nonce.toString());
     return nonce;
   };
 
@@ -142,10 +142,20 @@ export abstract class BaseReward {
   };
 
   protected checkIfUserValueRequirementMet = (value: number) => {
+    logger.debug('checkIfUserValuerequirementsMet.value', value.toString());
+    logger.debug(
+      'checkIfUserValuerequirementsMet.requiredValues.user',
+      this.requiredValues.user,
+    );
     return value >= this.requiredValues.user;
   };
 
   protected checkIfReferrerValueRequirementMet = (value: number) => {
+    logger.debug('checkIfReferrerValuerequirementsMet.value', value.toString());
+    logger.debug(
+      'checkIfReferrerValuerequirementsMet.requiredValues.user',
+      this.requiredValues.user,
+    );
     return value >= this.requiredValues.referrer;
   };
 
@@ -171,6 +181,10 @@ export abstract class BaseReward {
     const parsedTx = utils.parseTransaction(transaction);
     await nodeSelector.assignNodeToMineTransaction(parsedTx.hash);
     const txResponse = await this.ethProvider.sendTransaction(transaction);
+    this.logger.debug(
+      'sendContractTransaction',
+      `${[fromUserId, toUserId, txResponse.hash].join(',')}`,
+    );
     await transactionService.savePendingErc1155Transaction(
       txResponse,
       fromUserId,
@@ -188,6 +202,14 @@ export abstract class BaseReward {
       this.amountToUser.gt(0) &&
       this.checkIfUserValueRequirementMet(triggerValues.user || 0)
     ) {
+      this.logger.debug(
+        'triggerReward.sendRewardToUser',
+        `${[
+          user.self.id,
+          this.amountToUser.toString(),
+          triggerValues.user,
+        ].join(',')}`,
+      );
       this.sendRewardToUser(user.self, this.amountToUser, triggerValues.user);
     }
     if (
@@ -196,6 +218,14 @@ export abstract class BaseReward {
     ) {
       const referrer = await user.getReferrer();
       if (referrer) {
+        this.logger.debug(
+          'triggerReward.sendRewardToUser',
+          `${[
+            referrer.id,
+            this.amountToReferrer.toString(),
+            triggerValues.referrer,
+          ].join(',')}`,
+        );
         this.sendRewardToReferrer(
           referrer,
           this.amountToReferrer,
