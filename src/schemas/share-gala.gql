@@ -49,10 +49,10 @@ type Query {
   galaShareConfig: GalaShareConfig!
 }
 
-type Mutation {
-  galaShareActivate(
-    walletPassword: String!
-    numLootBoxes: Int
-    orderContext: OrderContext
-  ): TxSendResponse!
-}
+# type Mutation {
+#   galaShareActivate(
+#     walletPassword: String!
+#     numLootBoxes: Int
+#     orderContext: OrderContext
+#   ): TxSendResponse!
+# }
