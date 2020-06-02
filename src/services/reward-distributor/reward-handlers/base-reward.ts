@@ -198,6 +198,18 @@ export abstract class BaseReward {
     user: UserHelper,
     triggerValues: IRewardTriggerValues = {},
   ) => {
+    this.logger.debug(
+      'triggerReward',
+      [
+        this.rewardConfig.name,
+        this.rewardConfig.tokenId,
+        user.self.id,
+        this.amountToUser.toString(),
+        this.amountToReferrer.toString(),
+        triggerValues.user,
+      ].join(','),
+    );
+
     if (
       this.amountToUser.gt(0) &&
       this.checkIfUserValueRequirementMet(triggerValues.user || 0)
@@ -205,6 +217,7 @@ export abstract class BaseReward {
       this.logger.debug(
         'triggerReward.sendRewardToUser',
         `${[
+          this.rewardConfig.name,
           user.self.id,
           this.amountToUser.toString(),
           triggerValues.user,

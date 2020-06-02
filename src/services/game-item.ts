@@ -1,4 +1,4 @@
-import { config } from '../common';
+import { config, logger } from '../common';
 import { ServerToServerService } from './server-to-server';
 import { IItem, IGetUserItemResponse } from '../types';
 import { AxiosResponse } from 'axios';
@@ -70,6 +70,13 @@ class GameItemService extends ServerToServerService {
     userEthAddress: string,
     tokenBaseIds: string[],
   ) => {
+    logger.debug(
+      `services.game-item.assignItemToUserByTokenIdLimitOne: ${[
+        userId,
+        userEthAddress,
+        tokenBaseIds.join(','),
+      ].join(':')}`,
+    );
     const jwtAxios = this.getAxios({ userId });
     const url = `${this.baseUrl}/add/limit-one`;
     const { data } = await jwtAxios.post<{ tokenId: string }[]>(url, {
@@ -77,7 +84,13 @@ class GameItemService extends ServerToServerService {
       itemIds: tokenBaseIds,
       userId,
     });
-    return data.map(item => item.tokenId);
+    const results = data.map(item => item.tokenId);
+    logger.debug(
+      `services.game-item.assignItemToUserByTokenIdLimitOne.results: ${results.join(
+        '&',
+      )}`,
+    );
+    return results;
   };
 
   getRemaingSupplyForNftBaseId = async (userId: string, nftBaseId: string) => {
