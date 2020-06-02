@@ -14,6 +14,6 @@ export interface IRewardTriggerConfig {
 }
 
 export enum RewardActions {
-  UPGRADED,
-  WALLET_CREATED,
+  UPGRADED = 'UPGRADED',
+  WALLET_CREATED = 'WALLET_CREATED',
 }

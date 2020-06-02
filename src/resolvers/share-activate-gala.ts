@@ -1,7 +1,6 @@
-import { config } from '../common';
+import { config, logDebug } from '../common';
 import { gameItemService } from '../services';
 import { WalletConfig } from '../models';
-import { logResolver } from '../common/logger';
 import { ShareActivateResolvers } from './share-activate';
 import { rewardTrigger } from '../services/reward-distributor/reward-distributor-triggers';
 import { Context, IUser, IOrderContext, RewardActions } from '../types';
@@ -42,7 +41,7 @@ class GalaShareUpgradeResolvers extends ShareActivateResolvers {
     return gameItemService.assignItemsToUser(userId, userEthAddress, quantity);
   };
 
-  shareActivate = async (
+  galaShareActivate = async (
     parent: any,
     args: {
       walletPassword: string;
@@ -56,8 +55,10 @@ class GalaShareUpgradeResolvers extends ShareActivateResolvers {
       dataSources: { cryptoFavorites, sendEmail },
     }: Context,
   ) => {
+    logDebug('galaShareActivate', 'user', user.userId);
     const REWARD_TYPE = 'gala';
     const { walletPassword, numLootBoxes = 1, orderContext = {} } = args;
+    logDebug('galaShareActivate', 'numLootBoxes', numLootBoxes);
     this.requireAuth(user);
     try {
       const [
@@ -69,13 +70,65 @@ class GalaShareUpgradeResolvers extends ShareActivateResolvers {
         cryptoFavorites.getBtcUsdPrice(),
         this.getRewardconfig(),
       ]);
+      logDebug(
+        'galaShareActivate',
+        'rewardConfig.companyFee',
+        rewardConfig.companyFee,
+      );
+      logDebug(
+        'galaShareActivate',
+        'rewardConfig.referrerReward',
+        rewardConfig.referrerReward,
+      );
+      logDebug(
+        'galaShareActivate',
+        'rewardConfig.rewardAmount',
+        rewardConfig.rewardAmount,
+      );
+      logDebug(
+        'galaShareActivate',
+        'rewardConfig.rewardCurrency',
+        rewardConfig.rewardCurrency,
+      );
+      logDebug(
+        'galaShareActivate',
+        'rewardConfig.referrerReward',
+        rewardConfig.referrerReward,
+      );
       this.throwIfIneligibleForUpgrade(userFromDb, REWARD_TYPE);
+      const isReferrerEligible = this.isGalaReferrerEligible(referrer);
+      logDebug('galaShareActivate', 'isReferrerEligible', isReferrerEligible);
       const paymentDetails = await this.getPaymentDetails(
         rewardConfig,
         btcUsdPrice,
         referrer,
-        this.isGalaReferrerEligible(referrer),
+        isReferrerEligible,
         numLootBoxes,
+      );
+      logDebug(
+        'galaShareActivate',
+        'paymentDetails.btcToCompany',
+        paymentDetails.btcToCompany,
+      );
+      logDebug(
+        'galaShareActivate',
+        'paymentDetails.btcToReferre',
+        paymentDetails.btcToReferrer,
+      );
+      logDebug(
+        'galaShareActivate',
+        'paymentDetails.referrerMissedBtc',
+        paymentDetails.referrerMissedBtc,
+      );
+      logDebug(
+        'galaShareActivate',
+        'paymentDetails.lootBoxExtraPaid',
+        paymentDetails.lootBoxExtraPaid,
+      );
+      logDebug(
+        'galaShareActivate',
+        'paymentDetails.lootBoxesPurchase',
+        paymentDetails.lootBoxesPurchased,
       );
       const outputs = await this.getOutputs(
         paymentDetails.btcToCompany,
@@ -83,14 +136,16 @@ class GalaShareUpgradeResolvers extends ShareActivateResolvers {
         referrer?.wallet?.btcAddress,
         REWARD_TYPE,
       );
-      logger.JSON.debug(paymentDetails);
-
+      logDebug('galaShareActivate', 'outputs', outputs.length);
       const transaction = await this.sendUpgradeTransaction(
         user,
         wallet,
         walletPassword,
         outputs,
       );
+      logDebug('galaShareActivate', 'transaction.id', transaction.id);
+      logDebug('galaShareActivate', 'transaction.total', transaction.total);
+      logDebug('galaShareActivate', 'referrer', !!referrer);
 
       this.logMissedReferrerBtcReward(
         referrer,
@@ -102,17 +157,21 @@ class GalaShareUpgradeResolvers extends ShareActivateResolvers {
         userFromDb?.wallet?.ethAddress,
         numLootBoxes,
       );
+      logDebug('galaShareActivate', 'itemsRewarded', itemsRewarded.length);
 
       const rewardResult = {
         rewardId: '',
         amountRewarded: 0,
         itemsRewarded,
       };
+      logDebug('galaShareActivate', 'itemsRewarded', itemsRewarded.length);
+      logDebug('galaShareActivate', 'callingRewardTrigger', 'before');
 
       await rewardTrigger.triggerAction(
         RewardActions.UPGRADED,
         rewardTrigger.getUserHelper(userFromDb),
       );
+      logDebug('galaShareActivate', 'callingRewardTrigger', 'after');
 
       this.logGameOrder(
         numLootBoxes,
@@ -153,8 +212,8 @@ class GalaShareUpgradeResolvers extends ShareActivateResolvers {
 
 const resolvers = new GalaShareUpgradeResolvers();
 
-export default logResolver({
+export default {
   Mutation: {
-    galaShareActivate: resolvers.shareActivate,
+    galaShareActivate: resolvers.galaShareActivate,
   },
-});
+};
