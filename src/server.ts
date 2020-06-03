@@ -20,6 +20,7 @@ import { WalletApi } from './wallet-api';
 import { removeListeners } from './blockchain-listeners';
 import { Logger, winstonLogger, systemLogger } from './common/logger';
 import { dailyWalletStatsCron } from './cron';
+import { Wallet } from 'ethers';
 
 class Server {
   public app: express.Application = express();
@@ -115,6 +116,7 @@ class Server {
 
   public async initialize() {
     try {
+      this.logRewardDistributerAddress();
       await this.connectToMongodb();
       dailyWalletStatsCron.schedule(config.dailyWalletStatsCronExpression);
       this.listen();
@@ -122,6 +124,14 @@ class Server {
       throw error;
     }
   }
+
+  private logRewardDistributerAddress = () => {
+    systemLogger.info(
+      `Reward distributer address: ${
+        new Wallet(config.rewardDistributerPkey).address
+      }`,
+    );
+  };
 
   private async connectToMongodb() {
     return new Promise(resolve => {

@@ -2,7 +2,8 @@ input BuySellInput {
   buyOrSell: String!
   base: String!
   rel: String!
-  quantityBase: Float!
+  quantityBase: Float
+  quantityRel: Float
   price: Float
   tokenId: String
 }

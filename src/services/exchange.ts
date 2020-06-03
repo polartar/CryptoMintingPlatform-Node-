@@ -64,6 +64,7 @@ class ExchangeService extends ServerToServerService {
     base,
     rel,
     quantityBase,
+    quantityRel,
     price,
     tokenId,
   }: IBuyRequest & IAuthInfo) => {
@@ -74,6 +75,7 @@ class ExchangeService extends ServerToServerService {
         base,
         rel,
         quantityBase,
+        quantityRel,
         price,
         userId,
         walletPassword,
@@ -175,6 +177,7 @@ class ExchangeService extends ServerToServerService {
     rel,
     price,
     quantityBase,
+    quantityRel,
     tokenId,
   }: ISellRequest & IAuthInfo) => {
     const jwtAxios = this.getAxios({ userId, walletPassword });
@@ -184,6 +187,7 @@ class ExchangeService extends ServerToServerService {
         base,
         rel,
         quantityBase,
+        quantityRel,
         tokenId,
         price,
         userId,
