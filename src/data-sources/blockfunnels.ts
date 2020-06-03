@@ -11,7 +11,12 @@ class Blockfunnels extends RESTDataSource {
     context: IOrderContext;
     id: string; // userId
   }) {
-    const orderResponse = await this.post('/user/order', orderInfo);
+    const encodedCredentials = btoa(
+      `gala:${config.blockfunnelsBasicAuthPassword}`,
+    );
+    const orderResponse = await this.post('/user/order', orderInfo, {
+      headers: { Authorization: `Basic ${encodedCredentials}` },
+    });
     return orderResponse;
   }
 }
