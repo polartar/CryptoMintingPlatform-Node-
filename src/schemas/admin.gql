@@ -2,6 +2,16 @@ type ImpersonationToken {
   token: String!
 }
 
+type ApiKeyResource {
+  resource: String
+  error: String
+}
+
 type Query {
   getImpersonationToken(userId: String!): ImpersonationToken!
+  getApiKeyServiceResource(
+    userId: String!
+    coin: String!
+    resourceKey: String
+  ): ApiKeyResource!
 }
