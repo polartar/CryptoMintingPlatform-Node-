@@ -12,6 +12,6 @@ type Query {
   getApiKeyServiceResource(
     userId: String!
     coin: String!
-    resourceKey: String
+    resourceKey: String!
   ): ApiKeyResource!
 }
