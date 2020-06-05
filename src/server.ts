@@ -14,6 +14,7 @@ import {
   WalletConfig,
   Bitly,
   Zendesk,
+  Blockfunnels,
   SendEmail,
 } from './data-sources';
 import { WalletApi } from './wallet-api';
@@ -105,6 +106,7 @@ class Server {
       bitly: new Bitly(),
       zendesk: new Zendesk(),
       sendEmail: new SendEmail(),
+      blockfunnels: new Blockfunnels(),
     };
   }
 

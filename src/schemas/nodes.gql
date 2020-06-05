@@ -1,0 +1,9 @@
+type Mutation {
+  buyNode(
+    quantity: Int!
+    coinSymbol: String!
+    productId: String!
+    walletPassword: String!
+    orderContext: OrderContext
+  ): TxSendResponse!
+}
