@@ -2,8 +2,14 @@ import { Context } from '../types/context';
 import ResolverBase from '../common/Resolver-Base';
 import { IOrderContext } from '../types';
 import { logger } from '../common';
+import { Product } from '../models';
 
 class Resolvers extends ResolverBase {
+  getProductById = async (parent: any, { id }: { id: string }) => {
+    const product = await Product.findById(id).exec();
+    return product;
+  };
+
   buyNode = async (
     parent: any,
     {
@@ -56,6 +62,9 @@ class Resolvers extends ResolverBase {
 const resolvers = new Resolvers();
 
 export default {
+  Query: {
+    productById: resolvers.getProductById,
+  },
   Mutation: {
     buyNode: resolvers.buyNode,
   },
