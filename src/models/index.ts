@@ -8,6 +8,7 @@ export { default as RewardDistributerConfig } from './rewardDistributerConfig';
 export * from './offers';
 export * from './clicks';
 export * from './user';
+export * from './product';
 export * from './game-orders';
 export * from './game-products';
 export * from './erc-1155-token';

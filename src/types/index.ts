@@ -22,6 +22,7 @@ export * from './IJwtSignOptions';
 export * from './IItem';
 export * from './IWalletTransaction';
 export * from './IGameOrder';
+export * from './IProduct';
 export * from './IGameOrderBtc';
 export * from './IGameToken';
 export * from './IOrderStatus';
