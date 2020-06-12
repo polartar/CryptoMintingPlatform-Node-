@@ -78,12 +78,14 @@ class GameItemService extends ServerToServerService {
       ].join(':')}`,
     );
     const jwtAxios = this.getAxios({ userId });
-    const url = `${this.baseUrl}/add/limit-one`;
-    const { data } = await jwtAxios.post<{ tokenId: string }[]>(url, {
-      userEthAddress,
-      itemIds: tokenBaseIds,
-      userId,
-    });
+    const { data } = await jwtAxios.post<{ tokenId: string }[]>(
+      `${this.baseUrl}/add/limit-one`,
+      {
+        userEthAddress,
+        itemIds: tokenBaseIds,
+        userId,
+      },
+    );
     const results = data.map(item => item.tokenId);
     logger.debug(
       `services.game-item.assignItemToUserByTokenIdLimitOne.results: ${results.join(
