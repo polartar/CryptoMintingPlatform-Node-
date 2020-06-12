@@ -287,7 +287,9 @@ class Resolvers extends ResolverBase {
         user.userId,
         args.mnemonic.toLowerCase(),
       ));
-    } catch (error) {}
+    } catch (error) {
+      /* Ignore */
+    }
     return {
       valid: mnemonicValid,
     };
@@ -382,7 +384,7 @@ class Resolvers extends ResolverBase {
       }
 
       const walletApi = wallet.coin(coinSymbol) as Erc1155Wallet;
-      const result = await walletApi.transferNonFungibleTokens(
+      const result = await walletApi.transferFungibleTokens(
         user,
         outputs,
         walletPassword,
