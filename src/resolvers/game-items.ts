@@ -98,6 +98,23 @@ class Resolvers extends ResolverBase {
       const items = await gameItemService.getFarmBotRequiredItems(
         ctx.user.userId,
       );
+      return {
+        ...items,
+        coin: 'GALA',
+        tradeWaitTime: 0,
+        withdrawalWaitTime: 0,
+        galaFee: 0,
+        requiredPieces: items.requiredPieces.map((piece: any) => {
+          return {
+            ...piece,
+            nftBaseId: piece.id,
+            coin: 'GALA',
+            tradeWaitTime: 0,
+            withdrawalWaitTime: 0,
+            galaFee: 0,
+          };
+        }),
+      };
       return items;
     } catch (error) {
       throw error;
