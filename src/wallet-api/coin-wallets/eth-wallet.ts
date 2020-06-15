@@ -4,15 +4,16 @@ import { ethers, providers, utils } from 'ethers';
 import { config, logger } from '../../common';
 import { ITransaction, ICoinMetadata, ISendOutput } from '../../types';
 import { UserApi } from '../../data-sources';
+import { WalletTransaction } from '../../models';
+import {
+  ethBalanceTransactionsPipeline,
+  IEthBalanceTransactions,
+} from '../../pipelines';
 
 const PRIVATEKEY = 'privatekey';
 
 class EthWallet extends CoinWalletBase {
   provider = new providers.JsonRpcProvider(config.ethNodeUrl);
-  etherscan = new providers.EtherscanProvider(
-    config.etherscanNetwork,
-    config.etherScanApiKey,
-  );
 
   constructor({
     name,
@@ -215,15 +216,19 @@ class EthWallet extends CoinWalletBase {
     blockNumAtCreation: number,
   ): Promise<ITransaction[]> {
     try {
-      const transactions = await this.etherscan.getHistory(
-        address,
-        blockNumAtCreation,
-      );
+      const currentBlockNumber = await this.provider.getBlockNumber();
+      let [result] = (await WalletTransaction.aggregate(
+        ethBalanceTransactionsPipeline(address),
+      )) as IEthBalanceTransactions[];
+      if (!result) {
+        result = {
+          transactions: [],
+          total: '0.0',
+        } as IEthBalanceTransactions;
+      }
       const formattedTransactions = this.formatTransactions(
-        transactions.filter(tx => {
-          return !tx.value.isZero();
-        }),
-        address,
+        result.transactions,
+        currentBlockNumber,
       );
       return formattedTransactions;
     } catch (error) {
@@ -367,40 +372,18 @@ class EthWallet extends CoinWalletBase {
   }
 
   private formatTransactions(
-    transactions: ethers.providers.TransactionResponse[],
-    address: string,
+    transactions: IEthBalanceTransactions['transactions'],
+    currentBlockNumber: number,
   ): ITransaction[] {
     try {
-      const gasUsed = this.bigNumberify(2100);
       return transactions.map(rawTx => {
-        const {
-          hash,
-          blockNumber,
-          confirmations,
-          timestamp,
-          to,
-          from,
-          value,
-        } = rawTx;
-        const gasPrice = this.bigNumberify(rawTx.gasPrice);
-        const subTotal = this.bigNumberify(value);
-        const fee = gasUsed.mul(gasPrice);
-        const isDeposit = to.toLowerCase() === address.toLowerCase();
-        const total = subTotal.add(isDeposit ? 0 : fee);
+        const { id, blockNumber, to } = rawTx;
+
         const returnTx = {
-          id: hash,
-          status: blockNumber !== null ? 'Complete' : 'Pending',
-          confirmations: +confirmations,
-          timestamp: +timestamp,
-          fee: isDeposit ? '0' : this.toEther(fee, true),
-          link: `${config.ethTxLink}/${hash}`,
+          ...rawTx,
+          confirmations: currentBlockNumber - blockNumber,
+          link: `${config.ethTxLink}/${id}`,
           to: [to],
-          from: from,
-          type: isDeposit ? 'Deposit' : 'Withdrawal',
-          amount: isDeposit
-            ? this.toEther(subTotal)
-            : this.toEther(subTotal, true),
-          total: isDeposit ? this.toEther(total) : this.toEther(total, true),
         };
         return returnTx;
       });
