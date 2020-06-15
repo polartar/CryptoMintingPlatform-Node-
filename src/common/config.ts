@@ -78,8 +78,8 @@ class Config {
   };
   public readonly ethNodeUrl =
     process.env.CRYPTO_NETWORK === 'testnet'
-      ? 'https://dev.eth.share.green'
-      : 'https://mainnet.infura.io/v3/c843dd81493d4fa3a6fd29277d831eb1';
+      ? 'https://ropsten.infura.io/v3/1046de4247b1416db8fe42c279169eba'
+      : 'https://mainnet.infura.io/v3/1046de4247b1416db8fe42c279169eba';
 
   public readonly etherscanNetwork =
     process.env.CRYPTO_NETWORK === 'testnet' ? 'ropsten' : 'homestead';
