@@ -81,9 +81,6 @@ class Config {
       ? 'https://ropsten.infura.io/v3/1046de4247b1416db8fe42c279169eba'
       : 'https://mainnet.infura.io/v3/1046de4247b1416db8fe42c279169eba';
 
-  public readonly etherscanNetwork =
-    process.env.CRYPTO_NETWORK === 'testnet' ? 'ropsten' : 'homestead';
-
   public readonly btcTxLink =
     process.env.CRYPTO_NETWORK === 'testnet'
       ? 'https://live.blockcypher.com/btc-testnet/tx'
