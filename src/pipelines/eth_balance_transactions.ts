@@ -33,7 +33,7 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
   {
     $addFields: {
       isFromUser: {
-        $eq: ['$from', '0xbF7F623E58D72b01E1B6058eA052E61b605D3aCF'],
+        $eq: ['$from', ethAddress],
       },
       fee: {
         $multiply: ['$gasPrice', '$gasUsed'],
