@@ -386,13 +386,13 @@ class Resolvers extends ResolverBase {
       const walletApi = wallet.coin(coinSymbol) as Erc1155Wallet;
       const result = await walletApi.transferFungibleTokens(
         user,
-        outputs,
+        outputs.map(output => ({ ...output, amount: '1' })),
         walletPassword,
       );
 
       return result;
     } catch (error) {
-      logger.warn(`resolvers.wallet.sendTransaction.catch: ${error}`);
+      logger.warn(`resolvers.wallet.sendGameItems.catch: ${error}`);
       let message;
       switch (error.message) {
         case 'Weak Password': {
