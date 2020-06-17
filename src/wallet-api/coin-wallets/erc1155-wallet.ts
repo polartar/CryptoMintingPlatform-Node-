@@ -287,10 +287,14 @@ class Erc1155API extends EthWallet {
     }
   }
 
-  private async ownsToken(address: string, tokenId: utils.BigNumber) {
-    const tokenOwner = await this.contract.ownerOf(tokenId);
+  private async ownsToken(
+    address: string,
+    tokenId: utils.BigNumber,
+    amountSending: utils.BigNumber,
+  ) {
+    const tokensHeld = await this.contract.balanceOf(address, tokenId);
 
-    return tokenOwner === address;
+    return tokensHeld.gt(amountSending);
   }
 
   private async requireEnoughTokensAndEtherToSend(
@@ -333,13 +337,18 @@ class Erc1155API extends EthWallet {
     userApi: UserApi,
     address: string,
     tokenIds: utils.BigNumber[],
+    amounts: utils.BigNumber[],
   ) {
     try {
       const { parseEther } = utils;
       const [feeEstimate, etherBalance, ownsTokens] = await Promise.all([
         this.estimateFee(userApi),
         this.provider.getBalance(address),
-        Promise.all(tokenIds.map(tokenId => this.ownsToken(address, tokenId))),
+        Promise.all(
+          tokenIds.map((tokenId, i) =>
+            this.ownsToken(address, tokenId, amounts[i]),
+          ),
+        ),
       ]);
 
       const totalFee = parseEther(feeEstimate.estimatedFee).mul(
@@ -403,7 +412,12 @@ class Erc1155API extends EthWallet {
 
       const privateKey = this.decrypt(encryptedPrivateKey, walletPassword);
       const wallet = new ethers.Wallet(privateKey, this.provider);
-      await this.requireItemsAndEtherToSend(userApi, ethAddress, tokenIds);
+      await this.requireItemsAndEtherToSend(
+        userApi,
+        ethAddress,
+        tokenIds,
+        amounts,
+      );
 
       const { chainId } = utils.getNetwork(this.provider.network);
 
