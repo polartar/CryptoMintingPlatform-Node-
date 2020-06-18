@@ -10,7 +10,7 @@ import {
   Erc1155NFTReward,
 } from './reward-handlers';
 import { UserHelper } from '../../utils';
-import { logDebug } from '../../common';
+import { logDebug, config } from '../../common';
 
 const {
   ALFA_FOUNTAIN_OK,
@@ -24,44 +24,73 @@ const {
 class RewardTrigger {
   getUserHelper = (user: IUser) => new UserHelper(user);
 
-  private actionRewards = new Map<RewardActions, BaseReward[]>([
-    [
-      RewardActions.WALLET_CREATED,
-      [
-        new Erc1155FungibleReward('GALA', {
-          amount: { toReferrer: 100, toUser: 100 },
-        }),
-        new Erc1155NFTReward(BETA_KEY, {
-          amount: { toUser: 1 },
-        }),
-        new Erc1155NFTReward(ALFA_FOUNTAIN_OK, {
-          amount: { toReferrer: 1 },
-          valuesRequired: { referrer: 1 },
-        }),
-        new Erc1155NFTReward(ALFA_FOUNTAIN_GOOD, {
-          amount: { toReferrer: 1 },
-          valuesRequired: { referrer: 10 },
-        }),
-        new Erc1155NFTReward(ALFA_FOUNTAIN_GREAT, {
-          amount: { toReferrer: 1 },
-          valuesRequired: { referrer: 50 },
-        }),
-        new Erc1155NFTReward(ALFA_FOUNTAIN_MAJESTIC, {
-          amount: { toReferrer: 1 },
-          valuesRequired: { referrer: 100 },
-        }),
-      ],
-    ],
-    [
-      RewardActions.UPGRADED,
-      [
-        new Erc1155FungibleReward('GALA', {
-          amount: { toUser: 100 },
-        }),
-        new Erc1155NFTReward(EXPRESS_DEPOT, { amount: { toUser: 1 } }),
-      ],
-    ],
-  ]);
+  private get actionRewards() {
+    if (['gala', 'arcade'].includes(config.brand)) {
+      return new Map<RewardActions, BaseReward[]>([
+        [
+          RewardActions.WALLET_CREATED,
+          [
+            new Erc1155FungibleReward('GALA', {
+              amount: { toReferrer: 100, toUser: 100 },
+            }),
+            new Erc1155NFTReward(BETA_KEY, {
+              amount: { toUser: 1 },
+            }),
+            new Erc1155NFTReward(ALFA_FOUNTAIN_OK, {
+              amount: { toReferrer: 1 },
+              valuesRequired: { referrer: 1 },
+            }),
+            new Erc1155NFTReward(ALFA_FOUNTAIN_GOOD, {
+              amount: { toReferrer: 1 },
+              valuesRequired: { referrer: 10 },
+            }),
+            new Erc1155NFTReward(ALFA_FOUNTAIN_GREAT, {
+              amount: { toReferrer: 1 },
+              valuesRequired: { referrer: 50 },
+            }),
+            new Erc1155NFTReward(ALFA_FOUNTAIN_MAJESTIC, {
+              amount: { toReferrer: 1 },
+              valuesRequired: { referrer: 100 },
+            }),
+          ],
+        ],
+        [
+          RewardActions.UPGRADED,
+          [
+            new Erc1155FungibleReward('GALA', {
+              amount: { toUser: 100 },
+            }),
+            new Erc1155NFTReward(EXPRESS_DEPOT, { amount: { toUser: 1 } }),
+          ],
+        ],
+      ]);
+    } else if (config.brand === 'connect') {
+      return new Map<RewardActions, BaseReward[]>([
+        [
+          RewardActions.WALLET_CREATED,
+          [
+            new Erc1155NFTReward(BETA_KEY, {
+              amount: { toUser: 1 },
+            }),
+          ],
+        ],
+        [
+          RewardActions.UPGRADED,
+          [
+            new Erc1155FungibleReward('GALA', {
+              amount: { toUser: 100 },
+            }),
+            new Erc1155NFTReward(EXPRESS_DEPOT, { amount: { toUser: 1 } }),
+          ],
+        ],
+      ]);
+    } else {
+      return new Map<RewardActions, BaseReward[]>([
+        [RewardActions.WALLET_CREATED, []],
+        [RewardActions.UPGRADED, []],
+      ]);
+    }
+  }
 
   triggerAction = (
     action: RewardActions,
