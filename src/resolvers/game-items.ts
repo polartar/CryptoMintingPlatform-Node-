@@ -45,6 +45,10 @@ class Resolvers extends ResolverBase {
       // });
 
       return userItems.map(userItem => {
+        const lesserBalance = Math.min(
+          +userItem.balance.confirmed,
+          +userItem.balance.pending,
+        );
         return {
           name: userItem.name,
           image: userItem.image,
@@ -56,15 +60,8 @@ class Resolvers extends ResolverBase {
           tradeWaitTime: 0,
           withdrawalWaitTime: 0,
           galaFee: 0,
-          items: new Array(userItem.balance.confirmed).fill({
-            tokenId: userItem.baseId,
-            lootBoxId: null,
-            gameItemId: userItem.baseId,
-            dateAquired: Math.floor(Date.now() / 1000),
-            aquisitionType: 'reward',
-            isListed: false,
-            orderId: undefined,
-          }),
+          quantityOwned: lesserBalance || 0,
+
           //   items: userItem.items.map(item => {
           //     const listedItem = listedItems.swaps.find(swap => {
           //       return swap.tokenId === item.id;

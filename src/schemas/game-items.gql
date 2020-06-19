@@ -24,6 +24,7 @@ type GameItem {
   hexcode: String
   label: String!
   rarity: GameItemRarity
+  quantityOwned: Int
   items: [GameSubItem!]
 }
 
