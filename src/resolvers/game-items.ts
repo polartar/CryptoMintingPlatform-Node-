@@ -61,6 +61,7 @@ class Resolvers extends ResolverBase {
           withdrawalWaitTime: 0,
           galaFee: 0,
           quantityOwned: lesserBalance || 0,
+          rarity: userItem.properties.rarity,
 
           //   items: userItem.items.map(item => {
           //     const listedItem = listedItems.swaps.find(swap => {
