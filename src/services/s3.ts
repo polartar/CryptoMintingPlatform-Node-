@@ -6,7 +6,7 @@ class S3Service {
   s3: aws.S3;
   private baseParams = {
     Bucket: config.s3Bucket,
-    Expires: 60,
+    Expires: 900,
     ACL: 'public-read',
   };
 
