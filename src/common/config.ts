@@ -79,7 +79,7 @@ class Config {
   public readonly ethNodeUrl =
     process.env.CRYPTO_NETWORK === 'testnet'
       ? 'https://ropsten.infura.io/v3/2526e762f7ea44a9b242968bfedf0d00'
-      : 'https://mainnet.infura.io/v3/1046de4247b1416db8fe42c279169eba';
+      : 'https://mainnet.infura.io/v3/113cef0fb5bf4b1fb9a388a87a7d7a31';
 
   public readonly btcTxLink =
     process.env.CRYPTO_NETWORK === 'testnet'
