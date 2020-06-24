@@ -19,10 +19,6 @@ variables:
   # Remember: You can restart the deployment job for that ENV to see a fresh output and not break anything.
   DEPLOY_APP: wallet-server
 
-stages:
-  - build
-  - deploy
-
 include:
   - project: 'netzilla/ci-templates'
     file: '/bb.yml'
