@@ -140,7 +140,7 @@ class Server {
       set('useCreateIndex', true);
       set('useNewUrlParser', true);
       set('useFindAndModify', false);
-      connect(config.mongodbUri);
+      connect(config.mongodbUri, { useNewUrlParser: true });
       mongooseConnection.once('open', () => {
         systemLogger.info(`Connected to mongoDb`);
         resolve();
