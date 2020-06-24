@@ -15,7 +15,7 @@
     "precommit": "run-s format:fix fix lint"
   },
   "dependencies": {
-    "@blockbrothers/firebasebb": "^0.8.0",
+    "@blockbrothers/firebasebb": "^0.9.3",
     "@types/web3": "^1.0.18",
     "apollo-datasource": "^0.3.1",
     "apollo-datasource-rest": "^0.5.0",
