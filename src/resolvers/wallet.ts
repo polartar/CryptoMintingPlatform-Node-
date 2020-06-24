@@ -4,13 +4,11 @@ import { mnemonic as mnemonicUtils, crypto } from '../utils';
 import ResolverBase from '../common/Resolver-Base';
 import { credentialService } from '../services';
 import { config, logger } from '../common';
-import { ISendOutput, IBcoinTx, CoinSymbol } from '../types';
+import { ISendOutput, IBcoinTx, CoinSymbol, RewardActions } from '../types';
 import listeners from '../blockchain-listeners';
-import { WalletApi } from '../wallet-api';
 import Erc1155Wallet from '../wallet-api/coin-wallets/erc1155-wallet';
-import { UserApi } from '../data-sources';
 import { emailScheduler } from '../services/email-scheduler';
-import { gameItemsReward } from '../services/reward-distributer/reward-handlers/game-item-reward';
+import { rewardTrigger } from '../services/reward-distributor/reward-distributor-triggers';
 
 class Resolvers extends ResolverBase {
   private saveWalletPassword = async (
@@ -48,30 +46,6 @@ class Resolvers extends ResolverBase {
   private requireValidMnemonic = (mnemonic: string) => {
     const isValidMnemonic = mnemonicUtils.validate(mnemonic.toLowerCase());
     if (!isValidMnemonic) throw Error('Invalid recovery phrase');
-  };
-
-  private sendBetaKey = async (wallet: WalletApi, user: UserApi) => {
-    const { brand } = config;
-    if (!['localhost', 'gala'].includes(brand)) return;
-    const { receiveAddress: ethAddress } = await wallet
-      .coin('ETH')
-      .getWalletInfo(user);
-
-    const tokenId =
-      '0x8000000000000000000000000000001f00000000000000000000000000000000';
-    const qtyOwned = await gameItemsReward.getQuantityOwned(
-      user.userId,
-      tokenId,
-    );
-    if (qtyOwned >= 1) return;
-    const result = await gameItemsReward.sendItemByTokenId(
-      user.userId,
-      ethAddress,
-      tokenId,
-      1,
-    );
-
-    return result;
   };
 
   createWallet = async (
@@ -117,6 +91,18 @@ class Resolvers extends ResolverBase {
         if (config.brand === 'gala') {
           await emailScheduler.scheduleGalaWelcomeEmails(referredUser);
         }
+        if (['gala', 'connect'].includes(config.brand)) {
+          const userHelper = rewardTrigger.getUserHelper(referredUser);
+          const referrer = await userHelper.getReferrer();
+          const triggerValue = referrer
+            ? { referrer: referrer.referralsWithWallet }
+            : undefined;
+          await rewardTrigger.triggerAction(
+            RewardActions.WALLET_CREATED,
+            userHelper,
+            triggerValue,
+          );
+        }
 
         if (referredUser && referredUser.referredBy) {
           user.Model.findOne({ affiliateId: referredUser.referredBy })
@@ -126,8 +112,6 @@ class Resolvers extends ResolverBase {
             });
         }
       });
-
-      this.sendBetaKey(wallet, user);
 
       return {
         success: true,
@@ -303,7 +287,9 @@ class Resolvers extends ResolverBase {
         user.userId,
         args.mnemonic.toLowerCase(),
       ));
-    } catch (error) {}
+    } catch (error) {
+      /* Ignore */
+    }
     return {
       valid: mnemonicValid,
     };
@@ -398,15 +384,15 @@ class Resolvers extends ResolverBase {
       }
 
       const walletApi = wallet.coin(coinSymbol) as Erc1155Wallet;
-      const result = await walletApi.transferNonFungibleTokens(
+      const result = await walletApi.transferFungibleTokens(
         user,
-        outputs,
+        outputs.map(output => ({ ...output, amount: '1' })),
         walletPassword,
       );
 
       return result;
     } catch (error) {
-      logger.warn(`resolvers.wallet.sendTransaction.catch: ${error}`);
+      logger.warn(`resolvers.wallet.sendGameItems.catch: ${error}`);
       let message;
       switch (error.message) {
         case 'Weak Password': {

@@ -10,7 +10,7 @@ class Erc20Reward {
   constructor() {
     this.provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
     this.rewardDistributerWallet = new ethers.Wallet(
-      config.erc20RewardDistributerPkey,
+      config.rewardDistributerPkey,
       this.provider,
     );
   }

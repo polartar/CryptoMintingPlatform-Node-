@@ -33,45 +33,56 @@ class Resolvers extends ResolverBase {
     try {
       const userItems = await gameItemService.getUserItems(user.userId);
 
-      const closedOrders = await exchangeService.getClosedOrders({
-        userId: user.userId,
-      });
+      // const closedOrders = await exchangeService.getClosedOrders({
+      //   userId: user.userId,
+      // });
 
-      const listedItems = await exchangeService.getOpenOrders({
-        userId: user.userId,
-        base: 'a',
-        rel: 'a',
-        tokenId: '0',
-      });
+      // const listedItems = await exchangeService.getOpenOrders({
+      //   userId: user.userId,
+      //   base: 'a',
+      //   rel: 'a',
+      //   tokenId: '0',
+      // });
 
       return userItems.map(userItem => {
+        const lesserBalance = Math.min(
+          +userItem.balance.confirmed,
+          +userItem.balance.pending,
+        );
         return {
-          ...userItem,
-          nftBaseId: userItem.id,
-          rarity: {
-            hexcode: userItem.hexcode,
-            label: userItem.label,
-            icon: userItem.icon,
-          },
-          items: userItem.items.map(item => {
-            const listedItem = listedItems.swaps.find(swap => {
-              return swap.tokenId === item.id;
-            });
-            const purchasedOrder = closedOrders.swaps
-              .sort((swapA, swapB) => {
-                return swapA.startedAt - swapB.startedAt;
-              })
-              .find(swap => swap.tokenId === userItem.id);
-            const isListed = item.id ? !!listedItem : false;
-            const orderId = item.id && isListed ? listedItem.uuid : undefined;
-            return {
-              ...item,
-              tokenId: item.id,
-              isListed,
-              orderId,
-              purchasePrice: purchasedOrder?.myAmount,
-            };
-          }),
+          name: userItem.name,
+          image: userItem.image,
+          description: userItem.description,
+          game: userItem.game,
+          nftBaseId: userItem.baseId,
+          icon: userItem.properties.rarity.icon,
+          coin: 'GALA',
+          tradeWaitTime: 0,
+          withdrawalWaitTime: 0,
+          galaFee: 0,
+          quantityOwned: lesserBalance || 0,
+          rarity: userItem.properties.rarity,
+
+          //   items: userItem.items.map(item => {
+          //     const listedItem = listedItems.swaps.find(swap => {
+          //       return swap.tokenId === item.id;
+          //     });
+          //     const purchasedOrder = closedOrders.swaps
+          //       .sort((swapA, swapB) => {
+          //         return swapA.startedAt - swapB.startedAt;
+          //       })
+          //       .find(swap => swap.tokenId === userItem.id);
+          //     const isListed = item.id ? !!listedItem : false;
+          //     const orderId = item.id && isListed ? listedItem.uuid : undefined;
+          //     return {
+          //       ...item,
+          //       tokenId: item.id,
+          //       isListed,
+          //       orderId,
+          //       purchasePrice: purchasedOrder?.myAmount,
+          //     };
+          //   }),
+          // };
         };
       });
     } catch (error) {
@@ -85,6 +96,23 @@ class Resolvers extends ResolverBase {
       const items = await gameItemService.getFarmBotRequiredItems(
         ctx.user.userId,
       );
+      return {
+        ...items,
+        coin: 'GALA',
+        tradeWaitTime: 0,
+        withdrawalWaitTime: 0,
+        galaFee: 0,
+        requiredPieces: items.requiredPieces.map((piece: any) => {
+          return {
+            ...piece,
+            nftBaseId: piece.id,
+            coin: 'GALA',
+            tradeWaitTime: 0,
+            withdrawalWaitTime: 0,
+            galaFee: 0,
+          };
+        }),
+      };
       return items;
     } catch (error) {
       throw error;

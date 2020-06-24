@@ -1,21 +1,25 @@
 export interface IGetUserItemResponse {
-  id: string;
-  name: string;
   game: string;
+  baseId: string;
+  decimals: number | null;
   description: string;
   image: string;
-  icon: string;
-  coin: string;
-  galaFee: number;
-  tradeWaitTime: number;
-  withdrawalWaitTime: number;
-  hexcode: string;
-  label: string;
-  items: {
-    id: string;
-    lootBoxId: string;
-    gameItemId: string;
-    dateAquired: number;
-    aquisitionType: string;
-  }[];
+  name: string;
+  properties: {
+    game: string;
+    tokenRun: string;
+    farmbot: {
+      requiredQty: number;
+    };
+    rarity: {
+      icon: string;
+      label: string;
+      hexcode: string;
+      supplyLimit: 5856;
+    };
+  };
+  balance: {
+    confirmed: number;
+    pending: number;
+  };
 }

@@ -15,13 +15,9 @@ variables:
   PROD_URI_ARCADE: 'n0.walletsrv.arcadeblockchain.com'
   STAGE_URI_ARCADE: 'stage0.walletsrv.arcadeblockchain.com'
 
-  LOG_LINES: 125 # Bump this number to view more lines in the log with each run.
+  LOG_LINES: 300 # Bump this number to view more lines in the log with each run.
   # Remember: You can restart the deployment job for that ENV to see a fresh output and not break anything.
   DEPLOY_APP: wallet-server
-
-stages:
-  - build
-  - deploy
 
 include:
   - project: 'netzilla/ci-templates'

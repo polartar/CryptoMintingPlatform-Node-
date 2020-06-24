@@ -1,4 +1,4 @@
-import { ethers, utils } from 'ethers';
+import { ethers, utils, constants } from 'ethers';
 import EthWallet from './eth-wallet';
 import { config, logger } from '../../common';
 import {
@@ -9,6 +9,7 @@ import {
 } from '../../types';
 import { UserApi } from '../../data-sources';
 import nodeSelector from '../../services/node-selector';
+import { BigNumber, bigNumberify } from 'ethers/utils';
 const Web3 = require('web3');
 
 class Erc1155API extends EthWallet {
@@ -83,9 +84,11 @@ class Erc1155API extends EthWallet {
       };
       return feeData;
     } catch (error) {
-      logger.warn(
-        `walletApi.coin-wallets.Erc1155Wallet.estimateFee.catch:${error}`,
-      );
+      if (!error.message.includes('always failing transaction')) {
+        logger.warn(
+          `walletApi.coin-wallets.Erc1155Wallet.estimateFee.catch:${error}`,
+        );
+      }
       const backupFeeEstimate = this.toEther(
         this.FALLBACK_GAS_VALUE.mul(gasPrice),
       );
@@ -284,10 +287,14 @@ class Erc1155API extends EthWallet {
     }
   }
 
-  private async ownsToken(address: string, tokenId: utils.BigNumber) {
-    const tokenOwner = await this.contract.ownerOf(tokenId);
+  private async ownsToken(
+    address: string,
+    tokenId: utils.BigNumber,
+    amountSending: utils.BigNumber,
+  ) {
+    const tokensHeld = await this.contract.balanceOf(address, tokenId);
 
-    return tokenOwner === address;
+    return tokensHeld.gt(amountSending);
   }
 
   private async requireEnoughTokensAndEtherToSend(
@@ -330,13 +337,18 @@ class Erc1155API extends EthWallet {
     userApi: UserApi,
     address: string,
     tokenIds: utils.BigNumber[],
+    amounts: utils.BigNumber[],
   ) {
     try {
       const { parseEther } = utils;
       const [feeEstimate, etherBalance, ownsTokens] = await Promise.all([
         this.estimateFee(userApi),
         this.provider.getBalance(address),
-        Promise.all(tokenIds.map(tokenId => this.ownsToken(address, tokenId))),
+        Promise.all(
+          tokenIds.map((tokenId, i) =>
+            this.ownsToken(address, tokenId, amounts[i]),
+          ),
+        ),
       ]);
 
       const totalFee = parseEther(feeEstimate.estimatedFee).mul(
@@ -360,17 +372,32 @@ class Erc1155API extends EthWallet {
     }
   }
 
-  async transferNonFungibleTokens(
+  async transferFungibleTokens(
     userApi: UserApi,
     outputs: ISendOutput[],
     walletPassword: string,
   ) {
-    const tokenIds = outputs.map(o => utils.bigNumberify(o.tokenId));
     const [{ to }] = outputs;
-
     if (outputs.some(output => output.to !== to)) {
       throw new Error('Can only transfer to a single address');
     }
+    const groupedOutputs = outputs.reduce((group, { tokenId, amount }) => {
+      if (!group[tokenId]) {
+        group[tokenId] = constants.Zero;
+      }
+      group[tokenId] = group[tokenId].add(amount);
+
+      return group;
+    }, {} as { [key: string]: BigNumber });
+
+    const [tokenIds, amounts] = Object.entries(groupedOutputs).reduce(
+      ([ids, amts], [tokenId, amount]) => {
+        ids.push(bigNumberify(tokenId));
+        amts.push(amount);
+        return [ids, amts];
+      },
+      [[], []] as [BigNumber[], BigNumber[]],
+    );
 
     try {
       const [
@@ -385,12 +412,17 @@ class Erc1155API extends EthWallet {
 
       const privateKey = this.decrypt(encryptedPrivateKey, walletPassword);
       const wallet = new ethers.Wallet(privateKey, this.provider);
-      await this.requireItemsAndEtherToSend(userApi, ethAddress, tokenIds);
+      await this.requireItemsAndEtherToSend(
+        userApi,
+        ethAddress,
+        tokenIds,
+        amounts,
+      );
 
       const { chainId } = utils.getNetwork(this.provider.network);
 
       const contractMethod = this.contract.interface.functions.safeBatchTransferFrom.encode(
-        [ethAddress, to, tokenIds, Array(tokenIds.length).fill('1'), '0x0'],
+        [ethAddress, to, tokenIds, amounts, '0x0'],
       );
 
       const rawTransaction = await wallet.sign({
@@ -437,7 +469,7 @@ class Erc1155API extends EthWallet {
       return response;
     } catch (error) {
       logger.warn(
-        `walletApi.coin-wallets.Erc1155Wallet.transferNonFungibleToken.catch: ${error}`,
+        `walletApi.coin-wallets.Erc1155Wallet.transferFungibleTokens.catch: ${error}`,
       );
       let message = '';
       switch (error.message) {

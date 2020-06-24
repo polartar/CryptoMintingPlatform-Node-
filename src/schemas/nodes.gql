@@ -1,0 +1,19 @@
+type Product {
+  id: String!
+  name: String!
+  shownPrice: Int!
+  description: String!
+}
+
+type Query {
+  productById(id: String!): Product!
+}
+type Mutation {
+  buyNode(
+    quantity: Int!
+    coinSymbol: String!
+    productId: String!
+    walletPassword: String!
+    orderContext: OrderContext
+  ): TxSendResponse!
+}
