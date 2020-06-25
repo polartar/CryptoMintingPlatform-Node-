@@ -50,7 +50,9 @@ export const referralRewardsPipeline = (userId: string) => [
               $sum: '$upgradeCount',
             },
             nodesPurchased: {
-              $sum: '$licenses.length',
+              $sum: {
+                $size: '$licenses',
+              },
             },
           },
         },
