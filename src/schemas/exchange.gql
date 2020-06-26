@@ -114,14 +114,10 @@ type ExchangeItem {
   icon: String!
   quantity: Int
   avgPrice: Float
-  properties: ItemProperties
+  rarity: GameItemRarity
   items: [UniqueItem]
 }
-type ItemProperties {
-  game: String
-  farmbot: ItemPropertiesFarmbot
-  rarity: GameItemRarity
-}
+
 type ItemPropertiesFarmbot {
   requiredQty: Int
 }
