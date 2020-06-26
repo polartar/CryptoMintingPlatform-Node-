@@ -312,6 +312,6 @@ export type ExchangeEvent =
   | ITakerPaymentRefundedEvent
   | IFinishedEvent;
 
-function assertNever(x: never): never {
+export function assertNever(x: never): never {
   throw new Error('Unexpected object: ' + x);
 }
