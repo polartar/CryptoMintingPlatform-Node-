@@ -69,7 +69,6 @@ export interface IExchangeItem {
   coin: string;
   description?: string;
   image: string;
-  icon: string;
   properties: {
     rarity?: {
       icon: string;
