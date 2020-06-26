@@ -6,14 +6,6 @@ export const referralRewardsPipeline = (userId: string) => [
   },
   {
     $lookup: {
-      from: 'licenses',
-      localField: 'id',
-      foreignField: 'userId',
-      as: 'licenses',
-    },
-  },
-  {
-    $lookup: {
       from: 'users',
       as: 'rewardsEarned',
       let: {
@@ -35,6 +27,14 @@ export const referralRewardsPipeline = (userId: string) => [
           },
         },
         {
+          $lookup: {
+            from: 'licenses',
+            localField: 'id',
+            foreignField: 'userId',
+            as: 'licenses',
+          },
+        },
+        {
           $group: {
             _id: 1,
             friendsJoined: {
@@ -48,6 +48,11 @@ export const referralRewardsPipeline = (userId: string) => [
             },
             goldUpgrades: {
               $sum: '$upgradeCount',
+            },
+            nodesPurchased: {
+              $sum: {
+                $size: '$licenses',
+              },
             },
           },
         },
@@ -89,7 +94,12 @@ export const referralRewardsPipeline = (userId: string) => [
         ],
       },
       nodesPurchased: {
-        $size: '$licenses',
+        $ifNull: [
+          {
+            $arrayElemAt: ['$rewardsEarned.nodesPurchased', 0],
+          },
+          0,
+        ],
       },
     },
   },
