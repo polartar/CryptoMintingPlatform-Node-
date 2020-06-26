@@ -1,5 +1,6 @@
 export interface IEthBalanceTransactions {
-  total: string;
+  pendingBalance: string;
+  confirmedBalance: string;
   transactions: Array<{
     to: string;
     from: string;
@@ -157,8 +158,19 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
       fee: 1,
       to: 1,
       from: 1,
-      total: {
+      pendingTotal: {
         $add: ['$fee', '$amount'],
+      },
+      confirmedTotal: {
+        $cond: [
+          {
+            $eq: ['$status', 'confirmed'],
+          },
+          {
+            $add: ['$fee', '$amount'],
+          },
+          0,
+        ],
       },
       amount: {
         $cond: [
@@ -176,7 +188,7 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
   },
   {
     $match: {
-      total: {
+      pendingTotal: {
         $ne: 0,
       },
     },
@@ -184,8 +196,11 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
   {
     $group: {
       _id: 1,
-      total: {
-        $sum: '$total',
+      pendingBalance: {
+        $sum: '$pendingTotal',
+      },
+      confirmedBalance: {
+        $sum: '$confirmedTotal',
       },
       transactions: {
         $push: {
@@ -199,7 +214,7 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
           id: '$id',
           status: '$status',
           total: {
-            $toString: '$total',
+            $toString: '$pendingTotal',
           },
           amount: {
             $toString: '$amount',
@@ -212,9 +227,14 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
   {
     $project: {
       _id: 0,
-      total: {
+      pendingBalance: {
         $toString: {
-          $trunc: ['$total', 8],
+          $trunc: ['$pendingBalance', 8],
+        },
+      },
+      confirmedBalance: {
+        $toString: {
+          $trunc: ['$confirmedBalance', 8],
         },
       },
       transactions: 1,

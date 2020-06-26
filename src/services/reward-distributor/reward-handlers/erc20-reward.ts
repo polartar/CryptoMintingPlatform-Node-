@@ -4,11 +4,11 @@ import { Logger } from '../../../common/logger';
 import { RewardDistributerConfig } from '../../../models';
 
 class Erc20Reward {
-  provider: ethers.providers.JsonRpcProvider;
   rewardDistributerWallet: ethers.Wallet;
   contract: ethers.Contract;
+  provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
+
   constructor() {
-    this.provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
     this.rewardDistributerWallet = new ethers.Wallet(
       config.rewardDistributerPkey,
       this.provider,

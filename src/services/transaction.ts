@@ -99,7 +99,8 @@ class TransactionService {
       ? result
       : ({
           transactions: [],
-          total: '0.0',
+          pendingBalance: '0.0',
+          confirmedBalance: '0.0',
         } as IEthBalanceTransactions);
   };
 

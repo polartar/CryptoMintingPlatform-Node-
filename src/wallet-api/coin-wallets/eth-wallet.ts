@@ -92,8 +92,11 @@ class EthWallet extends CoinWalletBase {
   protected async getEthBalance(userApi: UserApi) {
     try {
       const { ethAddress } = await this.getEthAddress(userApi);
-      const balance = await this.provider.getBalance(ethAddress);
-      return ethers.utils.formatEther(balance);
+      const {
+        pendingBalance,
+      } = await transactionService.getEthBalanceAndTransactions(ethAddress);
+
+      return pendingBalance;
     } catch (error) {
       logger.debug(
         `walletApi.coin-wallets.EthWallet.getEthBalance.catch: ${error}`,
@@ -146,11 +149,13 @@ class EthWallet extends CoinWalletBase {
 
   async getBalance(address: string) {
     try {
-      const balance = await this.provider.getBalance(address);
-      const balanceInEther = this.toEther(balance);
+      const {
+        pendingBalance,
+        confirmedBalance,
+      } = await transactionService.getEthBalanceAndTransactions(address);
       return {
-        unconfirmed: balanceInEther,
-        confirmed: balanceInEther,
+        unconfirmed: pendingBalance,
+        confirmed: confirmedBalance,
       };
     } catch (error) {
       logger.warn(

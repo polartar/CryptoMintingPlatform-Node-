@@ -116,12 +116,18 @@ export abstract class BaseReward {
 
   protected checkGasThresholdAndAlert = async () => {
     const estWeiPerTx = utils.bigNumberify(60000000000000);
-    const { total } = await transactionService.getEthBalanceAndTransactions(
+    const {
+      pendingBalance,
+    } = await transactionService.getEthBalanceAndTransactions(
       this.rewardDistributerWallet.address,
     );
-    const estTxsRemaining = parseEther(total).div(estWeiPerTx);
+    const estTxsRemaining = parseEther(pendingBalance).div(estWeiPerTx);
     if (estTxsRemaining.lt(this.rewardWarnThreshold)) {
-      this.sendBalanceAlert(total, estTxsRemaining.toString(), 'ETH for gas');
+      this.sendBalanceAlert(
+        pendingBalance,
+        estTxsRemaining.toString(),
+        'ETH for gas',
+      );
     }
   };
 
