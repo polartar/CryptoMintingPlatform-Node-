@@ -1,0 +1,18 @@
+type DistributionPoint {
+  pointType: String!
+  amount: Int!
+}
+
+type UserDistributionData {
+  firstName: String
+  lastName: String
+  email: String
+  userId: String
+  totalPoolPoints: Int
+  points: [DistributionPoint!]
+  distributionAmount: Float
+}
+
+type Query {
+  distributionData(email: String!, date: Date!): UserDistributionData
+}

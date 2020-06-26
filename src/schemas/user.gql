@@ -10,6 +10,7 @@ type UserProfile {
   currency: String!
   profilePhotoUrl: String
   language: String
+  role: String!
 }
 
 input CreateUserInput {
