@@ -3,6 +3,10 @@ import * as erc1155Abi from '../common/ABI/erc1155.json';
 import { BigNumber } from 'ethers/utils';
 import { IWalletTransaction } from '../types';
 import { WalletTransaction, User } from '../models';
+import {
+  ethBalanceTransactionsPipeline,
+  IEthBalanceTransactions,
+} from '../pipelines';
 
 class TransactionService {
   erc1155Interface = new utils.Interface(erc1155Abi);
@@ -85,6 +89,19 @@ class TransactionService {
   saveToDatabase(tx: IWalletTransaction) {
     return WalletTransaction.create(tx);
   }
+
+  getEthBalanceAndTransactions = async (ethAddress: string) => {
+    const [result] = (await WalletTransaction.aggregate(
+      ethBalanceTransactionsPipeline(ethAddress),
+    )) as IEthBalanceTransactions[];
+
+    return result
+      ? result
+      : ({
+          transactions: [],
+          total: '0.0',
+        } as IEthBalanceTransactions);
+  };
 
   savePendingErc1155Transaction = async (
     txResponse: providers.TransactionResponse,

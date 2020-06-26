@@ -58,17 +58,25 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
       from: 1,
       amount: {
         $cond: [
-          '$isFromUser',
           {
-            $divide: [
-              {
-                $subtract: [0, '$amount'],
-              },
-              '$amountDivisor',
-            ],
+            $ne: ['$type', 'ETH'],
           },
+          0,
           {
-            $divide: ['$amount', '$amountDivisor'],
+            $cond: [
+              '$isFromUser',
+              {
+                $divide: [
+                  {
+                    $subtract: [0, '$amount'],
+                  },
+                  '$amountDivisor',
+                ],
+              },
+              {
+                $divide: ['$amount', '$amountDivisor'],
+              },
+            ],
           },
         ],
       },
@@ -163,6 +171,13 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
       },
       type: {
         $cond: ['$isFromUser', 'Withdrawal', 'Deposit'],
+      },
+    },
+  },
+  {
+    $match: {
+      total: {
+        $ne: 0,
       },
     },
   },
