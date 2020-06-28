@@ -377,7 +377,7 @@ class Resolvers extends ResolverBase {
       coin,
       quantity: itemsByNftId[nftId].quantity,
       pricesSummed: itemsByNftId[nftId].pricesSummed,
-      icon: productInfo.properties.rarity.icon,
+      rarity: productInfo.properties.rarity,
       id: productInfo._id,
       game: productInfo.properties.game,
     };
