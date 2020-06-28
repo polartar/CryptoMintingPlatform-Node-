@@ -6,3 +6,4 @@ export * from './available_reward_token_ids';
 export * from './available_reward_token_id_supply';
 export * from './get_wallet_referral_count';
 export * from './eth_balance_transactions';
+export * from './token_balance_transactions';

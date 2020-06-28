@@ -10,7 +10,7 @@ import {
   IRewardAudit,
   RewardAudit,
 } from '../../../models';
-import { bigNumberify } from 'ethers/utils';
+import { bigNumberify, parseEther } from 'ethers/utils';
 import { nodeSelector, transactionService } from '../..';
 import { UserHelper } from '../../../utils';
 import { config, logger, AlertService, logDebug } from '../../../common';
@@ -41,7 +41,6 @@ export abstract class BaseReward {
   ) {
     const { decimalPlaces } = rewardConfig;
     const { valuesRequired, amount } = triggerConfig;
-    this.ethProvider;
     this.rewardConfig = rewardConfig;
     this.requiredValues = {
       referrer: valuesRequired?.referrer || 0,
@@ -83,7 +82,6 @@ export abstract class BaseReward {
         this.rewardDistributerWallet,
       );
     }
-    this.ethProvider.getBalance(this.rewardDistributerWallet.address);
   }
 
   logger = {
@@ -118,13 +116,15 @@ export abstract class BaseReward {
 
   protected checkGasThresholdAndAlert = async () => {
     const estWeiPerTx = utils.bigNumberify(60000000000000);
-    const balance = await this.ethProvider.getBalance(
+    const {
+      pendingBalance,
+    } = await transactionService.getEthBalanceAndTransactions(
       this.rewardDistributerWallet.address,
     );
-    const estTxsRemaining = balance.div(estWeiPerTx);
+    const estTxsRemaining = parseEther(pendingBalance).div(estWeiPerTx);
     if (estTxsRemaining.lt(this.rewardWarnThreshold)) {
       this.sendBalanceAlert(
-        utils.formatEther(balance),
+        pendingBalance,
         estTxsRemaining.toString(),
         'ETH for gas',
       );

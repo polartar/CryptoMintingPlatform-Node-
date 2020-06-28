@@ -39,8 +39,6 @@ export class Erc1155FungibleReward extends WalletReward {
           `User ethAddress required to send ${this.rewardConfig.name}`,
         );
 
-      const block = await this.ethProvider.getBlockNumber();
-      console.log(block);
       this.logger.debug('contractAddress', this.contract.address);
       this.logger.debug('amount', amount.toString());
       this.logger.info(

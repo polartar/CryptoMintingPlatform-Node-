@@ -1,14 +1,10 @@
-import { credentialService } from '../../services';
+import { credentialService, transactionService } from '../../services';
 import CoinWalletBase from './coin-wallet-base';
 import { ethers, providers, utils } from 'ethers';
 import { config, logger } from '../../common';
 import { ITransaction, ICoinMetadata, ISendOutput } from '../../types';
 import { UserApi } from '../../data-sources';
-import { WalletTransaction } from '../../models';
-import {
-  ethBalanceTransactionsPipeline,
-  IEthBalanceTransactions,
-} from '../../pipelines';
+import { IEthBalanceTransactions } from '../../pipelines';
 
 const PRIVATEKEY = 'privatekey';
 
@@ -96,8 +92,11 @@ class EthWallet extends CoinWalletBase {
   protected async getEthBalance(userApi: UserApi) {
     try {
       const { ethAddress } = await this.getEthAddress(userApi);
-      const balance = await this.provider.getBalance(ethAddress);
-      return ethers.utils.formatEther(balance);
+      const {
+        pendingBalance,
+      } = await transactionService.getEthBalanceAndTransactions(ethAddress);
+
+      return pendingBalance;
     } catch (error) {
       logger.debug(
         `walletApi.coin-wallets.EthWallet.getEthBalance.catch: ${error}`,
@@ -150,11 +149,13 @@ class EthWallet extends CoinWalletBase {
 
   async getBalance(address: string) {
     try {
-      const balance = await this.provider.getBalance(address);
-      const balanceInEther = this.toEther(balance);
+      const {
+        pendingBalance,
+        confirmedBalance,
+      } = await transactionService.getEthBalanceAndTransactions(address);
       return {
-        unconfirmed: balanceInEther,
-        confirmed: balanceInEther,
+        unconfirmed: pendingBalance,
+        confirmed: confirmedBalance,
       };
     } catch (error) {
       logger.warn(
@@ -217,15 +218,9 @@ class EthWallet extends CoinWalletBase {
   ): Promise<ITransaction[]> {
     try {
       const currentBlockNumber = await this.provider.getBlockNumber();
-      let [result] = (await WalletTransaction.aggregate(
-        ethBalanceTransactionsPipeline(address),
-      )) as IEthBalanceTransactions[];
-      if (!result) {
-        result = {
-          transactions: [],
-          total: '0.0',
-        } as IEthBalanceTransactions;
-      }
+      const result = await transactionService.getEthBalanceAndTransactions(
+        address,
+      );
       const formattedTransactions = this.formatTransactions(
         result.transactions,
         currentBlockNumber,
