@@ -1,16 +1,12 @@
 import { ethers, utils, constants } from 'ethers';
 import EthWallet from './eth-wallet';
 import { config, logger } from '../../common';
-import {
-  ITransaction,
-  ICoinMetadata,
-  IWeb3TransferEvent,
-  ISendOutput,
-} from '../../types';
+import { ITransaction, ICoinMetadata, ISendOutput } from '../../types';
 import { UserApi } from '../../data-sources';
 import nodeSelector from '../../services/node-selector';
 import { BigNumber, bigNumberify } from 'ethers/utils';
-const Web3 = require('web3');
+import { transactionService } from '../../services';
+import { ITokenBalanceTransactions } from '../../pipelines';
 
 class Erc1155API extends EthWallet {
   contract: ethers.Contract;
@@ -100,16 +96,6 @@ class Erc1155API extends EthWallet {
     }
   }
 
-  private negate(numToNegate: string | utils.BigNumber) {
-    try {
-      if (typeof numToNegate === 'string') return `-${numToNegate}`;
-      return this.bigNumberify(0).sub(numToNegate);
-    } catch (error) {
-      logger.warn(`walletApi.coin-wallets.Erc1155Wallet.negate.catch:${error}`);
-      throw error;
-    }
-  }
-
   private decimalize(numHexOrBn: string | number | utils.BigNumber): string {
     try {
       const parsedUnits = utils.formatUnits(
@@ -177,55 +163,26 @@ class Erc1155API extends EthWallet {
     }
   }
 
-  private async transferEventsToTransactions(
-    transferEvents: IWeb3TransferEvent[],
+  private async formatWalletTransactions(
+    walletTransactions: ITokenBalanceTransactions['transactions'],
     currentBlockNumber: number,
-    userAddress: string,
-    web3: any,
   ): Promise<ITransaction[]> {
     return Promise.all(
-      transferEvents
-        .sort(
-          (eventOne, eventTwo) => eventTwo.blockNumber - eventOne.blockNumber,
-        )
-        .map(async transferEvent => {
-          const {
-            transactionHash,
-            blockNumber,
-            blockHash,
-            returnValues: { _value, _to, _operator },
-          } = transferEvent;
+      walletTransactions.map(async transferEvent => {
+        const { id, blockNumber, amount, fee, timestamp } = transferEvent;
+        let total = amount;
+        if (fee !== '0') {
+          total = `${amount} ${this.symbol}, ${fee} ETH`;
+        }
 
-          const amount = this.decimalize(_value.toString());
-          const block = await web3.eth.getBlock(blockNumber, false);
-          const { timestamp } = block;
-          const transaction = await web3.eth.getTransaction(transactionHash);
-          const { gasPrice, gas } = transaction;
-          const fee = this.bigNumberify(gas).mul(this.bigNumberify(gasPrice));
-          const feeString = `${utils.formatEther(fee)} ETH`;
-          const isDeposit = _to === userAddress;
-          const formattedAmount = isDeposit
-            ? amount.toString()
-            : this.negate(amount).toString();
-          const formattedTotal = isDeposit
-            ? `${formattedAmount}`
-            : `${formattedAmount} ${this.symbol}, -${feeString}`;
-          const returnTransaction = {
-            id: transactionHash,
-            status: blockHash ? 'Complete' : 'Pending',
-            timestamp,
-            confirmations: currentBlockNumber - blockNumber,
-            fee: isDeposit ? '0' : feeString,
-            link: `${config.ethTxLink}/${transactionHash}`,
-            to: [_to],
-            from: _operator,
-            type: isDeposit ? 'Deposit' : 'Withdrawal',
-            amount: formattedAmount,
-            total: formattedTotal,
-          };
-
-          return returnTransaction;
-        }),
+        return {
+          ...transferEvent,
+          total,
+          timestamp: Math.floor(timestamp / 1000),
+          confirmations: currentBlockNumber - blockNumber,
+          link: `${config.ethTxLink}/${id}`,
+        };
+      }),
     );
   }
 
@@ -234,34 +191,14 @@ class Erc1155API extends EthWallet {
     blockNumAtCreation: number,
   ): Promise<ITransaction[]> {
     try {
-      // Ethers isn't quite there with getting past events. The new v5 release looks like serious improvements are coming.
-      const web3 = new Web3(config.ethNodeUrl);
-      const contract = new web3.eth.Contract(this.abi, this.contractAddress);
-
-      const currentBlockNumber = await web3.eth.getBlockNumber();
-      const sent = await contract.getPastEvents('TransferSingle', {
-        fromBlock: blockNumAtCreation,
-        filter: {
-          _operator: address,
-        },
-      });
-      const received = await contract.getPastEvents('TransferSingle', {
-        fromBlock: blockNumAtCreation,
-        filter: {
-          _to: address,
-        },
-      });
-
-      // Can't get filter to work with token id on contract call
-      const sentAndReceived = [...sent, ...received].filter(
-        tx => tx.returnValues?._id?.toHexString() === this.tokenId,
-      );
-
-      const transactions = await this.transferEventsToTransactions(
-        sentAndReceived,
-        currentBlockNumber,
+      const result = await transactionService.getTokenBalanceAndTransactions(
+        this.tokenId,
         address,
-        web3,
+      );
+      const currentBlock = await this.provider.getBlockNumber();
+      const transactions = await this.formatWalletTransactions(
+        result.transactions,
+        currentBlock,
       );
       return transactions;
     } catch (error) {
@@ -307,13 +244,13 @@ class Erc1155API extends EthWallet {
       const [
         { confirmed: tokenBalance },
         feeEstimate,
-        etherBalance,
+        { pendingBalance: etherBalance },
       ] = await Promise.all([
         this.getBalance(address),
         this.estimateFee(userApi),
-        this.provider.getBalance(address),
+        transactionService.getEthBalanceAndTransactions(address),
       ]);
-      const hasEnoughEther = etherBalance.gt(
+      const hasEnoughEther = parseEther(etherBalance).gt(
         parseEther(feeEstimate.estimatedFee),
       );
       const hasEnoughTokens = parseUnits(tokenBalance, this.decimalPlaces).gte(

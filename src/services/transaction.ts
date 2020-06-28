@@ -6,6 +6,8 @@ import { WalletTransaction, User } from '../models';
 import {
   ethBalanceTransactionsPipeline,
   IEthBalanceTransactions,
+  ITokenBalanceTransactions,
+  tokenBalanceTransactionsPipeline,
 } from '../pipelines';
 
 class TransactionService {
@@ -102,6 +104,23 @@ class TransactionService {
           pendingBalance: '0.0',
           confirmedBalance: '0.0',
         } as IEthBalanceTransactions);
+  };
+
+  getTokenBalanceAndTransactions = async (
+    tokenAddress: string,
+    ethAddress: string,
+  ) => {
+    const [result] = (await WalletTransaction.aggregate(
+      tokenBalanceTransactionsPipeline(tokenAddress, ethAddress),
+    )) as ITokenBalanceTransactions[];
+
+    return result
+      ? result
+      : ({
+          transactions: [],
+          pendingBalance: '0.0',
+          confirmedBalance: '0.0',
+        } as ITokenBalanceTransactions);
   };
 
   savePendingErc1155Transaction = async (
