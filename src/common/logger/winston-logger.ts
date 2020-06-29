@@ -1,7 +1,6 @@
 import * as winston from 'winston';
 require('winston-mongodb');
 require('dotenv').config();
-import { config } from '..';
 const LEVEL = Symbol.for('level');
 const MESSAGE = Symbol.for('message');
 
@@ -9,7 +8,6 @@ const logger = winston.createLogger();
 const colorizer = winston.format.colorize();
 
 if (process.env.NODE_ENV === 'production' && process.env.MONGODB_URI) {
-  console.log(process.env.MONGODB_URI);
   logger.add(
     // @ts-ignore
     new winston.transports.MongoDB({
