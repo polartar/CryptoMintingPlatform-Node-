@@ -178,7 +178,7 @@ class Erc1155API extends EthWallet {
         return {
           ...transferEvent,
           total,
-          confirmations: currentBlockNumber - blockNumber,
+          confirmations: blockNumber ? currentBlockNumber - blockNumber : 0,
           link: `${config.ethTxLink}/${id}`,
         };
       }),
