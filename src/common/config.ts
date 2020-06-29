@@ -76,20 +76,11 @@ class Config {
     port: process.env.BCOIN_NODE_PORT ? +process.env.BCOIN_NODE_PORT : 0,
     apiKey: process.env.BCOIN_NODE_API_KEY,
   };
-  public readonly ethNodeUrl =
-    process.env.CRYPTO_NETWORK === 'testnet'
-      ? 'https://ropsten.infura.io/v3/2526e762f7ea44a9b242968bfedf0d00'
-      : 'https://mainnet.infura.io/v3/113cef0fb5bf4b1fb9a388a87a7d7a31';
 
-  public readonly btcTxLink =
-    process.env.CRYPTO_NETWORK === 'testnet'
-      ? 'https://live.blockcypher.com/btc-testnet/tx'
-      : 'https://live.blockcypher.com/btc/tx';
+  public readonly ethNodeUrl = process.env.ETH_NODE_URL;
 
-  public readonly ethTxLink =
-    process.env.CRYPTO_NETWORK === 'testnet'
-      ? 'https://ropsten.etherscan.io/tx'
-      : 'https://etherscan.io/tx';
+  public readonly btcTxLink = process.env.BTC_TX_LINK_BASE;
+  public readonly ethTxLink = process.env.ETH_TX_LINK_BASE;
 
   public readonly contractAddresses = {
     green: process.env.GREEN_ADDRESS,
@@ -211,6 +202,9 @@ class Config {
       'ALFA_GREAT_TOKEN_ID',
       'ALFA_MAJESTIC_TOKEN_ID',
       'EXPRESS_DEPOT_TOKEN_ID',
+      'ETH_NODE_URL',
+      'BTC_TX_LINK_BASE',
+      'ETH_TX_LINK_BASE',
     ].filter(name => !process.env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
