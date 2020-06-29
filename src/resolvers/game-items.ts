@@ -114,7 +114,6 @@ class Resolvers extends ResolverBase {
           };
         }),
       };
-      return items;
     } catch (error) {
       throw error;
     }
