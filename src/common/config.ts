@@ -147,7 +147,6 @@ class Config {
     autoBind(this);
     this.ensureRequiredVariables();
     this.setConnectMongoConnection();
-    this.logConfigAtStartup([['ETH_NODE', this.ethNodeUrl]]);
   }
 
   private ensureRequiredVariables() {
@@ -217,8 +216,8 @@ class Config {
     }
   }
 
-  private logConfigAtStartup = (configToLog: [string, string | number][]) => {
-    configToLog.forEach(([label, value]) => {
+  public logConfigAtStartup = () => {
+    [['ETH_NODE', this.ethNodeUrl]].forEach(([label, value]) => {
       systemLogger.info(`CONFIG: ${label}=${value}`);
     });
   };
