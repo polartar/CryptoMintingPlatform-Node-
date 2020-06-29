@@ -7,7 +7,7 @@ type Transaction {
   id: String!
   status: String!
   confirmations: Int!
-  timestamp: Int!
+  timestamp: Date!
   fee: String!
   link: String!
   to: [String!]!
