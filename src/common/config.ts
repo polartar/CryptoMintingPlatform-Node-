@@ -5,6 +5,7 @@ import { PubSub } from 'apollo-server-express';
 import keys from './keys';
 import { Connection, createConnection } from 'mongoose';
 import { ItemTokenName } from '../types/ItemTokenName';
+import { systemLogger } from './logger';
 
 dotenv.config({ path: '.env' });
 
@@ -146,6 +147,7 @@ class Config {
     autoBind(this);
     this.ensureRequiredVariables();
     this.setConnectMongoConnection();
+    this.logConfigAtStartup([['ETH_NODE', this.ethNodeUrl]]);
   }
 
   private ensureRequiredVariables() {
@@ -214,6 +216,12 @@ class Config {
       );
     }
   }
+
+  private logConfigAtStartup = (configToLog: [string, string | number][]) => {
+    configToLog.forEach(([label, value]) => {
+      systemLogger.info(`CONFIG: ${label}=${value}`);
+    });
+  };
 
   private getBrandFromHost() {
     const hostName = process.env.HOSTNAME.toLowerCase();
