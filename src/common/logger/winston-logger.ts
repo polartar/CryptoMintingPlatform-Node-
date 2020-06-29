@@ -16,6 +16,8 @@ if (process.env.NODE_ENV === 'production' && config.mongodbUri) {
       db: config.mongodbUri,
       collection: 'wallet-logs',
       storeHost: true,
+      capped: true,
+      cappedMax: 5000,
     }),
   );
 } else if (!!process.env.VSCODE_PID) {
