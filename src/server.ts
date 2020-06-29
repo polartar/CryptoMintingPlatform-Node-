@@ -122,6 +122,7 @@ class Server {
       await this.connectToMongodb();
       dailyWalletStatsCron.schedule(config.dailyWalletStatsCronExpression);
       this.listen();
+      config.logConfigAtStartup();
     } catch (error) {
       throw error;
     }
