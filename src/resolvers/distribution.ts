@@ -24,8 +24,8 @@ class Resolvers extends ResolverBase {
       email: string;
       userId: string;
       totalPoolPoints: number;
-      distributionAmount: number;
       points: Array<{ pointType: string; amount: number }>;
+      tokensReceived: Array<{ token: string; amount: number }>;
     }>;
   };
 }

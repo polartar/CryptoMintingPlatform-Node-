@@ -24,7 +24,7 @@ export const getPipeline = (email: string, startDate: Date, endDate: Date) => [
           $match: {
             created: {
               $gte: startDate,
-              $lt: endDate,
+              $lte: endDate,
             },
           },
         },
@@ -153,7 +153,6 @@ export const getPipeline = (email: string, startDate: Date, endDate: Date) => [
       pipeline: [
         {
           $match: {
-            baseId: '0x0100000000000000000000000000000000',
             mintTransaction: true,
             $expr: {
               $and: [
@@ -168,7 +167,7 @@ export const getPipeline = (email: string, startDate: Date, endDate: Date) => [
                   ],
                 },
                 {
-                  $lt: [
+                  $lte: [
                     {
                       $toDate: {
                         $multiply: ['$timestamp', 1000],
@@ -185,34 +184,53 @@ export const getPipeline = (email: string, startDate: Date, endDate: Date) => [
           },
         },
         {
-          $project: {
-            amount: {
-              $divide: [
-                '$amount',
-                {
-                  $pow: [10, 8],
-                },
-              ],
-            },
-          },
-        },
-        {
           $group: {
-            _id: '',
+            _id: '$baseId',
+            baseId: {
+              $first: '$baseId',
+            },
             amount: {
               $sum: '$amount',
             },
           },
         },
+        {
+          $lookup: {
+            from: 'erc1155-tokens',
+            localField: 'baseId',
+            foreignField: 'baseId',
+            as: 'token',
+          },
+        },
+        {
+          $addFields: {
+            amount: {
+              $divide: [
+                '$amount',
+                {
+                  $pow: [
+                    10,
+                    {
+                      $arrayElemAt: ['$token.decimals', 0],
+                    },
+                  ],
+                },
+              ],
+            },
+            token: {
+              $arrayElemAt: ['$token.name', 0],
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            token: 1,
+            amount: 1,
+          },
+        },
       ],
-      as: 'distributionAmount',
-    },
-  },
-  {
-    $addFields: {
-      distributionAmount: {
-        $arrayElemAt: ['$distributionAmount.amount', 0],
-      },
+      as: 'tokensReceived',
     },
   },
 ];
