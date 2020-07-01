@@ -1,8 +1,7 @@
-import { providers, Wallet, Contract, utils } from 'ethers';
+import { providers, Wallet, Contract, utils, BigNumber } from 'ethers';
 import env from './script-config';
 const abi = require('../common/ABI/erc1155.json');
 import { logger } from '../common';
-const { bigNumberify } = utils;
 
 const rewardWallet = new Wallet('');
 
@@ -40,7 +39,7 @@ void (async () => {
       tokenId: items.alfaFountain.majestic,
     },
   ].map(({ tokenId, quantity, address }) => ({
-    tokenId: bigNumberify(tokenId),
+    tokenId: BigNumber.from(tokenId),
     addresses: new Array(quantity).fill(address),
   }));
 

@@ -1,4 +1,11 @@
-import { providers, utils, Contract, Wallet, constants } from 'ethers';
+import {
+  providers,
+  utils,
+  Contract,
+  Wallet,
+  constants,
+  BigNumber,
+} from 'ethers';
 import {
   ICoinMetadata,
   IRewardTriggerValues,
@@ -10,7 +17,6 @@ import {
   IRewardAudit,
   RewardAudit,
 } from '../../../models';
-import { bigNumberify, parseEther } from 'ethers/utils';
 import { nodeSelector, transactionService } from '../..';
 import { UserHelper } from '../../../utils';
 import { config, logger, AlertService, logDebug } from '../../../common';
@@ -18,9 +24,9 @@ import { IWalletReferralCountAggregate } from '../../../pipelines';
 
 export abstract class BaseReward {
   rewardConfig: ICoinMetadata;
-  protected rewardWarnThreshold = bigNumberify(config.rewardWarnThreshold);
-  protected amountToUser: utils.BigNumber;
-  protected amountToReferrer: utils.BigNumber;
+  protected rewardWarnThreshold = BigNumber.from(config.rewardWarnThreshold);
+  protected amountToUser: BigNumber;
+  protected amountToReferrer: BigNumber;
   protected contract: Contract;
   protected rewardDistributerWallet: Wallet;
   protected logPath: string;
@@ -28,12 +34,12 @@ export abstract class BaseReward {
   protected alertService = new AlertService(
     config.isStage ? 'wallet-monitoring-stage' : 'wallet-monitoring',
   );
-  protected rewardDistributerWalletEthBalance: utils.BigNumber;
+  protected rewardDistributerWalletEthBalance: BigNumber;
   protected chainId = config.cryptoNetwork.toLowerCase().includes('main')
     ? 1
     : 3;
   protected requiredValues: IRewardTriggerValues;
-  protected totalAmountPerAction: utils.BigNumber;
+  protected totalAmountPerAction: BigNumber;
 
   constructor(
     rewardConfig: ICoinMetadata,
@@ -115,13 +121,13 @@ export abstract class BaseReward {
   };
 
   protected checkGasThresholdAndAlert = async () => {
-    const estWeiPerTx = utils.bigNumberify(60000000000000);
+    const estWeiPerTx = BigNumber.from(60000000000000);
     const {
       pendingBalance,
     } = await transactionService.getEthBalanceAndTransactions(
       this.rewardDistributerWallet.address,
     );
-    const estTxsRemaining = parseEther(pendingBalance).div(estWeiPerTx);
+    const estTxsRemaining = utils.parseEther(pendingBalance).div(estWeiPerTx);
     if (estTxsRemaining.lt(this.rewardWarnThreshold)) {
       this.sendBalanceAlert(
         pendingBalance,
@@ -169,7 +175,8 @@ export abstract class BaseReward {
       this.getNextNonce(),
       this.ethProvider.getGasPrice(),
     ]);
-    const transaction = await this.rewardDistributerWallet.sign({
+
+    const transaction = await this.rewardDistributerWallet.signTransaction({
       to: this.contract.address,
       data,
       gasLimit,
@@ -235,13 +242,13 @@ export abstract class BaseReward {
   abstract sendRewardToAccount: (
     userId: string,
     ethAddress: string,
-    amount: utils.BigNumber,
+    amount: BigNumber,
     valueSent: number,
   ) => Promise<void>;
 
   protected sendRewardToReferrer = async (
     user: IWalletReferralCountAggregate,
-    amount: utils.BigNumber,
+    amount: BigNumber,
     valueSent?: number,
   ) => {
     logDebug('sendRewardToReferrer', 'this.name', this.rewardConfig.name);
@@ -258,7 +265,7 @@ export abstract class BaseReward {
 
   protected sendRewardToUser = async (
     user: IUser,
-    amount: utils.BigNumber,
+    amount: BigNumber,
     valueSent: number,
   ) => {
     logDebug('sendRewardToUser', 'this.name', this.rewardConfig.name);

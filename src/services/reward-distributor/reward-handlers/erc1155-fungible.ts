@@ -1,11 +1,11 @@
-import { utils } from 'ethers';
+import { utils, BigNumber } from 'ethers';
 import { eSupportedInterfaces, IRewardTriggerConfig } from '../../../types';
 import { WalletReward } from '.';
 import { IRewardAudit } from '../../../models';
 
 export class Erc1155FungibleReward extends WalletReward {
   logPath = 'services.rewardDistributer.rewardHandlers.erc1155Fungible';
-  tokenId: utils.BigNumber;
+  tokenId: BigNumber;
 
   constructor(
     rewardCurrency: string,
@@ -17,13 +17,13 @@ export class Erc1155FungibleReward extends WalletReward {
         'Incorrect configuration provided for ERC1155FungibleReward',
       );
     }
-    this.tokenId = utils.bigNumberify(this.rewardConfig.tokenId);
+    this.tokenId = BigNumber.from(this.rewardConfig.tokenId);
   }
 
   sendRewardToAccount = async (
     userId: string,
     ethAddress: string,
-    amount: utils.BigNumber,
+    amount: BigNumber,
     valueSent: number,
   ) => {
     const audit: IRewardAudit = {
@@ -52,7 +52,8 @@ export class Erc1155FungibleReward extends WalletReward {
         ].join(', ')}`,
       );
 
-      const data = await this.contract.interface.functions.safeTransferFrom.encode(
+      const data = await this.contract.interface.encodeFunctionData(
+        'safeTransferFrom',
         [
           this.rewardDistributerWallet.address,
           ethAddress,

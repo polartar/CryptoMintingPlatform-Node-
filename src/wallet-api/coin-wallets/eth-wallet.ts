@@ -1,6 +1,6 @@
 import { credentialService, transactionService } from '../../services';
 import CoinWalletBase from './coin-wallet-base';
-import { ethers, providers, utils } from 'ethers';
+import { ethers, providers, utils, BigNumber } from 'ethers';
 import { config, logger } from '../../common';
 import { ITransaction, ICoinMetadata, ISendOutput } from '../../types';
 import { UserApi } from '../../data-sources';
@@ -167,7 +167,7 @@ class EthWallet extends CoinWalletBase {
 
   private async requireEnoughBalanceToSendEther(
     address: string,
-    amount: utils.BigNumber,
+    amount: BigNumber,
   ) {
     try {
       const { parseEther } = utils;
@@ -235,7 +235,7 @@ class EthWallet extends CoinWalletBase {
   }
 
   protected bigNumberify(anyValidValue: any) {
-    return ethers.utils.bigNumberify(anyValidValue);
+    return BigNumber.from(anyValidValue);
   }
 
   protected ensureEthAddressMatchesPkey(
@@ -345,7 +345,7 @@ class EthWallet extends CoinWalletBase {
     }
   }
 
-  protected toEther(wei: utils.BigNumber, negate: boolean = false): string {
+  protected toEther(wei: BigNumber, negate: boolean = false): string {
     try {
       const inEther = utils.formatEther(wei);
       return `${negate ? '-' : ''}${inEther}`;
@@ -355,7 +355,7 @@ class EthWallet extends CoinWalletBase {
     }
   }
 
-  protected toWei(ether: string): utils.BigNumber {
+  protected toWei(ether: string): BigNumber {
     try {
       const amount = utils.parseEther(ether);
       return amount;
