@@ -256,19 +256,6 @@ class EthWallet extends CoinWalletBase {
     }
   }
 
-  protected async getEthBalanceNonIndexed(userApi: UserApi) {
-    try {
-      const { ethAddress } = await this.getEthAddress(userApi);
-      const balance = await this.provider.getBalance(ethAddress);
-      return ethers.utils.formatEther(balance);
-    } catch (error) {
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getEthBalance.catch: ${error}`,
-      );
-      throw error;
-    }
-  }
-
   private formatTransactionsNonIndexed(
     transactions: ethers.providers.TransactionResponse[],
     address: string,
