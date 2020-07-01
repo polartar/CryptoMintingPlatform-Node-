@@ -143,6 +143,11 @@ class Config {
     process.env.ALERT_API_URLS,
   );
 
+  public readonly indexedTransactions = (process.env.INDEXED_TRANSACTIONS =
+    'true');
+  public readonly etherscanNetwork =
+    process.env.CRYPTO_NETWORK === 'testnet' ? 'ropsten' : 'homestead';
+
   constructor() {
     autoBind(this);
     this.ensureRequiredVariables();

@@ -56,7 +56,7 @@ class Erc20API extends EthWallet {
       return {
         estimatedFee: backupFeeEstimate,
         feeCurrency: 'ETH',
-        feeCurrencyBalance: ethBalance,
+        feeCurrencyBalance: ethBalance.confirmed,
       };
     } catch (error) {
       logger.warn(

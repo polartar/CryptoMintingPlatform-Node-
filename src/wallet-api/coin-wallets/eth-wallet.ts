@@ -10,6 +10,10 @@ const PRIVATEKEY = 'privatekey';
 
 class EthWallet extends CoinWalletBase {
   provider = new providers.JsonRpcProvider(config.ethNodeUrl);
+  etherscan = new providers.EtherscanProvider(
+    config.etherscanNetwork,
+    config.etherScanApiKey,
+  );
 
   constructor({
     name,
@@ -89,22 +93,6 @@ class EthWallet extends CoinWalletBase {
     }
   }
 
-  protected async getEthBalance(userApi: UserApi) {
-    try {
-      const { ethAddress } = await this.getEthAddress(userApi);
-      const {
-        pendingBalance,
-      } = await transactionService.getEthBalanceAndTransactions(ethAddress);
-
-      return pendingBalance;
-    } catch (error) {
-      logger.debug(
-        `walletApi.coin-wallets.EthWallet.getEthBalance.catch: ${error}`,
-      );
-      throw error;
-    }
-  }
-
   public async estimateFee(userApi: UserApi) {
     try {
       const gasPrice = await this.provider.getGasPrice();
@@ -116,7 +104,7 @@ class EthWallet extends CoinWalletBase {
       const feeData = {
         estimatedFee: feeInEther,
         feeCurrency: 'ETH',
-        feeCurrencyBalance: ethBalance,
+        feeCurrencyBalance: ethBalance.confirmed,
       };
       return feeData;
     } catch (error) {
@@ -148,6 +136,40 @@ class EthWallet extends CoinWalletBase {
   }
 
   async getBalance(address: string) {
+    if (config.indexedTransactions) {
+      return this.getBalanceIndexed(address);
+    }
+
+    return this.getBalanceNonIndexed(address);
+  }
+
+  protected async getEthBalance(userApi: UserApi) {
+    try {
+      const { ethAddress } = await this.getEthAddress(userApi);
+      if (config.indexedTransactions) {
+        return this.getBalanceIndexed(ethAddress);
+      } else {
+        return this.getBalanceNonIndexed(ethAddress);
+      }
+    } catch (error) {
+      logger.debug(
+        `walletApi.coin-wallets.EthWallet.getEthBalance.catch: ${error}`,
+      );
+      throw error;
+    }
+  }
+
+  private async getBalanceNonIndexed(address: string) {
+    const balance = await this.provider.getBalance(address);
+    const ethBalance = ethers.utils.formatEther(balance);
+
+    return {
+      unconfirmed: ethBalance,
+      confirmed: ethBalance,
+    };
+  }
+
+  private async getBalanceIndexed(address: string) {
     try {
       const {
         pendingBalance,
@@ -212,7 +234,7 @@ class EthWallet extends CoinWalletBase {
     }
   }
 
-  async getTransactions(
+  private async getTransactionsIndexed(
     address: string,
     blockNumAtCreation: number,
   ): Promise<ITransaction[]> {
@@ -231,6 +253,99 @@ class EthWallet extends CoinWalletBase {
         `walletApi.coin-wallets.EthWallet.getTransactions.catch:${error}`,
       );
       throw error;
+    }
+  }
+
+  protected async getEthBalanceNonIndexed(userApi: UserApi) {
+    try {
+      const { ethAddress } = await this.getEthAddress(userApi);
+      const balance = await this.provider.getBalance(ethAddress);
+      return ethers.utils.formatEther(balance);
+    } catch (error) {
+      logger.debug(
+        `walletApi.coin-wallets.EthWallet.getEthBalance.catch: ${error}`,
+      );
+      throw error;
+    }
+  }
+
+  private formatTransactionsNonIndexed(
+    transactions: ethers.providers.TransactionResponse[],
+    address: string,
+  ): ITransaction[] {
+    try {
+      const gasUsed = this.bigNumberify(2100);
+      return transactions.map(rawTx => {
+        const {
+          hash,
+          blockNumber,
+          confirmations,
+          timestamp,
+          to,
+          from,
+          value,
+        } = rawTx;
+        const gasPrice = this.bigNumberify(rawTx.gasPrice);
+        const subTotal = this.bigNumberify(value);
+        const fee = gasUsed.mul(gasPrice);
+        const isDeposit = to.toLowerCase() === address.toLowerCase();
+        const total = subTotal.add(isDeposit ? 0 : fee);
+        const returnTx = {
+          id: hash,
+          status: blockNumber !== null ? 'Complete' : 'Pending',
+          confirmations: +confirmations,
+          timestamp: +timestamp,
+          fee: isDeposit ? '0' : this.toEther(fee, true),
+          link: `${config.ethTxLink}/${hash}`,
+          to: [to],
+          from: from,
+          type: isDeposit ? 'Deposit' : 'Withdrawal',
+          amount: isDeposit
+            ? this.toEther(subTotal)
+            : this.toEther(subTotal, true),
+          total: isDeposit ? this.toEther(total) : this.toEther(total, true),
+        };
+        return returnTx;
+      });
+    } catch (error) {
+      logger.warn(
+        `walletApi.coin-wallets.EthWallet.formatTransactions.catch:${error}`,
+      );
+      throw error;
+    }
+  }
+
+  async getTransactions(
+    address: string,
+    blockNumAtCreation: number,
+  ): Promise<ITransaction[]> {
+    if (config.indexedTransactions) {
+      return this.getTransactionsIndexed(address, blockNumAtCreation);
+    }
+    return this.getTransactionsNonIndexed(address, blockNumAtCreation);
+  }
+
+  private async getTransactionsNonIndexed(
+    address: string,
+    blockNumAtCreation: number,
+  ): Promise<ITransaction[]> {
+    try {
+      const transactions = await this.etherscan.getHistory(
+        address,
+        blockNumAtCreation,
+      );
+      const formattedTransactions = this.formatTransactionsNonIndexed(
+        transactions.filter(tx => {
+          return !tx.value.isZero();
+        }),
+        address,
+      );
+      return formattedTransactions;
+    } catch (error) {
+      logger.warn(
+        `walletApi.coin-wallets.EthWallet.getTransactions.catch:${error}`,
+      );
+      return [];
     }
   }
 
