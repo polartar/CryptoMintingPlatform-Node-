@@ -157,9 +157,17 @@ class Erc20API extends EthWallet {
             args,
             getTransaction,
             getTransactionReceipt,
+            getBlock,
           } = event;
-          const { gasUsed } = await getTransactionReceipt();
-          const { gasPrice, confirmations, timestamp } = await getTransaction();
+          const [
+            { gasPrice, confirmations },
+            { gasUsed },
+            { timestamp },
+          ] = await Promise.all([
+            getTransaction(),
+            getTransactionReceipt(),
+            getBlock(),
+          ]);
           const { tokens, to, from } = args;
           const amount = this.decimalize(tokens.toString());
           const fee = gasUsed.mul(gasPrice);
