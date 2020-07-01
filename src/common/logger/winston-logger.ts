@@ -1,6 +1,9 @@
 import * as winston from 'winston';
+import * as dotenv from 'dotenv';
 require('winston-mongodb');
-require('dotenv').config();
+
+dotenv.config({ path: '.env' });
+
 const LEVEL = Symbol.for('level');
 const MESSAGE = Symbol.for('message');
 

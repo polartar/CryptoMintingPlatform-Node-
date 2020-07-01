@@ -1,4 +1,4 @@
-import { utils } from 'ethers';
+import { BigNumber } from 'ethers';
 import {
   eSupportedInterfaces,
   ItemTokenName,
@@ -15,7 +15,7 @@ import { logDebug } from '../../../common';
 
 export class Erc1155NFTReward extends ItemReward {
   logPath = 'services.rewardDistributer.rewardHandlers.erc1155-nft';
-  tokenId: utils.BigNumber;
+  tokenId: BigNumber;
 
   constructor(
     itemName: ItemTokenName,
@@ -25,13 +25,13 @@ export class Erc1155NFTReward extends ItemReward {
     if (this.rewardConfig.walletApi !== eSupportedInterfaces.erc1155) {
       throw new Error('Incorrect configuration provided for ERC1155NFTReward');
     }
-    this.tokenId = utils.bigNumberify(this.rewardConfig.tokenId);
+    this.tokenId = BigNumber.from(this.rewardConfig.tokenId);
   }
 
   sendRewardToAccount = async (
     userId: string,
     ethAddress: string,
-    amount: utils.BigNumber,
+    amount: BigNumber,
     valueSent: number,
   ) => {
     logDebug('sendRewardToAccount', 'name', this.rewardConfig.name);

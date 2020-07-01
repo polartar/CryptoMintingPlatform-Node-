@@ -1,6 +1,5 @@
-import { utils, providers } from 'ethers';
+import { utils, BigNumber, providers } from 'ethers';
 import * as erc1155Abi from '../common/ABI/erc1155.json';
-import { BigNumber } from 'ethers/utils';
 import { IWalletTransaction } from '../types';
 import { WalletTransaction, User } from '../models';
 import {

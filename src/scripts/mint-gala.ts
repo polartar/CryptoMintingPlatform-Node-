@@ -1,12 +1,12 @@
-import { providers, Wallet, Contract, utils } from 'ethers';
+import { providers, Wallet, Contract, utils, BigNumber } from 'ethers';
 import { config as appConfig } from '../common';
 import env from './script-config';
 const abi = require('../common/ABI/erc1155.json') as any[];
 
-const { bigNumberify, parseUnits } = utils;
+const { parseUnits } = utils;
 
 void (async () => {
-  const tokenId = bigNumberify('0x0100000000000000000000000000000000');
+  const tokenId = BigNumber.from('0x0100000000000000000000000000000000');
   const addressAmounts = [
     {
       address: '',
