@@ -143,8 +143,8 @@ class Config {
     process.env.ALERT_API_URLS,
   );
 
-  public readonly indexedTransactions = (process.env.INDEXED_TRANSACTIONS =
-    'true');
+  public readonly indexedTransactions =
+    process.env.INDEXED_TRANSACTIONS === 'true';
   public readonly etherscanNetwork =
     process.env.CRYPTO_NETWORK === 'testnet' ? 'ropsten' : 'homestead';
 
@@ -222,7 +222,10 @@ class Config {
   }
 
   public logConfigAtStartup = () => {
-    [['ETH_NODE', this.ethNodeUrl]].forEach(([label, value]) => {
+    [
+      ['ETH_NODE', this.ethNodeUrl],
+      ['INDEXED_TRANSACTIONS', this.indexedTransactions],
+    ].forEach(([label, value]) => {
       systemLogger.info(`CONFIG: ${label}=${value}`);
     });
   };
