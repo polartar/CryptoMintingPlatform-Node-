@@ -64,7 +64,7 @@ class Erc1155API extends EthWallet {
       return {
         estimatedFee: feeEstimate,
         feeCurrency: 'ETH',
-        feeCurrencyBalance: ethBalance,
+        feeCurrencyBalance: ethBalance.confirmed,
       };
     } catch (error) {
       if (!error.message.includes('always failing transaction')) {
