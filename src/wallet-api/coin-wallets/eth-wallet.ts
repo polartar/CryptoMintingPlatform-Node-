@@ -28,7 +28,11 @@ class EthWallet extends CoinWalletBase {
 
   public async checkIfWalletExists(userApi: UserApi) {
     try {
-      const privateKey = await this.getPrivateKey(userApi.userId);
+      const privateKey = await credentialService.get(
+        userApi.userId,
+        'ETH',
+        PRIVATEKEY,
+      );
       return !!privateKey;
     } catch (error) {
       logger.warn(
@@ -46,13 +50,10 @@ class EthWallet extends CoinWalletBase {
     try {
       const { privateKey, address } = ethers.Wallet.fromMnemonic(mnemonic);
       const encryptedPrivateKey = this.encrypt(privateKey, walletPassword);
-      const privateKeyPromise = credentialService.create(
+      const privateKeyPromise = this.savePrivateKey(
         userApi.userId,
-        'ETH',
-        PRIVATEKEY,
         encryptedPrivateKey,
       );
-
       const addressSavePromise = this.saveAddress(userApi, address);
 
       await Promise.all([privateKeyPromise, addressSavePromise]);
@@ -81,10 +82,28 @@ class EthWallet extends CoinWalletBase {
     }
   }
 
-  protected async getPrivateKey(userId: string) {
+  protected async savePrivateKey(userId: string, encryptedPrivateKey: string) {
+    const result = await credentialService.create(
+      userId,
+      'ETH',
+      PRIVATEKEY,
+      encryptedPrivateKey,
+    );
+
+    return result.data === 'OK';
+  }
+
+  protected async getDecryptedPrivateKey(userId: string, secret: string) {
     try {
       const privateKey = await credentialService.get(userId, 'ETH', PRIVATEKEY);
-      return privateKey;
+      const decryptedPrivateKey = this.decrypt(privateKey, secret);
+      if (decryptedPrivateKey.reEncryptedString) {
+        await this.savePrivateKey(
+          userId,
+          decryptedPrivateKey.reEncryptedString,
+        );
+      }
+      return decryptedPrivateKey.decryptedString;
     } catch (error) {
       logger.warn(
         `walletApi.coin-wallets.EthWallet.getPrivateKey.catch:${error}`,
@@ -379,8 +398,10 @@ class EthWallet extends CoinWalletBase {
       const value = utils.parseEther(amount);
       const { nonce, ethAddress } = await this.getEthAddress(userApi);
       await this.requireEnoughBalanceToSendEther(ethAddress, value);
-      const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
-      const privateKey = this.decrypt(encryptedPrivateKey, walletPassword);
+      const privateKey = await this.getDecryptedPrivateKey(
+        userApi.userId,
+        walletPassword,
+      );
       const wallet = new ethers.Wallet(privateKey, this.provider);
       const transaction = await wallet.sendTransaction({
         nonce,
@@ -498,16 +519,17 @@ class EthWallet extends CoinWalletBase {
     newPassword: string,
   ) {
     try {
-      const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
-      const privateKey = this.decrypt(encryptedPrivateKey, oldPassword);
-      const reEncryptedPrivateKey = this.encrypt(privateKey, newPassword);
-      const response = await credentialService.create(
+      const privateKey = await this.getDecryptedPrivateKey(
         userApi.userId,
-        'ETH',
-        PRIVATEKEY,
+        oldPassword,
+      );
+      const reEncryptedPrivateKey = this.encrypt(privateKey, newPassword);
+      const response = await this.savePrivateKey(
+        userApi.userId,
         reEncryptedPrivateKey,
       );
-      return response && response.status === 200;
+
+      return response;
     } catch (error) {
       logger.warn(
         `walletApi.coin-wallets.EthWallet.recoverWallet.catch:${error}`,
@@ -517,7 +539,10 @@ class EthWallet extends CoinWalletBase {
   }
   public checkPassword = async (userApi: UserApi, password: string) => {
     try {
-      const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
+      const encryptedPrivateKey = await this.getDecryptedPrivateKey(
+        userApi.userId,
+        password,
+      );
       const decryptedPrivateKey = this.decrypt(encryptedPrivateKey, password);
       return !!decryptedPrivateKey;
     } catch (error) {

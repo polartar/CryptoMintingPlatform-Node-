@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@blockbrothers/firebasebb": "^0.9.3",
+    "@blockbrothers/legacy-simple-crypto": "^1.0.0",
     "apollo-datasource": "^0.3.1",
     "apollo-datasource-rest": "^0.5.0",
     "apollo-server-express": "^2.15.0",
