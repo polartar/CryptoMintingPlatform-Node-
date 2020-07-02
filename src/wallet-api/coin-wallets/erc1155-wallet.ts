@@ -148,7 +148,7 @@ class Erc1155API extends EthWallet {
   ): Promise<ITransaction[]> {
     return Promise.all(
       walletTransactions.map(async transferEvent => {
-        const { id, blockNumber, amount, fee } = transferEvent;
+        const { id, blockNumber, amount, fee, timestamp } = transferEvent;
         let total = amount;
         if (fee !== '0') {
           total = `${amount} ${this.symbol}, ${fee} ETH`;
@@ -156,6 +156,8 @@ class Erc1155API extends EthWallet {
 
         return {
           ...transferEvent,
+          timestamp:
+            timestamp > (Date.now() * 10) / 1000 ? timestamp / 1000 : timestamp,
           total,
           confirmations: blockNumber ? currentBlockNumber - blockNumber : 0,
           link: `${config.ethTxLink}/${id}`,
