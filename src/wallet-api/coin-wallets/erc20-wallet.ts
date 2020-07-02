@@ -277,8 +277,10 @@ class Erc20API extends EthWallet {
     const [{ to, amount: value }] = outputs;
     try {
       const { nonce, ethAddress } = await this.getEthAddress(userApi);
-      const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
-      const privateKey = this.decrypt(encryptedPrivateKey, walletPassword);
+      const privateKey = await this.getDecryptedPrivateKey(
+        userApi.userId,
+        walletPassword,
+      );
       const amount = this.integerize(value);
       const wallet = new ethers.Wallet(privateKey, this.provider);
       await this.requireEnoughTokensAndEtherToSend(

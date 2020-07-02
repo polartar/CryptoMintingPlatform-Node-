@@ -216,7 +216,7 @@ class Resolvers extends ResolverBase {
       );
       const recoverySuccessful = await Promise.all(
         wallet.parentInterfaces.map(coin =>
-          coin.recoverWallet(user, oldPassword, newPassword),
+          coin.recoverWallet(user, oldPassword.decryptedString, newPassword),
         ),
       );
       if (!recoverySuccessful.every(recoveryAttempt => recoveryAttempt))

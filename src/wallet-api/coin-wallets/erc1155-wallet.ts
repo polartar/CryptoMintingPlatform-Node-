@@ -317,17 +317,12 @@ class Erc1155API extends EthWallet {
     );
 
     try {
-      const [
-        { nonce, ethAddress },
-        encryptedPrivateKey,
-        gasPrice,
-      ] = await Promise.all([
+      const [{ nonce, ethAddress }, privateKey, gasPrice] = await Promise.all([
         this.getEthAddress(userApi),
-        this.getPrivateKey(userApi.userId),
+        this.getDecryptedPrivateKey(userApi.userId, walletPassword),
         this.provider.getGasPrice(),
       ]);
 
-      const privateKey = this.decrypt(encryptedPrivateKey, walletPassword);
       const wallet = new ethers.Wallet(privateKey, this.provider);
       await this.requireItemsAndEtherToSend(
         userApi,
@@ -412,17 +407,12 @@ class Erc1155API extends EthWallet {
   async send(userApi: UserApi, outputs: ISendOutput[], walletPassword: string) {
     const [{ to, amount: value }] = outputs;
     try {
-      const [
-        { nonce, ethAddress },
-        encryptedPrivateKey,
-        gasPrice,
-      ] = await Promise.all([
+      const [{ nonce, ethAddress }, privateKey, gasPrice] = await Promise.all([
         this.getEthAddress(userApi),
-        this.getPrivateKey(userApi.userId),
+        this.getDecryptedPrivateKey(userApi.userId, walletPassword),
         this.provider.getGasPrice(),
       ]);
 
-      const privateKey = this.decrypt(encryptedPrivateKey, walletPassword);
       const amount = this.integerize(value);
       const wallet = new ethers.Wallet(privateKey, this.provider);
       await this.requireEnoughTokensAndEtherToSend(
@@ -434,7 +424,7 @@ class Erc1155API extends EthWallet {
 
       const contractMethod = this.contract.interface.encodeFunctionData(
         'safeTransferFrom',
-        [ethAddress, to, this.tokenId, amount, '0x0'],
+        [ethAddress, to, this.tokenId, amount, '0x'],
       );
 
       const rawTransaction = await wallet.signTransaction({
