@@ -76,11 +76,18 @@ export const tokenBalanceTransactionsPipeline = (
             $concat: [
               {
                 $toString: {
-                  $divide: [
+                  $trunc: [
                     {
-                      $multiply: ['$gasUsed', '$gasPrice'],
+                      $toDecimal: {
+                        $divide: [
+                          {
+                            $multiply: ['$gasUsed', '$gasPrice'],
+                          },
+                          '$feeDivisor',
+                        ],
+                      },
                     },
-                    '$feeDivisor',
+                    6,
                   ],
                 },
               },

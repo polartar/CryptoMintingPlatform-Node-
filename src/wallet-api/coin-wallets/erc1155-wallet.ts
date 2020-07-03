@@ -211,7 +211,7 @@ class Erc1155API extends EthWallet {
   ) {
     const tokensHeld = await this.contract.balanceOf(address, tokenId);
 
-    return tokensHeld.gt(amountSending);
+    return tokensHeld.gte(amountSending);
   }
 
   private async requireEnoughTokensAndEtherToSend(
@@ -334,7 +334,7 @@ class Erc1155API extends EthWallet {
 
       const contractMethod = this.contract.interface.encodeFunctionData(
         'safeBatchTransferFrom',
-        [ethAddress, to, tokenIds, amounts, '0x0'],
+        [ethAddress, to, tokenIds, amounts, '0x'],
       );
 
       const rawTransaction = await wallet.signTransaction({
@@ -401,6 +401,10 @@ class Erc1155API extends EthWallet {
           throw error;
         }
       }
+      return {
+        success: false,
+        message,
+      };
     }
   }
 
