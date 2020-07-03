@@ -2,14 +2,16 @@ import { WalletClient } from 'bclient';
 import * as autoBind from 'auto-bind';
 import BaseListener from './base';
 import { config, logger } from '../common';
-import WalletApi from '../wallet-api/WalletApi';
+import { walletApi } from '../wallet-api/WalletApi';
 import BtcWalletApi from '../wallet-api/coin-wallets/btc-wallet';
 import { CoinSymbol } from '../types';
 
 class BtcBlockchainListener implements BaseListener {
   private walletClient = new WalletClient(config.bcoinWallet);
-  private openPromise = this.walletClient.open();
-  private walletApi = new WalletApi(config.hostname);
+  private openPromise = config.supportsBtcPubsub
+    ? this.walletClient.open()
+    : Promise.resolve();
+  private walletApi = walletApi;
   private btcWalletApi = this.walletApi.coin('BTC') as BtcWalletApi;
   public coinSymbol = CoinSymbol.btc;
 
@@ -18,6 +20,7 @@ class BtcBlockchainListener implements BaseListener {
   }
 
   publishNewBalance(walletId: string) {
+    if (!config.supportsBtcPubsub) return;
     try {
       const payload = {
         walletId,

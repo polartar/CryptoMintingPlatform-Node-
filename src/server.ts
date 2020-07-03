@@ -17,7 +17,7 @@ import {
   Blockfunnels,
   SendEmail,
 } from './data-sources';
-import { WalletApi } from './wallet-api';
+import { walletApi } from './wallet-api';
 import { removeListeners } from './blockchain-listeners';
 import { Logger, winstonLogger, systemLogger } from './common/logger';
 import { dailyWalletStatsCron } from './cron';
@@ -26,14 +26,13 @@ import { Wallet } from 'ethers';
 class Server {
   public app: express.Application = express();
   public httpServer: http.Server;
-  public walletApi: WalletApi;
+  public walletApi = walletApi;
 
   constructor() {
     autoBind(this);
-    const { isDev, hostname, isStage } = config;
+    const { isDev, isStage } = config;
 
     const typeDefs: DocumentNode = gql(schemas);
-    this.walletApi = new WalletApi(hostname);
     const isGqlDev = isDev || isStage;
 
     const server = new ApolloServer({
@@ -112,7 +111,11 @@ class Server {
 
   private listen() {
     this.httpServer.listen(config.port, () =>
-      systemLogger.info(`🚀 Server ready on port ${config.port}`),
+      systemLogger.info(
+        `🚀 ${config.brand.toUpperCase()} Wallet-Server ready on port ${
+          config.port
+        }`,
+      ),
     );
   }
 

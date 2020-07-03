@@ -73,6 +73,7 @@ class DailyWalletStats {
   };
 
   schedule(cronString: string) {
+    if (!cronString) return;
     const sendConfig = this.getSendConfig();
     cron.schedule(
       cronString,

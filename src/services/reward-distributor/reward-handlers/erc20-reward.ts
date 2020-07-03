@@ -1,5 +1,5 @@
 import { ethers, utils } from 'ethers';
-import { config, walletConfig } from '../../../common';
+import { config, walletConfigurations } from '../../../common';
 import { Logger } from '../../../common/logger';
 import { RewardDistributerConfig } from '../../../models';
 
@@ -17,7 +17,7 @@ class Erc20Reward {
 
   private getContract = (rewardCurrency: string, rewardAmount: number) => {
     try {
-      const erc20Config = walletConfig.find(
+      const erc20Config = walletConfigurations.find(
         coin => coin.symbol.toLowerCase() === rewardCurrency.toLowerCase(),
       );
       if (!erc20Config)

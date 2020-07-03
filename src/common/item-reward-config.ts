@@ -5,6 +5,7 @@ import {
 } from '../types';
 import { config } from '.';
 import * as erc1155Abi from './ABI/erc1155.json';
+import Erc1155API from '../wallet-api/coin-wallets/erc1155-wallet';
 
 const { contractAddresses, tokenIds } = config;
 const {
@@ -28,6 +29,7 @@ const betaKey = {
   tokenId: tokenIds[BETA_KEY],
   symbol: '',
   supplyWarnThreshold: 1000,
+  WalletInterface: Erc1155API, // Do not use. This is just to make typescript happy.
 };
 const alfaFountainOk = {
   walletApi: eSupportedInterfaces.erc1155,
@@ -41,6 +43,7 @@ const alfaFountainOk = {
   tokenId: tokenIds[ALFA_FOUNTAIN_OK],
   symbol: '',
   supplyWarnThreshold: 1000,
+  WalletInterface: Erc1155API, // Do not use. This is just to make typescript happy.
 };
 const alfaFountainGood = {
   walletApi: eSupportedInterfaces.erc1155,
@@ -54,6 +57,7 @@ const alfaFountainGood = {
   tokenId: tokenIds[ALFA_FOUNTAIN_GOOD],
   symbol: '',
   supplyWarnThreshold: 1000,
+  WalletInterface: Erc1155API, // Do not use. This is just to make typescript happy.
 };
 const alfaFountainGreat = {
   walletApi: eSupportedInterfaces.erc1155,
@@ -67,6 +71,7 @@ const alfaFountainGreat = {
   tokenId: tokenIds[ALFA_FOUNTAIN_GREAT],
   symbol: '',
   supplyWarnThreshold: 1000,
+  WalletInterface: Erc1155API, // Do not use. This is just to make typescript happy.
 };
 const alfaFountainMajestic = {
   walletApi: eSupportedInterfaces.erc1155,
@@ -80,6 +85,7 @@ const alfaFountainMajestic = {
   tokenId: tokenIds[ALFA_FOUNTAIN_MAJESTIC],
   symbol: '',
   supplyWarnThreshold: 100,
+  WalletInterface: Erc1155API, // Do not use. This is just to make typescript happy.
 };
 
 const expressDepot = {
@@ -94,6 +100,7 @@ const expressDepot = {
   tokenId: tokenIds[EXPRESS_DEPOT],
   symbol: '',
   supplyWarnThreshold: 1000,
+  WalletInterface: Erc1155API, // Do not use. This is just to make typescript happy.
 };
 
 export const itemRewardConfig = new Map<ItemTokenName, IRewardItemMetadata>([
