@@ -104,7 +104,7 @@ class Resolvers extends ResolverBase {
       await newUser.save();
 
       const customToken = await auth.signIn(token, config.hostname);
-      context.user = new UserApi(customToken);
+      context.user = UserApi.fromToken(customToken);
 
       return {
         twoFaEnabled: false,

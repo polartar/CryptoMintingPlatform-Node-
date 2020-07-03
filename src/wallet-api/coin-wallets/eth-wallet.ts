@@ -106,7 +106,7 @@ class EthWallet extends CoinWalletBase {
       return decryptedPrivateKey.decryptedString;
     } catch (error) {
       logger.warn(
-        `walletApi.coin-wallets.EthWallet.getPrivateKey.catch:${error}`,
+        `walletApi.coin-wallets.EthWallet.getDecryptedPrivateKey.catch:${error}`,
       );
       throw error;
     }

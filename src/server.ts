@@ -49,7 +49,7 @@ class Server {
         onDisconnect: async (socket, context) => {
           const { token } = await context.initPromise;
           if (token) {
-            const user = new UserApi(token);
+            const user = UserApi.fromToken(token);
             await removeListeners(user.userId);
           }
         },
@@ -88,7 +88,7 @@ class Server {
     const logger = new Logger(winstonLogger);
     if (token) {
       try {
-        user = new UserApi(token);
+        user = UserApi.fromToken(token);
         logger.startSession(user.userId);
       } catch (error) {
         logger.startSession();

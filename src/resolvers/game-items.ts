@@ -234,7 +234,7 @@ class Resolvers extends ResolverBase {
     );
     const outputs = [
       {
-        to: config.companyFeeGalaAddress,
+        to: config.companyFeeEthAddress,
         amount: orderDetails.totalGala.toFixed(8),
       },
     ];

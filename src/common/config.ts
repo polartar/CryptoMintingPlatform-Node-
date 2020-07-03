@@ -53,7 +53,7 @@ class Config {
     winx: process.env.COMPANY_FEE_BTC_ADDRESS_WINX,
     gala: process.env.COMPANY_FEE_BTC_ADDRESS_GALA,
   };
-  public readonly companyFeeGalaAddress = process.env.COMPANY_FEE_GALA_ADDRESS;
+  public readonly companyFeeEthAddress = process.env.COMPANY_FEE_ETH_ADDRESS;
   public readonly cryptoNetwork = process.env.CRYPTO_NETWORK;
   public readonly walletClientDomain = process.env.WALLET_CLIENT_DOMAIN;
   public readonly zendeskApiKey = process.env.ZENDESK_API_KEY;
@@ -175,7 +175,7 @@ class Config {
       'COMPANY_FEE_BTC_ADDRESS_GREEN',
       'COMPANY_FEE_BTC_ADDRESS_WINX',
       'COMPANY_FEE_BTC_ADDRESS_GALA',
-      'COMPANY_FEE_GALA_ADDRESS',
+      'COMPANY_FEE_ETH_ADDRESS',
       'ZENDESK_API_KEY',
       'REWARD_DISTRIBUTOR_ETH_PKEY',
       'SENDGRID_API_KEY',

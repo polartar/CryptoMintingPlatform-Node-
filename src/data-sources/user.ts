@@ -20,9 +20,8 @@ export default class UserApi extends DataSource {
   claims: IUserClaims;
   uid: string;
 
-  constructor(token: string) {
+  constructor(claims: IUserClaims, uid: string, token = '') {
     super();
-    const { claims, uid } = auth.verifyAndDecodeToken(token, config.hostname);
     this.claims = claims;
     this.uid = uid;
     const { permissions, role, userId, authorized, twoFaEnabled } = claims;
@@ -32,6 +31,11 @@ export default class UserApi extends DataSource {
     this.authorized = authorized;
     this.userId = userId;
     this.twoFaEnabled = twoFaEnabled;
+  }
+
+  static fromToken(token: string) {
+    const { claims, uid } = auth.verifyAndDecodeToken(token, config.hostname);
+    return new UserApi(claims, uid, token);
   }
 
   public findFromDb = async () => {

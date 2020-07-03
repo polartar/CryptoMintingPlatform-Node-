@@ -7,6 +7,37 @@ type ApiKeyResource {
   error: String
 }
 
+type AdminToAddress {
+  address: String
+  knownAddress: String
+}
+
+type AdminTransaction {
+  id: String!
+  status: String!
+  confirmations: Int!
+  timestamp: Date!
+  fee: String!
+  link: String!
+  to: [AdminToAddress!]!
+  from: String!
+  amount: String!
+  type: String!
+  total: String!
+}
+
+type AdminWallet {
+  symbol: String!
+  name: String!
+  balance: Balance!
+  icon: String!
+  backgroundColor: String!
+  receiveAddress: String!
+  transactions: [AdminTransaction!]!
+  contractAddress: String
+  canSendFunds: Boolean!
+}
+
 type Query {
   getImpersonationToken(userId: String!): ImpersonationToken!
   getApiKeyServiceResource(
@@ -14,4 +45,5 @@ type Query {
     coin: String!
     resourceKey: String!
   ): ApiKeyResource!
+  getWalletByUserId(userId: String!, coinSymbol: String): [AdminWallet]!
 }
