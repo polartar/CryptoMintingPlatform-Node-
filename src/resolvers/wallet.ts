@@ -386,7 +386,7 @@ class Resolvers extends ResolverBase {
       const walletApi = wallet.coin(coinSymbol) as Erc1155Wallet;
       const result = await walletApi.transferFungibleTokens(
         user,
-        outputs.map(output => ({ ...output, amount: '1' })),
+        outputs.map(output => ({ ...output, amount: output.amount || '1' })),
         walletPassword,
       );
 
