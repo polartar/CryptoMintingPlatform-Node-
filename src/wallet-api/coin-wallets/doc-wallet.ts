@@ -39,6 +39,10 @@ class DocWallet extends CoinWalletBase {
         this.rewardNames = ['Arc', 'GALA'];
         break;
       }
+      case 'blue': {
+        this.rewardNames = ['BLUE'];
+        break;
+      }
       default: {
         throw new Error('Symbol not supported for DocWallet');
       }

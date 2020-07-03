@@ -1,1 +1,1 @@
-export { default as WalletApi } from './WalletApi';
+export * from './WalletApi';

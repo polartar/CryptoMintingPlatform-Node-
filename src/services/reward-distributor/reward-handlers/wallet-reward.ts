@@ -1,5 +1,5 @@
 import { BaseReward } from './base-reward';
-import { coinSymbolToCoinConfig } from '../../../common';
+import { symbolToWalletConfig } from '../../../common';
 import { IRewardTriggerConfig } from '../../../types';
 
 export abstract class WalletReward extends BaseReward {
@@ -8,7 +8,7 @@ export abstract class WalletReward extends BaseReward {
     rewardTriggerConfig: IRewardTriggerConfig,
   ) {
     super(
-      coinSymbolToCoinConfig.get(currencySymbol.toLowerCase()),
+      symbolToWalletConfig.get(currencySymbol.toLowerCase()),
       rewardTriggerConfig,
     );
   }

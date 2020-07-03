@@ -2,12 +2,10 @@ import { auth, config } from '../common';
 import { Context } from '../types/context';
 import ResolverBase from '../common/Resolver-Base';
 import { credentialService } from '../services';
-import { WalletApi } from '../wallet-api';
+import { walletApi } from '../wallet-api';
 import { User } from '../models';
 import { UserApi } from '../data-sources';
 import { CoinWalletBase } from '../wallet-api/coin-wallets';
-
-const walletApi = new WalletApi(config.hostname);
 
 class Resolvers extends ResolverBase {
   companyAddresses = new Map<string, string>([

@@ -3,10 +3,17 @@ import { config } from '.';
 
 import * as erc20Abi from './ABI/erc20.json';
 import * as erc1155Abi from './ABI/erc1155.json';
+import {
+  BtcWallet,
+  EthWallet,
+  DocWallet,
+  Erc1155Wallet,
+  Erc20Wallet,
+} from '../wallet-api/coin-wallets';
 
 const { contractAddresses, tokenIds } = config;
 
-const walletConfigurations: ICoinMetadata[] = [
+export const walletConfigurations: ICoinMetadata[] = [
   {
     name: 'Bitcoin',
     backgroundColor: '#FB9A00',
@@ -17,6 +24,7 @@ const walletConfigurations: ICoinMetadata[] = [
     walletApi: eSupportedInterfaces.btc,
     contractAddress: null,
     decimalPlaces: 8,
+    WalletInterface: BtcWallet,
   },
   {
     name: 'Ethereum',
@@ -28,6 +36,7 @@ const walletConfigurations: ICoinMetadata[] = [
     walletApi: eSupportedInterfaces.eth,
     contractAddress: null,
     decimalPlaces: 18,
+    WalletInterface: EthWallet,
   },
   {
     name: 'Green',
@@ -39,6 +48,7 @@ const walletConfigurations: ICoinMetadata[] = [
     walletApi: eSupportedInterfaces.erc20,
     contractAddress: contractAddresses.green,
     decimalPlaces: 8,
+    WalletInterface: Erc20Wallet,
   },
   {
     name: 'Gala',
@@ -51,6 +61,7 @@ const walletConfigurations: ICoinMetadata[] = [
     contractAddress: contractAddresses.gala,
     decimalPlaces: 8,
     tokenId: tokenIds.gala,
+    WalletInterface: Erc1155Wallet,
   },
   {
     walletApi: eSupportedInterfaces.doc,
@@ -62,14 +73,25 @@ const walletConfigurations: ICoinMetadata[] = [
     abi: null,
     decimalPlaces: 8,
     contractAddress: null,
+    WalletInterface: DocWallet,
+  },
+  {
+    walletApi: eSupportedInterfaces.doc,
+    name: 'Blue',
+    symbol: 'BLUE',
+    backgroundColor: '#0066FF',
+    icon:
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAJJSURBVHgB7ZoxaxRBFMd/e5ecpx6aQiUqJBZKAmIhFhY2h42FjVjaaOXXCPpFJBb6BSSghRtQbCOooIhKUIJIMFGTS7y923FeJoqXbJIJzBy7m/nBY/dmhp377+7Mm/d2YB2lVFNbrG1BFYNY203+RxdMqGKSapsQDZE+uaWP9yguSttlERLrkybFJhYhiuKzUBYhqkJJKI2QATyRdKDT3dBZFQY99ej8sqkecc9m4OET+PKtt+7CONy4AmOjOMe5kCSBt7Pw6gO0k96617rs05wfIe7HSGReoWrGlatVYz4Is1beCELyRhCSN4KQrRjUfqKm3WwUba6TskqEF6w9+/efMPsVfi1v307WWO8/Q7e7uW55Bd58tFtvHRmC0WE4uB8rrOKRpRbcn4IHj+F3Ql84cRRuX4Orl6ya28Ujq234sdQ/EUJrxTxBW6yErL3blbVlVN+Q/iq7GMF7a9aSUZSmJu/SL7qp6dMWKyH1fWYWaVjOIC4YasDhhn176yxKaxXmF81xO9p6+p16AY+e68mh3VsnM9H1Jlw8y44capibV7NzEMrajxyow8jwzu3Ef8y8yw6s6jU4eQzGT+Ec54O9k5qkQ9ZzljJfWbSw1sobQUjeCELyRhCyJcr4kU5GYCVlWQGXC5znfiX6GxuB82dgbr53oXnutI76juMFb1+ssu6+5H0H/OR+Vfj0ljeCkLxRKiGLlAAR8pLiMy1C7lBsxH1MVqIomsaIKao/uas1TP77JdudtD1d3wPlynwhm+Nibc2///8P+iXIMzL+1hcAAAAASUVORK5CYII=',
+    abi: null,
+    decimalPlaces: 8,
+    contractAddress: null,
+    WalletInterface: DocWallet,
   },
 ];
 
-export const coinSymbolToCoinConfig = new Map<string, ICoinMetadata>(
+export const symbolToWalletConfig = new Map<string, ICoinMetadata>(
   walletConfigurations.map(walletConf => [
     walletConf.symbol.toLowerCase(),
     walletConf,
   ]),
 );
-
-export default walletConfigurations;
