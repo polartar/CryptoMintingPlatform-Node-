@@ -1,7 +1,7 @@
 type ReferralOutcomes {
   friendsJoined: Int!
   goldMembers: Int!
-  nodesPurchased: Int!
+  nodesPurchasedByReferrals: Int!
 }
 type TownStarReward {
   name: String!
@@ -39,6 +39,7 @@ type GalaShareConfig {
   userBalanceThreshold: Int!
   upgradeBenefits: [String!]!
   basicWalletBenefits: [String!]!
+  nodesOwned: Int!
   referralOutcomes: ReferralOutcomes!
   galaRewards: CryptoRewards!
   btcRewards: CryptoRewards!
