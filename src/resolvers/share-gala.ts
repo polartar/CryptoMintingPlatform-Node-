@@ -72,7 +72,8 @@ export class GalaShareResolver extends ShareResolver {
         btcEarned,
         friendsJoined,
         galaEarned,
-        nodesPurchased,
+        nodesPurchasedByReferrals,
+        nodesOwned,
         upgradedReferrals,
       } = await this.getRewardTotals(dbUser.id);
       return {
@@ -87,6 +88,7 @@ export class GalaShareResolver extends ShareResolver {
         userBalanceThreshold,
         upgradeBenefits,
         basicWalletBenefits,
+        nodesOwned,
         galaRewards: {
           earned: galaEarned.toFixed(8),
           usd: '0',
@@ -98,7 +100,7 @@ export class GalaShareResolver extends ShareResolver {
         referralOutcomes: {
           friendsJoined,
           goldMembers: upgradedReferrals,
-          nodesPurchased,
+          nodesPurchasedByReferrals,
         },
       };
     } catch (error) {
