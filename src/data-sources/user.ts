@@ -50,6 +50,16 @@ export default class UserApi extends DataSource {
     }
   };
 
+  public update = async (update: any) => {
+    try {
+      const updateResult = await User.findByIdAndUpdate(this.userId, update);
+      return updateResult;
+    } catch (error) {
+      logger.warn(`data-sources.user.update.catch(${this.userId}):${error}`);
+      throw error;
+    }
+  };
+
   private findConnectUser = (query: { [key: string]: any }) => {
     if (config.brand.toLowerCase() === 'connect') {
       return Promise.resolve(null);

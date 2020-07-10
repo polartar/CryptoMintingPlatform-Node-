@@ -317,11 +317,17 @@ class Erc1155API extends EthWallet {
     );
 
     try {
-      const [{ nonce, ethAddress }, privateKey, gasPrice] = await Promise.all([
+      const [
+        { ethNonceFromDb, ethAddress },
+        privateKey,
+        gasPrice,
+      ] = await Promise.all([
         this.getEthAddress(userApi),
         this.getDecryptedPrivateKey(userApi.userId, walletPassword),
         this.provider.getGasPrice(),
       ]);
+      this.checkIfSendingToSelf(ethAddress, to);
+      const nonce = await this.getNonce(userApi, ethAddress, ethNonceFromDb);
 
       const wallet = new ethers.Wallet(privateKey, this.provider);
       await this.requireItemsAndEtherToSend(
@@ -385,15 +391,10 @@ class Erc1155API extends EthWallet {
       );
       let message = '';
       switch (error.message) {
+        case 'Does not own specified token':
+        case 'Incorrect password':
+        case 'Cannot send to yourself':
         case 'Insufficient ETH balance': {
-          message = error.message;
-          break;
-        }
-        case 'Does not own specified token': {
-          message = error.message;
-          break;
-        }
-        case 'Incorrect password': {
           message = error.message;
           break;
         }
@@ -411,7 +412,11 @@ class Erc1155API extends EthWallet {
   async send(userApi: UserApi, outputs: ISendOutput[], walletPassword: string) {
     const [{ to, amount: value }] = outputs;
     try {
-      const [{ nonce, ethAddress }, privateKey, gasPrice] = await Promise.all([
+      const [
+        { ethNonceFromDb, ethAddress },
+        privateKey,
+        gasPrice,
+      ] = await Promise.all([
         this.getEthAddress(userApi),
         this.getDecryptedPrivateKey(userApi.userId, walletPassword),
         this.provider.getGasPrice(),
@@ -430,6 +435,7 @@ class Erc1155API extends EthWallet {
         'safeTransferFrom',
         [ethAddress, to, this.tokenId, amount, '0x'],
       );
+      const nonce = await this.getNonce(userApi, ethAddress, ethNonceFromDb);
 
       const rawTransaction = await wallet.signTransaction({
         to: this.contract.address,
@@ -477,7 +483,9 @@ class Erc1155API extends EthWallet {
       logger.warn(`walletApi.coin-wallets.Erc1155Wallet.send.catch: ${error}`);
       let message;
       switch (error.message) {
-        case 'Insufficient ETH balance': {
+        case 'Incorrect password':
+        case 'Insufficient ETH balance':
+        case 'Cannot send to yourself': {
           message = error.message;
           break;
         }
@@ -485,10 +493,7 @@ class Erc1155API extends EthWallet {
           message = `Insufficient ${this.symbol} balance`;
           break;
         }
-        case 'Incorrect password': {
-          message = error.message;
-          break;
-        }
+
         default: {
           if (error.reason === 'underflow occurred') {
             message = `Invalid ${this.symbol} value`;

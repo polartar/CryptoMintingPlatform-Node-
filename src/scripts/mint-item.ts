@@ -3,7 +3,7 @@ import env from './script-config';
 const abi = require('../common/ABI/erc1155.json');
 import { logger } from '../common';
 
-const rewardWallet = new Wallet('');
+const sendToAddress = '';
 
 const items = {
   betaKey: '0x8000000000000000000000000000001f00000000000000000000000000000000',
@@ -19,22 +19,22 @@ const { GALA_ADDRESS, MNEMONIC, ETH_NODE_URL } = env;
 void (async () => {
   const mintConfigs = [
     {
-      address: rewardWallet.address,
+      address: sendToAddress,
       quantity: 5,
       tokenId: items.alfaFountain.ok,
     },
     {
-      address: rewardWallet.address,
+      address: sendToAddress,
       quantity: 5,
       tokenId: items.alfaFountain.good,
     },
     {
-      address: rewardWallet.address,
+      address: sendToAddress,
       quantity: 5,
       tokenId: items.alfaFountain.great,
     },
     {
-      address: rewardWallet.address,
+      address: sendToAddress,
       quantity: 5,
       tokenId: items.alfaFountain.majestic,
     },
@@ -52,7 +52,7 @@ void (async () => {
       const { hash, wait } = await mintContract.mintNonFungible(
         tokenId,
         addresses,
-        '0x0',
+        '0x00',
         {
           gasPrice: utils.parseUnits('23', 'gwei'),
         },
@@ -60,7 +60,7 @@ void (async () => {
       logger.info(hash);
       await wait(1);
     } catch (error) {
-      logger.warn(error);
+      logger.warn(JSON.stringify(error));
     }
   }
   logger.info('Done');
