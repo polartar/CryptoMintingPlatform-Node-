@@ -1,0 +1,15 @@
+type Friend {
+  id: ID!
+  displayName: String
+  profilePic: String
+  active: Boolean!
+  canNudge: Boolean!
+}
+
+type Query {
+  friends: [Friends!]!
+}
+
+type Mutation {
+  nudgeFriend(id: String!): MutationResponse!
+}

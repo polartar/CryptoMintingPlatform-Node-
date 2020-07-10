@@ -18,6 +18,7 @@ class Resolvers extends ResolverBase {
     const { fileName, fileType } = args.pictureInfo;
     try {
       const s3Response = await s3Service.getSignedUrl(fileName, fileType);
+
       return s3Response;
     } catch (error) {
       logger.warn(error);

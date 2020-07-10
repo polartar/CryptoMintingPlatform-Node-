@@ -14,24 +14,25 @@ import {
   WalletConfig,
   Bitly,
   Zendesk,
+  Blockfunnels,
   SendEmail,
 } from './data-sources';
-import { WalletApi } from './wallet-api';
+import { walletApi } from './wallet-api';
 import { removeListeners } from './blockchain-listeners';
 import { Logger, winstonLogger, systemLogger } from './common/logger';
 import { dailyWalletStatsCron } from './cron';
+import { Wallet } from 'ethers';
 
 class Server {
   public app: express.Application = express();
   public httpServer: http.Server;
-  public walletApi: WalletApi;
+  public walletApi = walletApi;
 
   constructor() {
     autoBind(this);
-    const { isDev, hostname, isStage } = config;
+    const { isDev, isStage } = config;
 
     const typeDefs: DocumentNode = gql(schemas);
-    this.walletApi = new WalletApi(hostname);
     const isGqlDev = isDev || isStage;
 
     const server = new ApolloServer({
@@ -47,7 +48,7 @@ class Server {
         onDisconnect: async (socket, context) => {
           const { token } = await context.initPromise;
           if (token) {
-            const user = new UserApi(token);
+            const user = UserApi.fromToken(token);
             await removeListeners(user.userId);
           }
         },
@@ -86,7 +87,7 @@ class Server {
     const logger = new Logger(winstonLogger);
     if (token) {
       try {
-        user = new UserApi(token);
+        user = UserApi.fromToken(token);
         logger.startSession(user.userId);
       } catch (error) {
         logger.startSession();
@@ -104,31 +105,46 @@ class Server {
       bitly: new Bitly(),
       zendesk: new Zendesk(),
       sendEmail: new SendEmail(),
+      blockfunnels: new Blockfunnels(),
     };
   }
 
   private listen() {
     this.httpServer.listen(config.port, () =>
-      systemLogger.info(`🚀 Server ready on port ${config.port}`),
+      systemLogger.info(
+        `🚀 ${config.brand.toUpperCase()} Wallet-Server ready on port ${
+          config.port
+        }`,
+      ),
     );
   }
 
   public async initialize() {
     try {
+      this.logRewardDistributerAddress();
       await this.connectToMongodb();
       dailyWalletStatsCron.schedule(config.dailyWalletStatsCronExpression);
       this.listen();
+      config.logConfigAtStartup();
     } catch (error) {
       throw error;
     }
   }
+
+  private logRewardDistributerAddress = () => {
+    systemLogger.info(
+      `Reward distributer address: ${
+        new Wallet(config.rewardDistributerPkey).address
+      }`,
+    );
+  };
 
   private async connectToMongodb() {
     return new Promise(resolve => {
       set('useCreateIndex', true);
       set('useNewUrlParser', true);
       set('useFindAndModify', false);
-      connect(config.mongodbUri);
+      connect(config.mongodbUri, { useNewUrlParser: true });
       mongooseConnection.once('open', () => {
         systemLogger.info(`Connected to mongoDb`);
         resolve();

@@ -1,20 +1,17 @@
-import { ethers, utils } from 'ethers';
+import { ethers, utils, constants, BigNumber } from 'ethers';
 import EthWallet from './eth-wallet';
 import { config, logger } from '../../common';
-import {
-  ITransaction,
-  ICoinMetadata,
-  IWeb3TransferEvent,
-  ISendOutput,
-} from '../../types';
+import { ITransaction, ICoinMetadata, ISendOutput } from '../../types';
 import { UserApi } from '../../data-sources';
-const Web3 = require('web3');
+import nodeSelector from '../../services/node-selector';
+import { transactionService } from '../../services';
+import { ITokenBalanceTransactions } from '../../pipelines';
 
 class Erc1155API extends EthWallet {
   contract: ethers.Contract;
   decimalPlaces: number;
-  decimalFactor: ethers.utils.BigNumber;
-  decimalFactorNegative: ethers.utils.BigNumber;
+  decimalFactor: BigNumber;
+  decimalFactorNegative: BigNumber;
   provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
   abi: any;
   WEB3_GAS_ERROR = 'Returned error: insufficient funds for gas * price + value';
@@ -62,51 +59,23 @@ class Erc1155API extends EthWallet {
   async estimateFee(userApi: UserApi) {
     const gasPrice = await this.provider.getGasPrice();
     const ethBalance = await this.getEthBalance(userApi);
-    const { ethAddress } = await this.getEthAddress(userApi);
     try {
-      const testValue = this.bigNumberify(10);
-      const estimate = await this.contract.estimate.safeTransferFrom(
-        ethAddress,
-        config.erc20FeeCalcAddress,
-        this.tokenId,
-        testValue,
-        '0x0',
-        { gasPrice, gasLimit: 75000 },
-      );
-
-      const total = this.toEther(estimate.mul(gasPrice));
-      const feeData = {
-        estimatedFee: total,
-        feeCurrency: 'ETH',
-        feeCurrencyBalance: ethBalance,
-      };
-      return feeData;
-    } catch (error) {
-      logger.warn(
-        `walletApi.coin-wallets.Erc1155Wallet.estimateFee.catch:${error}`,
-      );
-      const backupFeeEstimate = this.toEther(
-        this.FALLBACK_GAS_VALUE.mul(gasPrice),
-      );
+      const feeEstimate = this.toEther(this.FALLBACK_GAS_VALUE.mul(gasPrice));
       return {
-        estimatedFee: backupFeeEstimate,
+        estimatedFee: feeEstimate,
         feeCurrency: 'ETH',
-        feeCurrencyBalance: ethBalance,
+        feeCurrencyBalance: ethBalance.confirmed,
       };
-    }
-  }
-
-  private negate(numToNegate: string | utils.BigNumber) {
-    try {
-      if (typeof numToNegate === 'string') return `-${numToNegate}`;
-      return this.bigNumberify(0).sub(numToNegate);
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.Erc1155Wallet.negate.catch:${error}`);
-      throw error;
+      if (!error.message.includes('always failing transaction')) {
+        logger.warn(
+          `walletApi.coin-wallets.Erc1155Wallet.estimateFee.catch:${error}`,
+        );
+      }
     }
   }
 
-  private decimalize(numHexOrBn: string | number | utils.BigNumber): string {
+  private decimalize(numHexOrBn: string | number | BigNumber): string {
     try {
       const parsedUnits = utils.formatUnits(
         numHexOrBn.toString(),
@@ -163,6 +132,7 @@ class Erc1155API extends EthWallet {
         icon: this.icon,
         blockNumAtCreation,
         canSendFunds: true,
+        lookupTransactionsBy: ethAddress,
       };
     } catch (error) {
       logger.warn(
@@ -172,55 +142,27 @@ class Erc1155API extends EthWallet {
     }
   }
 
-  private async transferEventsToTransactions(
-    transferEvents: IWeb3TransferEvent[],
+  private async formatWalletTransactions(
+    walletTransactions: ITokenBalanceTransactions['transactions'],
     currentBlockNumber: number,
-    userAddress: string,
-    web3: any,
   ): Promise<ITransaction[]> {
     return Promise.all(
-      transferEvents
-        .sort(
-          (eventOne, eventTwo) => eventTwo.blockNumber - eventOne.blockNumber,
-        )
-        .map(async transferEvent => {
-          const {
-            transactionHash,
-            blockNumber,
-            blockHash,
-            returnValues: { _value, _to, _operator },
-          } = transferEvent;
+      walletTransactions.map(async transferEvent => {
+        const { id, blockNumber, amount, fee, timestamp } = transferEvent;
+        let total = amount;
+        if (fee !== '0') {
+          total = `${amount} ${this.symbol}, ${fee} ETH`;
+        }
 
-          const amount = this.decimalize(_value.toString());
-          const block = await web3.eth.getBlock(blockNumber, false);
-          const { timestamp } = block;
-          const transaction = await web3.eth.getTransaction(transactionHash);
-          const { gasPrice, gas } = transaction;
-          const fee = this.bigNumberify(gas).mul(this.bigNumberify(gasPrice));
-          const feeString = `${utils.formatEther(fee)} ETH`;
-          const isDeposit = _to === userAddress;
-          const formattedAmount = isDeposit
-            ? amount.toString()
-            : this.negate(amount).toString();
-          const formattedTotal = isDeposit
-            ? `${formattedAmount}`
-            : `${formattedAmount} ${this.symbol}, -${feeString}`;
-          const returnTransaction = {
-            id: transactionHash,
-            status: blockHash ? 'Complete' : 'Pending',
-            timestamp,
-            confirmations: currentBlockNumber - blockNumber,
-            fee: isDeposit ? '0' : feeString,
-            link: `${config.ethTxLink}/${transactionHash}`,
-            to: [_to],
-            from: _operator,
-            type: isDeposit ? 'Deposit' : 'Withdrawal',
-            amount: formattedAmount,
-            total: formattedTotal,
-          };
-
-          return returnTransaction;
-        }),
+        return {
+          ...transferEvent,
+          timestamp:
+            timestamp > (Date.now() * 10) / 1000 ? timestamp / 1000 : timestamp,
+          total,
+          confirmations: blockNumber ? currentBlockNumber - blockNumber : 0,
+          link: `${config.ethTxLink}/${id}`,
+        };
+      }),
     );
   }
 
@@ -229,34 +171,14 @@ class Erc1155API extends EthWallet {
     blockNumAtCreation: number,
   ): Promise<ITransaction[]> {
     try {
-      // Ethers isn't quite there with getting past events. The new v5 release looks like serious improvements are coming.
-      const web3 = new Web3(config.ethNodeUrl);
-      const contract = new web3.eth.Contract(this.abi, this.contractAddress);
-
-      const currentBlockNumber = await web3.eth.getBlockNumber();
-      const sent = await contract.getPastEvents('TransferSingle', {
-        fromBlock: blockNumAtCreation,
-        filter: {
-          _operator: address,
-        },
-      });
-      const received = await contract.getPastEvents('TransferSingle', {
-        fromBlock: blockNumAtCreation,
-        filter: {
-          _to: address,
-        },
-      });
-
-      // Can't get filter to work with token id on contract call
-      const sentAndReceived = [...sent, ...received].filter(
-        tx => tx.returnValues?._id?.toHexString() === this.tokenId,
-      );
-
-      const transactions = await this.transferEventsToTransactions(
-        sentAndReceived,
-        currentBlockNumber,
+      const result = await transactionService.getTokenBalanceAndTransactions(
+        this.tokenId,
         address,
-        web3,
+      );
+      const currentBlock = await this.provider.getBlockNumber();
+      const transactions = await this.formatWalletTransactions(
+        result.transactions,
+        currentBlock,
       );
       return transactions;
     } catch (error) {
@@ -282,10 +204,14 @@ class Erc1155API extends EthWallet {
     }
   }
 
-  private async ownsToken(address: string, tokenId: string) {
-    const tokenOwner = await this.contract.ownerOf(tokenId);
+  private async ownsToken(
+    address: string,
+    tokenId: BigNumber,
+    amountSending: BigNumber,
+  ) {
+    const tokensHeld = await this.contract.balanceOf(address, tokenId);
 
-    return tokenOwner === address;
+    return tokensHeld.gte(amountSending);
   }
 
   private async requireEnoughTokensAndEtherToSend(
@@ -298,13 +224,13 @@ class Erc1155API extends EthWallet {
       const [
         { confirmed: tokenBalance },
         feeEstimate,
-        etherBalance,
+        { pendingBalance: etherBalance },
       ] = await Promise.all([
         this.getBalance(address),
         this.estimateFee(userApi),
-        this.provider.getBalance(address),
+        transactionService.getEthBalanceAndTransactions(address),
       ]);
-      const hasEnoughEther = etherBalance.gt(
+      const hasEnoughEther = parseEther(etherBalance).gt(
         parseEther(feeEstimate.estimatedFee),
       );
       const hasEnoughTokens = parseUnits(tokenBalance, this.decimalPlaces).gte(
@@ -324,23 +250,32 @@ class Erc1155API extends EthWallet {
     }
   }
 
-  private async requireItemAndEtherToSend(
+  private async requireItemsAndEtherToSend(
     userApi: UserApi,
     address: string,
-    tokenId: string,
+    tokenIds: BigNumber[],
+    amounts: BigNumber[],
   ) {
     try {
       const { parseEther } = utils;
-      const [ownsToken, feeEstimate, etherBalance] = await Promise.all([
-        this.ownsToken(address, tokenId),
+      const [feeEstimate, etherBalance, ownsTokens] = await Promise.all([
         this.estimateFee(userApi),
         this.provider.getBalance(address),
+        Promise.all(
+          tokenIds.map((tokenId, i) =>
+            this.ownsToken(address, tokenId, amounts[i]),
+          ),
+        ),
       ]);
-      const hasEnoughEther = etherBalance.gt(
-        parseEther(feeEstimate.estimatedFee),
-      );
 
-      if (!ownsToken) {
+      const totalFee = parseEther(feeEstimate.estimatedFee).mul(
+        tokenIds.length,
+      );
+      const hasEnoughEther = etherBalance.gt(totalFee);
+
+      const ownsAllTokens = ownsTokens.every(ownsToken => ownsToken);
+
+      if (!ownsAllTokens) {
         throw new Error(`Does not own specified token`);
       }
       if (!hasEnoughEther) {
@@ -354,32 +289,76 @@ class Erc1155API extends EthWallet {
     }
   }
 
-  async transferNonFungibleToken(
+  async transferFungibleTokens(
     userApi: UserApi,
     outputs: ISendOutput[],
     walletPassword: string,
   ) {
-    const [{ to, tokenId }] = outputs;
+    const [{ to }] = outputs;
+    if (outputs.some(output => output.to !== to)) {
+      throw new Error('Can only transfer to a single address');
+    }
+    const groupedOutputs = outputs.reduce((group, { tokenId, amount }) => {
+      if (!group[tokenId]) {
+        group[tokenId] = constants.Zero;
+      }
+      group[tokenId] = group[tokenId].add(amount);
+
+      return group;
+    }, {} as { [key: string]: BigNumber });
+
+    const [tokenIds, amounts] = Object.entries(groupedOutputs).reduce(
+      ([ids, amts], [tokenId, amount]) => {
+        ids.push(BigNumber.from(tokenId));
+        amts.push(amount);
+        return [ids, amts];
+      },
+      [[], []] as [BigNumber[], BigNumber[]],
+    );
 
     try {
-      const { nonce, ethAddress } = await this.getEthAddress(userApi);
-      const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
-      const privateKey = this.decrypt(encryptedPrivateKey, walletPassword);
+      const [
+        { ethNonceFromDb, ethAddress },
+        privateKey,
+        gasPrice,
+      ] = await Promise.all([
+        this.getEthAddress(userApi),
+        this.getDecryptedPrivateKey(userApi.userId, walletPassword),
+        this.provider.getGasPrice(),
+      ]);
+      this.checkIfSendingToSelf(ethAddress, to);
+      const nonce = await this.getNonce(userApi, ethAddress, ethNonceFromDb);
+
       const wallet = new ethers.Wallet(privateKey, this.provider);
-      await this.requireItemAndEtherToSend(userApi, ethAddress, tokenId);
-      const contract = new ethers.Contract(
-        this.contractAddress,
-        this.abi,
-        wallet,
-      );
-      const transaction = await contract.safeTransferFrom(
+      await this.requireItemsAndEtherToSend(
+        userApi,
         ethAddress,
-        to,
-        tokenId,
-        '0x0',
-        '0x0',
-        { nonce },
+        tokenIds,
+        amounts,
       );
+      const { chainId } = await this.provider.getNetwork();
+
+      const contractMethod = this.contract.interface.encodeFunctionData(
+        'safeBatchTransferFrom',
+        [ethAddress, to, tokenIds, amounts, '0x'],
+      );
+
+      const rawTransaction = await wallet.signTransaction({
+        to: this.contract.address,
+        data: contractMethod,
+        gasLimit: 150000,
+        value: '0x0',
+        nonce,
+        chainId,
+        gasPrice,
+      });
+
+      const { hash } = utils.parseTransaction(rawTransaction);
+
+      await nodeSelector.assignNodeToMineTransaction(hash);
+
+      const transaction = await this.provider.sendTransaction(rawTransaction);
+
       await userApi.incrementTxCount();
       this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
 
@@ -408,19 +387,14 @@ class Erc1155API extends EthWallet {
       return response;
     } catch (error) {
       logger.warn(
-        `walletApi.coin-wallets.Erc1155Wallet.transferNonFungibleToken.catch: ${error}`,
+        `walletApi.coin-wallets.Erc1155Wallet.transferFungibleTokens.catch: ${error}`,
       );
       let message = '';
       switch (error.message) {
+        case 'Does not own specified token':
+        case 'Incorrect password':
+        case 'Cannot send to yourself':
         case 'Insufficient ETH balance': {
-          message = error.message;
-          break;
-        }
-        case 'Does not own specified token': {
-          message = error.message;
-          break;
-        }
-        case 'Incorrect password': {
           message = error.message;
           break;
         }
@@ -428,15 +402,26 @@ class Erc1155API extends EthWallet {
           throw error;
         }
       }
+      return {
+        success: false,
+        message,
+      };
     }
   }
 
   async send(userApi: UserApi, outputs: ISendOutput[], walletPassword: string) {
     const [{ to, amount: value }] = outputs;
     try {
-      const { nonce, ethAddress } = await this.getEthAddress(userApi);
-      const encryptedPrivateKey = await this.getPrivateKey(userApi.userId);
-      const privateKey = this.decrypt(encryptedPrivateKey, walletPassword);
+      const [
+        { ethNonceFromDb, ethAddress },
+        privateKey,
+        gasPrice,
+      ] = await Promise.all([
+        this.getEthAddress(userApi),
+        this.getDecryptedPrivateKey(userApi.userId, walletPassword),
+        this.provider.getGasPrice(),
+      ]);
+
       const amount = this.integerize(value);
       const wallet = new ethers.Wallet(privateKey, this.provider);
       await this.requireEnoughTokensAndEtherToSend(
@@ -444,19 +429,30 @@ class Erc1155API extends EthWallet {
         wallet.address,
         amount.toString(),
       );
-      const contract = new ethers.Contract(
-        this.contractAddress,
-        this.abi,
-        wallet,
+      const { chainId } = this.provider.network;
+
+      const contractMethod = this.contract.interface.encodeFunctionData(
+        'safeTransferFrom',
+        [ethAddress, to, this.tokenId, amount, '0x'],
       );
-      const transaction = await contract.safeTransferFrom(
-        ethAddress,
-        to,
-        this.tokenId,
-        amount,
-        '0x0',
-        { nonce },
-      );
+      const nonce = await this.getNonce(userApi, ethAddress, ethNonceFromDb);
+
+      const rawTransaction = await wallet.signTransaction({
+        to: this.contract.address,
+        data: contractMethod,
+        gasLimit: 150000,
+        value: '0x0',
+        nonce,
+        chainId,
+        gasPrice,
+      });
+
+      const { hash } = utils.parseTransaction(rawTransaction);
+
+      await nodeSelector.assignNodeToMineTransaction(hash);
+
+      const transaction = await this.provider.sendTransaction(rawTransaction);
+
       await userApi.incrementTxCount();
       this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
 
@@ -487,7 +483,9 @@ class Erc1155API extends EthWallet {
       logger.warn(`walletApi.coin-wallets.Erc1155Wallet.send.catch: ${error}`);
       let message;
       switch (error.message) {
-        case 'Insufficient ETH balance': {
+        case 'Incorrect password':
+        case 'Insufficient ETH balance':
+        case 'Cannot send to yourself': {
           message = error.message;
           break;
         }
@@ -495,10 +493,7 @@ class Erc1155API extends EthWallet {
           message = `Insufficient ${this.symbol} balance`;
           break;
         }
-        case 'Incorrect password': {
-          message = error.message;
-          break;
-        }
+
         default: {
           if (error.reason === 'underflow occurred') {
             message = `Invalid ${this.symbol} value`;

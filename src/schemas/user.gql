@@ -10,6 +10,7 @@ type UserProfile {
   currency: String!
   profilePhotoUrl: String
   language: String
+  role: String!
 }
 
 input CreateUserInput {
@@ -17,7 +18,7 @@ input CreateUserInput {
   firstName: String!
   lastName: String!
   displayName: String
-  profilePhotoUrl: String
+  profilePhotoFilename: String
   phone: String
   referredBy: String
   language: String
@@ -28,7 +29,7 @@ input UpdateUserInput {
   firstName: String
   lastName: String
   displayName: String
-  profilePhotoUrl: String
+  profilePhotoFilename: String
   phone: String
   email: String
   password: String

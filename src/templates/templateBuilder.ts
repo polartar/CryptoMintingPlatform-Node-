@@ -7,6 +7,7 @@ import {
   galaWelcome3,
   galaWelcome4,
   galaWelcome5,
+  nudgeFriend,
 } from './handlebars';
 import { IUser } from '../types';
 import config from '../common/config';
@@ -102,6 +103,13 @@ class TemplateBuilder {
     return {
       html: Handlebars.compile(galaWelcome5.html)({}),
       subject: galaWelcome5.subject,
+    };
+  }
+
+  buildNudgeFriendHtml() {
+    return {
+      html: Handlebars.compile(nudgeFriend.html)({}),
+      subject: nudgeFriend.subject,
     };
   }
 }

@@ -1,5 +1,6 @@
 type AwsSignature {
   signedRequest: String!
+  filename: String!
   url: String!
 }
 input AwsInput {

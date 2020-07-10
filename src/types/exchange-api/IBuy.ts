@@ -1,22 +1,27 @@
 export interface IBuyRequest {
   base: string; // the name of the coin the user desires to receive
   rel: string; // the name of the coin the user desires to sell
-  volume: string; // the amount of coins the user is willing to receive of the base coin
-  price: string; // the price in rel the user is willing to pay per one unit of the base coin
+  tokenId: string;
+  quantityBase?: number; // the amount of coins the user is willing to receive of the base coin
+  quantityRel?: number;
+  price?: number; // the price in rel the user is willing to pay per one unit of the base coin
 }
 
 export interface IBuyResponse {
   action: string; // the action of the request (Buy)
   base: string; // the base currency of request
-  base_amount: string; // the resulting amount of base currency that will be received if the order matches (in decimal representation)
+  baseAmount: string; // the resulting amount of base currency that will be received if the order matches (in decimal representation)
   base_amount_rat: number; // the resulting amount of base currency that will be received if the order matches (in rational representation)
   rel: string; // the rel currency of the request
-  rel_amount: string; // the maximum amount of rel coin that will be spent to buy the base_amount (according to price, in decimal representation)
+  relAmount: string; // the maximum amount of rel coin that will be spent to buy the base_amount (according to price, in decimal representation)
   rel_amount_rat: number; // the maximum amount of rel coin that will be spent to buy the base_amount (according to price, in rational representation)
   method: string; // this field is used for internal P2P interactions; the value is always equal to "request"
   dest_pub_key: string; // reserved for future use. dest_pub_key will allow the user to choose the P2P node that will be eligible to match with the request. This value defaults to a "zero pubkey", which means anyone can be a match
   sender_pubkey: string; // 	the public key of this node
   uuid: string; // the request uuid -- supposedly this corresponds to the swap uuid, does it correspond to an order uuid?
+  price: string;
+  status: string;
+  startedAt: number;
 }
 export interface IBuyError {
   error: string /* Two different types:

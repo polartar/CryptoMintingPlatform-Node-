@@ -7,7 +7,7 @@ type Transaction {
   id: String!
   status: String!
   confirmations: Int!
-  timestamp: Int!
+  timestamp: Date!
   fee: String!
   link: String!
   to: [String!]!
@@ -98,7 +98,7 @@ type Mutation {
     totpToken: String
     walletPassword: String
   ): TxSendResponse!
-  sendGameItem(
+  sendGameItems(
     coinSymbol: String
     outputs: [SendOutput!]!
     totpToken: String

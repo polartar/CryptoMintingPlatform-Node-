@@ -1,5 +1,21 @@
 import { IWithdraw } from './IWithdraw';
+export interface IMySwapHistory {
+  swaps: IMySwapHistoryDetail[];
+  timestamp: number;
+}
 
+export interface IMySwapHistoryDetail {
+  uuid: string;
+  base: string;
+  rel: string;
+  nftBaseId: string;
+  myCoin: string;
+  myAmount: number;
+  otherCoin: string;
+  otherAmount: number;
+  startedAt: number;
+  tokenId: string;
+}
 export interface ISwapStatusRequest {
   uuid: string; // the uuid of swap, typically received from the buy/sell call --GOES IN PARAMS
 }
@@ -296,138 +312,6 @@ export type ExchangeEvent =
   | ITakerPaymentRefundedEvent
   | IFinishedEvent;
 
-function assertNever(x: never): never {
+export function assertNever(x: never): never {
   throw new Error('Unexpected object: ' + x);
-}
-function test(e: ExchangeEvent) {
-  switch (e.type) {
-    case SwapEvents.started:
-      return 2;
-    case SwapEvents.startFailed:
-      return 2;
-    case SwapEvents.negotiated:
-      return 2;
-    case SwapEvents.negotiateFailed:
-      return 2;
-    case SwapEvents.takerFeeValidated:
-      return 2;
-    case SwapEvents.takerFeeValidateFailed:
-      return 2;
-    case SwapEvents.makerPaymentTransactionFailed:
-      return 2;
-    case SwapEvents.makerPaymentSent:
-      return 2;
-    case SwapEvents.makerPaymentDataSendFailed:
-      return 0;
-    case SwapEvents.makerPaymentWaitConfirmFailed:
-      return 0;
-    case SwapEvents.takerPaymentReceived:
-      return 0;
-    case SwapEvents.takerPaymentValidateFailed:
-      return 0;
-    case SwapEvents.takerPaymentWaitConfirmFailed:
-      return 0;
-    case SwapEvents.takerPaymentSpendFailed:
-      return 0;
-    case SwapEvents.takerPaymentSpent:
-      return 0;
-    case SwapEvents.makerPaymentWaitRefundStarted:
-      return 0;
-    case SwapEvents.makerPaymentRefunded:
-      return 0;
-    case SwapEvents.makerPaymentRefundFailed:
-      return 0;
-    case SwapEvents.takerFeeSent:
-      return 0;
-    case SwapEvents.takerFeeSendFailed:
-      return 0;
-    case SwapEvents.makerPaymentValidateFailed:
-      return 0;
-    case SwapEvents.makerPaymentReceived:
-      return 0;
-    case SwapEvents.makerPaymentWaitConfirmStarted:
-      return 0;
-    case SwapEvents.makerPaymentValidatedAndConfirmed:
-      return 0;
-    case SwapEvents.takerPaymentSent:
-      return 0;
-    case SwapEvents.takerPaymentTransactionFailed:
-      return 0;
-    case SwapEvents.takerPaymentDataSendFailed:
-      return 0;
-    case SwapEvents.takerPaymentWaitForSpendFailed:
-      return 0;
-    case SwapEvents.makerPaymentSpendFailed:
-      return 0;
-    case SwapEvents.makerPaymentSpent:
-      return 0;
-    case SwapEvents.takerPaymentWaitRefundStarted:
-      return 0;
-    case SwapEvents.takerPaymentRefundFailed:
-      return 0;
-    case SwapEvents.takerPaymentRefunded:
-      return 0;
-    case SwapEvents.finished:
-      return 0;
-    default:
-      return assertNever(e);
-  }
-}
-function test2(e: ExchangeEvent) {
-  switch (e.type) {
-    case SwapEvents.startFailed:
-    case SwapEvents.negotiateFailed:
-    case SwapEvents.takerFeeValidateFailed:
-    case SwapEvents.makerPaymentTransactionFailed:
-    case SwapEvents.makerPaymentDataSendFailed:
-    case SwapEvents.makerPaymentWaitConfirmFailed:
-    case SwapEvents.takerPaymentValidateFailed:
-    case SwapEvents.takerPaymentWaitConfirmFailed:
-    case SwapEvents.takerPaymentSpendFailed:
-    case SwapEvents.makerPaymentRefundFailed:
-    case SwapEvents.takerFeeSendFailed:
-    case SwapEvents.makerPaymentValidateFailed:
-    case SwapEvents.takerPaymentTransactionFailed:
-    case SwapEvents.takerPaymentDataSendFailed:
-    case SwapEvents.takerPaymentWaitForSpendFailed:
-    case SwapEvents.makerPaymentSpendFailed:
-    case SwapEvents.takerPaymentRefundFailed:
-      return 0;
-    case SwapEvents.started:
-      return 1;
-    case SwapEvents.negotiated:
-      return 2;
-    case SwapEvents.takerFeeValidated:
-      return 3;
-    case SwapEvents.makerPaymentSent:
-      return 4;
-    case SwapEvents.takerPaymentReceived:
-      return 5;
-    case SwapEvents.takerPaymentSpent:
-      return 6;
-    case SwapEvents.makerPaymentWaitRefundStarted:
-      return 7;
-    case SwapEvents.makerPaymentRefunded:
-      return 8;
-    case SwapEvents.takerFeeSent:
-      return 9;
-    case SwapEvents.makerPaymentReceived:
-      return 10;
-    case SwapEvents.makerPaymentWaitConfirmStarted:
-      return 11;
-    case SwapEvents.makerPaymentValidatedAndConfirmed:
-      return 12;
-    case SwapEvents.takerPaymentSent:
-      return 13;
-    case SwapEvents.makerPaymentSpent:
-      return 14;
-    case SwapEvents.takerPaymentWaitRefundStarted:
-      return 15;
-    case SwapEvents.takerPaymentRefunded:
-      return 16;
-    case SwapEvents.finished:
-      return 17;
-    default:
-      return assertNever(e);
-  }
 }

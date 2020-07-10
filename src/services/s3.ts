@@ -6,7 +6,7 @@ class S3Service {
   s3: aws.S3;
   private baseParams = {
     Bucket: config.s3Bucket,
-    Expires: 60,
+    Expires: 900,
     ACL: 'public-read',
   };
 
@@ -18,6 +18,12 @@ class S3Service {
     });
     this.s3 = new aws.S3();
   }
+
+  public getUrlFromFilename = (filename: string) => {
+    const url = `https://${config.s3Bucket}.s3.amazonaws.com/${filename}`;
+
+    return url;
+  };
 
   private getParams = (fileName: string, fileType: string) => {
     return {
@@ -40,7 +46,8 @@ class S3Service {
         } else {
           const returnData = {
             signedRequest: data,
-            url: `https://${config.s3Bucket}.s3.amazonaws.com/${randomizedFileName}`,
+            filename: randomizedFileName,
+            url: this.getUrlFromFilename(randomizedFileName),
           };
           resolve(returnData);
         }

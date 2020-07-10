@@ -39,6 +39,10 @@ class DocWallet extends CoinWalletBase {
         this.rewardNames = ['Arc', 'GALA'];
         break;
       }
+      case 'blue': {
+        this.rewardNames = ['BLUE'];
+        break;
+      }
       default: {
         throw new Error('Symbol not supported for DocWallet');
       }
@@ -79,6 +83,7 @@ class DocWallet extends CoinWalletBase {
         backgroundColor: this.backgroundColor,
         icon: this.icon,
         canSendFunds: false,
+        lookupTransactionsBy: userApi.userId,
       };
     } catch (error) {
       logger.warn(
@@ -207,6 +212,9 @@ class DocWallet extends CoinWalletBase {
       );
       throw error;
     }
+  }
+  public checkPassword() {
+    return Promise.reject('Incorrect password');
   }
 }
 

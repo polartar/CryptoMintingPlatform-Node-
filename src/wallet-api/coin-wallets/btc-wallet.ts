@@ -306,6 +306,7 @@ class BtcWallet extends CoinWalletBase {
         backgroundColor: this.backgroundColor,
         icon: this.icon,
         canSendFunds: true,
+        lookupTransactionsBy: userApi.userId,
       };
     } catch (error) {
       logger.warn(
@@ -446,6 +447,18 @@ class BtcWallet extends CoinWalletBase {
       return false;
     }
   }
+  public checkPassword = async (userApi: UserApi, password: string) => {
+    try {
+      const wallet = await this.setWallet(userApi.userId);
+      const result: { success: boolean } = await wallet.unlock(password, 0);
+      return result.success;
+    } catch (error) {
+      logger.warn(
+        `walletApi.coin-wallets.BtcWallet.unlockWallet.catch:${error}`,
+      );
+      return false;
+    }
+  };
 }
 
 export default BtcWallet;

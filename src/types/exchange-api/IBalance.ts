@@ -1,5 +1,9 @@
 export interface IBalanceRequest {
   coin: string; // the name of the coin to retrieve the balance
+  address: string;
+  tokenId: number;
+  rel: string;
+  walletAddress?: string;
 }
 
 export interface IBalanceResponse {

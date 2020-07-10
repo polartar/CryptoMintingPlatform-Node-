@@ -5,6 +5,7 @@ import { UserApi } from '../data-sources/';
 import { User } from '../models';
 import { crypto } from '../utils';
 import { IOrderContext } from '../types';
+import { s3Service } from '../services';
 
 class Resolvers extends ResolverBase {
   public createUser = async (
@@ -15,7 +16,7 @@ class Resolvers extends ResolverBase {
         firstName: string;
         lastName: string;
         displayName: string;
-        profilePhotoUrl: string;
+        profilePhotoFilename: string;
         phone: string;
         phoneCountry: string;
         language: string;
@@ -27,13 +28,14 @@ class Resolvers extends ResolverBase {
     const {
       dataSources: { bitly },
     } = context;
+
     try {
       const {
         token,
         firstName,
         lastName,
         displayName,
-        profilePhotoUrl,
+        profilePhotoFilename,
         phone = null,
         language,
         referralContext = {},
@@ -49,18 +51,27 @@ class Resolvers extends ResolverBase {
         utm_source: utmSource = '',
         utm_term: utmTerm = '',
       } = referralContext;
+
       const displayNameValid = await this.checkUniqueDisplayName(displayName);
       if (!displayNameValid) {
         throw new Error('Display name is taken or invalid');
       }
+
       const firebaseUid = await auth.getFirebaseUid(token, config.hostname);
       logger.debug(`resolvers.auth.createUser.firebaseUid:${firebaseUid}`);
+
       const { email: userEmail } = await auth.getUser(
         firebaseUid,
         config.hostname,
       );
+
       const email = userEmail.toLowerCase();
       const affiliateId = crypto.md5UrlSafe(email);
+
+      const profilePhotoUrl = profilePhotoFilename
+        ? s3Service.getUrlFromFilename(profilePhotoFilename)
+        : '';
+
       const newUser = new User({
         email,
         firebaseUid,
@@ -84,13 +95,17 @@ class Resolvers extends ResolverBase {
           utmTerm,
         },
       });
+
       const url = await bitly.getLink(newUser);
       newUser.set('wallet.shareLink', url);
       newUser.set('wallet.userCreatedInWallet', true);
       logger.debug(`resolvers.auth.createUser.newUser._id:${newUser._id}`);
+
       await newUser.save();
+
       const customToken = await auth.signIn(token, config.hostname);
-      context.user = new UserApi(customToken);
+      context.user = UserApi.fromToken(customToken);
+
       return {
         twoFaEnabled: false,
         token: customToken,
@@ -110,7 +125,7 @@ class Resolvers extends ResolverBase {
         firstName?: string;
         lastName?: string;
         displayName?: string;
-        profilePhotoUrl?: string;
+        profilePhotoFilename?: string;
         phone?: string;
         password?: string;
       };
@@ -118,17 +133,20 @@ class Resolvers extends ResolverBase {
     { user }: Context,
   ) => {
     this.requireAuth(user);
+
     const {
       email,
       firstName,
       lastName,
       displayName,
-      profilePhotoUrl,
+      profilePhotoFilename,
       phone,
       password,
     } = args.userInfo;
+
     const userDoc = await user.findFromDb();
     const emailPass: { email?: string; password?: string } = {};
+
     if (email) {
       emailPass.email = email;
       userDoc.set('email', email);
@@ -148,7 +166,10 @@ class Resolvers extends ResolverBase {
     if (displayName) {
       userDoc.set('displayName', displayName);
     }
-    if (profilePhotoUrl) {
+    if (profilePhotoFilename) {
+      const profilePhotoUrl = s3Service.getUrlFromFilename(
+        profilePhotoFilename,
+      );
       userDoc.set('profilePhotoUrl', profilePhotoUrl);
     }
     if (phone) {

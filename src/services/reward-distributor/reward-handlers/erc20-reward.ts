@@ -1,23 +1,23 @@
 import { ethers, utils } from 'ethers';
-import { config, walletConfig } from '../../../common';
+import { config, walletConfigurations } from '../../../common';
 import { Logger } from '../../../common/logger';
 import { RewardDistributerConfig } from '../../../models';
 
 class Erc20Reward {
-  provider: ethers.providers.JsonRpcProvider;
   rewardDistributerWallet: ethers.Wallet;
   contract: ethers.Contract;
+  provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
+
   constructor() {
-    this.provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
     this.rewardDistributerWallet = new ethers.Wallet(
-      config.erc20RewardDistributerPkey,
+      config.rewardDistributerPkey,
       this.provider,
     );
   }
 
   private getContract = (rewardCurrency: string, rewardAmount: number) => {
     try {
-      const erc20Config = walletConfig.find(
+      const erc20Config = walletConfigurations.find(
         coin => coin.symbol.toLowerCase() === rewardCurrency.toLowerCase(),
       );
       if (!erc20Config)

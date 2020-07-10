@@ -1,134 +1,143 @@
-import * as dotenv from 'dotenv';
 import * as autoBind from 'auto-bind';
 import * as supportedFavoriteOptions from '../data/supportedFavoriteOptions.json';
 import { PubSub } from 'apollo-server-express';
 import keys from './keys';
 import { Connection, createConnection } from 'mongoose';
+import { ItemTokenName } from '../types/ItemTokenName';
+import { systemLogger } from './logger';
+import { env } from './env';
 
-dotenv.config({ path: '.env' });
+const {
+  ALFA_FOUNTAIN_GOOD,
+  BETA_KEY,
+  ALFA_FOUNTAIN_GREAT,
+  ALFA_FOUNTAIN_MAJESTIC,
+  ALFA_FOUNTAIN_OK,
+  EXPRESS_DEPOT,
+} = ItemTokenName;
 
 class Config {
-  public readonly nodeEnv = process.env.NODE_ENV;
+  public readonly nodeEnv = env.NODE_ENV;
   public readonly brand = this.getBrandFromHost();
-  public readonly logLevel = process.env.LOG_LEVEL;
-  public readonly port = this.normalizeNumber(process.env.PORT);
-  public readonly hostname = process.env.HOSTNAME;
-  public readonly mongodbUri = process.env.MONGODB_URI;
-  public readonly cartUrl = process.env.CART_URL;
+  public readonly logLevel = env.LOG_LEVEL;
+  public readonly port = this.normalizeNumber(env.PORT);
+  public readonly hostname = env.HOSTNAME;
+  public readonly mongodbUri = env.MONGODB_URI;
+  public readonly cartUrl = env.CART_URL;
   public connectMongoConnection: Connection;
   public readonly jwtPrivateKey = keys.privateKey;
   public readonly jwtPublicKey = keys.publicKey;
-  public readonly bitlyToken = process.env.BITLY_API_KEY;
+  public readonly bitlyToken = env.BITLY_API_KEY;
   public readonly serviceAccounts = keys.serviceAccounts;
   public readonly defaultCryptoFavorites = ['BTC', 'ETH', 'LTC', 'XRP'];
+  public readonly nudgeTimeoutHours = 18;
+  public readonly nudgeCode = 'play_townstar';
   public readonly bypassTwoFaInDev =
-    process.env.BYPASS_TWOFA_IN_DEV &&
-    process.env.BYPASS_TWOFA_IN_DEV.toLowerCase() === 'true';
-  public readonly apiKeyServiceUrl = process.env.API_KEY_SERVICE_URL;
-  public readonly isDev = process.env.NODE_ENV !== 'production';
-  public readonly isStage = process.env.IS_STAGE === 'true';
-  public readonly etherScanApiKey = process.env.ETHERSCAN_API_KEY;
+    env.BYPASS_TWOFA_IN_DEV && env.BYPASS_TWOFA_IN_DEV.toLowerCase() === 'true';
+  public readonly apiKeyServiceUrl = env.API_KEY_SERVICE_URL;
+  public readonly blockfunnelsUrl = env.BLOCKFUNNELS_URL;
+  public readonly blockfunnelsBasicAuthPassword =
+    env.BLOCKFUNNELS_BASIC_AUTH_PASSWORD;
+  public readonly isDev = env.NODE_ENV !== 'production';
+  public readonly isStage = env.IS_STAGE === 'true';
+  public readonly etherScanApiKey = env.ETHERSCAN_API_KEY;
   public readonly clientSecretKeyRequired: boolean =
-    process.env.CLIENT_SECRET_KEY_REQUIRED !== undefined &&
-    process.env.CLIENT_SECRET_KEY_REQUIRED === 'true';
-  public readonly erc20FeeCalcAddress = process.env.ETH_ADD_FOR_ERC20_FEE_CALC;
-  public readonly erc20RewardDistributerPkey =
-    process.env.ERC20_REWARD_DISTRIBUTER_PKEY;
+    env.CLIENT_SECRET_KEY_REQUIRED !== undefined &&
+    env.CLIENT_SECRET_KEY_REQUIRED === 'true';
+  public readonly erc20FeeCalcAddress = env.ETH_ADD_FOR_ERC20_FEE_CALC;
+  public readonly rewardDistributerPkey = env.REWARD_DISTRIBUTOR_ETH_PKEY;
   public readonly companyFeeBtcAddresses: { [key: string]: string } = {
-    green: process.env.COMPANY_FEE_BTC_ADDRESS_GREEN,
-    winx: process.env.COMPANY_FEE_BTC_ADDRESS_WINX,
-    gala: process.env.COMPANY_FEE_BTC_ADDRESS_GALA,
+    green: env.COMPANY_FEE_BTC_ADDRESS_GREEN,
+    winx: env.COMPANY_FEE_BTC_ADDRESS_WINX,
+    gala: env.COMPANY_FEE_BTC_ADDRESS_GALA,
   };
-  public readonly cryptoNetwork = process.env.CRYPTO_NETWORK;
-  public readonly walletClientDomain = process.env.WALLET_CLIENT_DOMAIN;
-  public readonly zendeskApiKey = process.env.ZENDESK_API_KEY;
+  public readonly companyFeeEthAddress = env.COMPANY_FEE_ETH_ADDRESS;
+  public readonly cryptoNetwork = env.CRYPTO_NETWORK;
+  public readonly walletClientDomain = env.WALLET_CLIENT_DOMAIN;
+  public readonly zendeskApiKey = env.ZENDESK_API_KEY;
   public readonly cryptoSymbolToNameMap: Map<
     string,
     string
   > = this.mapSymbolToName();
   public readonly bcoinWallet = {
-    host: process.env.BCOIN_WALLET_HOST,
-    ssl:
-      process.env.BCOIN_WALLET_SSL &&
-      process.env.BCOIN_WALLET_SSL.toLowerCase() === 'true',
-    uri: process.env.CRYPTO_NETWORK,
+    host: env.BCOIN_WALLET_HOST,
+    ssl: env.BCOIN_WALLET_SSL && env.BCOIN_WALLET_SSL.toLowerCase() === 'true',
+    uri: env.CRYPTO_NETWORK,
     walletAuth: true,
-    network: process.env.CRYPTO_NETWORK,
-    port: +process.env.BCOIN_WALLET_PORT,
-    apiKey: process.env.BCOIN_WALLET_API_KEY,
+    network: env.CRYPTO_NETWORK,
+    port: +env.BCOIN_WALLET_PORT,
+    apiKey: env.BCOIN_WALLET_API_KEY,
   };
   public readonly bcoinRpc = {
     ...this.bcoinWallet,
-    port: process.env.BCOIN_NODE_PORT ? +process.env.BCOIN_NODE_PORT : 0,
-    apiKey: process.env.BCOIN_NODE_API_KEY,
+    port: env.BCOIN_NODE_PORT ? +env.BCOIN_NODE_PORT : 0,
+    apiKey: env.BCOIN_NODE_API_KEY,
   };
-  public readonly ethNodeUrl =
-    process.env.CRYPTO_NETWORK === 'testnet'
-      ? 'https://ropsten.infura.io/v3/c843dd81493d4fa3a6fd29277d831eb1'
-      : 'https://mainnet.infura.io/v3/c843dd81493d4fa3a6fd29277d831eb1';
 
-  public readonly etherscanNetwork =
-    process.env.CRYPTO_NETWORK === 'testnet' ? 'ropsten' : 'homestead';
+  public readonly ethNodeUrl = env.ETH_NODE_URL;
 
-  public readonly btcTxLink =
-    process.env.CRYPTO_NETWORK === 'testnet'
-      ? 'https://live.blockcypher.com/btc-testnet/tx'
-      : 'https://live.blockcypher.com/btc/tx';
-
-  public readonly ethTxLink =
-    process.env.CRYPTO_NETWORK === 'testnet'
-      ? 'https://ropsten.etherscan.io/tx'
-      : 'https://etherscan.io/tx';
+  public readonly btcTxLink = env.BTC_TX_LINK_BASE;
+  public readonly ethTxLink = env.ETH_TX_LINK_BASE;
 
   public readonly contractAddresses = {
-    green: process.env.GREEN_ADDRESS,
-    gala: process.env.GALA_ADDRESS,
+    green: env.GREEN_ADDRESS,
+    gala: env.GALA_ADDRESS,
   };
-  public readonly tokenIds = {
-    gala: process.env.GALA_TOKEN_ID,
+  public readonly tokenIds: { [key: string]: string } = {
+    gala: env.GALA_TOKEN_ID,
+    [BETA_KEY]: env.BETA_KEY_TOKEN_ID,
+    [ALFA_FOUNTAIN_OK]: env.ALFA_OK_TOKEN_ID,
+    [ALFA_FOUNTAIN_GOOD]: env.ALFA_GOOD_TOKEN_ID,
+    [ALFA_FOUNTAIN_GREAT]: env.ALFA_GREAT_TOKEN_ID,
+    [ALFA_FOUNTAIN_MAJESTIC]: env.ALFA_MAJESTIC_TOKEN_ID,
+    [EXPRESS_DEPOT]: env.EXPRESS_DEPOT_TOKEN_ID,
   };
 
   public pubsub = new PubSub();
   public readonly newTransaction = 'NEW_TRANSACTION';
   public readonly newBalance = 'NEW_BALANCE';
-  public readonly sendGridApiKey = process.env.SENDGRID_API_KEY;
-  public readonly sendGridEmailFrom = process.env.SENDGRID_EMAIL_FROM;
+  public readonly sendGridApiKey = env.SENDGRID_API_KEY;
+  public readonly sendGridEmailFrom = env.SENDGRID_EMAIL_FROM;
   public readonly baseNumberOfShares = this.normalizeNumber(
-    process.env.BASE_NUMBER_OF_SHARES,
+    env.BASE_NUMBER_OF_SHARES,
   );
   public readonly dailyWalletStatsCronExpression =
-    process.env.WALLET_STATS_CRON_EXPRESSION;
-  public readonly erc20RewardWarnThreshold = this.normalizeNumber(
-    process.env.ERC20_REWARD_WARN_THRESHOLD,
+    env.WALLET_STATS_CRON_EXPRESSION;
+  public readonly rewardWarnThreshold = this.normalizeNumber(
+    env.REWARD_WARN_THRESHOLD,
   );
-  public readonly slackToken = process.env.SLACK_TOKEN;
-  public readonly sendWalletReportToConnect =
-    process.env.SEND_WALLET_REPORT_TO_CONNECT;
+  public readonly sendWalletReportToConnect = env.SEND_WALLET_REPORT_TO_CONNECT;
   public readonly sendWalletReportToConnectArcade =
-    process.env.SEND_WALLET_REPORT_TO_CONNECTARCADE;
-  public readonly sendWalletReportToArcade =
-    process.env.SEND_WALLET_REPORT_TO_ARCADE;
-  public readonly sendWalletReportToCodex =
-    process.env.SEND_WALLET_REPORT_TO_CODEX;
-  public readonly sendWalletReportToGreen =
-    process.env.SEND_WALLET_REPORT_TO_GREEN;
+    env.SEND_WALLET_REPORT_TO_CONNECTARCADE;
+  public readonly sendWalletReportToArcade = env.SEND_WALLET_REPORT_TO_ARCADE;
+  public readonly sendWalletReportToCodex = env.SEND_WALLET_REPORT_TO_CODEX;
+  public readonly sendWalletReportToGreen = env.SEND_WALLET_REPORT_TO_GREEN;
   public readonly sendWalletReportToLocalhost =
-    process.env.SEND_WALLET_REPORT_TO_LOCALHOST;
-  public readonly gameItemServiceUrl = process.env.GAME_ITEM_SERVICE_URL;
-  public readonly galaGamingApiUrl = process.env.GALA_GAMING_API_URL;
-  public readonly exchangeUrl = process.env.EXCHANGE_URL;
+    env.SEND_WALLET_REPORT_TO_LOCALHOST;
+  public readonly gameItemServiceUrl = env.GAME_ITEM_SERVICE_URL;
+  public readonly galaGamingApiUrl = env.GALA_GAMING_API_URL;
+  public readonly nodeSelectorUrl = env.NODE_SELECTOR_URL;
+  public readonly exchangeUrl = env.EXCHANGE_URL;
 
-  public readonly s3Bucket = process.env.S3_BUCKET;
-  public readonly awsAccessKey = process.env.AWS_ACCESS_KEY_ID;
-  public readonly awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
-  public readonly s3Region = process.env.S3_REGION;
+  public readonly s3Bucket = env.S3_BUCKET;
+  public readonly awsAccessKey = env.AWS_ACCESS_KEY_ID;
+  public readonly awsSecretAccessKey = env.AWS_SECRET_ACCESS_KEY;
+  public readonly s3Region = env.S3_REGION;
 
-  public readonly costPerLootBox = this.normalizeNumber(
-    process.env.COST_PER_LOOT_BOX,
-  );
+  public readonly costPerLootBox = this.normalizeNumber(env.COST_PER_LOOT_BOX);
 
-  public readonly supportsDisplayNames =
-    process.env.SUPPORTS_DISPLAY_NAMES === 'true';
+  public readonly supportsDisplayNames = env.SUPPORTS_DISPLAY_NAMES === 'true';
+
+  public readonly alertApiUrls: string[] = JSON.parse(env.ALERT_API_URLS);
+
+  public readonly supportsBtcPubsub = env.SUPPORTS_BTC_PUBSUB === 'true';
+
+  public readonly displayedWallets = env.DISPLAYED_WALLETS.split(
+    ',',
+  ).map(symbol => symbol.toLowerCase());
+  public readonly indexedTransactions = env.INDEXED_TRANSACTIONS === 'true';
+  public readonly etherscanNetwork =
+    env.CRYPTO_NETWORK === 'testnet' ? 'ropsten' : 'homestead';
 
   constructor() {
     autoBind(this);
@@ -157,14 +166,13 @@ class Config {
       'COMPANY_FEE_BTC_ADDRESS_GREEN',
       'COMPANY_FEE_BTC_ADDRESS_WINX',
       'COMPANY_FEE_BTC_ADDRESS_GALA',
+      'COMPANY_FEE_ETH_ADDRESS',
       'ZENDESK_API_KEY',
-      'ERC20_REWARD_DISTRIBUTER_PKEY',
+      'REWARD_DISTRIBUTOR_ETH_PKEY',
       'SENDGRID_API_KEY',
       'SENDGRID_EMAIL_FROM',
       'BASE_NUMBER_OF_SHARES',
-      'WALLET_STATS_CRON_EXPRESSION',
-      'ERC20_REWARD_WARN_THRESHOLD',
-      'SLACK_TOKEN',
+      'REWARD_WARN_THRESHOLD',
       'SEND_WALLET_REPORT_TO_CONNECT',
       'SEND_WALLET_REPORT_TO_CONNECTARCADE',
       'SEND_WALLET_REPORT_TO_ARCADE',
@@ -181,7 +189,21 @@ class Config {
       'S3_REGION',
       'COST_PER_LOOT_BOX',
       'SUPPORTS_DISPLAY_NAMES',
-    ].filter(name => !process.env[name]);
+      'ALERT_API_URLS',
+      'NODE_SELECTOR_URL',
+      'GALA_TOKEN_ID',
+      'BETA_KEY_TOKEN_ID',
+      'ALFA_OK_TOKEN_ID',
+      'ALFA_GOOD_TOKEN_ID',
+      'ALFA_GREAT_TOKEN_ID',
+      'ALFA_MAJESTIC_TOKEN_ID',
+      'EXPRESS_DEPOT_TOKEN_ID',
+      'ETH_NODE_URL',
+      'BTC_TX_LINK_BASE',
+      'ETH_TX_LINK_BASE',
+      'SUPPORTS_BTC_PUBSUB',
+      'DISPLAYED_WALLETS',
+    ].filter(name => !env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
         `Required environment variable(s) ${missingEnvVariables.join(
@@ -191,8 +213,18 @@ class Config {
     }
   }
 
+  public logConfigAtStartup = () => {
+    [
+      ['ETH_NODE', this.ethNodeUrl],
+      ['DISPLAYED_WALLETS', this.displayedWallets.join(',')],
+      ['INDEXED_TRANSACTIONS', this.indexedTransactions],
+    ].forEach(([label, value]) => {
+      systemLogger.info(`CONFIG: ${label}=${value}`);
+    });
+  };
+
   private getBrandFromHost() {
-    const hostName = process.env.HOSTNAME.toLowerCase();
+    const hostName = env.HOSTNAME.toLowerCase();
     if (hostName.includes('connectblockchain')) {
       return 'connect';
     }
@@ -214,7 +246,7 @@ class Config {
   }
 
   public async setConnectMongoConnection() {
-    const connectMongoUrl = process.env.CONNECT_MONGODB_URI;
+    const connectMongoUrl = env.CONNECT_MONGODB_URI;
     if (
       !this.hostname.includes('localhost') ||
       (!this.hostname.includes('connectblockchain.net') &&

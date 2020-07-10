@@ -4,13 +4,11 @@ import { mnemonic as mnemonicUtils, crypto } from '../utils';
 import ResolverBase from '../common/Resolver-Base';
 import { credentialService } from '../services';
 import { config, logger } from '../common';
-import { ISendOutput, IBcoinTx, CoinSymbol } from '../types';
+import { ISendOutput, IBcoinTx, CoinSymbol, RewardActions } from '../types';
 import listeners from '../blockchain-listeners';
-import { WalletApi } from '../wallet-api';
 import Erc1155Wallet from '../wallet-api/coin-wallets/erc1155-wallet';
-import { UserApi } from '../data-sources';
 import { emailScheduler } from '../services/email-scheduler';
-import { gameItemsReward } from '../services/reward-distributer/reward-handlers/game-item-reward';
+import { rewardTrigger } from '../services/reward-distributor/reward-distributor-triggers';
 
 class Resolvers extends ResolverBase {
   private saveWalletPassword = async (
@@ -48,50 +46,6 @@ class Resolvers extends ResolverBase {
   private requireValidMnemonic = (mnemonic: string) => {
     const isValidMnemonic = mnemonicUtils.validate(mnemonic.toLowerCase());
     if (!isValidMnemonic) throw Error('Invalid recovery phrase');
-  };
-
-  private selectUserIdOrAddress = (
-    userId: string,
-    parent: { symbol: string; receiveAddress: string },
-  ) => {
-    switch (parent.symbol.toLowerCase()) {
-      case 'btc': {
-        return userId;
-      }
-      case 'gala': {
-        return userId;
-      }
-      case 'winx': {
-        return userId;
-      }
-      default: {
-        return parent.receiveAddress;
-      }
-    }
-  };
-
-  private sendBetaKey = async (wallet: WalletApi, user: UserApi) => {
-    const { brand } = config;
-    if (!['localhost', 'gala'].includes(brand)) return;
-    const { receiveAddress: ethAddress } = await wallet
-      .coin('ETH')
-      .getWalletInfo(user);
-
-    const tokenId =
-      '0x8000000000000000000000000000001e00000000000000000000000000000000';
-    const qtyOwned = await gameItemsReward.getQuantityOwned(
-      user.userId,
-      tokenId,
-    );
-    if (qtyOwned >= 1) return;
-    const result = await gameItemsReward.sendItemByTokenId(
-      user.userId,
-      ethAddress,
-      tokenId,
-      1,
-    );
-
-    return result;
   };
 
   createWallet = async (
@@ -137,6 +91,18 @@ class Resolvers extends ResolverBase {
         if (config.brand === 'gala') {
           await emailScheduler.scheduleGalaWelcomeEmails(referredUser);
         }
+        if (['gala', 'connect'].includes(config.brand)) {
+          const userHelper = rewardTrigger.getUserHelper(referredUser);
+          const referrer = await userHelper.getReferrer();
+          const triggerValue = referrer
+            ? { referrer: referrer.referralsWithWallet }
+            : undefined;
+          await rewardTrigger.triggerAction(
+            RewardActions.WALLET_CREATED,
+            userHelper,
+            triggerValue,
+          );
+        }
 
         if (referredUser && referredUser.referredBy) {
           user.Model.findOne({ affiliateId: referredUser.referredBy })
@@ -146,8 +112,6 @@ class Resolvers extends ResolverBase {
             });
         }
       });
-
-      this.sendBetaKey(wallet, user);
 
       return {
         success: true,
@@ -210,9 +174,10 @@ class Resolvers extends ResolverBase {
   getBalance = async (parent: any, args: {}, { user, wallet }: Context) => {
     this.requireAuth(user);
     try {
-      const userIdOrAddress = this.selectUserIdOrAddress(user.userId, parent);
       const walletApi = wallet.coin(parent.symbol);
-      const walletResult = await walletApi.getBalance(userIdOrAddress);
+      const walletResult = await walletApi.getBalance(
+        parent.lookupTransactionsBy,
+      );
       return walletResult;
     } catch (error) {
       logger.debug(`resolvers.wallet.getBalance.catch: ${error}`);
@@ -251,7 +216,7 @@ class Resolvers extends ResolverBase {
       );
       const recoverySuccessful = await Promise.all(
         wallet.parentInterfaces.map(coin =>
-          coin.recoverWallet(user, oldPassword, newPassword),
+          coin.recoverWallet(user, oldPassword.decryptedString, newPassword),
         ),
       );
       if (!recoverySuccessful.every(recoveryAttempt => recoveryAttempt))
@@ -291,16 +256,16 @@ class Resolvers extends ResolverBase {
       symbol: string;
       receiveAddress: string;
       blockNumAtCreation: number;
+      lookupTransactionsBy: string;
     },
     args: any,
     { user, wallet }: Context,
   ) => {
     this.requireAuth(user);
     try {
-      const userIdOrAddress = this.selectUserIdOrAddress(user.userId, parent);
       const walletApi = wallet.coin(parent.symbol);
       const transactions = await walletApi.getTransactions(
-        userIdOrAddress,
+        parent.lookupTransactionsBy,
         parent.blockNumAtCreation,
       );
       return transactions;
@@ -322,7 +287,9 @@ class Resolvers extends ResolverBase {
         user.userId,
         args.mnemonic.toLowerCase(),
       ));
-    } catch (error) {}
+    } catch (error) {
+      /* Ignore */
+    }
     return {
       valid: mnemonicValid,
     };
@@ -391,7 +358,7 @@ class Resolvers extends ResolverBase {
     }
   };
 
-  sendGameItem = async (
+  sendGameItems = async (
     parent: any,
     {
       coinSymbol,
@@ -417,15 +384,15 @@ class Resolvers extends ResolverBase {
       }
 
       const walletApi = wallet.coin(coinSymbol) as Erc1155Wallet;
-      const result = await walletApi.transferNonFungibleToken(
+      const result = await walletApi.transferFungibleTokens(
         user,
-        outputs,
+        outputs.map(output => ({ ...output, amount: output.amount || '1' })),
         walletPassword,
       );
 
       return result;
     } catch (error) {
-      logger.warn(`resolvers.wallet.sendTransaction.catch: ${error}`);
+      logger.warn(`resolvers.wallet.sendGameItems.catch: ${error}`);
       let message;
       switch (error.message) {
         case 'Weak Password': {
@@ -483,7 +450,7 @@ export default {
     balance: resolvers.getBalance,
   },
   Mutation: {
-    sendGameItem: resolvers.sendGameItem,
+    sendGameItems: resolvers.sendGameItems,
     sendTransaction: resolvers.sendTransaction,
     createWallet: resolvers.createWallet,
     recoverWallet: resolvers.recoverWallet,

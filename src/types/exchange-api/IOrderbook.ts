@@ -1,6 +1,7 @@
 export interface IOrderbookRequest {
   base: string; // base currency of a pair
   rel: string; // "related" currency, also can be called "quote currency" according to exchange terms
+  tokenId?: string;
 }
 
 export interface IOrderbookResponse {
@@ -22,7 +23,11 @@ export interface IOrderResponse {
   price_rat: string; // the price in rational representation
   maxvolume: number; // the maximum amount of base coin the offer provider is willing to sell
   max_volume_rat: string; // the max volume in rational representation
-  pubkey: string; // the pubkey of the offer provider
+  pubkey?: string; // the pubkey of the offer provider
+  userId: string;
   age: number; // the age of the offer (in seconds)
   zcredits: number; // the zeroconf deposit amount
+  nftBaseId: string;
+  tokenId: string;
+  uuid: string;
 }

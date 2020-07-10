@@ -6,8 +6,8 @@ export interface IGameOrder {
   quantity: number;
   perUnitPriceUsd: number;
   gameProductId: Types.ObjectId | string;
-  btcUsdPrice: number;
-  totalBtc: number;
+  galaUsdPrice: number;
+  totalGala: number;
   txHash: string;
   isUpgradeOrder: boolean;
   itemsReceived: string[];

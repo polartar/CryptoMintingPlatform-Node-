@@ -3,7 +3,7 @@ import { ITransaction } from '../../types';
 import { UserApi } from '../../data-sources';
 import { crypto } from '../../utils';
 
-export default abstract class CoinWalletBase {
+abstract class CoinWalletBase {
   constructor(
     protected name: string,
     public symbol: string,
@@ -39,6 +39,7 @@ export default abstract class CoinWalletBase {
     icon: string;
     backgroundColor: string;
     canSendFunds: boolean;
+    lookupTransactionsBy: string;
   }>;
 
   abstract getBalance(
@@ -84,7 +85,7 @@ export default abstract class CoinWalletBase {
     oldPassword: string,
     newPassword: string,
   ): Promise<boolean>;
-
+  abstract checkPassword(user: UserApi, password: string): Promise<boolean>;
   protected encrypt = (plainText: string, secret: string) =>
     crypto.encrypt(plainText, secret);
 
@@ -93,3 +94,4 @@ export default abstract class CoinWalletBase {
 
   protected hash = (value: string) => crypto.hash(value);
 }
+export default CoinWalletBase;

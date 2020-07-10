@@ -11,8 +11,11 @@ import {
 } from '../models';
 import { logResolver } from '../common/logger';
 
-class Resolvers extends ResolverBase {
-  private saveClick = async (referrerId: string, referrerFromBrand: string) => {
+export class ShareResolver extends ResolverBase {
+  protected saveClick = async (
+    referrerId: string,
+    referrerFromBrand: string,
+  ) => {
     const walletName = config.brand.replace('codex', 'connect');
     const offerQuery = { name: `${walletName}_smart_wallet` };
     let OfferModel;
@@ -32,7 +35,7 @@ class Resolvers extends ResolverBase {
     });
   };
 
-  private getShareConfigs = async (user: IUser) => {
+  protected getShareConfigs = async (user: IUser) => {
     try {
       const { softNodeLicenses } = user.toJSON() as IUser;
       const {
@@ -95,7 +98,7 @@ class Resolvers extends ResolverBase {
     }
   };
 
-  private findReferrer = async (referredBy: string) => {
+  protected findReferrer = async (referredBy: string) => {
     const byAffiliateId = { affiliateId: referredBy };
     let referrer = await User.findOne(byAffiliateId);
     let referrerFromBrand: string;
@@ -120,7 +123,7 @@ class Resolvers extends ResolverBase {
     return { referrer, brand: referrerFromBrand };
   };
 
-  private getAlreadyActivated = (userWallet: IUserWallet) => {
+  protected getAlreadyActivated = (userWallet: IUserWallet) => {
     if (!userWallet || !userWallet.activations) {
       return {
         alreadyActivated: [],
@@ -151,6 +154,7 @@ class Resolvers extends ResolverBase {
     { user, wallet, logger }: Context,
   ) => {
     this.requireAuth(user);
+    // this.requireBrand().toNotBeIn(['arcade', 'gala']);
     try {
       const { brand } = config;
       const dbUser = await user.findFromDb();
@@ -242,7 +246,7 @@ class Resolvers extends ResolverBase {
   };
 }
 
-const resolvers = new Resolvers();
+const resolvers = new ShareResolver();
 
 export default logResolver({
   Mutation: {

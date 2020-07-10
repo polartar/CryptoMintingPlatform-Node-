@@ -1,13 +1,16 @@
 type GameSubItem {
-  id: String!
+  tokenId: String
   aquisitionType: String!
+  purchasePrice: Float
   dateAquired: Int!
   gameItemId: String!
   lootBoxId: String
+  isListed: Boolean!
+  orderId: String
 }
 
 type GameItem {
-  id: String
+  nftBaseId: String
   name: String!
   description: String!
   image: String!
@@ -18,6 +21,10 @@ type GameItem {
   withdrawalWaitTime: Int!
   galaFee: Float!
   quantityNeeded: Int
+  hexcode: String
+  label: String!
+  rarity: GameItemRarity
+  quantityOwned: Int
   items: [GameSubItem!]
 }
 
@@ -38,7 +45,8 @@ type FarmBot {
 type GameItemRarity {
   icon: String!
   label: String!
-  supplyLimit: Int!
+  supplyLimit: Int
+  hexcode: String
 }
 
 type GameProduct {
@@ -58,7 +66,7 @@ type GameProduct {
 type BuyGameProductsResponse {
   items: [GameItem!]!
   transactionHash: String!
-  totalBtc: Float!
+  totalGala: Float!
 }
 
 type Query {

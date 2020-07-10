@@ -20,9 +20,8 @@ export default class UserApi extends DataSource {
   claims: IUserClaims;
   uid: string;
 
-  constructor(token: string) {
+  constructor(claims: IUserClaims, uid: string, token = '') {
     super();
-    const { claims, uid } = auth.verifyAndDecodeToken(token, config.hostname);
     this.claims = claims;
     this.uid = uid;
     const { permissions, role, userId, authorized, twoFaEnabled } = claims;
@@ -34,6 +33,11 @@ export default class UserApi extends DataSource {
     this.twoFaEnabled = twoFaEnabled;
   }
 
+  static fromToken(token: string) {
+    const { claims, uid } = auth.verifyAndDecodeToken(token, config.hostname);
+    return new UserApi(claims, uid, token);
+  }
+
   public findFromDb = async () => {
     try {
       const user = await User.findById(this.userId).exec();
@@ -42,6 +46,16 @@ export default class UserApi extends DataSource {
       logger.warn(
         `data-sources.user.findFromDB.catch(${this.userId}):${error}`,
       );
+      throw error;
+    }
+  };
+
+  public update = async (update: any) => {
+    try {
+      const updateResult = await User.findByIdAndUpdate(this.userId, update);
+      return updateResult;
+    } catch (error) {
+      logger.warn(`data-sources.user.update.catch(${this.userId}):${error}`);
       throw error;
     }
   };

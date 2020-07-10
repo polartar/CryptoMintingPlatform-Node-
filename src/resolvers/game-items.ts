@@ -3,23 +3,22 @@ import ResolverBase from '../common/Resolver-Base';
 import { gameItemService } from '../services/game-item';
 import { config } from '../common';
 import { GameOrder, GameProduct, IGameProductDocument } from '../models';
-import { CryptoFavorites } from '../data-sources';
+// import { exchangeService } from '../services';
 
 class Resolvers extends ResolverBase {
   private getOrderDetails = async (
     product: IGameProductDocument,
     quantity: number,
     userId: string,
-    cryptoFavorites: CryptoFavorites,
     orderContext: IOrderContext,
   ): Promise<IGameOrder> => {
-    const btcUsdPrice = await cryptoFavorites.getBtcUsdPrice();
-    const totalBtc = (quantity * (product.priceUsd / btcUsdPrice)).toFixed(8);
+    const galaUsdPrice = 0.05; // TODO: pull this value from the api-dex server eventually
+    const totalGala = (quantity * (product.priceUsd / galaUsdPrice)).toFixed(8);
     return {
-      btcUsdPrice: btcUsdPrice,
+      galaUsdPrice: galaUsdPrice,
       created: new Date(),
       gameProductId: product._id,
-      totalBtc: +totalBtc,
+      totalGala: +totalGala,
       isUpgradeOrder: false,
       itemsReceived: [],
       perUnitPriceUsd: product.priceUsd,
@@ -30,11 +29,63 @@ class Resolvers extends ResolverBase {
     };
   };
 
-  getOwnedItems = async (parent: any, args: {}, ctx: Context) => {
-    this.requireAuth(ctx.user);
+  getOwnedItems = async (parent: any, args: {}, { user }: Context) => {
+    this.requireAuth(user);
     try {
-      const items = await gameItemService.getUserItems(ctx.user.userId);
-      return items;
+      const userItems = await gameItemService.getUserItems(user.userId);
+
+      // const closedOrders = await exchangeService.getClosedOrders({
+      //   userId: user.userId,
+      // });
+
+      // const listedItems = await exchangeService.getOpenOrders({
+      //   userId: user.userId,
+      //   base: 'a',
+      //   rel: 'a',
+      //   tokenId: '0',
+      // });
+
+      return userItems.map(userItem => {
+        const lesserBalance = Math.min(
+          +userItem.balance.confirmed,
+          +userItem.balance.pending,
+        );
+        return {
+          name: userItem.name,
+          image: userItem.image,
+          description: userItem.description,
+          game: userItem.game,
+          nftBaseId: userItem.baseId,
+          icon: userItem.properties.rarity.icon,
+          coin: 'GALA',
+          tradeWaitTime: 0,
+          withdrawalWaitTime: 0,
+          galaFee: 0,
+          quantityOwned: lesserBalance || 0,
+          rarity: userItem.properties.rarity,
+
+          //   items: userItem.items.map(item => {
+          //     const listedItem = listedItems.swaps.find(swap => {
+          //       return swap.tokenId === item.id;
+          //     });
+          //     const purchasedOrder = closedOrders.swaps
+          //       .sort((swapA, swapB) => {
+          //         return swapA.startedAt - swapB.startedAt;
+          //       })
+          //       .find(swap => swap.tokenId === userItem.id);
+          //     const isListed = item.id ? !!listedItem : false;
+          //     const orderId = item.id && isListed ? listedItem.uuid : undefined;
+          //     return {
+          //       ...item,
+          //       tokenId: item.id,
+          //       isListed,
+          //       orderId,
+          //       purchasePrice: purchasedOrder?.myAmount,
+          //     };
+          //   }),
+          // };
+        };
+      });
     } catch (error) {
       throw error;
     }
@@ -46,7 +97,23 @@ class Resolvers extends ResolverBase {
       const items = await gameItemService.getFarmBotRequiredItems(
         ctx.user.userId,
       );
-      return items;
+      return {
+        ...items,
+        coin: 'GALA',
+        tradeWaitTime: 0,
+        withdrawalWaitTime: 0,
+        galaFee: 0,
+        requiredPieces: items.requiredPieces.map((piece: any) => {
+          return {
+            ...piece,
+            nftBaseId: piece.id,
+            coin: 'GALA',
+            tradeWaitTime: 0,
+            withdrawalWaitTime: 0,
+            galaFee: 0,
+          };
+        }),
+      };
     } catch (error) {
       throw error;
     }
@@ -144,11 +211,7 @@ class Resolvers extends ResolverBase {
     },
     ctx: Context,
   ) => {
-    const {
-      user,
-      wallet,
-      dataSources: { cryptoFavorites },
-    } = ctx;
+    const { user, wallet } = ctx;
     this.requireAuth(user);
     const { quantity, walletPassword, productId, orderContext = {} } = args;
     const { wallet: userWallet } = await user.findFromDb();
@@ -162,21 +225,20 @@ class Resolvers extends ResolverBase {
       throw new Error('Product out of stock');
     }
     const ethAddress = userWallet?.ethAddress || '';
-    const btcWallet = wallet.coin('BTC');
+    const galaWallet = wallet.coin('GALA');
     const orderDetails = await this.getOrderDetails(
       product,
       quantity,
       user.userId,
-      cryptoFavorites,
       orderContext,
     );
     const outputs = [
       {
-        to: config.companyFeeBtcAddresses.gala,
-        amount: orderDetails.totalBtc.toFixed(8),
+        to: config.companyFeeEthAddress,
+        amount: orderDetails.totalGala.toFixed(8),
       },
     ];
-    const { success, message, transaction } = await btcWallet.send(
+    const { success, message, transaction } = await galaWallet.send(
       user,
       outputs,
       walletPassword,
@@ -198,7 +260,7 @@ class Resolvers extends ResolverBase {
     return {
       items,
       transactionHash: orderDetails.txHash,
-      totalBtc: orderDetails.totalBtc,
+      totalGala: orderDetails.totalGala,
     };
   };
 
