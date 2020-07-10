@@ -249,6 +249,7 @@ class EthWallet extends CoinWalletBase {
         await userApi.update({ $set: { 'wallet.ethNonce': txCount } });
         return txCount;
       }
+      return nonce;
     } catch (error) {
       logger.warn(`eth-wallet.getNonce.catch: ${error}`);
       throw error;
