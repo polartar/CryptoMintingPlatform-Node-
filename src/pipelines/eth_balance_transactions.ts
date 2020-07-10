@@ -184,6 +184,7 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
       type: {
         $cond: ['$isFromUser', 'Withdrawal', 'Deposit'],
       },
+      transactionType: '$type',
     },
   },
   {
@@ -220,6 +221,7 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
             $toString: '$amount',
           },
           type: '$type',
+          transactionType: '$transactionType',
         },
       },
     },
@@ -237,7 +239,12 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
           $trunc: ['$confirmedBalance', 8],
         },
       },
-      transactions: 1,
+      transactions: {
+        $filter: {
+          input: '$transactions',
+          cond: { $eq: ['$$this.transactionType', 'ETH'] },
+        },
+      },
     },
   },
 ];
