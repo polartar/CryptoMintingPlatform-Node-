@@ -57,6 +57,20 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
       isFromUser: 1,
       to: 1,
       from: 1,
+      fee: {
+        $cond: [
+          '$isFromUser',
+          {
+            $divide: [
+              {
+                $subtract: [0, '$fee'],
+              },
+              '$feeDivisor',
+            ],
+          },
+          0,
+        ],
+      },
       amount: {
         $cond: [
           {
@@ -81,18 +95,17 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
           },
         ],
       },
-      fee: {
+    },
+  },
+  {
+    $addFields: {
+      amount: {
         $cond: [
           '$isFromUser',
           {
-            $divide: [
-              {
-                $subtract: [0, '$fee'],
-              },
-              '$feeDivisor',
-            ],
+            $sum: ['$amount', '$fee'],
           },
-          0,
+          '$amount',
         ],
       },
     },
@@ -133,19 +146,41 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
     },
   },
   {
+    $addFields: {
+      amount: {
+        $cond: [
+          {
+            $eq: ['$status', 'reverted'],
+          },
+          '$fee',
+          '$amount',
+        ],
+      },
+      status: {
+        $cond: [
+          {
+            $eq: ['$status', 'reverted'],
+          },
+          'confirmed',
+          '$status',
+        ],
+      },
+    },
+  },
+  {
     $project: {
       _id: 0,
       id: '$hash',
       status: {
         $cond: [
           {
-            $eq: ['pending', '$status'],
+            $eq: ['$status', 'pending'],
           },
           'Pending',
           {
             $cond: [
               {
-                $eq: ['confirmed', '$status'],
+                $eq: ['$status', 'confirmed'],
               },
               'Confirmed',
               '$status',
@@ -158,31 +193,23 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
       fee: 1,
       to: 1,
       from: 1,
-      pendingTotal: {
-        $add: ['$fee', '$amount'],
+      amount: 1,
+      type: {
+        $cond: ['$isFromUser', 'Withdrawal', 'Deposit'],
       },
+    },
+  },
+  {
+    $addFields: {
+      pendingTotal: '$amount',
       confirmedTotal: {
         $cond: [
           {
-            $eq: ['$status', 'confirmed'],
-          },
-          {
-            $add: ['$fee', '$amount'],
-          },
-          0,
-        ],
-      },
-      amount: {
-        $cond: [
-          {
-            $eq: ['ETH', '$type'],
+            $eq: ['$status', 'Confirmed'],
           },
           '$amount',
           0,
         ],
-      },
-      type: {
-        $cond: ['$isFromUser', 'Withdrawal', 'Deposit'],
       },
     },
   },
@@ -195,7 +222,7 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
   },
   {
     $group: {
-      _id: 1,
+      _id: '',
       pendingBalance: {
         $sum: '$pendingTotal',
       },
