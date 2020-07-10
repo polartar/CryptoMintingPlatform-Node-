@@ -276,7 +276,8 @@ class Erc20API extends EthWallet {
   async send(userApi: UserApi, outputs: ISendOutput[], walletPassword: string) {
     const [{ to, amount: value }] = outputs;
     try {
-      const { nonce, ethAddress } = await this.getEthAddress(userApi);
+      const { ethNonceFromDb, ethAddress } = await this.getEthAddress(userApi);
+      const nonce = await this.getNonce(userApi, ethAddress, ethNonceFromDb);
       const privateKey = await this.getDecryptedPrivateKey(
         userApi.userId,
         walletPassword,

@@ -225,6 +225,42 @@ class EthWallet extends CoinWalletBase {
     }
   }
 
+  protected async getNonce(
+    userApi: UserApi,
+    ethAddress?: string,
+    ethNonceFromDb?: number,
+  ) {
+    let nonce = ethNonceFromDb;
+    let userEthAddress = ethAddress;
+    try {
+      if (!nonce || !userEthAddress) {
+        const userFromDb = await userApi.findFromDb();
+        const {
+          wallet = {
+            ethAddress: '',
+            ethNonce: 0,
+          },
+        } = userFromDb;
+        nonce = wallet.ethNonce;
+        userEthAddress = wallet.ethAddress;
+      }
+      const txCount = await this.provider.getTransactionCount(userEthAddress);
+      if (txCount !== nonce) {
+        await userApi.update({ $set: { 'wallet.ethNonce': txCount } });
+        return txCount;
+      }
+    } catch (error) {
+      logger.warn(`eth-wallet.getNonce.catch: ${error}`);
+      throw error;
+    }
+  }
+
+  protected checkIfSendingToSelf = (from: string, to: string) => {
+    if (from.toLowerCase() === to.toLowerCase()) {
+      throw new Error('Cannot send to yourself');
+    }
+  };
+
   protected async getEthAddress(userApi: UserApi) {
     try {
       const {
@@ -237,14 +273,14 @@ class EthWallet extends CoinWalletBase {
       /* tslint:disable: prefer-const */
       const {
         ethAddress,
-        ethNonce: nonce,
+        ethNonce: ethNonceFromDb,
         ethBlockNumAtCreation: blockNumAtCreation,
       } = wallet;
 
       if (!ethAddress) {
         throw new Error('Wallet not found');
       }
-      return { ethAddress, nonce, blockNumAtCreation };
+      return { ethAddress, ethNonceFromDb, blockNumAtCreation };
     } catch (error) {
       logger.warn(
         `walletApi.coin-wallets.EthWallet.getEthAddress.catch:${error}`,
@@ -396,7 +432,9 @@ class EthWallet extends CoinWalletBase {
     try {
       this.requireValidAddress(to);
       const value = utils.parseEther(amount);
-      const { nonce, ethAddress } = await this.getEthAddress(userApi);
+      const { ethAddress, ethNonceFromDb } = await this.getEthAddress(userApi);
+      this.checkIfSendingToSelf(ethAddress, to);
+      const nonce = await this.getNonce(userApi, ethAddress, ethNonceFromDb);
       await this.requireEnoughBalanceToSendEther(ethAddress, value);
       const privateKey = await this.getDecryptedPrivateKey(
         userApi.userId,
@@ -437,8 +475,9 @@ class EthWallet extends CoinWalletBase {
       logger.warn(`walletApi.coin-wallets.EthWallet.send.catch: ${error}`);
       let message;
       switch (error.message) {
+        case 'Cannot send to yourself':
         case 'Incorrect password': {
-          message = 'Incorrect password';
+          message = error.message;
           break;
         }
         case 'Insufficient account balance': {
