@@ -49,3 +49,8 @@ export const galaWelcome5 = {
   html: readTemplate('galaWelcome5.hbs'),
   subject: 'How to share for fun and reward',
 };
+
+export const nudgeFriend = {
+  html: readTemplate('nudgeFriend.hbs'),
+  subject: 'Your friend is inviting you to play Town Star',
+};

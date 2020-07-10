@@ -6,6 +6,7 @@ import { IUser } from '../types';
 import { capitalize } from '../utils';
 import { DataSource } from 'apollo-datasource';
 import { Attachment, Options } from 'nodemailer/lib/mailer';
+import { UserApi } from './';
 
 class SendEmail extends DataSource {
   capitalizedBrand = capitalize(config.brand);
@@ -136,6 +137,24 @@ class SendEmail extends DataSource {
     logger.debug(
       `data-sources.SendEmail.referrerActivated.emailSent: ${emailSent}`,
     );
+
+    return emailSent;
+  }
+
+  public async nudgeFriend(user: UserApi, friend: string) {
+    logger.debug(
+      `data-sources.SendEmail.nudgeFriend.user: ${user && user.claims.userId}`,
+    );
+    logger.debug(`data-sources.SendEmail.nudgeFriend.friend: ${friend}`);
+
+    if (!user || !friend) {
+      return false;
+    }
+
+    const { html, subject } = templateBuilder.buildNudgeFriendHtml();
+    const emailSent = await this.sendMail(subject, friend, html);
+
+    logger.debug(`data-sources.SendEmail.nudgeFriend.emailSent: ${emailSent}`);
 
     return emailSent;
   }

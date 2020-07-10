@@ -30,6 +30,8 @@ class Config {
   public readonly bitlyToken = env.BITLY_API_KEY;
   public readonly serviceAccounts = keys.serviceAccounts;
   public readonly defaultCryptoFavorites = ['BTC', 'ETH', 'LTC', 'XRP'];
+  public readonly nudgeTimeoutHours = 18;
+  public readonly nudgeCode = 'play_townstar';
   public readonly bypassTwoFaInDev =
     env.BYPASS_TWOFA_IN_DEV && env.BYPASS_TWOFA_IN_DEV.toLowerCase() === 'true';
   public readonly apiKeyServiceUrl = env.API_KEY_SERVICE_URL;
