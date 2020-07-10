@@ -7,7 +7,7 @@ type Friend {
 }
 
 type Query {
-  friends: [Friends!]!
+  friends: [Friend!]!
 }
 
 type Mutation {
