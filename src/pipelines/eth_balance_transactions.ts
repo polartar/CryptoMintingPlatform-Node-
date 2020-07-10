@@ -261,7 +261,7 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
       },
       confirmedBalance: {
         $toString: {
-          $trunc: ['$confirmedBalance', 8],
+          $trunc: ['$pendingBalance', 8],
         },
       },
       transactions: 1,
