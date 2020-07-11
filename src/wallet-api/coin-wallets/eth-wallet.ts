@@ -245,7 +245,7 @@ class EthWallet extends CoinWalletBase {
         userEthAddress = wallet.ethAddress;
       }
       const txCount = await this.provider.getTransactionCount(userEthAddress);
-      if (txCount !== nonce) {
+      if (txCount > nonce) {
         await userApi.update({ $set: { 'wallet.ethNonce': txCount } });
         return txCount;
       }
