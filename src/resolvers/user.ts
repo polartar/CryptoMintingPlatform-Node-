@@ -218,6 +218,28 @@ class Resolvers extends ResolverBase {
       displayName,
     };
   };
+
+  public unsubscribe = async (
+    parent: any,
+    args: { userId: string; emailList: string },
+  ) => {
+    const { userId, emailList } = args;
+
+    if (!userId || !emailList) {
+      throw new Error('User ID and Email List required');
+    }
+
+    await User.findByIdAndUpdate(userId, {
+      $push: {
+        unsubscriptions: {
+          list: emailList,
+          timestamp: new Date(),
+        },
+      },
+    });
+
+    return { success: true };
+  };
 }
 
 export const userResolver = new Resolvers();
@@ -230,5 +252,6 @@ export default {
   Mutation: {
     createUser: userResolver.createUser,
     updateUser: userResolver.updateUser,
+    unsubscribe: userResolver.unsubscribe,
   },
 };
