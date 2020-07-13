@@ -142,7 +142,7 @@ class SendEmail extends DataSource {
 
   public async nudgeFriend(
     user: IUser,
-    friend: { email: string; firstName: string },
+    friend: { email: string; firstName: string; referralLink: string },
   ) {
     logger.debug(`data-sources.SendEmail.nudgeFriend.user: ${user && user.id}`);
     logger.debug(`data-sources.SendEmail.nudgeFriend.friend: ${friend.email}`);
@@ -154,6 +154,7 @@ class SendEmail extends DataSource {
     const { html, subject } = templateBuilder.buildNudgeFriendHtml(
       user.firstName,
       friend.firstName,
+      friend.referralLink,
     );
     const emailSent = await this.sendMail(subject, friend.email, html);
 

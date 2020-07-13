@@ -39,6 +39,7 @@ class Resolvers extends ResolverBase {
       allowedToNudge,
       email,
       firstName,
+      referralLink,
     } = await this.verifyNudgableFriend(user.userId, id);
 
     if (!isFriend) {
@@ -62,7 +63,11 @@ class Resolvers extends ResolverBase {
       userId: user.userId,
       friend: id,
     });
-    await dataSources.sendEmail.nudgeFriend(referrer, { email, firstName });
+    await dataSources.sendEmail.nudgeFriend(referrer, {
+      email,
+      firstName,
+      referralLink,
+    });
 
     return { success: true };
   };
