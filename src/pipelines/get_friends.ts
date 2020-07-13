@@ -30,7 +30,7 @@ export const getPipeline = (userId: string, nudgeCode = config.nudgeCode) => [
         {
           $project: {
             _id: 0,
-            id: 1,
+            id: { $toString: '$_id' },
             displayName: 1,
             profilePic: '$profilePhotoUrl',
           },
