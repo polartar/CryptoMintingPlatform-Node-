@@ -14,7 +14,7 @@ export const friendNudgeSchema = new Schema(
     userId: { type: String, index: true, required: true },
     friend: { type: String, index: true, required: true },
   },
-  { timestamps: true },
+  { timestamps: { createdAt: 'created', updatedAt: 'updated' } },
 );
 
 export const FriendNudge = model<IFriendNudgeDoc>(
