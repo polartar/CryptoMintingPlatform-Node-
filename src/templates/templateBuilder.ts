@@ -106,12 +106,17 @@ class TemplateBuilder {
     };
   }
 
-  buildNudgeFriendHtml(referrer: string, referralLink: string) {
+  buildNudgeFriendHtml(
+    referrer: string,
+    firstName: string,
+    referralLink: string,
+  ) {
     const hbs = nudgeFriend(referrer);
 
     return {
       html: Handlebars.compile(hbs.html)({
         referrer,
+        firstName,
         referralLink,
       }),
       subject: hbs.subject,

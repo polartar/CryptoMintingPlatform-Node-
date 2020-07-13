@@ -34,6 +34,7 @@ export const getPipeline = (
             referredBy: 1,
             email: 1,
             firstName: 1,
+            referralLink: '$wallet.shareLink',
           },
         },
       ],
@@ -85,6 +86,7 @@ export const getPipeline = (
       allowedToNudge: 1,
       email: '$friend.email',
       firstName: '$friend.firstName',
+      referralLink: '$friend.referralLink',
     },
   },
 ];
