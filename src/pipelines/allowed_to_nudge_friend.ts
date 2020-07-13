@@ -33,6 +33,7 @@ export const getPipeline = (
             id: 1,
             referredBy: 1,
             email: 1,
+            firstName: 1,
           },
         },
       ],
@@ -83,6 +84,7 @@ export const getPipeline = (
       isFriend: 1,
       allowedToNudge: 1,
       email: '$friend.email',
+      firstName: '$friend.firstName',
     },
   },
 ];

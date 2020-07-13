@@ -106,10 +106,15 @@ class TemplateBuilder {
     };
   }
 
-  buildNudgeFriendHtml() {
+  buildNudgeFriendHtml(referrer: string, referralLink: string) {
+    const hbs = nudgeFriend(referrer);
+
     return {
-      html: Handlebars.compile(nudgeFriend.html)({}),
-      subject: nudgeFriend.subject,
+      html: Handlebars.compile(hbs.html)({
+        referrer,
+        referralLink,
+      }),
+      subject: hbs.subject,
     };
   }
 }

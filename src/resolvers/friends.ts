@@ -34,10 +34,12 @@ class Resolvers extends ResolverBase {
   ) => {
     this.requireAuth(user);
 
-    const { isFriend, allowedToNudge, email } = await this.verifyNudgableFriend(
-      user.userId,
-      id,
-    );
+    const {
+      isFriend,
+      allowedToNudge,
+      email,
+      firstName,
+    } = await this.verifyNudgableFriend(user.userId, id);
 
     if (!isFriend) {
       return {
@@ -53,12 +55,14 @@ class Resolvers extends ResolverBase {
       };
     }
 
+    const referrer = await user.findFromDb();
+
     await FriendNudge.create({
       code: config.nudgeCode,
       userId: user.userId,
       friend: id,
     });
-    await dataSources.sendEmail.nudgeFriend(user, email);
+    await dataSources.sendEmail.nudgeFriend(referrer, { email, firstName });
 
     return { success: true };
   };
