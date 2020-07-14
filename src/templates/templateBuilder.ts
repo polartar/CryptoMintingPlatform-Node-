@@ -110,6 +110,7 @@ class TemplateBuilder {
     referrer: string,
     firstName: string,
     referralLink: string,
+    unsubscribeLink: string,
   ) {
     const hbs = nudgeFriend(referrer);
 
@@ -118,6 +119,7 @@ class TemplateBuilder {
         referrer,
         firstName,
         referralLink,
+        unsubscribeLink,
       }),
       subject: hbs.subject,
     };

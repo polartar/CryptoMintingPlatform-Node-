@@ -57,17 +57,22 @@ class Resolvers extends ResolverBase {
     }
 
     const referrer = await user.findFromDb();
+    const unsubscribeLink = `${config.walletClientDomain}/unsubscribe?list=friend-nudge&id=${id}`;
 
     await FriendNudge.create({
       code: config.nudgeCode,
       userId: user.userId,
       friend: id,
     });
-    await dataSources.sendEmail.nudgeFriend(referrer, {
-      email,
-      firstName,
-      referralLink,
-    });
+    await dataSources.sendEmail.nudgeFriend(
+      referrer,
+      {
+        email,
+        firstName,
+        referralLink,
+      },
+      unsubscribeLink,
+    );
 
     return { success: true };
   };
