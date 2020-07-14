@@ -33,6 +33,11 @@ export const getPipeline = (
             id: 1,
             referredBy: 1,
             email: 1,
+            firstName: 1,
+            referralLink: '$wallet.shareLink',
+            unsubscribed: {
+              $in: ['friend-nudge', '$unsubscriptions.list'],
+            },
           },
         },
       ],
@@ -74,7 +79,10 @@ export const getPipeline = (
   {
     $addFields: {
       allowedToNudge: {
-        $eq: ['$nudges', [] as []],
+        $and: [
+          { $eq: ['$nudges', [] as []] },
+          { $eq: ['$friend.unsubscribed', false] },
+        ],
       },
     },
   },
@@ -83,6 +91,8 @@ export const getPipeline = (
       isFriend: 1,
       allowedToNudge: 1,
       email: '$friend.email',
+      firstName: '$friend.firstName',
+      referralLink: '$friend.referralLink',
     },
   },
 ];

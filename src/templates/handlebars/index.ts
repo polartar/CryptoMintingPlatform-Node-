@@ -50,7 +50,7 @@ export const galaWelcome5 = {
   subject: 'How to share for fun and reward',
 };
 
-export const nudgeFriend = {
+export const nudgeFriend = (referrer: string) => ({
   html: readTemplate('nudgeFriend.hbs'),
-  subject: 'Your friend is inviting you to play Town Star',
-};
+  subject: `${referrer} is asking you to play Townstar with them`,
+});

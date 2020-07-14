@@ -23,6 +23,17 @@
       border: 1px solid #373737;
       border-radius: 8px;
     }
+
+    .unsubscribe {
+      margin-top: 15px;
+      display: block;
+      text-align: center;
+      font-size: 10px;
+    }
+
+    .unsubscribe a {
+      cursor: pointer;
+    }
   </style>
   <!--[if !mso]><!-- -->
   <link href="https://fonts.googleapis.com/css?family=Roboto:400" rel="stylesheet">
@@ -31,8 +42,28 @@
 
 <body>
   <div class="container">
-    <p>Your friend is nudging you to play Town Star!</p>
-    <p>Login to https://app.gala.games to play now!</p>
+    <p>Hi {{ firstName }},</p>
+
+    <p>Your friend, {{ referrer }}, has sent you this message to remind you that in order for you to receive your 100
+      Gala
+      tokens you need to play Townstar. If you play Townstar they will also receive 100 Gala and be added into the daily
+      distribution.</p>
+
+    <p>All you need to do is go here: <a href="https://app.gala.games">https://app.gala.games</a> and then navigate to
+      Townstar. Once you are in the game all
+      you need to do is play the game until you make your first trade and then we will send you your 100 Gala! The great
+      news is the game is very fun and you might just win a really cool blockchain prize!
+      (Here is a secret...put your town next to your friends and you can trade with each other.)</p>
+
+    <p>We encourage you to also send your own referral link to your friends so you can also earn fun rewards! Here is
+      your link: {{ referralLink }}</p>
+
+    <p>Enjoy the game!</p>
+
+    <p>Gala Team</p>
+
+    <p class="unsubscribe">If you don’t want to receive emails from your friends any longer, please unsubscribe <a
+        href="{{unsubscribeLink}}">here</a>.</p>
   </div>
 </body>
 

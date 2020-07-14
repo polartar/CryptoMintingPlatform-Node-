@@ -6,7 +6,6 @@ import { IUser } from '../types';
 import { capitalize } from '../utils';
 import { DataSource } from 'apollo-datasource';
 import { Attachment, Options } from 'nodemailer/lib/mailer';
-import { UserApi } from './';
 
 class SendEmail extends DataSource {
   capitalizedBrand = capitalize(config.brand);
@@ -141,18 +140,25 @@ class SendEmail extends DataSource {
     return emailSent;
   }
 
-  public async nudgeFriend(user: UserApi, friend: string) {
-    logger.debug(
-      `data-sources.SendEmail.nudgeFriend.user: ${user && user.claims.userId}`,
-    );
-    logger.debug(`data-sources.SendEmail.nudgeFriend.friend: ${friend}`);
+  public async nudgeFriend(
+    user: IUser,
+    friend: { email: string; firstName: string; referralLink: string },
+    unsubscribeLink: string,
+  ) {
+    logger.debug(`data-sources.SendEmail.nudgeFriend.user: ${user && user.id}`);
+    logger.debug(`data-sources.SendEmail.nudgeFriend.friend: ${friend.email}`);
 
     if (!user || !friend) {
       return false;
     }
 
-    const { html, subject } = templateBuilder.buildNudgeFriendHtml();
-    const emailSent = await this.sendMail(subject, friend, html);
+    const { html, subject } = templateBuilder.buildNudgeFriendHtml(
+      user.firstName,
+      friend.firstName,
+      friend.referralLink,
+      unsubscribeLink,
+    );
+    const emailSent = await this.sendMail(subject, friend.email, html);
 
     logger.debug(`data-sources.SendEmail.nudgeFriend.emailSent: ${emailSent}`);
 

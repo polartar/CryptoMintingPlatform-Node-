@@ -34,10 +34,13 @@ class Resolvers extends ResolverBase {
   ) => {
     this.requireAuth(user);
 
-    const { isFriend, allowedToNudge, email } = await this.verifyNudgableFriend(
-      user.userId,
-      id,
-    );
+    const {
+      isFriend,
+      allowedToNudge,
+      email,
+      firstName,
+      referralLink,
+    } = await this.verifyNudgableFriend(user.userId, id);
 
     if (!isFriend) {
       return {
@@ -53,12 +56,23 @@ class Resolvers extends ResolverBase {
       };
     }
 
+    const referrer = await user.findFromDb();
+    const unsubscribeLink = `${config.walletClientDomain}/unsubscribe?list=friend-nudge&id=${id}`;
+
     await FriendNudge.create({
       code: config.nudgeCode,
       userId: user.userId,
       friend: id,
     });
-    await dataSources.sendEmail.nudgeFriend(user, email);
+    await dataSources.sendEmail.nudgeFriend(
+      referrer,
+      {
+        email,
+        firstName,
+        referralLink,
+      },
+      unsubscribeLink,
+    );
 
     return { success: true };
   };
