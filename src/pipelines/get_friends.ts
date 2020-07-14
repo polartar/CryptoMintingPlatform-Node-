@@ -33,6 +33,9 @@ export const getPipeline = (userId: string, nudgeCode = config.nudgeCode) => [
             id: { $toString: '$_id' },
             displayName: 1,
             profilePic: '$profilePhotoUrl',
+            unsubscribed: {
+              $in: ['friend-nudge', '$unsubscriptions.list'],
+            },
           },
         },
       ],
@@ -89,7 +92,10 @@ export const getPipeline = (userId: string, nudgeCode = config.nudgeCode) => [
   {
     $addFields: {
       canNudge: {
-        $eq: ['$nudges', [] as []],
+        $and: [
+          { $eq: ['$nudges', [] as []] },
+          { $eq: ['$unsubscribed', false] },
+        ],
       },
     },
   },
