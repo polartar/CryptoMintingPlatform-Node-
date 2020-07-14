@@ -37,7 +37,7 @@ class Bitly extends RESTDataSource {
       logger.debug(
         `data-sources.bitly.getLink.encodedAffiliateId: ${encodedAffiliateId}`,
       );
-      const longUrl = `${config.walletClientDomain}?r=${encodedAffiliateId}&utm_source=galaappshare&utm_medium=${user.id}&utm_campaign=5e79504ffd8a5636a2c86ed2&utm_term=gala_own_your_game`;
+      const longUrl = `${config.walletClientDomain}/register?r=${encodedAffiliateId}&utm_source=galaappshare&utm_medium=${user.id}&utm_campaign=5e79504ffd8a5636a2c86ed2&utm_term=gala_own_your_game`;
 
       const guid = await this.getGroupId();
       const shortUrl = await this.shortenLongUrl(longUrl, guid);
