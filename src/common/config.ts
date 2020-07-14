@@ -54,6 +54,7 @@ class Config {
   public readonly companyFeeEthAddress = env.COMPANY_FEE_ETH_ADDRESS;
   public readonly cryptoNetwork = env.CRYPTO_NETWORK;
   public readonly walletClientDomain = env.WALLET_CLIENT_DOMAIN;
+  public readonly referralLinkDomain = env.REFERRAL_LINK_DOMAIN;
   public readonly zendeskApiKey = env.ZENDESK_API_KEY;
   public readonly cryptoSymbolToNameMap: Map<
     string,
@@ -203,6 +204,7 @@ class Config {
       'ETH_TX_LINK_BASE',
       'SUPPORTS_BTC_PUBSUB',
       'DISPLAYED_WALLETS',
+      'REFERRAL_LINK_DOMAIN',
     ].filter(name => !env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
