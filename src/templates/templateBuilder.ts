@@ -22,6 +22,7 @@ class TemplateBuilder {
         user,
         referredUser,
         brand,
+        referralLink: user.wallet.shareLink,
       }),
       subject: shareAccepted.subject,
     };
