@@ -1,12 +1,16 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { config } from '../../common';
 
 function readTemplate(templateFileName: string) {
   return fs.readFileSync(path.join(__dirname, `./${templateFileName}`), 'utf8');
 }
 
 export const shareAccepted = {
-  html: readTemplate('shareAccepted.hbs'),
+  html:
+    config.brand === 'gala'
+      ? readTemplate('galaShareAccepted.hbs')
+      : readTemplate('shareAccepted.hbs'),
   subject: 'You referred a new App user.',
 };
 
