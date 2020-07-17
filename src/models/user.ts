@@ -26,9 +26,6 @@ interface IWalletUpgrade {
   itemsRewarded: string[];
   rewardId: string;
   timestamp: Date;
-  lootBoxExtraPaid: number;
-  lootBoxesPurchased: number;
-  lootBoxPriceUsd: number;
   orderContext: IOrderContext;
   referrerReward: {
     btc: IReferrerReward;
@@ -130,9 +127,6 @@ const activatedWalletsSchema = new mongoose.Schema({
   itemsRewarded: [String],
   rewardId: String,
   timestamp: Date,
-  lootBoxExtraPaid: Number,
-  lootBoxesPurchased: Number,
-  lootBoxPriceUsd: Number,
   context: orderContextSchema,
   referrerReward: {
     btc: referrerRewardSchema,

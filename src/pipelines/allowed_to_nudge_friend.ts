@@ -28,6 +28,14 @@ export const getPipeline = (
           },
         },
         {
+          $addFields: {
+            unsubscriptions: {
+              // @ts-ignore-next-line
+              $ifNull: ['$unsubscriptions', []],
+            },
+          },
+        },
+        {
           $project: {
             _id: 0,
             id: 1,

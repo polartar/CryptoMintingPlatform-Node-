@@ -5,18 +5,12 @@ import {
   Context,
   IWalletConfig,
   IUser,
-  IGameOrderBtc,
   IOrderContext,
   RewardActions,
 } from '../types';
-import { rewardDistributer, gameItemService } from '../services';
-import {
-  UnclaimedReward,
-  WalletConfig,
-  GameOrder,
-  GameProduct,
-} from '../models';
-import { logResolver, Logger, logDebug } from '../common/logger';
+import { rewardDistributer } from '../services';
+import { UnclaimedReward, WalletConfig } from '../models';
+import { logResolver, Logger } from '../common/logger';
 import { WalletApi } from '../wallet-api';
 import { UserApi, SendEmail } from '../data-sources';
 import { rewardTrigger } from '../services/reward-distributor/reward-distributor-triggers';
@@ -25,8 +19,6 @@ interface IActivationPayment {
   btcUsdPrice: number;
   btcToCompany: number;
   btcToReferrer: number;
-  lootBoxExtraPaid: number;
-  lootBoxesPurchased: number;
 }
 
 interface IRewardConfig {
@@ -67,19 +59,10 @@ export class ShareActivateResolvers extends ResolverBase {
     };
   };
 
-  private assignGameItem = (
-    userId: string,
-    userEthAddress: string,
-    quantity: number,
-  ) => {
-    return gameItemService.assignItemsToUser(userId, userEthAddress, quantity);
-  };
-
   galaShareActivate = async (
     parent: any,
     args: {
       walletPassword: string;
-      numLootBoxes: number;
       orderContext: IOrderContext;
     },
     {
@@ -89,10 +72,8 @@ export class ShareActivateResolvers extends ResolverBase {
       dataSources: { cryptoFavorites, sendEmail },
     }: Context,
   ) => {
-    logDebug('galaShareActivate', 'user', user.userId);
     const REWARD_TYPE = 'gala';
-    const { walletPassword, numLootBoxes = 1, orderContext = {} } = args;
-    logDebug('galaShareActivate', 'numLootBoxes', numLootBoxes);
+    const { walletPassword, orderContext = {} } = args;
     this.requireAuth(user);
     try {
       const [
@@ -104,116 +85,47 @@ export class ShareActivateResolvers extends ResolverBase {
         cryptoFavorites.getBtcUsdPrice(),
         this.getRewardconfig(),
       ]);
-      logDebug(
-        'galaShareActivate',
-        'rewardConfig.companyFee',
-        rewardConfig.companyFee,
-      );
-      logDebug(
-        'galaShareActivate',
-        'rewardConfig.referrerReward',
-        rewardConfig.referrerReward,
-      );
-      logDebug(
-        'galaShareActivate',
-        'rewardConfig.rewardAmount',
-        rewardConfig.rewardAmount,
-      );
-      logDebug(
-        'galaShareActivate',
-        'rewardConfig.rewardCurrency',
-        rewardConfig.rewardCurrency,
-      );
-      logDebug(
-        'galaShareActivate',
-        'rewardConfig.referrerReward',
-        rewardConfig.referrerReward,
-      );
+
       this.throwIfIneligibleForUpgrade(userFromDb, REWARD_TYPE);
       const isReferrerEligible = this.isGalaReferrerEligible(referrer);
-      logDebug('galaShareActivate', 'isReferrerEligible', isReferrerEligible);
       const paymentDetails = await this.getPaymentDetails(
         rewardConfig,
         btcUsdPrice,
         referrer,
         isReferrerEligible,
-        numLootBoxes,
       );
-      logDebug(
-        'galaShareActivate',
-        'paymentDetails.btcToCompany',
-        paymentDetails.btcToCompany,
-      );
-      logDebug(
-        'galaShareActivate',
-        'paymentDetails.btcToReferre',
-        paymentDetails.btcToReferrer,
-      );
-      logDebug(
-        'galaShareActivate',
-        'paymentDetails.referrerMissedBtc',
-        paymentDetails.referrerMissedBtc,
-      );
-      logDebug(
-        'galaShareActivate',
-        'paymentDetails.lootBoxExtraPaid',
-        paymentDetails.lootBoxExtraPaid,
-      );
-      logDebug(
-        'galaShareActivate',
-        'paymentDetails.lootBoxesPurchase',
-        paymentDetails.lootBoxesPurchased,
-      );
+
       const outputs = await this.getOutputs(
         paymentDetails.btcToCompany,
         paymentDetails.btcToReferrer,
         referrer?.wallet?.btcAddress,
         REWARD_TYPE,
       );
-      logDebug('galaShareActivate', 'outputs', outputs.length);
       const transaction = await this.sendUpgradeTransaction(
         user,
         wallet,
         walletPassword,
         outputs,
       );
-      logDebug('galaShareActivate', 'transaction.id', transaction.id);
-      logDebug('galaShareActivate', 'transaction.total', transaction.total);
-      logDebug('galaShareActivate', 'referrer', !!referrer);
 
       this.logMissedReferrerBtcReward(
         referrer,
         paymentDetails.referrerMissedBtc,
       );
 
-      const itemsRewarded = await this.assignGameItem(
-        user.userId,
-        userFromDb?.wallet?.ethAddress,
-        numLootBoxes,
-      );
-      logDebug('galaShareActivate', 'itemsRewarded', itemsRewarded.length);
-      logDebug;
-      const rewardResult = {
+      const rewardResult: {
+        rewardId: string;
+        amountRewarded: 0;
+        itemsRewarded: string[];
+      } = {
         rewardId: '',
         amountRewarded: 0,
-        itemsRewarded,
+        itemsRewarded: [],
       };
-      logDebug('galaShareActivate', 'itemsRewarded', itemsRewarded.length);
-      logDebug('galaShareActivate', 'callingRewardTrigger', 'before');
+
       await rewardTrigger.triggerAction(
         RewardActions.UPGRADED,
         rewardTrigger.getUserHelper(userFromDb),
-      );
-      logDebug('galaShareActivate', 'callingRewardTrigger', 'after');
-
-      this.logGameOrder(
-        numLootBoxes,
-        paymentDetails.btcToCompany,
-        transaction.id,
-        user.userId,
-        itemsRewarded,
-        btcUsdPrice,
-        orderContext,
       );
 
       this.saveActivationToDb(
@@ -327,19 +239,11 @@ export class ShareActivateResolvers extends ResolverBase {
     btcPrice: number,
     referrer: IUser,
     isReferrerEligible: boolean,
-    numLootBoxes: number,
   ) => {
     let btcToCompany: number;
     let btcToReferrer: number;
     const { companyFee, referrerReward } = rewardConfig;
-    const {
-      lootBoxExtraPaid,
-      lootBoxesPurchased,
-    } = this.getExtraCostForLootBoxes(numLootBoxes, rewardConfig);
-    const companyPortion = this.usdToBtc(
-      btcPrice,
-      companyFee + lootBoxExtraPaid,
-    );
+    const companyPortion = this.usdToBtc(btcPrice, companyFee);
     const referrerPortion = this.usdToBtc(btcPrice, referrerReward);
     const referrerCanReceive = !!referrer?.wallet?.btcAddress;
     if (isReferrerEligible && referrerCanReceive) {
@@ -359,8 +263,6 @@ export class ShareActivateResolvers extends ResolverBase {
       btcToReferrer,
       referrerMissedBtc,
       btcUsdPrice: btcPrice,
-      lootBoxExtraPaid,
-      lootBoxesPurchased,
     };
   };
 
@@ -427,8 +329,6 @@ export class ShareActivateResolvers extends ResolverBase {
       btcUsdPrice,
       btcToReferrer,
       btcToCompany,
-      lootBoxesPurchased,
-      lootBoxExtraPaid,
     } = paymentDetails;
     const { amountRewarded, rewardId, itemsRewarded } = rewardResult;
     const prefix = `wallet.activations.${rewardType}`;
@@ -448,9 +348,6 @@ export class ShareActivateResolvers extends ResolverBase {
     userDoc.set(`${prefix}.amountRewarded`, amountRewarded);
     userDoc.set(`${prefix}.rewardId`, rewardId);
     userDoc.set(`${prefix}.itemsRewarded`, itemsRewarded);
-    userDoc.set(`${prefix}.lootBoxesPurchased`, lootBoxesPurchased);
-    userDoc.set(`${prefix}.lootBoxExtraPaid`, lootBoxExtraPaid);
-    userDoc.set(`${prefix}.lootBoxPriceUsd`, config.costPerLootBox);
     userDoc.set(`${prefix}.context`, orderContext);
 
     return userDoc.save();
@@ -524,7 +421,6 @@ export class ShareActivateResolvers extends ResolverBase {
   protected sendRewards = async (
     user: IUser,
     rewardConfig: IRewardConfig,
-    numLootBoxes: number,
     sendEmail: SendEmail,
     logger: Logger,
   ) => {
@@ -535,7 +431,6 @@ export class ShareActivateResolvers extends ResolverBase {
         rewardConfig.rewardCurrency,
         user.id,
         userEthAddress,
-        numLootBoxes,
         logger,
       ),
       sendEmail.sendSoftNodeDiscount(
@@ -564,38 +459,11 @@ export class ShareActivateResolvers extends ResolverBase {
     }
   };
 
-  protected logGameOrder = async (
-    quantity: number,
-    totalBtc: number,
-    txHash: string,
-    userId: string,
-    itemsReceived: string[],
-    btcUsdPrice: number,
-    orderContext: IOrderContext,
-  ) => {
-    const product = await GameProduct.findOne({ name: 'FarmBot Crate' }).exec();
-    const newGameOrder: IGameOrderBtc = {
-      isUpgradeOrder: true,
-      quantity,
-      totalBtc,
-      txHash,
-      userId,
-      itemsReceived,
-      created: new Date(),
-      btcUsdPrice,
-      gameProductId: product._id,
-      perUnitPriceUsd: product.priceUsd,
-      context: orderContext,
-    };
-    return GameOrder.create(newGameOrder);
-  };
-
   shareActivate = async (
     parent: any,
     args: {
       walletPassword: string;
       rewardType: string;
-      numLootBoxes: number;
       orderContext: IOrderContext;
     },
     ctx: Context,
@@ -610,7 +478,7 @@ export class ShareActivateResolvers extends ResolverBase {
       dataSources: { cryptoFavorites, sendEmail },
     } = ctx;
     const rewardType = args.rewardType.toLowerCase();
-    const { walletPassword, numLootBoxes, orderContext = {} } = args;
+    const { walletPassword, orderContext = {} } = args;
     logger.obj.debug({ rewardType });
     this.requireAuth(user);
     try {
@@ -633,7 +501,6 @@ export class ShareActivateResolvers extends ResolverBase {
         btcUsdPrice,
         referrer,
         this.isReferrerEligible(referrer, allRewardConfigs),
-        numLootBoxes,
       );
       const outputs = await this.getOutputs(
         paymentDetails.btcToCompany,
@@ -658,19 +525,8 @@ export class ShareActivateResolvers extends ResolverBase {
       const rewardResult = await this.sendRewards(
         userFromDb,
         rewardConfig,
-        paymentDetails.lootBoxesPurchased,
         sendEmail,
         logger,
-      );
-
-      this.logGameOrder(
-        numLootBoxes,
-        paymentDetails.btcToCompany,
-        transaction.id,
-        user.userId,
-        rewardResult.itemsRewarded,
-        btcUsdPrice,
-        orderContext,
       );
 
       this.saveActivationToDb(
