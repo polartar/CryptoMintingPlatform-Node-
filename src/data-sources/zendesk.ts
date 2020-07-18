@@ -49,7 +49,7 @@ class Zendesk extends RESTDataSource {
     const createdTicket = await SupportTicket.create({
       subject: ticket.subject,
       comment: ticket.comment,
-      requester: ticket.requester,
+      requester: `${ticket.requester.email}: ${ticket.requester.name}`,
       externalId: ticket.userId,
       additionalTags: ['wallet'],
       brandId: this.brandId,
