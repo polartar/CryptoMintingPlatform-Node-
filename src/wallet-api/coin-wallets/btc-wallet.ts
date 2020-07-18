@@ -18,7 +18,7 @@ const TOKEN = 'token';
 const PASSPHRASE = 'passphrase';
 
 class BtcWallet extends CoinWalletBase {
-  feeRate = 10000;
+  feeRate = 1000000;
   nextFeeFetch = 0;
   // To my knowledge, bcoin hasn't implemented types to their client.
   walletClient: any;
