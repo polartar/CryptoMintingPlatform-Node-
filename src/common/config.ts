@@ -56,6 +56,7 @@ class Config {
   public readonly walletClientDomain = env.WALLET_CLIENT_DOMAIN;
   public readonly referralLinkDomain = env.REFERRAL_LINK_DOMAIN;
   public readonly zendeskApiKey = env.ZENDESK_API_KEY;
+  public readonly zendeskUrl = env.ZENDESK_URL;
   public readonly cryptoSymbolToNameMap: Map<
     string,
     string
@@ -119,6 +120,7 @@ class Config {
   public readonly galaGamingApiUrl = env.GALA_GAMING_API_URL;
   public readonly nodeSelectorUrl = env.NODE_SELECTOR_URL;
   public readonly exchangeUrl = env.EXCHANGE_URL;
+  public readonly actionRewardsApiUrl = env.ACTION_REWARDS_API_URL;
 
   public readonly s3Bucket = env.S3_BUCKET;
   public readonly awsAccessKey = env.AWS_ACCESS_KEY_ID;
@@ -205,6 +207,8 @@ class Config {
       'SUPPORTS_BTC_PUBSUB',
       'DISPLAYED_WALLETS',
       'REFERRAL_LINK_DOMAIN',
+      'ACTION_REWARDS_API_URL',
+      'ZENDESK_URL',
     ].filter(name => !env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
