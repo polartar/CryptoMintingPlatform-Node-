@@ -156,6 +156,7 @@ class Erc1155API extends EthWallet {
 
         return {
           ...transferEvent,
+          id: id || `pending:${Date.now()}`,
           timestamp:
             timestamp > (Date.now() * 10) / 1000 ? timestamp / 1000 : timestamp,
           total,
