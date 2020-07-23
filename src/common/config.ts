@@ -142,6 +142,8 @@ class Config {
   public readonly etherscanNetwork =
     env.CRYPTO_NETWORK === 'testnet' ? 'ropsten' : 'homestead';
 
+  public readonly sentryDsn = env.SENTRY_DSN;
+
   constructor() {
     autoBind(this);
     this.ensureRequiredVariables();
@@ -209,6 +211,7 @@ class Config {
       'REFERRAL_LINK_DOMAIN',
       'ACTION_REWARDS_API_URL',
       'ZENDESK_URL',
+      'SENTRY_DSN',
     ].filter(name => !env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
