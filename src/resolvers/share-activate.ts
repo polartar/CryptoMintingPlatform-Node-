@@ -6,14 +6,14 @@ import {
   IWalletConfig,
   IUser,
   IOrderContext,
-  RewardActions,
+  ITransaction,
 } from '../types';
 import { rewardDistributer } from '../services';
 import { UnclaimedReward, WalletConfig } from '../models';
 import { logResolver, Logger } from '../common/logger';
 import { WalletApi } from '../wallet-api';
 import { UserApi, SendEmail } from '../data-sources';
-import { rewardTrigger } from '../services/reward-distributor/reward-distributor-triggers';
+import { actionRewardService } from '../services/action-rewards';
 
 interface IActivationPayment {
   btcUsdPrice: number;
@@ -123,9 +123,9 @@ export class ShareActivateResolvers extends ResolverBase {
         itemsRewarded: [],
       };
 
-      await rewardTrigger.triggerAction(
-        RewardActions.UPGRADED,
-        rewardTrigger.getUserHelper(userFromDb),
+      await actionRewardService.triggerActionReward(
+        actionRewardService.actions.UPGRADE,
+        userFromDb.id,
       );
 
       this.saveActivationToDb(
@@ -406,7 +406,7 @@ export class ShareActivateResolvers extends ResolverBase {
     wallet: WalletApi,
     walletPassword: string,
     outputs: ISendOutput[],
-  ) => {
+  ): Promise<ITransaction> => {
     const { message, transaction, success } = await wallet
       .coin('btc')
       .send(user, outputs, walletPassword);
