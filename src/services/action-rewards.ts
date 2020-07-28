@@ -4,7 +4,7 @@ import { IUser } from '../types';
 import { UserHelper } from '../utils';
 
 export enum rewardableAction {
-  UPGRADE = 'app_upgraded',
+  UPGRADE = 'app_upgrade',
 }
 
 class ActionRewardService extends ServerToServerService {
