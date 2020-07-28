@@ -50,3 +50,4 @@ export * from './IUniqueItem';
 export * from './ItemTokenName';
 export * from './IRewardItemMetadata';
 export * from './IRewardTrigger';
+export * from './ITemplate';
