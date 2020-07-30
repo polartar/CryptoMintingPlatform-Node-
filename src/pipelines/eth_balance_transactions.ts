@@ -76,7 +76,22 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
           {
             $ne: ['$type', 'ETH'],
           },
-          0,
+          {
+            $cond: [
+              {
+                $gt: ['$returnedEth', 0],
+              },
+              {
+                $divide: [
+                  {
+                    $sum: ['$returnedEth', '$amount'],
+                  },
+                  '$amountDivisor',
+                ],
+              },
+              0,
+            ],
+          },
           {
             $cond: [
               '$isFromUser',
