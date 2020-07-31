@@ -1,5 +1,5 @@
 import { Logger } from '../../common/logger';
-import { erc20Reward, docReward, gameItemsReward } from './reward-handlers';
+import { erc20Reward, docReward } from './reward-handlers';
 
 class RewardDistributer {
   public sendReward = async (
@@ -7,14 +7,13 @@ class RewardDistributer {
     rewardCurrency: string,
     userId: string,
     ethAddress: string,
-    numLootBoxes: number,
     logger: Logger,
   ) => {
     const methodLogger = logger.setMethod('sendReward');
     methodLogger.JSON.debug({ rewardAmount, rewardCurrency });
     const rewardCurrencyLowered = rewardCurrency.toLowerCase();
     let rewardId: string;
-    let itemsRewarded: string[] = [];
+    const itemsRewarded: string[] = [];
     if (rewardCurrencyLowered === 'green') {
       rewardId = await erc20Reward.send(
         rewardCurrency,
@@ -23,12 +22,10 @@ class RewardDistributer {
         logger,
       );
     } else if (rewardCurrencyLowered === 'gala') {
-      const [resultRewardId, resultItemsRewarded] = await Promise.all([
+      const [resultRewardId] = await Promise.all([
         docReward.send(rewardCurrency, rewardAmount, userId, logger),
-        gameItemsReward.sendRandom(userId, ethAddress, numLootBoxes),
       ]);
       rewardId = resultRewardId;
-      itemsRewarded = resultItemsRewarded;
     } else {
       rewardId = await docReward.send(
         rewardCurrency,

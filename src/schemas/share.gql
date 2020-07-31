@@ -48,7 +48,6 @@ type Mutation {
   shareActivate(
     walletPassword: String
     rewardType: String!
-    numLootBoxes: Int
     orderContext: OrderContext
   ): TxSendResponse!
 }

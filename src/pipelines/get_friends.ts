@@ -28,6 +28,14 @@ export const getPipeline = (userId: string, nudgeCode = config.nudgeCode) => [
           },
         },
         {
+          $addFields: {
+            unsubscriptions: {
+              // @ts-ignore-next-line
+              $ifNull: ['$unsubscriptions', []],
+            },
+          },
+        },
+        {
           $project: {
             _id: 0,
             id: { $toString: '$_id' },

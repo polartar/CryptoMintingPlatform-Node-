@@ -3,7 +3,7 @@ import { config, logger } from '../common';
 import { IZendeskRequest, IZendeskTicket } from '../types';
 
 class Zendesk extends RESTDataSource {
-  baseURL = 'https://robotsupport.zendesk.com/api/v2';
+  baseURL = config.zendeskUrl;
   brandId = this.getBrandId(config.brand);
 
   willSendRequest(request: RequestOptions) {
@@ -23,6 +23,9 @@ class Zendesk extends RESTDataSource {
       }
       case 'green': {
         return 360001823714;
+      }
+      case 'blue': {
+        return 360001738613;
       }
       default: {
         return 360001823734;

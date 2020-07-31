@@ -4,13 +4,15 @@ import { ServerToServerService } from './server-to-server';
 class GalaGamingApiService extends ServerToServerService {
   baseUrl = `${config.galaGamingApiUrl}/api`;
 
-  public getGameJWT = async (userId: string) => {
-    const jwtAxios = this.getAxios({ role: 'system' });
+  public getGameJWT = (userId: string) => userId;
 
-    const { data } = await jwtAxios.get(`${this.baseUrl}/token/${userId}`);
+  // public getGameJWT = async (userId: string) => {
+  // const jwtAxios = this.getAxios({ role: 'system' });
 
-    return data.token;
-  };
+  // const { data } = await jwtAxios.get(`${this.baseUrl}/token/${userId}`);
+
+  //   return data.token;
+  // };
 }
 
 export default new GalaGamingApiService();
