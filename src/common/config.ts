@@ -140,6 +140,8 @@ class Config {
   public readonly etherscanNetwork =
     env.CRYPTO_NETWORK === 'testnet' ? 'ropsten' : 'homestead';
 
+  public readonly defaultReferredBy = process.env.DEFAULT_REFERRED_BY || '';
+
   constructor() {
     autoBind(this);
     this.ensureRequiredVariables();
