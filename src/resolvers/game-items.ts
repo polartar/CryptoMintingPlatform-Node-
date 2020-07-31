@@ -32,7 +32,12 @@ class Resolvers extends ResolverBase {
   getOwnedItems = async (parent: any, args: {}, { user }: Context) => {
     this.requireAuth(user);
     try {
-      const userItems = await gameItemService.getUserItems(user.userId);
+      const dbUser = await user.findFromDb();
+      const userEthAddress = dbUser?.wallet?.ethAddress;
+      if (userEthAddress) {
+        return [];
+      }
+      const userItems = await gameItemService.getUserItems(userEthAddress);
 
       // const closedOrders = await exchangeService.getClosedOrders({
       //   userId: user.userId,
