@@ -34,7 +34,7 @@ class Resolvers extends ResolverBase {
     try {
       const dbUser = await user.findFromDb();
       const userEthAddress = dbUser?.wallet?.ethAddress;
-      if (userEthAddress) {
+      if (!userEthAddress) {
         return [];
       }
       const userItems = await gameItemService.getUserItems(userEthAddress);
