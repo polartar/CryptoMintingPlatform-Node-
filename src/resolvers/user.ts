@@ -80,9 +80,9 @@ class Resolvers extends ResolverBase {
         displayName,
         profilePhotoUrl,
         phone,
-        referredBy,
         affiliateId,
         language,
+        referredBy: referredBy || config.defaultReferredBy,
         utmInfo: {
           offer,
           referredBy,

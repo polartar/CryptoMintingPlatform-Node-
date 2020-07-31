@@ -142,6 +142,7 @@ class Config {
   public readonly etherscanNetwork =
     env.CRYPTO_NETWORK === 'testnet' ? 'ropsten' : 'homestead';
 
+  public readonly defaultReferredBy = process.env.DEFAULT_REFERRED_BY || '';
   public readonly sentryDsn = env.SENTRY_DSN;
 
   constructor() {
