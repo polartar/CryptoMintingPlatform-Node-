@@ -4,11 +4,10 @@ import { mnemonic as mnemonicUtils, crypto } from '../utils';
 import ResolverBase from '../common/Resolver-Base';
 import { credentialService } from '../services';
 import { config, logger } from '../common';
-import { ISendOutput, IBcoinTx, CoinSymbol, RewardActions } from '../types';
+import { ISendOutput, IBcoinTx, CoinSymbol } from '../types';
 import listeners from '../blockchain-listeners';
 import Erc1155Wallet from '../wallet-api/coin-wallets/erc1155-wallet';
 import { emailScheduler } from '../services/email-scheduler';
-import { rewardTrigger } from '../services/reward-distributor/reward-distributor-triggers';
 
 class Resolvers extends ResolverBase {
   private saveWalletPassword = async (
@@ -90,18 +89,6 @@ class Resolvers extends ResolverBase {
       user.findFromDb().then(async referredUser => {
         if (config.brand === 'gala') {
           await emailScheduler.scheduleGalaWelcomeEmails(referredUser);
-        }
-        if (['gala', 'connect'].includes(config.brand)) {
-          const userHelper = rewardTrigger.getUserHelper(referredUser);
-          const referrer = await userHelper.getReferrer();
-          const triggerValue = referrer
-            ? { referrer: referrer.referralsWithWallet }
-            : undefined;
-          await rewardTrigger.triggerAction(
-            RewardActions.WALLET_CREATED,
-            userHelper,
-            triggerValue,
-          );
         }
 
         if (referredUser && referredUser.referredBy) {
