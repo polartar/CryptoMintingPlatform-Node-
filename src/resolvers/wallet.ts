@@ -91,18 +91,6 @@ class Resolvers extends ResolverBase {
         if (config.brand === 'gala') {
           await emailScheduler.scheduleGalaWelcomeEmails(referredUser);
         }
-        if (['gala', 'connect'].includes(config.brand)) {
-          const userHelper = rewardTrigger.getUserHelper(referredUser);
-          const referrer = await userHelper.getReferrer();
-          const triggerValue = referrer
-            ? { referrer: referrer.referralsWithWallet }
-            : undefined;
-          await rewardTrigger.triggerAction(
-            RewardActions.WALLET_CREATED,
-            userHelper,
-            triggerValue,
-          );
-        }
 
         if (referredUser && referredUser.referredBy) {
           user.Model.findOne({ affiliateId: referredUser.referredBy })
