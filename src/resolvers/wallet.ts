@@ -4,11 +4,10 @@ import { mnemonic as mnemonicUtils, crypto } from '../utils';
 import ResolverBase from '../common/Resolver-Base';
 import { credentialService } from '../services';
 import { config, logger } from '../common';
-import { ISendOutput, IBcoinTx, CoinSymbol, RewardActions } from '../types';
+import { ISendOutput, IBcoinTx, CoinSymbol } from '../types';
 import listeners from '../blockchain-listeners';
 import Erc1155Wallet from '../wallet-api/coin-wallets/erc1155-wallet';
 import { emailScheduler } from '../services/email-scheduler';
-import { rewardTrigger } from '../services/reward-distributor/reward-distributor-triggers';
 
 class Resolvers extends ResolverBase {
   private saveWalletPassword = async (
