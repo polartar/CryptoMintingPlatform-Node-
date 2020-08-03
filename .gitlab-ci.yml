@@ -15,7 +15,11 @@ variables:
   PROD_URI_ARCADE: 'n0.walletsrv.arcadeblockchain.com'
   STAGE_URI_ARCADE: 'stage0.walletsrv.arcadeblockchain.com'
 
-  LOG_LINES: 300 # Bump this number to view more lines in the log with each run.
+  # BLUE
+  PROD_URI_ARCADE: 'walletsrv.blueunitedhealth.com'
+  STAGE_URI_ARCADE: 'stage0.walletsrv.blueunitedhealth.com'
+
+  LOG_LINES: 100 # Bump this number to view more lines in the log with each run.
   # Remember: You can restart the deployment job for that ENV to see a fresh output and not break anything.
   DEPLOY_APP: wallet-server
 
@@ -73,6 +77,16 @@ Deploy ARCADE Staging:
   extends:
     - .bb_rsync_staging_jwt_firebase
 
+Deploy BLUE Staging:
+  variables:
+    DEPLOY_URI: $MASTER_STAGE_URI
+    SERVER_HOSTKEYS: $MASTER_STAGE_SERVER_HOSTKEYS
+    DEPLOY_APP_REPLACE: wallet-server-blue
+    NODE_PORT_REPLACE: 3724
+    ENV: $ARCADE_ENV
+  extends:
+    - .bb_rsync_staging_jwt_firebase
+
 ######################################
 # PRODUCTION DEPLOYS
 ######################################
@@ -106,5 +120,13 @@ Deploy ARCADE Production:
     DEPLOY_URI: $PROD_URI_ARCADE
     SERVER_HOSTKEYS: $ARCADE_SERVER_HOSTKEYS
     ENV_PROD: $ARCADE_ENV_PROD
+  extends:
+    - .bb_rsync_production_jwt_firebase
+    
+Deploy ARCADE Production:
+  variables:
+    DEPLOY_URI: $PROD_URI_BLUE
+    SERVER_HOSTKEYS: $BLUE_SERVER_HOSTKEYS
+    ENV_PROD: $BLUE_ENV_PROD
   extends:
     - .bb_rsync_production_jwt_firebase
