@@ -146,9 +146,7 @@ class Config {
   public readonly sentryDsn = env.SENTRY_DSN;
 
   public readonly linkShortenerUrl =
-    process.env.LINK_SHORTENER_URL === '/'
-      ? ''
-      : process.env.LINK_SHORTENER_URL;
+    env.LINK_SHORTENER_URL === '/' ? '' : env.LINK_SHORTENER_URL;
 
   constructor() {
     autoBind(this);
@@ -234,6 +232,7 @@ class Config {
       ['ETH_NODE', this.ethNodeUrl],
       ['DISPLAYED_WALLETS', this.displayedWallets.join(',')],
       ['INDEXED_TRANSACTIONS', this.indexedTransactions],
+      ['LINK_SHORTENER_URL', this.linkShortenerUrl],
     ].forEach(([label, value]) => {
       systemLogger.info(`CONFIG: ${label}=${value}`);
     });

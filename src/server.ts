@@ -107,9 +107,8 @@ class Server {
       cryptoFavorites: new CryptoFavorites(),
       environment: new WalletConfig(),
       bitly: new Bitly(),
-      linkShortener: config.linkShortenerUrl
-        ? new LinkShortener()
-        : new Bitly(),
+      linkShortener:
+        config.linkShortenerUrl.length > 1 ? new LinkShortener() : new Bitly(),
       zendesk: new Zendesk(),
       sendEmail: new SendEmail(),
       blockfunnels: new Blockfunnels(),
