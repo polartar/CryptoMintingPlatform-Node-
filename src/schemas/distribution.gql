@@ -18,6 +18,36 @@ type UserDistributionData {
   tokensReceived: [TokenReceived!]
 }
 
+type DistributionSnapshot {
+  date: Date!
+  gala: Int!
+  items: Int!
+  points: Int!
+}
+
+type DistributionResult {
+  amount: Int!
+  name: String!
+  imageUrl: String!
+}
+
+type DistributionGlobalResult {
+  address: String!
+  gala: Int!
+  points: Int!
+  items: Int!
+}
+
+type ValidDistributionDates {
+  start: Date!
+  end: Date!
+}
+
 type Query {
   distributionData(email: String!, date: Date!): UserDistributionData
+  distributionSnapshot: DistributionSnapshot!
+  distributionResults(date: Date!): [DistributionResult!]!
+  distributionPoints(date: Date!): [DistributionPoint!]!
+  distributionGlobalResults(date: Date!): [DistributionGlobalResult!]!
+  validDistributionDates: ValidDistributionDates!
 }
