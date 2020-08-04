@@ -204,7 +204,7 @@ export class ShareResolver extends ResolverBase {
       numberOfActivations: string;
     },
     args: {},
-    { dataSources: { bitly }, user, logger }: Context,
+    { dataSources: { linkShortener, bitly }, user, logger }: Context,
   ) => {
     try {
       const { userWallet } = parent;
@@ -216,7 +216,13 @@ export class ShareResolver extends ResolverBase {
       if (!userModel) {
         throw new Error('Not found');
       }
-      const url = await bitly.getLink(userModel);
+      let url: string;
+      try {
+        url = await linkShortener.getLink(userModel);
+      } catch (error) {
+        logger.warn(`resolvers.share.shareUrl.getLink.catch:${error}`);
+        url = await bitly.getLink(userModel);
+      }
       userModel.set('wallet.shareLink', url);
       await userModel.save();
       return url;

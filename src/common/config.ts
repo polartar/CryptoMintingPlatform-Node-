@@ -145,6 +145,11 @@ class Config {
   public readonly defaultReferredBy = process.env.DEFAULT_REFERRED_BY || '';
   public readonly sentryDsn = env.SENTRY_DSN;
 
+  public readonly linkShortenerUrl =
+    process.env.LINK_SHORTENER_URL === '/'
+      ? ''
+      : process.env.LINK_SHORTENER_URL;
+
   constructor() {
     autoBind(this);
     this.ensureRequiredVariables();
@@ -213,6 +218,7 @@ class Config {
       'ACTION_REWARDS_API_URL',
       'ZENDESK_URL',
       'SENTRY_DSN',
+      'LINK_SHORTENER_URL',
     ].filter(name => !env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
