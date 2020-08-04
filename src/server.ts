@@ -16,6 +16,7 @@ import {
   Zendesk,
   Blockfunnels,
   SendEmail,
+  LinkShortener,
 } from './data-sources';
 import { walletApi } from './wallet-api';
 import { removeListeners } from './blockchain-listeners';
@@ -103,6 +104,9 @@ class Server {
       cryptoFavorites: new CryptoFavorites(),
       environment: new WalletConfig(),
       bitly: new Bitly(),
+      linkShortener: config.linkShortenerUrl
+        ? new LinkShortener()
+        : new Bitly(),
       zendesk: new Zendesk(),
       sendEmail: new SendEmail(),
       blockfunnels: new Blockfunnels(),
