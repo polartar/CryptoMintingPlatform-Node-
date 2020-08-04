@@ -22,6 +22,7 @@ import { removeListeners } from './blockchain-listeners';
 import { Logger, winstonLogger, systemLogger } from './common/logger';
 import { dailyWalletStatsCron } from './cron';
 import { Wallet } from 'ethers';
+import restApi from './rest/routes';
 
 class Server {
   public app: express.Application = express();
@@ -34,6 +35,8 @@ class Server {
 
     const typeDefs: DocumentNode = gql(schemas);
     const isGqlDev = isDev || isStage;
+
+    this.app.use('/api', restApi);
 
     const server = new ApolloServer({
       typeDefs,
