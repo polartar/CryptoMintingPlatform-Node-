@@ -146,7 +146,7 @@ class Config {
   public readonly sentryDsn = env.SENTRY_DSN;
 
   public readonly linkShortenerUrl =
-    env.LINK_SHORTENER_URL === '/' ? '' : env.LINK_SHORTENER_URL;
+    env.LINK_SHORTENER_URL.length > 1 ? env.LINK_SHORTENER_URL : '';
 
   constructor() {
     autoBind(this);
