@@ -74,7 +74,9 @@ export interface IUser extends mongoose.Document {
     utmTerm?: string;
     utmName?: string;
     offer?: string;
+    referredBy?: string;
   };
+  phone: string;
   affiliateId: string;
   referredBy: string;
   permissions: string[];
@@ -90,6 +92,7 @@ export interface IUser extends mongoose.Document {
   profilePhotoUrl: string;
   referralContext: IOrderContext;
   unsubscriptions: Array<{ list: string; timestamp: Date }>;
+  communicationConsent: Array<{ consentGiven: boolean; timestamp: Date }>;
 }
 
 async function getNextNumber({ firstName, lastName }: IUser) {

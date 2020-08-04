@@ -21,6 +21,7 @@ class Resolvers extends ResolverBase {
         phoneCountry: string;
         language: string;
         referralContext: IOrderContext;
+        communicationConsent: boolean;
       };
     },
     context: Context,
@@ -39,6 +40,7 @@ class Resolvers extends ResolverBase {
         phone = null,
         language,
         referralContext = {},
+        communicationConsent,
       } = args.userInfo;
       const {
         offer,
@@ -72,7 +74,7 @@ class Resolvers extends ResolverBase {
         ? s3Service.getUrlFromFilename(profilePhotoFilename)
         : '';
 
-      const newUser = new User({
+      const userObj: any = {
         email,
         firebaseUid,
         firstName,
@@ -94,7 +96,18 @@ class Resolvers extends ResolverBase {
           utmName,
           utmTerm,
         },
-      });
+      };
+
+      if (typeof communicationConsent === 'boolean') {
+        userObj.communicationConsent = [
+          {
+            consentGiven: communicationConsent,
+            timestamp: new Date(),
+          },
+        ];
+      }
+
+      const newUser = new User(userObj);
 
       const url = await bitly.getLink(newUser);
       newUser.set('wallet.shareLink', url);
@@ -128,6 +141,7 @@ class Resolvers extends ResolverBase {
         profilePhotoFilename?: string;
         phone?: string;
         password?: string;
+        communicationConsent?: boolean;
       };
     },
     { user }: Context,
@@ -142,6 +156,7 @@ class Resolvers extends ResolverBase {
       profilePhotoFilename,
       phone,
       password,
+      communicationConsent,
     } = args.userInfo;
 
     const userDoc = await user.findFromDb();
@@ -175,6 +190,12 @@ class Resolvers extends ResolverBase {
     if (phone) {
       userDoc.set('phone', phone);
     }
+    if (typeof communicationConsent === 'boolean') {
+      userDoc.communicationConsent.push({
+        consentGiven: communicationConsent,
+        timestamp: new Date(),
+      });
+    }
     await userDoc.save();
     return {
       success: true,
@@ -188,7 +209,14 @@ class Resolvers extends ResolverBase {
   ) => {
     logger.debug(`resolvers.auth.getUserProfile.userId:${user && user.userId}`);
     this.requireAuth(user);
-    const profile = await user.findFromDb();
+    const profile: any = await user.findFromDb();
+    if (profile.communicationConsent && profile.communicationConsent.length) {
+      const mostRecentConsentEntry = profile.communicationConsent.sort(
+        (a: { timestamp: Date }, b: { timestamp: Date }) =>
+          b.timestamp.getTime() - a.timestamp.getTime(),
+      )[0];
+      profile.communicationConsent = mostRecentConsentEntry.consentGiven;
+    }
     logger.debug(
       `resolvers.auth.getUserProfile.prifile.id:${profile && profile.id}`,
     );
