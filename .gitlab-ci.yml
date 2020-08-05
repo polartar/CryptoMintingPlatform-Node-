@@ -123,7 +123,7 @@ Deploy ARCADE Production:
   extends:
     - .bb_rsync_production_jwt_firebase
     
-Deploy ARCADE Production:
+Deploy BLUE Production:
   variables:
     DEPLOY_URI: $PROD_URI_BLUE
     SERVER_HOSTKEYS: $BLUE_SERVER_HOSTKEYS
