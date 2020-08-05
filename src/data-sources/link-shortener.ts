@@ -1,22 +1,41 @@
 import { RESTDataSource, RequestOptions } from 'apollo-datasource-rest';
 import { config, logger } from '../common';
 import { IUser } from '../models/user';
-import { ServerToServerService } from '../services/server-to-server';
-
-const serverToServer = new ServerToServerService();
+const jwt = require('jsonwebtoken');
 
 class LinkShortener extends RESTDataSource {
+  private readonly jwtOptions = {
+    algorithm: 'RS256',
+    expiresIn: '1m',
+    issuer: 'urn:connectTrader',
+    audience: 'urn:connectTrader',
+    subject: 'connectTrader:subject',
+  };
   baseURL = `${config.linkShortenerUrl}/api`;
 
+  public getSignedToken(payload: string | Buffer | object): string {
+    try {
+      const token = jwt.sign(payload, config.jwtPrivateKey, this.jwtOptions);
+      return token;
+    } catch (error) {
+      logger.warn(`services.credential.sign.catch: ${error}`);
+      throw error;
+    }
+  }
+
   willSendRequest(request: RequestOptions) {
-    const token = serverToServer.sign({ role: 'system' });
+    const token = this.getSignedToken({ role: 'system' });
     request.headers.set('Authorization', `Bearer ${token}`);
     request.headers.set('Content-Type', 'application/json');
   }
 
-  private shortenLongUrl = async (url: string) => {
+  private shortenLongUrl = async (url: string, userId?: string) => {
     this.baseURL;
-    const { shortUrl } = await this.post('/shorten', { url });
+    const body: { url: string; userId?: string } = { url };
+    if (userId) {
+      body.userId = userId;
+    }
+    const { shortUrl } = await this.post('/shorten', body);
     return shortUrl;
   };
 
@@ -33,7 +52,7 @@ class LinkShortener extends RESTDataSource {
       );
       const longUrl = `${config.referralLinkDomain}?r=${encodedAffiliateId}&utm_source=galaappshare&utm_medium=${user.id}&utm_campaign=5e79504ffd8a5636a2c86ed2&utm_term=gala_own_your_game`;
 
-      const shortUrl = await this.shortenLongUrl(longUrl);
+      const shortUrl = await this.shortenLongUrl(longUrl, user.id);
 
       return shortUrl;
     } catch (error) {
