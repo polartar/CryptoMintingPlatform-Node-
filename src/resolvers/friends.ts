@@ -4,6 +4,7 @@ import config from '../common/config';
 import { User, FriendNudge } from '../models';
 import { getPipeline as getAllowedToNudgePipeline } from '../pipelines/allowed_to_nudge_friend';
 import { getPipeline as getFriendsPipeline } from '../pipelines/get_friends';
+import { getPipeline as getNudgableFriendsPipeline } from '../pipelines/nudgable_friends';
 
 class Resolvers extends ResolverBase {
   private async verifyNudgableFriend(userId: string, friend: string) {
@@ -65,7 +66,7 @@ class Resolvers extends ResolverBase {
       friend: id,
     });
     await dataSources.sendEmail.nudgeFriend(
-      referrer,
+      referrer.firstName,
       {
         email,
         firstName,
@@ -73,6 +74,45 @@ class Resolvers extends ResolverBase {
       },
       unsubscribeLink,
     );
+
+    return { success: true };
+  };
+
+  public nudgeAllFriends = async (
+    parent: any,
+    args: {},
+    { user, dataSources }: Context,
+  ) => {
+    this.requireAuth(user);
+
+    const pipeline = getNudgableFriendsPipeline(user.userId, config.nudgeCode);
+    const nudgableFriends: Array<{
+      referrer: string;
+      firstName: string;
+      email: string;
+      referralLink: string;
+      userId: string;
+    }> = await User.aggregate(pipeline);
+
+    const nudges = await Promise.all(
+      nudgableFriends.map(async ({ referrer, ...friend }) => {
+        const unsubscribeLink = `${config.walletClientDomain}/unsubscribe?list=friend-nudge&id=${friend.userId}`;
+
+        await dataSources.sendEmail.nudgeFriend(
+          referrer,
+          friend,
+          unsubscribeLink,
+        );
+
+        return new FriendNudge({
+          code: config.nudgeCode,
+          userId: user.userId,
+          friend: friend.userId,
+        });
+      }),
+    );
+
+    await FriendNudge.insertMany(nudges);
 
     return { success: true };
   };
@@ -86,5 +126,6 @@ export default {
   },
   Mutation: {
     nudgeFriend: resolvers.nudgeFriend,
+    nudgeAllFriends: resolvers.nudgeAllFriends,
   },
 };
