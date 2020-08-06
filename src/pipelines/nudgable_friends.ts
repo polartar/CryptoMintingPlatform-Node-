@@ -87,12 +87,22 @@ export const getPipeline = (userId: string, nudgeCode: string) => [
   {
     $match: {
       $expr: {
-        $eq: [
-          {
-            $size: '$nudges',
-          },
-          0,
-        ],
+        $eq: [{ $size: '$nudges' }, 0],
+      },
+    },
+  },
+  {
+    $lookup: {
+      from: 'game-activities',
+      localField: 'id',
+      foreignField: 'userId',
+      as: 'gameActivities',
+    },
+  },
+  {
+    $match: {
+      $expr: {
+        $eq: [{ $size: '$gameActivities' }, 0],
       },
     },
   },
