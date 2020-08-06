@@ -141,19 +141,18 @@ class SendEmail extends DataSource {
   }
 
   public async nudgeFriend(
-    user: IUser,
+    referrer: string,
     friend: { email: string; firstName: string; referralLink: string },
     unsubscribeLink: string,
   ) {
-    logger.debug(`data-sources.SendEmail.nudgeFriend.user: ${user && user.id}`);
     logger.debug(`data-sources.SendEmail.nudgeFriend.friend: ${friend.email}`);
 
-    if (!user || !friend) {
+    if (!referrer || !friend) {
       return false;
     }
 
     const { html, subject } = templateBuilder.buildNudgeFriendHtml(
-      user.firstName,
+      referrer,
       friend.firstName,
       friend.referralLink,
       unsubscribeLink,
