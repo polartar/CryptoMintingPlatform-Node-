@@ -17,6 +17,7 @@ export class GalaShareResolver extends ShareResolver {
       result || {
         btcEarned: 0,
         friendsJoined: 0,
+        friendsPlayed: 0,
         galaEarned: 0,
         nodesPurchased: 0,
         upgradedReferrals: 0,
@@ -71,6 +72,7 @@ export class GalaShareResolver extends ShareResolver {
       const {
         btcEarned,
         friendsJoined,
+        friendsPlayed,
         galaEarned,
         nodesPurchasedByReferrals,
         nodesOwned,
@@ -99,6 +101,7 @@ export class GalaShareResolver extends ShareResolver {
         },
         referralOutcomes: {
           friendsJoined,
+          friendsPlayed,
           goldMembers: upgradedReferrals,
           nodesPurchasedByReferrals,
         },
