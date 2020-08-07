@@ -263,6 +263,12 @@ export const userSchema = new mongoose.Schema(
         timestamp: Date,
       },
     ],
+    communicationConsent: [
+      {
+        consentGiven: Boolean,
+        timestamp: Date,
+      },
+    ],
   },
   { id: false },
 );
