@@ -72,11 +72,16 @@ class SendEmail extends DataSource {
       referredUser,
       this.capitalizedBrand,
     );
-    const emailSent = await this.sendMail(subject, user.email, html);
-    logger.debug(
-      `data-sources.SendEmail.shareAccepted.emailSent: ${emailSent}`,
-    );
-    return emailSent;
+    const userConsentsToEmailCommunication = this.checkUserConsent(user);
+    if (userConsentsToEmailCommunication) {
+      const emailSent = await this.sendMail(subject, user.email, html);
+      logger.debug(
+        `data-sources.SendEmail.shareAccepted.emailSent: ${emailSent}`,
+      );
+      return emailSent;
+    } else {
+      return false;
+    }
   }
 
   public async sendSoftNodeDiscount(
@@ -132,12 +137,17 @@ class SendEmail extends DataSource {
       referredUser,
       this.capitalizedBrand,
     );
-    const emailSent = await this.sendMail(subject, user.email, html);
-    logger.debug(
-      `data-sources.SendEmail.referrerActivated.emailSent: ${emailSent}`,
-    );
+    const userConsentsToEmailCommunication = this.checkUserConsent(user);
+    if (userConsentsToEmailCommunication) {
+      const emailSent = await this.sendMail(subject, user.email, html);
+      logger.debug(
+        `data-sources.SendEmail.referrerActivated.emailSent: ${emailSent}`,
+      );
 
-    return emailSent;
+      return emailSent;
+    } else {
+      return false;
+    }
   }
 
   public async nudgeFriend(
@@ -162,6 +172,19 @@ class SendEmail extends DataSource {
     logger.debug(`data-sources.SendEmail.nudgeFriend.emailSent: ${emailSent}`);
 
     return emailSent;
+  }
+
+  public checkUserConsent(user: IUser) {
+    if (user.communicationConsent && user.communicationConsent.length) {
+      const mostRecentConsentEntry = user.communicationConsent.sort(
+        (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
+      )[0];
+      return mostRecentConsentEntry.consentGiven;
+    } else {
+      // In the past, the user either could not create an account without explicitly consenting to communications, or implicitly consented by creating an account.
+      // Therefore, if this property does not exist on the user document, they consented
+      return true;
+    }
   }
 }
 

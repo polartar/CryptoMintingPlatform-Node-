@@ -21,6 +21,7 @@ class Resolvers extends ResolverBase {
         phoneCountry: string;
         language: string;
         referralContext: IOrderContext;
+        communicationConsent: boolean;
       };
     },
     context: Context,
@@ -39,6 +40,7 @@ class Resolvers extends ResolverBase {
         phone = null,
         language,
         referralContext = {},
+        communicationConsent,
       } = args.userInfo;
       const {
         offer,
@@ -72,7 +74,7 @@ class Resolvers extends ResolverBase {
         ? s3Service.getUrlFromFilename(profilePhotoFilename)
         : '';
 
-      const newUser = new User({
+      const userObj: any = {
         email,
         firebaseUid,
         firstName,
@@ -94,7 +96,18 @@ class Resolvers extends ResolverBase {
           utmName,
           utmTerm,
         },
-      });
+      };
+
+      if (typeof communicationConsent === 'boolean') {
+        userObj.communicationConsent = [
+          {
+            consentGiven: communicationConsent,
+            timestamp: new Date(),
+          },
+        ];
+      }
+
+      const newUser = new User(userObj);
 
       let url: string;
       try {
@@ -134,6 +147,7 @@ class Resolvers extends ResolverBase {
         profilePhotoFilename?: string;
         phone?: string;
         password?: string;
+        communicationConsent?: boolean;
       };
     },
     { user }: Context,
@@ -148,6 +162,7 @@ class Resolvers extends ResolverBase {
       profilePhotoFilename,
       phone,
       password,
+      communicationConsent,
     } = args.userInfo;
 
     const userDoc = await user.findFromDb();
@@ -181,6 +196,12 @@ class Resolvers extends ResolverBase {
     if (phone) {
       userDoc.set('phone', phone);
     }
+    if (typeof communicationConsent === 'boolean') {
+      userDoc.communicationConsent.push({
+        consentGiven: communicationConsent,
+        timestamp: new Date(),
+      });
+    }
     await userDoc.save();
     return {
       success: true,
@@ -190,13 +211,16 @@ class Resolvers extends ResolverBase {
   public getUserProfile = async (
     parent: { userApi: UserApi },
     args: {},
-    { user }: Context,
+    { user, dataSources }: Context,
   ) => {
     logger.debug(`resolvers.auth.getUserProfile.userId:${user && user.userId}`);
     this.requireAuth(user);
-    const profile = await user.findFromDb();
+    const { sendEmail } = dataSources;
+    const profile: any = await user.findFromDb();
+    profile.communicationConsent = sendEmail.checkUserConsent(profile);
+
     logger.debug(
-      `resolvers.auth.getUserProfile.prifile.id:${profile && profile.id}`,
+      `resolvers.auth.getUserProfile.profile.id:${profile && profile.id}`,
     );
     return profile;
   };
