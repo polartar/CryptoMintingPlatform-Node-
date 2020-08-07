@@ -10,6 +10,7 @@ type UserProfile {
   currency: String!
   profilePhotoUrl: String
   language: String
+  communicationConsent: Boolean
   role: String!
 }
 
@@ -19,6 +20,7 @@ input CreateUserInput {
   lastName: String!
   displayName: String
   profilePhotoFilename: String
+  communicationConsent: Boolean
   phone: String
   referredBy: String
   language: String
@@ -30,6 +32,7 @@ input UpdateUserInput {
   lastName: String
   displayName: String
   profilePhotoFilename: String
+  communicationConsent: Boolean
   phone: String
   email: String
   password: String
