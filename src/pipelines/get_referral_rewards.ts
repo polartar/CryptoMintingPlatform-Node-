@@ -5,6 +5,12 @@ export const referralRewardsPipeline = (userId: string) => [
     },
   },
   {
+    $project: {
+      id: 1,
+      affiliateId: 1,
+    },
+  },
+  {
     $lookup: {
       from: 'licenses',
       localField: 'id',
@@ -43,10 +49,29 @@ export const referralRewardsPipeline = (userId: string) => [
           },
         },
         {
+          $lookup: {
+            from: 'game-activities',
+            localField: 'id',
+            foreignField: 'userId',
+            as: 'gameActivities',
+          },
+        },
+        {
           $group: {
             _id: 1,
             friendsJoined: {
               $sum: 1,
+            },
+            friendsPlayed: {
+              $sum: {
+                $cond: [
+                  {
+                    $gt: [{ $size: '$gameActivities' }, 0],
+                  },
+                  1,
+                  0,
+                ],
+              },
             },
             btcEarned: {
               $sum: '$wallet.activations.gala.btcToReferrer',
@@ -73,6 +98,14 @@ export const referralRewardsPipeline = (userId: string) => [
         $ifNull: [
           {
             $arrayElemAt: ['$rewardsEarned.friendsJoined', 0],
+          },
+          0,
+        ],
+      },
+      friendsPlayed: {
+        $ifNull: [
+          {
+            $arrayElemAt: ['$rewardsEarned.friendsPlayed', 0],
           },
           0,
         ],
