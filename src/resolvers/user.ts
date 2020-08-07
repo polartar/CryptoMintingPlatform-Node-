@@ -211,20 +211,16 @@ class Resolvers extends ResolverBase {
   public getUserProfile = async (
     parent: { userApi: UserApi },
     args: {},
-    { user }: Context,
+    { user, dataSources }: Context,
   ) => {
     logger.debug(`resolvers.auth.getUserProfile.userId:${user && user.userId}`);
     this.requireAuth(user);
+    const { sendEmail } = dataSources;
     const profile: any = await user.findFromDb();
-    if (profile.communicationConsent && profile.communicationConsent.length) {
-      const mostRecentConsentEntry = profile.communicationConsent.sort(
-        (a: { timestamp: Date }, b: { timestamp: Date }) =>
-          b.timestamp.getTime() - a.timestamp.getTime(),
-      )[0];
-      profile.communicationConsent = mostRecentConsentEntry.consentGiven;
-    }
+    profile.communicationConsent = sendEmail.checkUserConsent(profile);
+
     logger.debug(
-      `resolvers.auth.getUserProfile.prifile.id:${profile && profile.id}`,
+      `resolvers.auth.getUserProfile.profile.id:${profile && profile.id}`,
     );
     return profile;
   };
