@@ -12,7 +12,7 @@ export class ServerToServerService {
     subject: 'connectTrader:subject',
   };
 
-  private sign(
+  public sign(
     payload: string | Buffer | object,
     options: IJwtSignOptions = {},
   ): string {

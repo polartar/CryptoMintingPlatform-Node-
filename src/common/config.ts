@@ -145,6 +145,9 @@ class Config {
   public readonly defaultReferredBy = process.env.DEFAULT_REFERRED_BY || '';
   public readonly sentryDsn = env.SENTRY_DSN;
 
+  public readonly linkShortenerUrl =
+    env.LINK_SHORTENER_URL.length > 1 ? env.LINK_SHORTENER_URL : '';
+
   constructor() {
     autoBind(this);
     this.ensureRequiredVariables();
@@ -213,6 +216,7 @@ class Config {
       'ACTION_REWARDS_API_URL',
       'ZENDESK_URL',
       'SENTRY_DSN',
+      'LINK_SHORTENER_URL',
     ].filter(name => !env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
@@ -228,6 +232,7 @@ class Config {
       ['ETH_NODE', this.ethNodeUrl],
       ['DISPLAYED_WALLETS', this.displayedWallets.join(',')],
       ['INDEXED_TRANSACTIONS', this.indexedTransactions],
+      ['LINK_SHORTENER_URL', this.linkShortenerUrl],
     ].forEach(([label, value]) => {
       systemLogger.info(`CONFIG: ${label}=${value}`);
     });

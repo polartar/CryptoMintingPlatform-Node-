@@ -16,12 +16,14 @@ import {
   Zendesk,
   Blockfunnels,
   SendEmail,
+  LinkShortener,
 } from './data-sources';
 import { walletApi } from './wallet-api';
 import { removeListeners } from './blockchain-listeners';
 import { Logger, winstonLogger, systemLogger } from './common/logger';
 import { dailyWalletStatsCron } from './cron';
 import { Wallet } from 'ethers';
+import restApi from './rest/routes';
 
 class Server {
   public app: express.Application = express();
@@ -34,6 +36,8 @@ class Server {
 
     const typeDefs: DocumentNode = gql(schemas);
     const isGqlDev = isDev || isStage;
+
+    this.app.use('/api', restApi);
 
     const server = new ApolloServer({
       typeDefs,
@@ -103,6 +107,8 @@ class Server {
       cryptoFavorites: new CryptoFavorites(),
       environment: new WalletConfig(),
       bitly: new Bitly(),
+      linkShortener:
+        config.linkShortenerUrl.length > 1 ? new LinkShortener() : new Bitly(),
       zendesk: new Zendesk(),
       sendEmail: new SendEmail(),
       blockfunnels: new Blockfunnels(),

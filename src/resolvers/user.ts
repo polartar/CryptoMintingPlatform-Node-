@@ -27,7 +27,7 @@ class Resolvers extends ResolverBase {
     context: Context,
   ) => {
     const {
-      dataSources: { bitly },
+      dataSources: { linkShortener, bitly },
     } = context;
 
     try {
@@ -109,7 +109,13 @@ class Resolvers extends ResolverBase {
 
       const newUser = new User(userObj);
 
-      const url = await bitly.getLink(newUser);
+      let url: string;
+      try {
+        url = await linkShortener.getLink(newUser);
+      } catch (error) {
+        logger.warn(`resolvers.auth.createUser.getLink.catch:${error}`);
+        url = await bitly.getLink(newUser);
+      }
       newUser.set('wallet.shareLink', url);
       newUser.set('wallet.userCreatedInWallet', true);
       logger.debug(`resolvers.auth.createUser.newUser._id:${newUser._id}`);

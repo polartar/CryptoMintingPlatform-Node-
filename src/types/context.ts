@@ -8,6 +8,7 @@ import {
   Zendesk,
   SendEmail,
   Blockfunnels,
+  LinkShortener,
 } from '../data-sources/';
 import { WalletApi } from '../wallet-api';
 export interface IUserClaims {
@@ -26,6 +27,7 @@ export interface Context {
   dataSources: {
     cryptoFavorites: CryptoFavorites;
     environment: WalletConfig;
+    linkShortener: Bitly | LinkShortener;
     bitly: Bitly;
     zendesk: Zendesk;
     sendEmail: SendEmail;
