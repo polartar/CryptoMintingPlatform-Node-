@@ -63,22 +63,21 @@ class Resolvers extends ResolverBase {
       const mnemonicIsValid = mnemonicUtils.validate(recoveryPhrase);
       if (!mnemonicIsValid) throw new Error('Invalid mnemonic');
 
-      const walletsExistOrCreated = await Promise.all(
-        wallet.parentInterfaces.map(async parentCoin => {
-          let walletExists = await parentCoin.checkIfWalletExists(user);
-          if (!walletExists) {
-            walletExists = await parentCoin.createWallet(
-              user,
-              walletPassword,
-              recoveryPhrase,
-            );
-          }
-          return walletExists;
-        }),
+      const walletsExist = await Promise.all(
+        wallet.parentInterfaces.map(parentCoin =>
+          parentCoin.checkIfWalletExists(user),
+        ),
       );
-      if (!walletsExistOrCreated.every(walletIsGood => walletIsGood)) {
+      if (walletsExist.some(walExists => walExists))
+        throw new Error('Wallet already exists');
+      const walletsCreated = await Promise.all(
+        wallet.parentInterfaces.map(parentCoin =>
+          parentCoin.createWallet(user, walletPassword, recoveryPhrase),
+        ),
+      );
+
+      if (walletsCreated.some(createdWallet => !createdWallet))
         throw new Error('Error creating wallet');
-      }
       if (config.clientSecretKeyRequired) {
         await this.saveWalletPassword(
           user.userId,
