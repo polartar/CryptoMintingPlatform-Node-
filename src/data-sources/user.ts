@@ -8,6 +8,8 @@ import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
 import { ApolloError } from 'apollo-server-express';
 import auth from '../common/auth';
+import { capitalize } from '../utils';
+
 export default class UserApi extends DataSource {
   Model: Model<IUser> = User;
   domain: string;
@@ -133,10 +135,12 @@ export default class UserApi extends DataSource {
         length: 20,
       });
 
+      const issuer = capitalize(config.brand);
+
       const otpUrl = speakeasy.otpauthURL({
+        issuer,
         secret: secret.base32,
         label: user.email,
-        issuer: config.hostname,
         encoding: 'base32',
       });
 
