@@ -88,6 +88,20 @@ Deploy BLUE Staging:
     - .bb_rsync_staging_jwt_firebase
 
 ######################################
+# PRE-PRODUCTION DEPLOYS
+######################################
+
+Deploy ARCADE PreProd:
+  variables:
+    DEPLOY_URI: $MASTER_STAGE_URI
+    SERVER_HOSTKEYS: $MASTER_STAGE_SERVER_HOSTKEYS
+    DEPLOY_APP_REPLACE: wallet-server-arcade-preprod
+    NODE_PORT_REPLACE: 3725
+    ENV: $ARCADE_ENV_PROD
+  extends:
+    - .bb_rsync_staging_jwt_firebase
+
+######################################
 # PRODUCTION DEPLOYS
 ######################################
 
@@ -122,7 +136,7 @@ Deploy ARCADE Production:
     ENV_PROD: $ARCADE_ENV_PROD
   extends:
     - .bb_rsync_production_jwt_firebase
-    
+
 Deploy BLUE Production:
   variables:
     DEPLOY_URI: $PROD_URI_BLUE
