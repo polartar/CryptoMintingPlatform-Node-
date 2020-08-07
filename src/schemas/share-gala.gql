@@ -1,5 +1,6 @@
 type ReferralOutcomes {
   friendsJoined: Int!
+  friendsPlayed: Int!
   goldMembers: Int!
   nodesPurchasedByReferrals: Int!
 }
