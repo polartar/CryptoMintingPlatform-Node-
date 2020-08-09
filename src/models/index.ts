@@ -16,3 +16,4 @@ export * from './wallet-transaction';
 export * from './reward-audit';
 export * from './friend-nudge';
 export * from './template';
+export * from './purchase-attempt';
