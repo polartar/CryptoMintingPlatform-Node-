@@ -66,7 +66,7 @@ export const referralRewardsPipeline = (userId: string) => [
               $sum: {
                 $cond: [
                   {
-                    $gt: [{ $size: '$gameActivities' }, 0],
+                    $gte: [{ $size: '$gameActivities' }, 3],
                   },
                   1,
                   0,
