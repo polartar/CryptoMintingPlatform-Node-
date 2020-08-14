@@ -83,7 +83,7 @@ class BtcWallet extends CoinWalletBase {
         userId,
         this.symbol,
         XPRIVKEY,
-        this.encrypt(xprivkey, mnemonic),
+        this.encrypt(xprivkey, userPassword),
       );
 
       const receiveAddressSavePromise = userApi.setBtcAddressToUser(
