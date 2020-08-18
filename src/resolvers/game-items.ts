@@ -60,7 +60,7 @@ class Resolvers extends ResolverBase {
           image: userItem.image,
           description: userItem.description,
           game: userItem.game,
-          nftBaseId: userItem.baseId,
+          baseId: userItem.baseId,
           icon: userItem.properties.rarity.icon,
           coin: 'GALA',
           tradeWaitTime: 0,
@@ -105,20 +105,31 @@ class Resolvers extends ResolverBase {
       return {
         ...items,
         coin: 'GALA',
-        tradeWaitTime: 0,
-        withdrawalWaitTime: 0,
-        galaFee: 0,
         requiredPieces: items.requiredPieces.map((piece: any) => {
           return {
             ...piece,
-            nftBaseId: piece.id,
+            baseId: piece.id,
             coin: 'GALA',
-            tradeWaitTime: 0,
-            withdrawalWaitTime: 0,
-            galaFee: 0,
           };
         }),
       };
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  getCraftedItemsByGameName = async (
+    parent: any,
+    args: { gameName: string },
+    ctx: Context,
+  ) => {
+    this.requireAuth(ctx.user);
+    try {
+      const items = await gameItemService.getCraftedItemsAndRequiredParts(
+        ctx.user.userId,
+        args.gameName,
+      );
+      return items;
     } catch (error) {
       throw error;
     }
@@ -130,10 +141,10 @@ class Resolvers extends ResolverBase {
     userId: string,
   ) => {
     let supplyRemaining;
-    if (product.nftBaseId) {
-      supplyRemaining = await gameItemService.getRemaingSupplyForNftBaseId(
+    if (product.baseId) {
+      supplyRemaining = await gameItemService.getRemaingSupplyForBaseId(
         userId,
-        product.nftBaseId,
+        product.baseId,
       );
     } else {
       supplyRemaining = await gameItemService.getRemainingSupplyForRandomItems(
@@ -184,14 +195,14 @@ class Resolvers extends ResolverBase {
     userId: string,
     ethAddress: string,
     quantityRequested: number,
-    nftBaseId: string,
+    baseId: string,
   ) => {
     let itemsReceived: string[];
-    if (nftBaseId) {
+    if (baseId) {
       itemsReceived = await gameItemService.assignItemToUserByTokenId(
         userId,
         ethAddress,
-        nftBaseId,
+        baseId,
         quantityRequested,
       );
     } else {
@@ -257,7 +268,7 @@ class Resolvers extends ResolverBase {
       user.userId,
       ethAddress,
       quantity,
-      product.nftBaseId,
+      product.baseId,
     );
 
     GameOrder.create(orderDetails);
@@ -287,6 +298,7 @@ export default {
   Query: {
     ownedItems: resolvers.getOwnedItems,
     farmBotRequired: resolvers.getFarmBotRequiredParts,
+    craftedItemsByGameName: resolvers.getCraftedItemsByGameName,
     gameProducts: resolvers.getAvailableGameProducts,
   },
   Mutation: {

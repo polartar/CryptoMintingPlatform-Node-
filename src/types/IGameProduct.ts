@@ -10,7 +10,7 @@ export interface IGameProduct {
   name: string;
   coin: gameProductCoins;
   game: gameOptions;
-  nftBaseId?: string;
+  baseId?: string;
   priceUsd: number;
   basePriceUsd: number;
   description?: string;

@@ -18,7 +18,7 @@ const gameProductSchema = new Schema({
     enum: ['Town Star'],
     required: true,
   },
-  nftBaseId: {
+  baseId: {
     type: String,
     default: null,
   },
