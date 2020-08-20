@@ -24,12 +24,11 @@ type GameItem {
 
 type CraftedItem {
   baseId: String
-  name: String!
-  image: String!
-  description: String!
-  icon: String!
   game: String!
-  coin: String!
+  name: String!
+  description: String!
+  image: String!
+  rarity: GameItemRarity
   requiredPieces: [GameItem!]!
 }
 
