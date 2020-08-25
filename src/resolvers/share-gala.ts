@@ -1,6 +1,6 @@
 import { config } from '../common';
 import { ShareResolver } from './share';
-import { Context } from '../types';
+import { Context, IUserWallet } from '../types';
 import {
   referralRewardsPipeline,
   alfaFountainSharesPipeline,
@@ -111,10 +111,15 @@ export class GalaShareResolver extends ShareResolver {
     }
   };
 
-  townStarRewards = async (parent: any, args: {}, context: Context) => {
-    this.requireAuth(context.user);
+  townStarRewards = async (
+    { userWallet }: { userWallet: IUserWallet },
+    args: {},
+    { user }: Context,
+  ) => {
+    this.requireAuth(user);
+
     const result = await Erc1155Token.aggregate(
-      alfaFountainSharesPipeline(context.user.userId),
+      alfaFountainSharesPipeline(userWallet.ethAddress),
     );
 
     return result;
