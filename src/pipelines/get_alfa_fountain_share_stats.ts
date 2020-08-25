@@ -1,4 +1,6 @@
-export const alfaFountainSharesPipeline = (userId: string) => [
+import { config } from '../common';
+
+export const alfaFountainSharesPipeline = (userEthAddress: string) => [
   {
     $match: {
       'properties.tokenRun': 'alfa-fountain',
@@ -10,16 +12,12 @@ export const alfaFountainSharesPipeline = (userId: string) => [
       let: {
         baseId: '$baseId',
       },
-      as: 'minted',
+      as: 'rewardStats',
       pipeline: [
         {
           $match: {
             $expr: {
-              $and: [
-                {
-                  $eq: ['$$baseId', '$baseId'],
-                },
-              ],
+              $eq: ['$$baseId', '$baseId'],
             },
           },
         },
@@ -28,30 +26,50 @@ export const alfaFountainSharesPipeline = (userId: string) => [
             userSubtotal: {
               $cond: [
                 {
-                  $eq: ['$toUser', userId],
+                  $eq: ['$to', userEthAddress],
                 },
-                1,
+                '$amount',
                 {
                   $cond: [
                     {
-                      $eq: ['$fromUser', userId],
+                      $eq: ['$from', userEthAddress],
                     },
-                    -1,
+                    {
+                      $multiply: ['$amount', -1],
+                    },
                     0,
                   ],
                 },
               ],
             },
-            minted: {
-              $cond: ['$mintTransaction', 1, 0],
+            masterNodeReceived: {
+              $cond: [
+                {
+                  $eq: ['$to', config.galaMasterNodeWalletAddress],
+                },
+                '$amount',
+                0,
+              ],
+            },
+            masterNodeSent: {
+              $cond: [
+                {
+                  $eq: ['$from', config.galaMasterNodeWalletAddress],
+                },
+                '$amount',
+                0,
+              ],
             },
           },
         },
         {
           $group: {
             _id: 1,
-            totalMinted: {
-              $sum: '$minted',
+            masterNodeTotalReceived: {
+              $sum: '$masterNodeReceived',
+            },
+            masterNodeTotalSent: {
+              $sum: '$masterNodeSent',
             },
             userQuantity: {
               $sum: '$userSubtotal',
@@ -66,7 +84,15 @@ export const alfaFountainSharesPipeline = (userId: string) => [
       totalMinted: {
         $ifNull: [
           {
-            $arrayElemAt: ['$minted.totalMinted', 0],
+            $arrayElemAt: ['$rewardStats.masterNodeTotalReceived', 0],
+          },
+          0,
+        ],
+      },
+      totalSent: {
+        $ifNull: [
+          {
+            $arrayElemAt: ['$rewardStats.masterNodeTotalSent', 0],
           },
           0,
         ],
@@ -74,7 +100,7 @@ export const alfaFountainSharesPipeline = (userId: string) => [
       userQuantity: {
         $ifNull: [
           {
-            $arrayElemAt: ['$minted.userQuantity', 0],
+            $arrayElemAt: ['$rewardStats.userQuantity', 0],
           },
           0,
         ],
@@ -90,7 +116,7 @@ export const alfaFountainSharesPipeline = (userId: string) => [
       description: 1,
       totalToBeMinted: '$properties.rarity.supplyLimit',
       totalRemaining: {
-        $subtract: ['$properties.rarity.supplyLimit', '$totalMinted'],
+        $subtract: ['$totalMinted', '$totalSent'],
       },
       totalReferralsNeeded: '$properties.shareRequirement',
       ownedByUser: {
