@@ -38,6 +38,18 @@ class GameItemService extends ServerToServerService {
     return data;
   };
 
+  getCraftedItemsAndRequiredParts = async (
+    userId: string,
+    gameName: string,
+  ) => {
+    const jwtAxios = this.getAxios({ userId });
+    const { data } = await jwtAxios.get(
+      `${this.baseUrl}/crafted-items/${gameName}`,
+    );
+
+    return data;
+  };
+
   markLootBoxesOpened = async (userId: string, lootBoxIds: string[]) => {
     const jwtAxios = this.getAxios({ userId });
     const { data } = await jwtAxios.put(`${this.baseUrl}/lootbox`, {
@@ -54,7 +66,7 @@ class GameItemService extends ServerToServerService {
     quantity: number,
   ) => {
     const jwtAxios = this.getAxios({ userId });
-    const { data } = await jwtAxios.post<{ nftBaseId: string }[]>(
+    const { data } = await jwtAxios.post<string[]>(
       `${this.baseUrl}/${tokenId}`,
       {
         userEthAddress,
@@ -62,7 +74,7 @@ class GameItemService extends ServerToServerService {
         quantity,
       },
     );
-    return data.map(item => item.nftBaseId);
+    return data;
   };
 
   assignItemToUserByTokenIdLimitOne = async (
@@ -95,10 +107,10 @@ class GameItemService extends ServerToServerService {
     return results;
   };
 
-  getRemaingSupplyForNftBaseId = async (userId: string, nftBaseId: string) => {
+  getRemaingSupplyForBaseId = async (userId: string, baseId: string) => {
     const jwtAxios = this.getAxios({ userId });
     const { data } = await jwtAxios.get<{ count: number }>(
-      `${this.baseUrl}/minted/remaining/${nftBaseId}`,
+      `${this.baseUrl}/minted/remaining/${baseId}`,
     );
 
     return data.count;

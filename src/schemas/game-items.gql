@@ -10,35 +10,25 @@ type GameSubItem {
 }
 
 type GameItem {
-  nftBaseId: String
+  baseId: String
   name: String!
   description: String!
   image: String!
-  icon: String!
   game: String!
   coin: String!
-  tradeWaitTime: Int!
-  withdrawalWaitTime: Int!
-  galaFee: Float!
   quantityNeeded: Int
-  hexcode: String
-  label: String!
   rarity: GameItemRarity
   quantityOwned: Int
   items: [GameSubItem!]
 }
 
-type FarmBot {
-  id: String
-  name: String!
-  image: String!
-  description: String!
-  icon: String!
+type CraftedItem {
+  baseId: String
   game: String!
-  coin: String!
-  tradeWaitTime: Int!
-  withdrawalWaitTime: Int!
-  galaFee: Float!
+  name: String!
+  description: String!
+  image: String!
+  rarity: GameItemRarity
   requiredPieces: [GameItem!]!
 }
 
@@ -54,7 +44,7 @@ type GameProduct {
   name: String!
   coin: String!
   game: String!
-  nftBaseId: String
+  baseId: String
   priceUsd: Float!
   basePriceUsd: Float!
   description: String!
@@ -71,7 +61,8 @@ type BuyGameProductsResponse {
 
 type Query {
   ownedItems: [GameItem!]!
-  farmBotRequired: FarmBot!
+  farmBotRequired: CraftedItem!
+  craftedItemsByGameName(gameName: String!): [CraftedItem!]!
   gameProducts: [GameProduct!]!
 }
 

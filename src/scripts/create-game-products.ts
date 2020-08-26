@@ -39,7 +39,7 @@ void (async () => {
       priceUsd: 100_000,
       basePriceUsd: 100_000,
       coin: gameProductCoins.BTC,
-      nftBaseId:
+      baseId:
         '0x8000000000000000000000000000000100000000000000000000000000000000',
       rarity: {
         ...rarity.legendary,
