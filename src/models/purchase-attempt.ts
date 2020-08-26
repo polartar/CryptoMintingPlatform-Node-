@@ -35,6 +35,7 @@ export const purchaseAttemptSchema = new Schema(
     invoiceAddress: String,
     btcValue: String,
     orderContext: Object,
+    error: String,
   },
   { timestamps: true },
 );

@@ -170,6 +170,8 @@ export class ShareActivateResolvers extends ResolverBase {
         sendEmail,
       );
 
+      purchaseLog.success = true;
+
       await purchaseLog.save();
 
       return {
@@ -177,6 +179,7 @@ export class ShareActivateResolvers extends ResolverBase {
         transaction,
       };
     } catch (error) {
+      purchaseLog.success = false;
       purchaseLog.error = error;
       await purchaseLog.save();
       logger.obj.warn({ error });
@@ -302,7 +305,7 @@ export class ShareActivateResolvers extends ResolverBase {
   ) => {
     try {
       if (referrerMissedBtc > 0) {
-        UnclaimedReward.create({
+        await UnclaimedReward.create({
           userId: referrer.id,
           btcValue: referrerMissedBtc,
           hasWalletProperty: !!referrer.wallet,
@@ -474,7 +477,7 @@ export class ShareActivateResolvers extends ResolverBase {
     return rewardResult;
   };
 
-  protected emailReferrerAndIncrementUsedShares = (
+  protected emailReferrerAndIncrementUsedShares = async (
     referrer: IUser,
     userReferred: IUser,
     outputsLength: number,
@@ -482,10 +485,12 @@ export class ShareActivateResolvers extends ResolverBase {
   ) => {
     const { brand } = config;
     if (referrer && outputsLength >= 2) {
-      sendEmail.referrerActivated(referrer, userReferred);
       const existingShares = referrer?.wallet?.shares?.[brand] || 0;
       referrer.set(`wallet.shares.${brand}`, existingShares + 1);
-      referrer.save();
+      await Promise.all([
+        sendEmail.referrerActivated(referrer, userReferred),
+        referrer.save(),
+      ]);
     }
   };
 
@@ -571,7 +576,7 @@ export class ShareActivateResolvers extends ResolverBase {
       purchaseLog.lastCompletedOperation = 'Sent upgrade transaction';
       purchaseLog.txHash = transaction?.id;
 
-      this.logMissedReferrerBtcReward(
+      await this.logMissedReferrerBtcReward(
         referrer,
         paymentDetails.referrerMissedBtc,
       );
@@ -585,6 +590,8 @@ export class ShareActivateResolvers extends ResolverBase {
       );
       purchaseLog.lastCompletedOperation = 'Sent rewards';
 
+      purchaseLog.lastCompletedOperation = 'Sent rewards';
+
       await this.saveActivationToDb(
         userFromDb,
         rewardType,
@@ -596,12 +603,16 @@ export class ShareActivateResolvers extends ResolverBase {
 
       purchaseLog.lastCompletedOperation = 'Activation saved to DB';
 
-      this.emailReferrerAndIncrementUsedShares(
+      await this.emailReferrerAndIncrementUsedShares(
         referrer,
         userFromDb,
         outputs.length,
         sendEmail,
       );
+
+      purchaseLog.lastCompletedOperation =
+        'Emailed referrer and incremented shares';
+      purchaseLog.success = true;
 
       await purchaseLog.save();
 
@@ -610,6 +621,7 @@ export class ShareActivateResolvers extends ResolverBase {
         transaction,
       };
     } catch (error) {
+      purchaseLog.success = false;
       purchaseLog.error = error;
       await purchaseLog.save();
       logger.obj.warn({ error });
