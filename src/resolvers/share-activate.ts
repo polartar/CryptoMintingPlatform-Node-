@@ -9,7 +9,7 @@ import {
   ITransaction,
 } from '../types';
 import { rewardDistributer } from '../services';
-import { UnclaimedReward, WalletConfig } from '../models';
+import { UnclaimedReward, WalletConfig, PurchaseAttempt } from '../models';
 import { logResolver, Logger } from '../common/logger';
 import { WalletApi } from '../wallet-api';
 import { UserApi, SendEmail } from '../data-sources';
@@ -72,9 +72,19 @@ export class ShareActivateResolvers extends ResolverBase {
       dataSources: { cryptoFavorites, sendEmail },
     }: Context,
   ) => {
+    const purchaseLog = new PurchaseAttempt({
+      userId: user?.userId,
+      quantity: 1,
+      coinSymbol: 'BTC',
+      productId: 'GALA_GOLD',
+      lastCompletedOperation: 'args',
+      walletPasswordExists: args?.walletPassword?.length > 1,
+      orderContext: args?.orderContext,
+    });
     const REWARD_TYPE = 'gala';
     const { walletPassword, orderContext = {} } = args;
     this.requireAuth(user);
+    purchaseLog.lastCompletedOperation = 'authenticated';
     try {
       const [
         { userFromDb, referrer },
@@ -85,15 +95,23 @@ export class ShareActivateResolvers extends ResolverBase {
         cryptoFavorites.getBtcUsdPrice(),
         this.getRewardconfig(),
       ]);
+      purchaseLog.lastCompletedOperation =
+        'Query user, referrer, rewardConfig, btcUsdPrice';
 
       this.throwIfIneligibleForUpgrade(userFromDb, REWARD_TYPE);
+      purchaseLog.lastCompletedOperation = 'Upgrade eligibility check';
       const isReferrerEligible = this.isGalaReferrerEligible(referrer);
+      purchaseLog.lastCompletedOperation = 'Referrer eligibility check';
       const paymentDetails = await this.getPaymentDetails(
         rewardConfig,
         btcUsdPrice,
         referrer,
         isReferrerEligible,
       );
+      purchaseLog.lastCompletedOperation = 'Payment details';
+      purchaseLog.btcValue = (
+        paymentDetails.btcToCompany + paymentDetails.btcToReferrer
+      ).toString();
 
       const outputs = await this.getOutputs(
         paymentDetails.btcToCompany,
@@ -101,17 +119,22 @@ export class ShareActivateResolvers extends ResolverBase {
         referrer?.wallet?.btcAddress,
         REWARD_TYPE,
       );
+      purchaseLog.lastCompletedOperation = 'Get outputs';
+
       const transaction = await this.sendUpgradeTransaction(
         user,
         wallet,
         walletPassword,
         outputs,
       );
+      purchaseLog.lastCompletedOperation = 'Sent upgrade transaction';
+      purchaseLog.txHash = transaction?.id;
 
       this.logMissedReferrerBtcReward(
         referrer,
         paymentDetails.referrerMissedBtc,
       );
+      purchaseLog.lastCompletedOperation = 'Log missed referrer BTC reward';
 
       const rewardResult: {
         rewardId: string;
@@ -127,8 +150,9 @@ export class ShareActivateResolvers extends ResolverBase {
         actionRewardService.actions.UPGRADE,
         userFromDb.id,
       );
+      purchaseLog.lastCompletedOperation = 'Action reward triggered';
 
-      this.saveActivationToDb(
+      await this.saveActivationToDb(
         userFromDb,
         REWARD_TYPE,
         { ...paymentDetails, transactionId: transaction.id, outputs },
@@ -137,6 +161,8 @@ export class ShareActivateResolvers extends ResolverBase {
         orderContext,
       );
 
+      purchaseLog.lastCompletedOperation = 'Activation saved to DB';
+
       this.emailReferrerAndIncrementUsedShares(
         referrer,
         userFromDb,
@@ -144,11 +170,15 @@ export class ShareActivateResolvers extends ResolverBase {
         sendEmail,
       );
 
+      await purchaseLog.save();
+
       return {
         success: true,
         transaction,
       };
     } catch (error) {
+      purchaseLog.error = error;
+      await purchaseLog.save();
       logger.obj.warn({ error });
       throw error;
     }
@@ -471,6 +501,15 @@ export class ShareActivateResolvers extends ResolverBase {
     if (config.brand === 'gala') {
       return this.galaShareActivate(parent, args, ctx);
     }
+    const purchaseLog = new PurchaseAttempt({
+      userId: ctx?.user?.userId,
+      quantity: 1,
+      coinSymbol: 'BTC',
+      productId: 'APP_UPGRADE',
+      lastCompletedOperation: 'args',
+      walletPasswordExists: args.walletPassword.length > 1,
+      orderContext: args.orderContext,
+    });
     const {
       wallet,
       user,
@@ -481,6 +520,8 @@ export class ShareActivateResolvers extends ResolverBase {
     const { walletPassword, orderContext = {} } = args;
     logger.obj.debug({ rewardType });
     this.requireAuth(user);
+    purchaseLog.lastCompletedOperation = 'authenticated';
+
     try {
       const [
         { userFromDb, referrer },
@@ -491,23 +532,34 @@ export class ShareActivateResolvers extends ResolverBase {
         cryptoFavorites.getBtcUsdPrice(),
         this.getAllRewardConfigs(),
       ]);
+      purchaseLog.lastCompletedOperation =
+        'Query user, referrer, rewardConfig, btcUsdPrice';
+
       const rewardConfig = this.selectRewardConfig(
         rewardType,
         allRewardConfigs,
       );
       this.throwIfIneligibleForUpgrade(userFromDb, rewardType);
+      purchaseLog.lastCompletedOperation = 'Referrer eligibility check';
+
       const paymentDetails = await this.getPaymentDetails(
         rewardConfig,
         btcUsdPrice,
         referrer,
         this.isReferrerEligible(referrer, allRewardConfigs),
       );
+      purchaseLog.lastCompletedOperation = 'Payment details';
+      purchaseLog.btcValue = (
+        paymentDetails.btcToCompany + paymentDetails.btcToReferrer
+      ).toString();
       const outputs = await this.getOutputs(
         paymentDetails.btcToCompany,
         paymentDetails.btcToReferrer,
         referrer?.wallet?.btcAddress,
         rewardType,
       );
+      purchaseLog.lastCompletedOperation = 'Get outputs';
+
       logger.JSON.debug(paymentDetails);
 
       const transaction = await this.sendUpgradeTransaction(
@@ -516,11 +568,14 @@ export class ShareActivateResolvers extends ResolverBase {
         walletPassword,
         outputs,
       );
+      purchaseLog.lastCompletedOperation = 'Sent upgrade transaction';
+      purchaseLog.txHash = transaction?.id;
 
       this.logMissedReferrerBtcReward(
         referrer,
         paymentDetails.referrerMissedBtc,
       );
+      purchaseLog.lastCompletedOperation = 'Log missed referrer BTC reward';
 
       const rewardResult = await this.sendRewards(
         userFromDb,
@@ -528,8 +583,9 @@ export class ShareActivateResolvers extends ResolverBase {
         sendEmail,
         logger,
       );
+      purchaseLog.lastCompletedOperation = 'Sent rewards';
 
-      this.saveActivationToDb(
+      await this.saveActivationToDb(
         userFromDb,
         rewardType,
         { ...paymentDetails, transactionId: transaction.id, outputs },
@@ -538,6 +594,8 @@ export class ShareActivateResolvers extends ResolverBase {
         orderContext,
       );
 
+      purchaseLog.lastCompletedOperation = 'Activation saved to DB';
+
       this.emailReferrerAndIncrementUsedShares(
         referrer,
         userFromDb,
@@ -545,11 +603,15 @@ export class ShareActivateResolvers extends ResolverBase {
         sendEmail,
       );
 
+      await purchaseLog.save();
+
       return {
         success: true,
         transaction,
       };
     } catch (error) {
+      purchaseLog.error = error;
+      await purchaseLog.save();
       logger.obj.warn({ error });
       throw error;
     }

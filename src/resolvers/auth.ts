@@ -79,6 +79,7 @@ class Resolvers extends ResolverBase {
       const token = await auth.signIn(args.token, config.hostname);
       logger.debug(`resolvers.auth.login.!!token:${!!token}`);
       const tempUserApi = UserApi.fromToken(token);
+      tempUserApi.update({ $set: { lastLogin: new Date() } });
       const walletExists = await this.verifyWalletsExist(
         tempUserApi,
         context.wallet,

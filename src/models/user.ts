@@ -93,6 +93,7 @@ export interface IUser extends mongoose.Document {
   referralContext: IOrderContext;
   unsubscriptions: Array<{ list: string; timestamp: Date }>;
   communicationConsent: Array<{ consentGiven: boolean; timestamp: Date }>;
+  lastLogin: Date;
 }
 
 async function getNextNumber({ firstName, lastName }: IUser) {
@@ -269,6 +270,7 @@ export const userSchema = new mongoose.Schema(
         timestamp: Date,
       },
     ],
+    lastLogin: Date,
   },
   { id: false },
 );
