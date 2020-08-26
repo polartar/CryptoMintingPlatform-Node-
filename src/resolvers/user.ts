@@ -85,6 +85,7 @@ class Resolvers extends ResolverBase {
         affiliateId,
         language,
         referredBy: referredBy || config.defaultReferredBy,
+        lastLogin: new Date(),
         utmInfo: {
           offer,
           referredBy,
