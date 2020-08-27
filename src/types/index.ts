@@ -51,3 +51,4 @@ export * from './ItemTokenName';
 export * from './IRewardItemMetadata';
 export * from './IRewardTrigger';
 export * from './ITemplate';
+export * from './simplex';
