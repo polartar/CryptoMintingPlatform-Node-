@@ -54,7 +54,7 @@ export const galaWelcome5 = {
   subject: 'How to share for fun and reward',
 };
 
-export const nudgeFriend = (referrer: string) => ({
+export const nudgeFriend = () => ({
   html: readTemplate('nudgeFriend.hbs'),
-  subject: `${referrer} is asking you to play Townstar with them`,
+  subject: `📜📜📜 Gala Games Planning Meeting Minutes`,
 });
