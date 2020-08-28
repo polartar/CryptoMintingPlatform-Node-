@@ -113,7 +113,7 @@ class TemplateBuilder {
     referralLink: string,
     unsubscribeLink: string,
   ) {
-    const hbs = nudgeFriend(referrer);
+    const hbs = nudgeFriend();
 
     return {
       html: Handlebars.compile(hbs.html)({
