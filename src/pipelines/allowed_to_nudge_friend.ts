@@ -33,6 +33,10 @@ export const getPipeline = (
               // @ts-ignore-next-line
               $ifNull: ['$unsubscriptions', []],
             },
+            communicationConsent: {
+              // @ts-ignore-next-line
+              $ifNull: ['$communicationConsent', []],
+            },
           },
         },
         {
@@ -43,6 +47,7 @@ export const getPipeline = (
             email: 1,
             firstName: 1,
             referralLink: '$wallet.shareLink',
+            communicationConsent: 1,
             unsubscribed: {
               $in: ['friend-nudge', '$unsubscriptions.list'],
             },
@@ -101,6 +106,7 @@ export const getPipeline = (
       email: '$friend.email',
       firstName: '$friend.firstName',
       referralLink: '$friend.referralLink',
+      communicationConsent: '$friend.communicationConsent',
     },
   },
 ];

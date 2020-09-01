@@ -113,7 +113,7 @@ class DailyWalletStats {
           }
           return emailSender.sendMail(
             `${config.brand} Wallet Report`,
-            sendTo,
+            { email: sendTo, communicationConsent: [] },
             inlineTable,
             [{ filename: 'report.csv', content: csv }],
           );
