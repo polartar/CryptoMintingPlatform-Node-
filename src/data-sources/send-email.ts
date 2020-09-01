@@ -21,15 +21,23 @@ class SendEmail extends DataSource {
 
   public async sendMail(
     subject: string,
-    sendTo: string,
+    sendTo: {
+      email: string;
+      communicationConsent: Array<{ timestamp: Date; consentGiven: boolean }>;
+    },
     html: string,
     attachments?: Attachment[],
   ) {
     logger.debug(`data-sources.SendEmail.sendMail.subject: ${subject}`);
     logger.debug(`data-sources.SendEmail.sendMail.sendTo: ${sendTo}`);
+
+    if (!this.checkUserConsent(sendTo) || !sendTo.email) {
+      return false;
+    }
+
     try {
       const mailOptions: Options = {
-        to: sendTo,
+        to: sendTo.email,
         from: this.sendFromEmailAddress,
         subject: subject,
         html: html,
@@ -74,7 +82,7 @@ class SendEmail extends DataSource {
     );
     const userConsentsToEmailCommunication = this.checkUserConsent(user);
     if (userConsentsToEmailCommunication) {
-      const emailSent = await this.sendMail(subject, user.email, html);
+      const emailSent = await this.sendMail(subject, user, html);
       logger.debug(
         `data-sources.SendEmail.shareAccepted.emailSent: ${emailSent}`,
       );
@@ -93,7 +101,8 @@ class SendEmail extends DataSource {
     logger.debug(
       `data-sources.SendEmail.sendSoftNodeDiscount.user: ${user && user.id}`,
     );
-    if (!user) {
+
+    if (!user || !this.checkUserConsent(user)) {
       return false;
     }
     const {
@@ -107,12 +116,7 @@ class SendEmail extends DataSource {
       softnodeType,
     );
     try {
-      const emailSent = await this.sendMail(
-        subject,
-        user.email,
-        html,
-        attachments,
-      );
+      const emailSent = await this.sendMail(subject, user, html, attachments);
       logger.debug(
         `data-sources.SendEmail.sendSoftNodeDiscount.emailSent: ${emailSent}`,
       );
@@ -139,7 +143,7 @@ class SendEmail extends DataSource {
     );
     const userConsentsToEmailCommunication = this.checkUserConsent(user);
     if (userConsentsToEmailCommunication) {
-      const emailSent = await this.sendMail(subject, user.email, html);
+      const emailSent = await this.sendMail(subject, user, html);
       logger.debug(
         `data-sources.SendEmail.referrerActivated.emailSent: ${emailSent}`,
       );
@@ -152,7 +156,15 @@ class SendEmail extends DataSource {
 
   public async nudgeFriend(
     referrer: string,
-    friend: { email: string; firstName: string; referralLink: string },
+    friend: {
+      email: string;
+      firstName: string;
+      referralLink: string;
+      communicationConsent: Array<{
+        timestamp: Date;
+        consentGiven: boolean;
+      }>;
+    },
     unsubscribeLink: string,
   ) {
     logger.debug(`data-sources.SendEmail.nudgeFriend.friend: ${friend.email}`);
@@ -167,14 +179,16 @@ class SendEmail extends DataSource {
       friend.referralLink,
       unsubscribeLink,
     );
-    const emailSent = await this.sendMail(subject, friend.email, html);
+    const emailSent = await this.sendMail(subject, friend, html);
 
     logger.debug(`data-sources.SendEmail.nudgeFriend.emailSent: ${emailSent}`);
 
     return emailSent;
   }
 
-  public checkUserConsent(user: IUser) {
+  public checkUserConsent(user: {
+    communicationConsent: Array<{ timestamp: Date; consentGiven: boolean }>;
+  }) {
     if (user.communicationConsent && user.communicationConsent.length) {
       const mostRecentConsentEntry = user.communicationConsent.sort(
         (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
