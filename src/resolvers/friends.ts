@@ -41,6 +41,7 @@ class Resolvers extends ResolverBase {
       email,
       firstName,
       referralLink,
+      communicationConsent,
     } = await this.verifyNudgableFriend(user.userId, id);
 
     if (!isFriend) {
@@ -71,6 +72,7 @@ class Resolvers extends ResolverBase {
         email,
         firstName,
         referralLink,
+        communicationConsent,
       },
       unsubscribeLink,
     );
@@ -92,6 +94,10 @@ class Resolvers extends ResolverBase {
       email: string;
       referralLink: string;
       userId: string;
+      communicationConsent: Array<{
+        timestamp: Date;
+        consentGiven: boolean;
+      }>;
     }> = await User.aggregate(pipeline);
 
     const nudges = await Promise.all(

@@ -30,6 +30,7 @@ export const getPipeline = (userId: string, nudgeCode: string) => [
       'friends.id': 1,
       'friends.wallet.shareLink': 1,
       'friends.unsubscriptions': 1,
+      'friends.communicationConsent': 1,
     },
   },
   {
@@ -52,6 +53,10 @@ export const getPipeline = (userId: string, nudgeCode: string) => [
   {
     $addFields: {
       referralLink: '$wallet.shareLink',
+      communicationConsent: {
+        // @ts-ignore
+        $ifNull: ['$communicationConsent', []],
+      },
       wallet: '$$REMOVE',
     },
   },
@@ -113,6 +118,7 @@ export const getPipeline = (userId: string, nudgeCode: string) => [
       userId: '$id',
       referrer: 1,
       referralLink: 1,
+      communicationConsent: 1,
     },
   },
 ];
