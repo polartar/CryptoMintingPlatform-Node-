@@ -1,6 +1,6 @@
 import { utils, BigNumber, providers } from 'ethers';
 import * as erc1155Abi from '../common/ABI/erc1155.json';
-import { IWalletTransaction } from '../types';
+import { IWalletTransaction, TransactionType } from '../types';
 import { WalletTransaction, User } from '../models';
 import {
   ethBalanceTransactionsPipeline,
@@ -76,11 +76,11 @@ class TransactionService {
       return {
         from,
         to,
+        operator: from,
         fullHexAmount: value.toHexString(),
         logIndex: 0,
         contractMethod: name,
         mintTransaction: false,
-        toUser: toUserId ? toUserId : await this.getUserIdByEthAddress(to),
         ...this.parseAmount(id.toHexString(), value, 8),
         ...this.parseTokenId(id.toHexString()),
       };
@@ -132,9 +132,10 @@ class TransactionService {
     if (!dataValues) return;
 
     return this.saveToDatabase({
-      type: 'Gala',
-      contractType: 'ERC1155',
+      type: TransactionType.Erc1155,
+      contractName: 'Gala',
       status: blockNumber ? 'confirmed' : 'pending',
+      timestamp: timestamp || Math.floor(Date.now() / 1000),
       blockNumber: blockNumber || null,
       gasPriceHex: gasPrice.toHexString(),
       gasUsedHex: '',
@@ -143,8 +144,6 @@ class TransactionService {
       gasPriceDecimals: 18,
       hash,
       nonce,
-      fromUser: fromUserId,
-      timestamp: timestamp || Date.now(),
       ...dataValues,
     });
   };

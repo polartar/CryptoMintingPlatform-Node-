@@ -1,3 +1,5 @@
+import { TransactionType } from '../types/IWalletTransaction';
+
 export interface IEthBalanceTransactions {
   pendingBalance: string;
   confirmedBalance: string;
@@ -19,22 +21,16 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
   {
     $match: {
       $or: [
-        {
-          to: ethAddress,
-        },
-        {
-          from: ethAddress,
-        },
+        { to: ethAddress, type: TransactionType.Eth },
+        { from: ethAddress, type: TransactionType.Eth },
+        { operator: ethAddress, gasUsed: { $gt: 0 } },
       ],
-      gasUsed: {
-        $gt: 0,
-      },
     },
   },
   {
     $addFields: {
       isFromUser: {
-        $eq: ['$from', ethAddress],
+        $eq: ['$operator', ethAddress],
       },
       fee: {
         $multiply: ['$gasPrice', '$gasUsed'],
@@ -44,6 +40,14 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
       },
       feeDivisor: {
         $pow: [10, '$gasPriceDecimals'],
+      },
+      returnedEthDivisor: {
+        $pow: [
+          10,
+          {
+            $ifNull: ['$returnedEthDecimalsStored', 0],
+          },
+        ],
       },
     },
   },
@@ -72,43 +76,57 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
         ],
       },
       amount: {
-        $cond: [
-          {
-            $ne: ['$type', 'ETH'],
-          },
-          {
-            $cond: [
-              {
-                $gt: ['$returnedEth', 0],
+        $switch: {
+          branches: [
+            {
+              case: {
+                $eq: ['$type', 'ETH'],
               },
-              {
-                $divide: [
+              then: {
+                $cond: [
+                  '$isFromUser',
                   {
-                    $sum: ['$returnedEth', '$amount'],
+                    $divide: [
+                      {
+                        $subtract: [0, '$amount'],
+                      },
+                      '$amountDivisor',
+                    ],
                   },
-                  '$amountDivisor',
+                  {
+                    $divide: ['$amount', '$amountDivisor'],
+                  },
                 ],
               },
-              0,
-            ],
-          },
-          {
-            $cond: [
-              '$isFromUser',
-              {
-                $divide: [
+            },
+            {
+              case: {
+                $eq: ['$type', 'ExternalContract'],
+              },
+              then: {
+                $add: [
                   {
-                    $subtract: [0, '$amount'],
+                    $divide: [
+                      {
+                        $multiply: ['$amount', -1],
+                      },
+                      '$amountDivisor',
+                    ],
                   },
-                  '$amountDivisor',
+                  {
+                    $divide: [
+                      {
+                        $ifNull: ['$returnedEth', 0],
+                      },
+                      '$returnedEthDivisor',
+                    ],
+                  },
                 ],
               },
-              {
-                $divide: ['$amount', '$amountDivisor'],
-              },
-            ],
-          },
-        ],
+            },
+          ],
+          default: 0,
+        },
       },
     },
   },
@@ -151,9 +169,6 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
       },
       hash: {
         $first: '$hash',
-      },
-      type: {
-        $first: '$type',
       },
       status: {
         $first: '$status',
@@ -233,6 +248,11 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
       pendingTotal: {
         $ne: 0,
       },
+    },
+  },
+  {
+    $sort: {
+      timestamp: -1,
     },
   },
   {

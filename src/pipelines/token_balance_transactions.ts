@@ -20,7 +20,7 @@ export const tokenBalanceTransactionsPipeline = (
 ) => [
   {
     $match: {
-      type: new RegExp('gala', 'i'),
+      contractName: new RegExp('gala', 'i'),
       baseId: tokenId,
       status: {
         $in: ['pending', 'confirmed'],
