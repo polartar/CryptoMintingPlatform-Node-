@@ -7,3 +7,4 @@ export * from './exchange';
 export * from './node-selector';
 export * from './transaction';
 export * from './simplex-jwt';
+export * from './simplex-events';

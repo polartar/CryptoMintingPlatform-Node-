@@ -1,6 +1,8 @@
 import ResolverBase from '../common/Resolver-Base';
-import { simplexJwtService } from '../services';
+import { simplexJwtService, simplexEventsService } from '../services';
 import { SimplexCryptoCurrency, SimplexFiatCurrency, Context } from '../types';
+import { SimplexOrder } from '../models';
+import { walletConfigurations } from '../common/wallet-config';
 
 class Resolvers extends ResolverBase {
   public getQuote = async (
@@ -39,6 +41,30 @@ class Resolvers extends ResolverBase {
     });
     return { url: buyUrl };
   };
+
+  public getOrders = async (
+    parent: any,
+    { saveEvents }: { saveEvents: boolean },
+    { user }: Context,
+  ) => {
+    this.requireAuth(user);
+    let upToDate = true;
+
+    if (saveEvents) {
+      // hit simplex-events lambda and wait for events to be saved before continuing
+      const { success } = await simplexEventsService.saveEvents(user.userId);
+      upToDate = success;
+    }
+    const orders = await SimplexOrder.find({ userId: user.userId });
+    const ordersWithIcons = orders.map(order => {
+      const matchingWalletConfig = walletConfigurations.find(
+        wallet => wallet.symbol === order.cryptoAmount.currency,
+      );
+      order.cryptoIcon = matchingWalletConfig ? matchingWalletConfig.icon : '';
+      return order;
+    });
+    return { orders: ordersWithIcons, upToDate };
+  };
 }
 
 const resolvers = new Resolvers();
@@ -47,5 +73,6 @@ export default {
   Query: {
     simplexQuote: resolvers.getQuote,
     simplexBuyUrl: resolvers.getBuyUrl,
+    simplexOrders: resolvers.getOrders,
   },
 };
