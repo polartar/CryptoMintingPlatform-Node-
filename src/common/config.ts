@@ -119,6 +119,7 @@ class Config {
   public readonly gameItemServiceUrl = env.GAME_ITEM_SERVICE_URL;
   public readonly galaGamingApiUrl = env.GALA_GAMING_API_URL;
 
+  public readonly simplexEventsServiceUrl = env.SIMPLEX_EVENTS_SERVICE_URL;
   public readonly simplexJwtServiceUrl = env.SIMPLEX_JWT_SERVICE_URL;
   public readonly simplexJwtServiceSecret = env.SIMPLEX_JWT_SERVICE_SECRET;
   public readonly simplexPartnerName = env.SIMPLEX_PARTNER_NAME;

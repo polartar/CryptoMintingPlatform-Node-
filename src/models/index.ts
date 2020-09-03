@@ -17,3 +17,4 @@ export * from './reward-audit';
 export * from './friend-nudge';
 export * from './template';
 export * from './purchase-attempt';
+export * from './simplex-order';
