@@ -61,7 +61,7 @@ class EmailScheduler {
         sendAt: addHours(now, 24),
       },
       {
-        template: templateBuilder.buildGalaWelcome5Html(),
+        template: templateBuilder.buildGalaWelcome4Html(),
         sendAt: addHours(now, 72),
       },
     ];

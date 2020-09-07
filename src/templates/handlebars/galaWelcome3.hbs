@@ -23,6 +23,14 @@
       border: 1px solid #373737;
       border-radius: 8px;
     }
+
+    .unsubscribe {
+      margin-top: 15px;
+      display: block;
+      text-align: center;
+      font-size: 10px;
+      cursor: pointer;
+    }
   </style>
   <!--[if !mso]><!-- -->
   <link href="https://fonts.googleapis.com/css?family=Roboto:400" rel="stylesheet">
@@ -31,29 +39,41 @@
 
 <body>
   <div class="container">
-    <p>Welcome to Gala! We are currently beta testing Town Star! Your beta key is your ticket to learning all about Town
-      Star before everyone else does.</p>
-    <p>You’ll be ready with your Beta Key too.</p>
-    <p>But have you gotten to know the “game before the game”?</p>
-    <p>There’s a race underway to collect parts to build a Town Star FarmBot.</p>
-    <p>The FarmBot is a unique digital game item players can own and control.</p>
-    <p>It’s going to require many parts to assemble one, but if you do, you can send your FarmBot out in the game world
-      to
-      mine BoxCoin.</p>
-    <p>There is no other way that BoxCoins come into existence.</p>
-    <p>What is BoxCoin?</p>
-    <p>BoxCoin is the premium game reward in Town Star.</p>
-    <p>BoxCoin can give you an edge by speeding up your town's production or used to purchase unique game items, as is
-      common in builder games.</p>
-    <p>To start building your Farmbot you can get on Discord and try to purchase the parts from other players. Coming
-      soon you will be able to buy the parts directly from our site.</p>
-    <p>Even if you don’t manage to complete the full build, these parts are rare, and FarmBot parts WILL be sought out.
-    </p>
-    <p>Super cool.</p>
-    <p>Go now to participate in the “game before the game”</p>
-
-    <img src="https://gala-email-images.s3-us-west-2.amazonaws.com/welcome-sequence/gala-logo.png" alt="logo"
-      style="margin-top: 30px; width: 200px;" />
+    <p>Hey {{ firstName }}!</p>
+    <p>By now you have probably logged into Gala Games and given Town Star a try. We hope you enjoy it!&nbsp;</p>
+    <p>There are a lot of ways to get GALA as a reward for helping to expand the ecosystem.&nbsp;</p>
+    <ol>
+      <li>Refer a friend with your referral link: {{ referralLink }}</li>
+      <li>Convince a friend to upgrade to Gala Gold</li>
+      <li>Buy and then operate a Gala Games Soft Node</li>
+      <li>Convince a friend to buy a node</li>
+      <li>Have your friends operate their nodes</li>
+    </ol>
+    <p>But, what you might not know, is that you can ALSO be rewarded with BTC when someone signs up for Gala Gold! If
+      you are Gala Gold, then when one of your friends upgrades to Gala Gold, you get $5 in BTC automatically added to
+      your Gala Games wallet!&nbsp;</p>
+    <p>We believe that when the network grows, everyone should benefit! Sign up for Gala Gold today by going to the
+      “Social” page in <a href="https://app.gala.games" target="_blank">app.gala.games</a>, and then help your friends
+      upgrade their accounts! For each referral that upgrades, you will receive 10 points in that day’s distribution, as
+      well as $5 in BTC!&nbsp;</p>
+    <p>Get out there and get people to Go Gold with Gala Games! &nbsp;</p>
+    <p>Owned by Gamers,</p>
+    <p>The Gala Games Team&nbsp;</p>
+    <p align="center"> <a href="https://twitter.com/GoGalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/TW.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; <a href="https://facebook.com/GoGalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/FB.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; <a href="https://instagram.com/GoGalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/IG.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; <a href="https://www.youtube.com/c/GalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/YT.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; <a href="http://galagames.chat" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/DI.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; <a href="https://t.me/GoGalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/TE.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; </p>
+    <p align="center">See us online at <a href="https://gala.games/" target="_blank">www.gala.games</a>!</p>
+    <a href="{{ unsubscribeLink }}" class="unsubscribe">Unsubscribe</a>
   </div>
 </body>
 
