@@ -2,7 +2,7 @@ import ResolverBase from '../common/Resolver-Base';
 import { auth, config, logger } from '../common';
 import { Context } from '../types/context';
 import { UserApi } from '../data-sources/';
-import { User } from '../models';
+import { User, Template } from '../models';
 import { crypto } from '../utils';
 import { IOrderContext } from '../types';
 import { s3Service } from '../services';
@@ -23,6 +23,7 @@ class Resolvers extends ResolverBase {
         referralContext: IOrderContext;
         communicationConsent: boolean;
       };
+      ipAddress: string;
     },
     context: Context,
   ) => {
@@ -66,6 +67,8 @@ class Resolvers extends ResolverBase {
         firebaseUid,
         config.hostname,
       );
+      const termsTemplateId = await this.getTemplateId('terms-of-service');
+      const privacyTemplateId = await this.getTemplateId('privacy-policy');
 
       const email = userEmail.toLowerCase();
       const affiliateId = crypto.md5UrlSafe(email);
@@ -97,6 +100,20 @@ class Resolvers extends ResolverBase {
           utmName,
           utmTerm,
         },
+        termsAndConditionsAgreement: [
+          {
+            timestamp: new Date(),
+            templateId: termsTemplateId,
+            ipAddress: args.ipAddress || '',
+          },
+        ],
+        privacyPolicyAgreement: [
+          {
+            timestamp: new Date(),
+            templateId: privacyTemplateId,
+            ipAddress: args.ipAddress || '',
+          },
+        ],
       };
 
       if (typeof communicationConsent === 'boolean') {
@@ -271,6 +288,84 @@ class Resolvers extends ResolverBase {
 
     return { success: true };
   };
+
+  private getTemplateId = async (templateName: string) => {
+    const { id } = await Template.findOne(
+      { name: templateName },
+      { id: '$id' },
+      { sort: { created: -1 } },
+    );
+    return id;
+  };
+
+  public acceptAgreements = async (
+    parent: any,
+    {
+      agreementInfo,
+    }: {
+      agreementInfo: {
+        privacyPolicy: boolean;
+        termsAndConditions: boolean;
+        ipAddress: string;
+      };
+    },
+    { user }: Context,
+  ) => {
+    const { privacyPolicy, termsAndConditions, ipAddress } = agreementInfo;
+    const userDoc = await user.findFromDb();
+
+    if (termsAndConditions) {
+      const termsTemplateId = await this.getTemplateId('terms-of-service');
+      userDoc.termsAndConditionsAgreement.push({
+        templateId: termsTemplateId,
+        timestamp: new Date(),
+        ipAddress,
+      });
+    }
+    if (privacyPolicy) {
+      const privacyPolicyTemplateId = await this.getTemplateId(
+        'privacy-policy',
+      );
+      userDoc.privacyPolicyAgreement.push({
+        templateId: privacyPolicyTemplateId,
+        timestamp: new Date(),
+        ipAddress,
+      });
+    }
+    await userDoc.save();
+    return { success: true };
+  };
+
+  public neededAgreements = async (
+    parent: any,
+    args: {},
+    { user }: Context,
+  ) => {
+    const {
+      termsAndConditionsAgreement,
+      privacyPolicyAgreement,
+    } = await user.findFromDb();
+    const termsTemplateId = await this.getTemplateId('terms-of-service');
+    const privacyTemplateId = await this.getTemplateId('privacy-policy');
+    const neededAgreementNames = [];
+    if (
+      Array.isArray(termsAndConditionsAgreement) &&
+      !termsAndConditionsAgreement.some(
+        agreement => agreement.templateId === termsTemplateId,
+      )
+    ) {
+      neededAgreementNames.push('Terms and Conditions');
+    }
+    if (
+      Array.isArray(privacyPolicyAgreement) &&
+      !privacyPolicyAgreement.some(
+        agreement => agreement.templateId === privacyTemplateId,
+      )
+    ) {
+      neededAgreementNames.push('Privacy Policy');
+    }
+    return { agreementNames: neededAgreementNames };
+  };
 }
 
 export const userResolver = new Resolvers();
@@ -279,10 +374,12 @@ export default {
   Query: {
     profile: userResolver.getUserProfile,
     displayNameUnique: userResolver.displayNameUnique,
+    neededAgreements: userResolver.neededAgreements,
   },
   Mutation: {
     createUser: userResolver.createUser,
     updateUser: userResolver.updateUser,
     unsubscribe: userResolver.unsubscribe,
+    acceptAgreements: userResolver.acceptAgreements,
   },
 };

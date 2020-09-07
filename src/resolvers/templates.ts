@@ -4,8 +4,12 @@ import { Template } from '../models';
 class Resolvers extends ResolverBase {
   public getTemplateByName = async (parent: {}, args: { name: string }) => {
     try {
-      const profile = await Template.findOne({ name: args.name });
-      return profile;
+      const template = await Template.findOne(
+        { name: args.name },
+        {},
+        { sort: { created: -1 } },
+      );
+      return template;
     } catch (error) {
       throw new Error('Template not found');
     }

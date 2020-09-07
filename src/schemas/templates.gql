@@ -1,5 +1,6 @@
 type Template {
   html: String
+  id: String
 }
 
 type Query {

@@ -38,18 +38,30 @@ input UpdateUserInput {
   password: String
 }
 
+input AcceptAgreementsInput {
+  privacyPolicy: Boolean
+  termsAndConditions: Boolean
+  ipAddress: String
+}
+
 type DisplayNameUniqueResponse {
   unique: Boolean!
   displayName: String!
 }
 
+type NeededAgreementsResponse {
+  agreementNames: [String]!
+}
+
 type Query {
   profile: UserProfile!
   displayNameUnique(displayName: String!): DisplayNameUniqueResponse!
+  neededAgreements: NeededAgreementsResponse!
 }
 
 type Mutation {
-  createUser(userInfo: CreateUserInput!): ReturnToken!
+  createUser(userInfo: CreateUserInput!, ipAddress: String): ReturnToken!
   updateUser(userInfo: UpdateUserInput!): MutationResponse!
   unsubscribe(userId: String!, emailList: String!): MutationResponse!
+  acceptAgreements(agreementInfo: AcceptAgreementsInput!): MutationResponse!
 }
