@@ -23,6 +23,14 @@
       border: 1px solid #373737;
       border-radius: 8px;
     }
+
+    .unsubscribe {
+      margin-top: 15px;
+      display: block;
+      text-align: center;
+      font-size: 10px;
+      cursor: pointer;
+    }
   </style>
   <!--[if !mso]><!-- -->
   <link href="https://fonts.googleapis.com/css?family=Roboto:400" rel="stylesheet">
@@ -31,34 +39,36 @@
 
 <body>
   <div class="container">
-    <p>This is exciting, right?</p>
-    <p>Hit video games on the blockchain and something many will be experiencing for the first time - actual ownership
-      of
-      their game items and rewards.</p>
-    <p>In a sense, the Free-to-Play model is transformed into “Free-to-Earn” for all game players and supporters of the
-      Gala network.</p>
-    <p>Imagine the kind of impact that may have for a moment and realize you are now a part of it.</p>
-    <p>Exciting enough to make the hair on your arm stand up, eh? Yes!</p>
-    <p>It won’t hurt that the first game on Gala, Town Star, is from the creative minds behind Farmville and Farmville
-      2.
-    </p>
-
-    <img src="https://gala-email-images.s3-us-west-2.amazonaws.com/welcome-sequence/mobile_townstarBanner.png"
-      alt="town star" style="display: block; width: 100%" />
-
-    <p>Being two of the more popular casual games ever created with over 100 million players, Town Star is highly
-      anticipated.</p>
-    <p>If you haven’t already, login to the Gala App now.</p>
-    <p>Inside the app is where you’ll find the most up to date information on video games, network news, and community
-      events.</p>
-    <p>If you’re extra gung ho, you can get a jump on playing the game before the game and ‘get to buildin yer FarmBot’
-      with the exclusive ability to mine BoxCoin (a digital reward) during play of Town Star.</p>
-    <p>Really cool.</p>
-    <p>Building FarmBot will require various parts that can only be found inside a Loot Box.</p>
-    <p>Login now to learn more about Town Star, FarmBot and additional benefits of getting a Loot Box.</p>
-
-    <img src="https://gala-email-images.s3-us-west-2.amazonaws.com/welcome-sequence/gala-logo.png" alt="logo"
-      style="margin-top: 30px; width: 200px;" />
+    <p>Hey {{ firstName }}!</p>
+    <p>Awesome, you have a Gala Games account! Now what? Hopefully, you have started playing Town Star already! If you
+      haven’t, or if it feels a bit on the scary side, don’t worry!&nbsp;</p>
+    <p>With hundreds of daily players, there is ALWAYS someone who is willing to help you take the first steps in
+      setting your town up. There are online community-created guides like <a href="https://www.townstarguide.com/"
+        target="_blank">Andrewii’s</a> or <a href="https://townstartips.wordpress.com/" target="_blank">Benblast’s</a>,
+      or community-created walkthrough videos like those made by <a
+        href="https://www.youtube.com/channel/UCShC_aMxCOdJlCQUE49U4Fw" target="_blank">EvelynKirb</a>. You can also
+      come into our <a href="http://galagames.chat" target="_blank">Discord</a> or <a href="http://galagames.tel"
+        target="_blank">Telegram</a> and ask questions about getting started. Town Star, the first game on the Gala
+      Games network, is from the creative minds behind Farmville and Farmville 2. Being two of the more popular casual
+      games ever created with over 100 million players, Town Star is going to change the world of gaming.&nbsp;</p>
+    <p>Give it a shot, and let us know what you think!&nbsp;</p>
+    <p>Owned by Gamers,</p>
+    <p>The Gala Games Team&nbsp;</p>
+    <p align="center"> <a href="https://twitter.com/GoGalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/TW.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; <a href="https://facebook.com/GoGalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/FB.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; <a href="https://instagram.com/GoGalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/IG.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; <a href="https://www.youtube.com/c/GalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/YT.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; <a href="http://galagames.chat" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/DI.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; <a href="https://t.me/GoGalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/TE.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; </p>
+    <p align="center">See us online at <a href="https://gala.games/" target="_blank">www.gala.games</a>!</p>
+    <a href="{{ unsubscribeLink }}" class="unsubscribe">Unsubscribe</a>
   </div>
 </body>
 

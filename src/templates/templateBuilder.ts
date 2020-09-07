@@ -2,11 +2,10 @@ import {
   shareAccepted,
   referralActivated,
   sendSoftNodeDiscount,
-  galaWelcomeBetaKey,
+  galaWelcome1,
   galaWelcome2,
   galaWelcome3,
   galaWelcome4,
-  galaWelcome5,
   nudgeFriend,
 } from './handlebars';
 import { IUser } from '../types';
@@ -74,8 +73,8 @@ class TemplateBuilder {
 
   buildGalaWelcome1Html() {
     return {
-      html: Handlebars.compile(galaWelcomeBetaKey.html)({}),
-      subject: galaWelcomeBetaKey.subject,
+      html: Handlebars.compile(galaWelcome1.html)({}),
+      subject: galaWelcome1.subject,
     };
   }
 
@@ -97,13 +96,6 @@ class TemplateBuilder {
     return {
       html: Handlebars.compile(galaWelcome4.html)({}),
       subject: galaWelcome4.subject,
-    };
-  }
-
-  buildGalaWelcome5Html() {
-    return {
-      html: Handlebars.compile(galaWelcome5.html)({}),
-      subject: galaWelcome5.subject,
     };
   }
 

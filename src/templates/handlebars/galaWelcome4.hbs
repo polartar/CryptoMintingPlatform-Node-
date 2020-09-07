@@ -15,11 +15,6 @@
       line-height: 1.5;
     }
 
-    .image {
-      display: block;
-      width: 100%;
-    }
-
     .container {
       width: 90vw;
       margin: 30px auto;
@@ -28,6 +23,14 @@
       border: 1px solid #373737;
       border-radius: 8px;
     }
+
+    .unsubscribe {
+      margin-top: 15px;
+      display: block;
+      text-align: center;
+      font-size: 10px;
+      cursor: pointer;
+    }
   </style>
   <!--[if !mso]><!-- -->
   <link href="https://fonts.googleapis.com/css?family=Roboto:400" rel="stylesheet">
@@ -35,51 +38,41 @@
 </head>
 
 <body>
-  <div class="container">
-    <p>The FarmBot is calling you…</p>
-    <img src="https://gala-email-images.s3-us-west-2.amazonaws.com/welcome-sequence/farmbot_still.png" alt="farmbot"
-      class="image">
-    <p>Here’s how to get yourself a FarmBot Crate (or several) and start building your very own FarmBot.</p>
-    <p>Step 1. Login to the Gala App.</p>
-    <p>It’s your portal to awesome games built on blockchain and where to get a Loot Box and other unique game items.
-    </p>
-    <p>Step 2. Click on “Games” in the navigation bar.</p>
-    <img src="https://gala-email-images.s3-us-west-2.amazonaws.com/welcome-sequence/gala-bottom-navigation.png"
-      alt="games" class="image" />
-    <p>Step 3: Select the quantity of Loot Boxes to purchase. </p>
-    <img src="https://gala-email-images.s3-us-west-2.amazonaws.com/welcome-sequence/gala-buy-loot-box-options.png"
-      alt="FarmBot Crate options" class="image" />
-    <p>You love games and playing for reward sounds awesome, right?</p>
-    <p>Go ahead and treat yourself, with the confidence that your purchase helps grow and support the Gala Network.
-      (more
-      on how this benefits you, tomorrow)</p>
-    <p>Step 4: Click “Buy Now”</p>
-    <img src="https://gala-email-images.s3-us-west-2.amazonaws.com/welcome-sequence/gala-buy-loot-box-buy-now.png"
-      alt="FarmBot Crate buy now" class="image" />
-    <p>Step 5: Review Order and Click “Buy Now”.</p>
-    <p>Step 6: Add required BTC to the app.</p>
-    <img src="https://gala-email-images.s3-us-west-2.amazonaws.com/welcome-sequence/gala-buy-loot-box-copy-address.png"
-      alt="receive bitcoin" class="image" />
-    <p>Scan the QR with your phone, or copy the BTC address and send from your BTC wallet.</p>
-    <p>Don’t have any BTC? No problem.</p>
-    <p>Copy the BTC address, then click the blue “Buy BTC” button.</p>
-    <p>You’ll be taken to CoinGate where you can purchase BTC with your bank or credit card.</p>
-    <img src="https://gala-email-images.s3-us-west-2.amazonaws.com/welcome-sequence/gala-coingate.png" alt="coingate"
-      class="image" />
-    <p>Just paste your BTC address and your BTC can be sent directly to your Gala App.</p>
-    <p>It’s convenient.</p>
-    <p>Step 7: Check your Gala items for your new Loot Box(es).</p>
-    <img src="https://gala-email-images.s3-us-west-2.amazonaws.com/welcome-sequence/gala-open-loot-box.png"
-      alt="open FarmBot Crate" class="image" />
-    <p>It can take several minutes for your purchase to be confirmed on the blockchain, but your Loot Box(es) await.</p>
-    <p>Step 8: Unbox that Loot Box!</p>
-    <p>Step 9: Repeat and collect them all!</p>
-    <p>Will you be first to build a FarmBot and introduce BoxCoin into Town Star?</p>
-    <p>If you are, there’s a whole lot of perks that come with it!</p>
-    <p><a href="https://app.gala.games">Head on over to the app now.</a></p>
 
-    <img src="https://gala-email-images.s3-us-west-2.amazonaws.com/welcome-sequence/gala-logo.png" alt="logo"
-      style="margin-top: 30px; width: 200px;" />
+  <div class="container">
+    <p>Hey {{ firstName }}!</p>
+    <p>Up until this point in time, we haven’t really mentioned “blockchain” too much...we find that it sometimes scares
+      people because it seems complex and techy.&nbsp;</p>
+    <p>The GOOD news is that you don’t need to know anything about blockchain, have anything to do with a blockchain, or
+      care about blockchain at all to play games created by Gala Games. We know some people just want to play amazing
+      games, and making amazing games will always be our #1 priority!&nbsp;</p>
+    <p>The BETTER news is that if you DO care a little bit about the blockchain side of things, you can do amazing
+      things with items you could win inside games like Town Star, or earn through the operation of a Gala Games Soft
+      Node. Whether it is through “crypto crafting” a CraneBot or FarmBot, or trading Fountains or Express Depots on
+      sites like <a href="https://opensea.io/assets/town-star?category=town-star" target="_blank">OpenSea</a>, the
+      blockchain opens up many opportunities for you to actually OWN the items you use in games.&nbsp;</p>
+    <p>At Gala Games, we believe that YOU, the GAMER, should control the direction of development! Join up with us in
+      our <a href="http://galagames.chat" target="_blank">Discord</a> and <a href="http://galagames.tel"
+        target="_blank">Telegram</a> to tell us what you think! &nbsp;</p>
+    <p>Forward this email to your friends, and if they click here and sign up, the are part of your network!
+      {{ referralLink }}&nbsp;</p>
+    <p>Owned by Gamers,</p>
+    <p>The Gala Games Team&nbsp;</p>
+    <p align="center"> <a href="https://twitter.com/GoGalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/TW.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; <a href="https://facebook.com/GoGalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/FB.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; <a href="https://instagram.com/GoGalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/IG.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; <a href="https://www.youtube.com/c/GalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/YT.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; <a href="http://galagames.chat" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/DI.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; <a href="https://t.me/GoGalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/TE.png" width="40" height="40" alt=""
+          padding="10px"></a>&nbsp; </p>
+    <p align="center">See us online at <a href="https://gala.games/" target="_blank">www.gala.games</a>!</p>
+    <a href="{{ unsubscribeLink }}" class="unsubscribe">Unsubscribe</a>
   </div>
 </body>
 
