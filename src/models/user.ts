@@ -93,6 +93,16 @@ export interface IUser extends mongoose.Document {
   referralContext: IOrderContext;
   unsubscriptions: Array<{ list: string; timestamp: Date }>;
   communicationConsent: Array<{ consentGiven: boolean; timestamp: Date }>;
+  termsAndConditionsAgreement: Array<{
+    templateId: string;
+    timestamp: Date;
+    ipAddress: string;
+  }>;
+  privacyPolicyAgreement: Array<{
+    templateId: string;
+    timestamp: Date;
+    ipAddress: string;
+  }>;
   lastLogin: Date;
 }
 
@@ -268,6 +278,20 @@ export const userSchema = new mongoose.Schema(
       {
         consentGiven: Boolean,
         timestamp: Date,
+      },
+    ],
+    termsAndConditionsAgreement: [
+      {
+        timestamp: Date,
+        templateId: String,
+        ipAddress: String,
+      },
+    ],
+    privacyPolicyAgreement: [
+      {
+        timestamp: Date,
+        templateId: String,
+        ipAddress: String,
       },
     ],
     lastLogin: Date,
