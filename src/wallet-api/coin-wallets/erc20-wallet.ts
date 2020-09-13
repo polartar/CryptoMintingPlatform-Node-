@@ -3,6 +3,8 @@ import { config, logger } from '../../common';
 import { ethers, utils, BigNumber } from 'ethers';
 import { ITransaction, ICoinMetadata, ISendOutput } from '../../types';
 import { UserApi } from '../../data-sources';
+import { transactionService } from '../../services';
+import { ITokenBalanceTransactions } from '../../pipelines';
 
 class Erc20API extends EthWallet {
   contract: ethers.Contract;
@@ -197,12 +199,73 @@ class Erc20API extends EthWallet {
     );
   }
 
+  private async formatWalletTransactions(
+    walletTransactions: ITokenBalanceTransactions['transactions'],
+    currentBlockNumber: number,
+  ): Promise<ITransaction[]> {
+    return Promise.all(
+      walletTransactions.map(async transferEvent => {
+        const { id, blockNumber, amount, fee, timestamp } = transferEvent;
+        let total = amount;
+        if (fee !== '0') {
+          total = `${amount} ${this.symbol}, ${fee} ETH`;
+        }
+
+        return {
+          ...transferEvent,
+          id: id || `pending:${Date.now()}`,
+          timestamp:
+            timestamp > (Date.now() * 10) / 1000 ? timestamp / 1000 : timestamp,
+          total,
+          confirmations: blockNumber ? currentBlockNumber - blockNumber : 0,
+          link: `${config.ethTxLink}/${id}`,
+        };
+      }),
+    );
+  }
+
+  private getIndexedTransactions = async (address: string) => {
+    try {
+      const result = await transactionService.getGalaBalanceAndTransactions(
+        address,
+      );
+      const currentBlock = await this.provider.getBlockNumber();
+      const transactions = await this.formatWalletTransactions(
+        result.transactions,
+        currentBlock,
+      );
+      return transactions;
+    } catch (error) {
+      logger.warn(
+        `walletApi.coin-wallets.Erc1155Wallet.getTransactions.catch:${error}`,
+      );
+      throw error;
+    }
+  };
+
+  private getIndexedBalance = async (address: string) => {
+    const {
+      confirmedBalance,
+      pendingBalance,
+    } = (await transactionService.getGalaBalanceAndTransactions(address)) as {
+      confirmedBalance: number;
+      pendingBalance: number;
+    };
+    return {
+      confirmed: confirmedBalance.toString(),
+      unconfirmed: pendingBalance.toString(),
+    };
+  };
+
   async getTransactions(
     address: string,
     blockNumAtCreation: number,
   ): Promise<ITransaction[]> {
     const { Transfer } = this.contract.filters;
     try {
+      if (config.indexedTransactions) {
+        return this.getIndexedTransactions(address);
+      }
       const [sent, received] = await Promise.all([
         this.contract.queryFilter(Transfer(address), blockNumAtCreation),
         this.contract.queryFilter(Transfer(null, address), blockNumAtCreation),
@@ -224,6 +287,10 @@ class Erc20API extends EthWallet {
 
   public async getBalance(address: string) {
     try {
+      if (config.indexedTransactions) {
+        return this.getIndexedBalance(address);
+      }
+
       const balance = await this.getBalanceFromContract(address);
       return {
         confirmed: balance.toString(),
