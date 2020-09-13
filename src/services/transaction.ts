@@ -7,6 +7,7 @@ import {
   IEthBalanceTransactions,
   ITokenBalanceTransactions,
   tokenBalanceTransactionsPipeline,
+  buildGalaBalanceTransactionsPipeline,
 } from '../pipelines';
 
 class TransactionService {
@@ -113,6 +114,19 @@ class TransactionService {
       tokenBalanceTransactionsPipeline(tokenAddress, ethAddress),
     )) as ITokenBalanceTransactions[];
 
+    return result
+      ? result
+      : ({
+          transactions: [],
+          pendingBalance: '0.0',
+          confirmedBalance: '0.0',
+        } as ITokenBalanceTransactions);
+  };
+
+  getGalaBalanceAndTransactions = async (ethAddress: string) => {
+    const [result] = (await WalletTransaction.aggregate(
+      buildGalaBalanceTransactionsPipeline(ethAddress),
+    )) as ITokenBalanceTransactions[];
     return result
       ? result
       : ({

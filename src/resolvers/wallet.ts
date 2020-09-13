@@ -320,14 +320,6 @@ class Resolvers extends ResolverBase {
       // const twoFaValid = await user.validateTwoFa(totpToken);
       // this.requireTwoFa(twoFaValid);
 
-      // TODO: remove the code below after erc-20 migration
-      const now = new Date();
-      const cutoffTime = new Date(1599894000000);
-      if (coinSymbol === 'GALA' && isAfter(now, cutoffTime)) {
-        throw new Error(`Can't send GALA during Erc-20 migration`);
-      }
-      // remove the code above after erc-20 migration
-
       const walletApi = wallet.coin(coinSymbol);
       const result = await walletApi.send(user, outputs, walletPassword);
       return result;
