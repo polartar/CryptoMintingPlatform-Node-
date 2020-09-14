@@ -105,15 +105,7 @@ export const getPipeline = (userId: string) => [
           $project: {
             _id: 0,
             quantity: 1,
-            tokenType: {
-              $cond: [
-                {
-                  $eq: ['$baseId', '0x0100000000000000000000000000000000'],
-                },
-                'gala',
-                'item',
-              ],
-            },
+            tokenType: 1,
           },
         },
         {
