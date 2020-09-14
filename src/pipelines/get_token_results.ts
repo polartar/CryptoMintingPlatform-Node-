@@ -9,10 +9,17 @@ export const getPipeline = (userId: string, startDate: Date, endDate: Date) => [
     },
   },
   {
+    $addFields: {
+      token: {
+        $ifNull: ['$baseId', '$tokenType'],
+      },
+    },
+  },
+  {
     $group: {
-      _id: '$baseId',
-      baseId: {
-        $first: '$baseId',
+      _id: '$token',
+      token: {
+        $first: '$token',
       },
       amount: {
         $sum: '$quantity',
@@ -22,9 +29,9 @@ export const getPipeline = (userId: string, startDate: Date, endDate: Date) => [
   {
     $lookup: {
       from: 'erc1155-tokens',
-      localField: 'baseId',
+      localField: 'token',
       foreignField: 'baseId',
-      as: 'token',
+      as: 'erc1155Token',
     },
   },
   {
@@ -34,10 +41,15 @@ export const getPipeline = (userId: string, startDate: Date, endDate: Date) => [
         $floor: '$amount',
       },
       name: {
-        $arrayElemAt: ['$token.name', 0],
+        $ifNull: [
+          {
+            $arrayElemAt: ['$erc1155Token.name', 0],
+          },
+          '$token',
+        ],
       },
       imageUrl: {
-        $arrayElemAt: ['$token.image', 0],
+        $arrayElemAt: ['$erc1155Token.image', 0],
       },
     },
   },

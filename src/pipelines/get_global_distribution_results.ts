@@ -21,7 +21,7 @@ export const getPipeline = (startDate: Date, endDate: Date) => [
         $sum: {
           $cond: [
             {
-              $eq: ['$baseId', '0x0100000000000000000000000000000000'],
+              $eq: ['$tokenType', 'gala'],
             },
             '$quantity',
             0,
@@ -32,7 +32,7 @@ export const getPipeline = (startDate: Date, endDate: Date) => [
         $sum: {
           $cond: [
             {
-              $ne: ['$baseId', '0x0100000000000000000000000000000000'],
+              $ne: ['$tokenType', 'item'],
             },
             '$quantity',
             0,
