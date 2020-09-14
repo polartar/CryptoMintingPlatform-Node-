@@ -28,7 +28,7 @@ type DistributionSnapshot {
 type DistributionResult {
   amount: Int!
   name: String!
-  imageUrl: String!
+  imageUrl: String
 }
 
 type DistributionGlobalResult {
