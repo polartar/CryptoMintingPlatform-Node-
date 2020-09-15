@@ -45,6 +45,7 @@ class Config {
     env.CLIENT_SECRET_KEY_REQUIRED !== undefined &&
     env.CLIENT_SECRET_KEY_REQUIRED === 'true';
   public readonly erc20FeeCalcAddress = env.ETH_ADD_FOR_ERC20_FEE_CALC;
+  public readonly erc20GasValue = +env.ERC20_GAS_VALUE;
   public readonly rewardDistributerPkey = env.REWARD_DISTRIBUTOR_ETH_PKEY;
   public readonly companyFeeBtcAddresses: { [key: string]: string } = {
     green: env.COMPANY_FEE_BTC_ADDRESS_GREEN,
