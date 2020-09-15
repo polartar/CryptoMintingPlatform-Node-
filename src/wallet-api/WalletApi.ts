@@ -1,5 +1,10 @@
-import { logger, config, symbolToWalletConfig } from '../common';
-import { CoinWalletBase } from './coin-wallets';
+import {
+  logger,
+  config,
+  symbolToWalletConfig,
+  erc1155ContractConfig,
+} from '../common';
+import { CoinWalletBase, Erc1155Wallet } from './coin-wallets';
 
 export class WalletApi {
   private symbolToInterface: Map<string, CoinWalletBase> = new Map();
@@ -7,6 +12,8 @@ export class WalletApi {
 
   public allCoins: CoinWalletBase[];
   public parentInterfaces: CoinWalletBase[];
+
+  public erc1155ItemInterface = new Erc1155Wallet(erc1155ContractConfig);
 
   constructor() {
     this.allCoins = this.mapWalletInterfaces(config.displayedWallets);

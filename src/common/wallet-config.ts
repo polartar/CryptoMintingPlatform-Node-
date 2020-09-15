@@ -1,13 +1,14 @@
 import { eSupportedInterfaces, ICoinMetadata } from '../types';
 import { config } from '.';
-
 import * as erc20Abi from './ABI/erc20.json';
 import * as erc1155Abi from './ABI/erc1155.json';
+
 import {
   BtcWallet,
   EthWallet,
   DocWallet,
   Erc20Wallet,
+  Erc1155Wallet,
 } from '../wallet-api/coin-wallets';
 
 const { contractAddresses, tokenIds } = config;
@@ -86,6 +87,19 @@ export const walletConfigurations: ICoinMetadata[] = [
     WalletInterface: DocWallet,
   },
 ];
+
+export const erc1155ContractConfig: ICoinMetadata = {
+  walletApi: eSupportedInterfaces.erc1155,
+  abi: erc1155Abi,
+  WalletInterface: Erc1155Wallet,
+  backgroundColor: '#FFF',
+  contractAddress: config.contractAddresses.galaItem,
+  decimalPlaces: 0,
+  icon: 'n/a',
+  name: 'Gala Items',
+  symbol: 'n/a',
+  tokenId: 'n/a',
+};
 
 export const symbolToWalletConfig = new Map<string, ICoinMetadata>(
   walletConfigurations.map(walletConf => [
