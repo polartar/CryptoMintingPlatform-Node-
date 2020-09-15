@@ -6,9 +6,8 @@ import { credentialService } from '../services';
 import { config, logger } from '../common';
 import { ISendOutput, IBcoinTx, CoinSymbol } from '../types';
 import listeners from '../blockchain-listeners';
-import Erc1155Wallet from '../wallet-api/coin-wallets/erc1155-wallet';
 import { emailScheduler } from '../services/email-scheduler';
-import { isAfter } from 'date-fns';
+
 class Resolvers extends ResolverBase {
   private saveWalletPassword = async (
     userId: string,
@@ -349,12 +348,10 @@ class Resolvers extends ResolverBase {
   sendGameItems = async (
     parent: any,
     {
-      coinSymbol,
       outputs,
       totpToken,
       walletPassword,
     }: {
-      coinSymbol: string;
       outputs: ISendOutput[];
       totpToken: string;
       walletPassword: string;
@@ -367,12 +364,7 @@ class Resolvers extends ResolverBase {
       // const twoFaValid = await user.validateTwoFa(totpToken);
       // this.requireTwoFa(twoFaValid);
 
-      if (coinSymbol.toLowerCase() !== 'gala') {
-        throw new Error('Can only send game items from Gala.');
-      }
-
-      const walletApi = wallet.coin(coinSymbol) as Erc1155Wallet;
-      const result = await walletApi.transferFungibleTokens(
+      const result = await wallet.erc1155ItemInterface.transferFungibleTokens(
         user,
         outputs.map(output => ({ ...output, amount: output.amount || '1' })),
         walletPassword,

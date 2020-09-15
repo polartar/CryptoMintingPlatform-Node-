@@ -42,7 +42,7 @@ class Erc1155API extends EthWallet {
       throw new Error(
         'No abi provided in token configuration for wallet interface. This parameter is required.',
       );
-    if (!decimalPlaces || decimalPlaces < 0)
+    if (!(decimalPlaces >= 0))
       throw new Error(
         'No decimalPlaces provided in token configuration for wallet interface. This parameter is required.',
       );
