@@ -85,6 +85,7 @@ class Config {
   public readonly contractAddresses = {
     green: env.GREEN_ADDRESS,
     gala: env.GALA_ADDRESS,
+    galaItem: env.GALA_ITEM_CONTRACT_ADDRESS,
   };
   public readonly tokenIds: { [key: string]: string } = {
     gala: env.GALA_TOKEN_ID,
@@ -226,6 +227,8 @@ class Config {
       'ZENDESK_URL',
       'SENTRY_DSN',
       'LINK_SHORTENER_URL',
+      'GALA_ITEM_CONTRACT_ADDRESS',
+      'ERC20_GAS_VALUE',
     ].filter(name => !env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
