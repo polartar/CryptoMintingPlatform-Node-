@@ -155,21 +155,14 @@ class EthWallet extends CoinWalletBase {
   }
 
   async getBalance(address: string) {
-    if (config.indexedTransactions) {
-      return this.getBalanceIndexed(address);
-    }
-
     return this.getBalanceNonIndexed(address);
   }
 
   protected async getEthBalance(userApi: UserApi) {
     try {
       const { ethAddress } = await this.getEthAddress(userApi);
-      if (config.indexedTransactions) {
-        return this.getBalanceIndexed(ethAddress);
-      } else {
-        return this.getBalanceNonIndexed(ethAddress);
-      }
+
+      return this.getBalanceNonIndexed(ethAddress);
     } catch (error) {
       logger.debug(
         `walletApi.coin-wallets.EthWallet.getEthBalance.catch: ${error}`,
@@ -186,24 +179,6 @@ class EthWallet extends CoinWalletBase {
       unconfirmed: ethBalance,
       confirmed: ethBalance,
     };
-  }
-
-  private async getBalanceIndexed(address: string) {
-    try {
-      const {
-        pendingBalance,
-        confirmedBalance,
-      } = await transactionService.getEthBalanceAndTransactions(address);
-      return {
-        unconfirmed: pendingBalance,
-        confirmed: confirmedBalance,
-      };
-    } catch (error) {
-      logger.warn(
-        `walletApi.coin-wallets.EthWallet.getBalance.catch: ${error}`,
-      );
-      throw error;
-    }
   }
 
   private async requireEnoughBalanceToSendEther(
@@ -577,6 +552,7 @@ class EthWallet extends CoinWalletBase {
       throw error;
     }
   }
+
   public checkPassword = async (userApi: UserApi, password: string) => {
     try {
       const encryptedPrivateKey = await this.getDecryptedPrivateKey(

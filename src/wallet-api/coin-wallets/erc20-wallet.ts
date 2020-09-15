@@ -292,6 +292,7 @@ class Erc20API extends EthWallet {
       }
 
       const balance = await this.getBalanceFromContract(address);
+
       return {
         confirmed: balance.toString(),
         unconfirmed: balance.toString(),
