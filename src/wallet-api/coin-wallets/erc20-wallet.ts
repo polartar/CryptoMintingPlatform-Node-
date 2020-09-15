@@ -15,7 +15,7 @@ class Erc20API extends EthWallet {
   abi: any;
   WEB3_GAS_ERROR = 'Returned error: insufficient funds for gas * price + value';
   NEW_GAS_ERROR = 'Insufficient credits';
-  FALLBACK_GAS_VALUE = this.bigNumberify(36254);
+  FALLBACK_GAS_VALUE = this.bigNumberify(config.erc20GasValue);
 
   constructor(tokenMetadata: ICoinMetadata) {
     super(tokenMetadata);
@@ -287,6 +287,10 @@ class Erc20API extends EthWallet {
 
   public async getBalance(address: string) {
     try {
+      if (config.indexedTransactions) {
+        return this.getIndexedBalance(address);
+      }
+
       const balance = await this.getBalanceFromContract(address);
 
       return {
