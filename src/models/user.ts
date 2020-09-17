@@ -33,6 +33,7 @@ interface IWalletUpgrade {
     winX: IReferrerReward;
     green: IReferrerReward;
   };
+  galaAmount: string;
 }
 interface IActivatedWallets {
   green: IWalletUpgrade;
@@ -148,6 +149,7 @@ const activatedWalletsSchema = new mongoose.Schema({
     winX: referrerRewardSchema,
     green: referrerRewardSchema,
   },
+  galaAmount: String,
 });
 
 const walletsActivated = new mongoose.Schema({
