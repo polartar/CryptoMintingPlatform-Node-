@@ -12,6 +12,7 @@ type UserProfile {
   language: String
   communicationConsent: Boolean
   role: String!
+  number: String
 }
 
 input CreateUserInput {

@@ -75,7 +75,7 @@ export class ShareActivateResolvers extends ResolverBase {
     const purchaseLog = new PurchaseAttempt({
       userId: user?.userId,
       quantity: 1,
-      coinSymbol: 'BTC',
+      coinSymbol: 'GALA',
       productId: 'GALA_GOLD',
       lastCompletedOperation: 'args',
       walletPasswordExists: args?.walletPassword?.length > 1,
@@ -100,25 +100,35 @@ export class ShareActivateResolvers extends ResolverBase {
 
       this.throwIfIneligibleForUpgrade(userFromDb, REWARD_TYPE);
       purchaseLog.lastCompletedOperation = 'Upgrade eligibility check';
-      const isReferrerEligible = this.isGalaReferrerEligible(referrer);
       purchaseLog.lastCompletedOperation = 'Referrer eligibility check';
-      const paymentDetails = await this.getPaymentDetails(
-        rewardConfig,
-        btcUsdPrice,
-        referrer,
-        isReferrerEligible,
-      );
+
+      const paymentDetails = {
+        btcToCompany: 0,
+        btcToReferrer: 0,
+        referrerMissedBtc: 0, 
+        btcUsdPrice: 0,
+      };
+
       purchaseLog.lastCompletedOperation = 'Payment details';
       purchaseLog.btcValue = (
-        paymentDetails.btcToCompany + paymentDetails.btcToReferrer
+        0
       ).toString();
 
-      const outputs = await this.getOutputs(
-        paymentDetails.btcToCompany,
-        paymentDetails.btcToReferrer,
-        referrer?.wallet?.btcAddress,
-        REWARD_TYPE,
+      const { galaToUsdRatio } = await WalletConfig.findOne(
+        { brand: 'gala' },
+        { galaToUsdRatio: 1 },
       );
+      const galaAmount = String(rewardConfig.companyFee / galaToUsdRatio);
+      console.log({ galaAmount });
+
+      const outputs: ISendOutput[] = [
+        {
+          to: config.companyFeeEthAddress,
+          amount: galaAmount,
+          tokenId: '0x0100000000000000000000000000000000', // only relevant for 1155
+        }
+      ];
+
       purchaseLog.lastCompletedOperation = 'Get outputs';
 
       const transaction = await this.sendUpgradeTransaction(
@@ -126,15 +136,10 @@ export class ShareActivateResolvers extends ResolverBase {
         wallet,
         walletPassword,
         outputs,
+        'gala',
       );
       purchaseLog.lastCompletedOperation = 'Sent upgrade transaction';
       purchaseLog.txHash = transaction?.id;
-
-      this.logMissedReferrerBtcReward(
-        referrer,
-        paymentDetails.referrerMissedBtc,
-      );
-      purchaseLog.lastCompletedOperation = 'Log missed referrer BTC reward';
 
       const rewardResult: {
         rewardId: string;
@@ -155,7 +160,7 @@ export class ShareActivateResolvers extends ResolverBase {
       await this.saveActivationToDb(
         userFromDb,
         REWARD_TYPE,
-        { ...paymentDetails, transactionId: transaction.id, outputs },
+        { ...paymentDetails, transactionId: transaction.id, outputs, galaAmount },
         rewardResult,
         rewardConfig.softnodeType,
         orderContext,
@@ -177,6 +182,7 @@ export class ShareActivateResolvers extends ResolverBase {
       return {
         success: true,
         transaction,
+        message: 'upgrade successful',
       };
     } catch (error) {
       purchaseLog.success = false;
@@ -348,6 +354,7 @@ export class ShareActivateResolvers extends ResolverBase {
     paymentDetails: IActivationPayment & {
       transactionId: string;
       outputs: ISendOutput[];
+      galaAmount?: string;
     },
     rewardResult: {
       amountRewarded: number;
@@ -362,6 +369,7 @@ export class ShareActivateResolvers extends ResolverBase {
       btcUsdPrice,
       btcToReferrer,
       btcToCompany,
+      galaAmount = '0',
     } = paymentDetails;
     const { amountRewarded, rewardId, itemsRewarded } = rewardResult;
     const prefix = `wallet.activations.${rewardType}`;
@@ -382,6 +390,7 @@ export class ShareActivateResolvers extends ResolverBase {
     userDoc.set(`${prefix}.rewardId`, rewardId);
     userDoc.set(`${prefix}.itemsRewarded`, itemsRewarded);
     userDoc.set(`${prefix}.context`, orderContext);
+    userDoc.set(`${prefix}.galaAmount`, galaAmount);
 
     return userDoc.save();
   };
@@ -439,9 +448,10 @@ export class ShareActivateResolvers extends ResolverBase {
     wallet: WalletApi,
     walletPassword: string,
     outputs: ISendOutput[],
+    coin = 'btc'
   ): Promise<ITransaction> => {
     const { message, transaction, success } = await wallet
-      .coin('btc')
+      .coin(coin)
       .send(user, outputs, walletPassword);
 
     if (!success) {
@@ -503,7 +513,7 @@ export class ShareActivateResolvers extends ResolverBase {
     },
     ctx: Context,
   ) => {
-    if (config.brand === 'gala') {
+    if (config.brand === 'gala' || config.brand === 'localhost') {
       return this.galaShareActivate(parent, args, ctx);
     }
     const purchaseLog = new PurchaseAttempt({

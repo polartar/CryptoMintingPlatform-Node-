@@ -25,6 +25,7 @@ export interface IWalletConfig extends Document {
     photo: string;
     softnodeType: string;
   };
+  galaToUsdRatio: number;
 }
 
 export const walletConfigSchema = new Schema({
@@ -94,6 +95,7 @@ export const walletConfigSchema = new Schema({
       type: String,
     },
   },
+  galaToUsdRatio: Number,
 });
 
 export default model<IWalletConfig>('wallet-config', walletConfigSchema);
