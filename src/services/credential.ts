@@ -33,7 +33,12 @@ class CredentialService extends ServerToServerService {
     }
   };
 
-  public get = async (userId: string, coin: string, resource: string) => {
+  public get = async (
+    userId: string,
+    coin: string,
+    resource: string,
+    supressErrorLog = false,
+  ) => {
     try {
       const resourceKey = `${coin}-${resource}`;
       const apiKeyUrl = `${this.apiKeyUrl}/${userId}/${resourceKey}`;
@@ -48,7 +53,9 @@ class CredentialService extends ServerToServerService {
       });
       return response.data;
     } catch (error) {
-      logger.warn(`services.credential.get.catch: ${error}`);
+      if (!supressErrorLog) {
+        logger.warn(`services.credential.get.catch: ${error}`);
+      }
       throw error;
     }
   };

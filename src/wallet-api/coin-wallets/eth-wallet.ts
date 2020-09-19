@@ -32,12 +32,10 @@ class EthWallet extends CoinWalletBase {
         userApi.userId,
         'ETH',
         PRIVATEKEY,
+        true,
       );
       return !!privateKey;
     } catch (error) {
-      logger.warn(
-        `walletApi.coin-wallets.EthWallet.checkIfWalletExists.catch:${error}`,
-      );
       return false;
     }
   }

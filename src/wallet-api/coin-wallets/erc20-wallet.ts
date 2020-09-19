@@ -1,6 +1,6 @@
 import EthWallet from './eth-wallet';
 import { config, logger } from '../../common';
-import { ethers, utils, BigNumber } from 'ethers';
+import { ethers, utils, BigNumber, Overrides } from 'ethers';
 import { ITransaction, ICoinMetadata, ISendOutput } from '../../types';
 import { UserApi } from '../../data-sources';
 import { transactionService } from '../../services';
@@ -94,10 +94,7 @@ class Erc20API extends EthWallet {
 
   private integerize(decimalizedString: string) {
     try {
-      const integer = utils.parseUnits(
-        decimalizedString.toString(),
-        this.decimalPlaces,
-      );
+      const integer = utils.parseUnits(decimalizedString, this.decimalPlaces);
       return integer;
     } catch (error) {
       logger.warn(
@@ -343,26 +340,34 @@ class Erc20API extends EthWallet {
 
   async send(userApi: UserApi, outputs: ISendOutput[], walletPassword: string) {
     const [{ to, amount: value }] = outputs;
+    const overrides: Overrides = {};
     try {
       const { ethNonceFromDb, ethAddress } = await this.getEthAddress(userApi);
-      const nonce = await this.getNonce(userApi, ethAddress, ethNonceFromDb);
       const privateKey = await this.getDecryptedPrivateKey(
         userApi.userId,
         walletPassword,
       );
       const amount = this.integerize(value);
       const wallet = new ethers.Wallet(privateKey, this.provider);
+
       await this.requireEnoughTokensAndEtherToSend(
         userApi,
         wallet.address,
         amount.toString(),
       );
-      const contract = new ethers.Contract(
-        this.contractAddress,
-        this.abi,
-        wallet,
-      );
-      const transaction = await contract.transfer(to, amount, { nonce });
+
+      const contract = this.contract.connect(wallet);
+
+      const [gasLimit, nonce, gasPrice] = await Promise.all([
+        contract.estimateGas.transfer(to, amount),
+        this.getNonce(userApi, ethAddress, ethNonceFromDb),
+        this.provider.getGasPrice(),
+      ]);
+      overrides.gasLimit = gasLimit;
+      overrides.gasPrice = gasPrice;
+      overrides.nonce = nonce;
+
+      const transaction = await contract.transfer(to, amount, overrides);
       await userApi.incrementTxCount();
       this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
 
@@ -389,7 +394,10 @@ class Erc20API extends EthWallet {
       };
       return response;
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.Erc20Wallet.send.catch: ${error}`);
+      logger.warn(
+        `walletApi.coin-wallets.Erc20Wallet.send.catch: ${error.stack}`,
+        { meta: { userId: userApi.userId, to, value, ...overrides } },
+      );
       let message;
       switch (error.message) {
         case 'Insufficient ETH balance': {
