@@ -42,7 +42,7 @@ class BtcWallet extends CoinWalletBase {
 
   public async checkIfWalletExists(userApi: UserApi) {
     try {
-      const userWallet = await this.setWallet(userApi.userId);
+      const userWallet = await this.setWallet(userApi.userId, true);
       const account = await userWallet.getAccount('default');
       return !!account;
     } catch (error) {
@@ -316,23 +316,34 @@ class BtcWallet extends CoinWalletBase {
     }
   }
 
-  private async setWallet(accountId: string) {
+  private async setWallet(accountId: string, supressErrorLog = false) {
     try {
-      const token = await this.getToken(accountId);
+      const token = await this.getToken(accountId, supressErrorLog);
       return this.walletClient.wallet(accountId, token);
     } catch (error) {
-      logger.warn(`walletApi.coin-wallets.BtcWallet.setWallet.catch:${error}`);
+      if (!supressErrorLog) {
+        logger.warn(
+          `walletApi.coin-wallets.BtcWallet.setWallet.catch:${error}`,
+        );
+      }
       throw error;
     }
   }
 
-  public async getToken(accountId: string) {
+  public async getToken(accountId: string, suppressError = false) {
     try {
-      const token = await credentialService.get(accountId, this.symbol, TOKEN);
+      const token = await credentialService.get(
+        accountId,
+        this.symbol,
+        TOKEN,
+        suppressError,
+      );
       return token;
     } catch (err) {
-      logger.warn(`walletApi.coin-wallets.BtcWallet.getToken.error:${err}`);
-      credentialService.handleErrResponse(err, 'Not Found');
+      if (!suppressError) {
+        logger.warn(`walletApi.coin-wallets.BtcWallet.getToken.error:${err}`);
+        credentialService.handleErrResponse(err, 'Not Found');
+      }
     }
   }
 

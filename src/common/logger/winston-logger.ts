@@ -21,6 +21,18 @@ if (env.NODE_ENV === 'production' && env.MONGODB_URI) {
       cappedMax: 5000,
     }),
   );
+  logger.add(
+    // @ts-ignore
+    new winston.transports.MongoDB({
+      format: winston.format.json(),
+      level: 'warn',
+      db: env.MONGODB_URI,
+      collection: 'wallet-logs-error',
+      storeHost: true,
+      capped: true,
+      cappedMax: 10000,
+    }),
+  );
 } else if (!!env.VSCODE_PID) {
   logger.add(
     new winston.transports.Console({
