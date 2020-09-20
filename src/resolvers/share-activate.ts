@@ -105,28 +105,25 @@ export class ShareActivateResolvers extends ResolverBase {
       const paymentDetails = {
         btcToCompany: 0,
         btcToReferrer: 0,
-        referrerMissedBtc: 0, 
+        referrerMissedBtc: 0,
         btcUsdPrice: 0,
       };
 
       purchaseLog.lastCompletedOperation = 'Payment details';
-      purchaseLog.btcValue = (
-        0
-      ).toString();
+      purchaseLog.btcValue = (0).toString();
 
       const { galaToUsdRatio } = await WalletConfig.findOne(
         { brand: 'gala' },
         { galaToUsdRatio: 1 },
       );
       const galaAmount = String(rewardConfig.companyFee / galaToUsdRatio);
-      console.log({ galaAmount });
 
       const outputs: ISendOutput[] = [
         {
           to: config.companyFeeEthAddress,
           amount: galaAmount,
           tokenId: '0x0100000000000000000000000000000000', // only relevant for 1155
-        }
+        },
       ];
 
       purchaseLog.lastCompletedOperation = 'Get outputs';
@@ -160,7 +157,12 @@ export class ShareActivateResolvers extends ResolverBase {
       await this.saveActivationToDb(
         userFromDb,
         REWARD_TYPE,
-        { ...paymentDetails, transactionId: transaction.id, outputs, galaAmount },
+        {
+          ...paymentDetails,
+          transactionId: transaction.id,
+          outputs,
+          galaAmount,
+        },
         rewardResult,
         rewardConfig.softnodeType,
         orderContext,
@@ -448,7 +450,7 @@ export class ShareActivateResolvers extends ResolverBase {
     wallet: WalletApi,
     walletPassword: string,
     outputs: ISendOutput[],
-    coin = 'btc'
+    coin = 'btc',
   ): Promise<ITransaction> => {
     const { message, transaction, success } = await wallet
       .coin(coin)
