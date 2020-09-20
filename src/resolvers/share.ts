@@ -38,24 +38,13 @@ export class ShareResolver extends ResolverBase {
   protected getShareConfigs = async (user: IUser) => {
     try {
       const { softNodeLicenses } = user.toJSON() as IUser;
-      console.log('getShareConfigs::1:softNodeLicenses', softNodeLicenses);
       const {
         alreadyActivated,
         numberOfActivations,
       } = this.getAlreadyActivated(user.wallet);
-      console.log('getShareConfigs::2:alreadyActivated', alreadyActivated);
 
-      console.log(
-        'getShareConfigs::3:numberOfActivations',
-        numberOfActivations,
-      );
       const available = await WalletConfig.find({ brand: config.brand });
-      console.log('getShareConfigs::4:available', available);
       if (!available.length) throw new Error(`Share config not found.`);
-      console.log(
-        'getShareConfigs::5:available.length',
-        available && available.length,
-      );
 
       const { unactivated, activated } = available.reduce(
         (accum, current) => {
@@ -71,14 +60,11 @@ export class ShareResolver extends ResolverBase {
           unactivated: IWalletConfig[];
         },
       );
-      console.log('getShareConfigs::6:unactivated', unactivated);
-      console.log('getShareConfigs::7:activated', activated);
 
       const sharesFromActivation = activated.reduce(
         (total, curr) => total + curr.shareLimits.upgradedAccount,
         0,
       );
-      console.log('getShareConfigs::8:sharesFromActivations', activated);
 
       const sharesPerSoftnodeType = new Map<string, number>();
       available.forEach(({ shareLimits }) => {
@@ -99,7 +85,6 @@ export class ShareResolver extends ResolverBase {
         },
         0,
       );
-      console.log('getShareConfigs::9:softNodeShares', softNodeShares);
 
       return {
         available,
