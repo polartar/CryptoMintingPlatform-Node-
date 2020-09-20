@@ -73,7 +73,7 @@ export class GalaShareResolver extends ShareResolver {
       logger.JSON.debug({ confirmed, unconfirmed });
       const activatedShares =
         (userWallet && userWallet.shares && userWallet.shares[brand]) || 0;
-      console.log('galaShareConfig::11:ac', unconfirmed);
+      console.log('galaShareConfig::11:activatedShares', activatedShares);
       logger.obj.debug({ activatedShares });
       const [
         {
