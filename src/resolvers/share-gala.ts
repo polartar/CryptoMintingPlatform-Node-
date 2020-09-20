@@ -147,6 +147,7 @@ export class GalaShareResolver extends ShareResolver {
         },
       };
     } catch (error) {
+      console.log('galaShareConfig::24:catch', error.stack);
       logger.obj.warn({ error });
     }
   };
