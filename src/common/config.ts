@@ -245,6 +245,7 @@ class Config {
       ['DISPLAYED_WALLETS', this.displayedWallets.join(',')],
       ['INDEXED_TRANSACTIONS', this.indexedTransactions],
       ['LINK_SHORTENER_URL', this.linkShortenerUrl],
+      ['GALA_MASTER_NODE_WALLET_ADDRESS', this.galaMasterNodeWalletAddress],
     ].forEach(([label, value]) => {
       systemLogger.info(`CONFIG: ${label}=${value}`);
     });
