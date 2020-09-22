@@ -50,18 +50,22 @@ class Crypto {
         throw new Error(this.ERROR_INCORRECT_SECRET);
       }
     } catch (error) {
-      const decryptedString = new SimpleCrypto(secret)
-        .decrypt(encryptedText)
-        .toString();
-      if (!decryptedString) {
-        const error = new Error(this.ERROR_INCORRECT_SECRET);
-        logger.warn(`utils.crypto.Crypto.decrypt.catch: ${error}`);
-        throw error;
+      try {
+        const decryptedString = new SimpleCrypto(secret)
+          .decrypt(encryptedText)
+          .toString();
+        if (!decryptedString) {
+          throw new Error(this.ERROR_INCORRECT_SECRET);
+        }
+        return {
+          decryptedString,
+          version: '2.5.0',
+        };
+      } catch (error) {
+        logger.error(`utils.crypto.decrypt: ${error.stack}`);
+
+        throw new Error(this.ERROR_INCORRECT_SECRET);
       }
-      return {
-        decryptedString,
-        version: '2.5.0',
-      };
     }
   };
 
