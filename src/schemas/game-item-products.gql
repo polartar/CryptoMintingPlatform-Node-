@@ -1,0 +1,16 @@
+type GameItemProduct {
+  invoiceAddress: String!
+  price: Int!
+  baseId: String
+  name: String!
+  description: String!
+  image: String!
+  game: String!
+  coin: String!
+  rarity: GameItemRarity
+  qtyLeft: Int
+}
+
+type Query {
+  gameItemProducts: [GameItemProduct!]!
+}
