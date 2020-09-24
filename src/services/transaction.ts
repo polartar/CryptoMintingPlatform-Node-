@@ -48,6 +48,16 @@ class TransactionService {
     };
   };
 
+  private getIndexerId(
+    txHash: string,
+    type: TransactionType,
+    logIndex?: number,
+  ) {
+    const logIndexString = logIndex >= 0 ? logIndex.toString() : '';
+
+    return utils.sha256(utils.toUtf8Bytes(`${txHash}${type}${logIndexString}`));
+  }
+
   parseTokenId = (tokenId: string) => {
     return {
       tokenId,
@@ -146,6 +156,7 @@ class TransactionService {
     if (!dataValues) return;
 
     return this.saveToDatabase({
+      indexerId: this.getIndexerId(hash, TransactionType.Erc1155, 0),
       type: TransactionType.Erc1155,
       contractName: 'Gala',
       status: blockNumber ? 'confirmed' : 'pending',

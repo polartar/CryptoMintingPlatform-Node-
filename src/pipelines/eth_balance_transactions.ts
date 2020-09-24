@@ -21,16 +21,36 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
   {
     $match: {
       $or: [
-        { to: ethAddress, type: TransactionType.Eth },
-        { from: ethAddress, type: TransactionType.Eth },
-        { operator: ethAddress, gasUsed: { $gt: 0 } },
+        {
+          to: new RegExp(ethAddress, 'i'),
+          type: {
+            $in: [TransactionType.Eth, TransactionType.InternalEth],
+          },
+        },
+        {
+          from: new RegExp(ethAddress, 'i'),
+          type: {
+            $in: [TransactionType.Eth, TransactionType.InternalEth],
+          },
+        },
+        {
+          from: new RegExp(ethAddress, 'i'),
+          gasUsed: {
+            $gt: 0,
+          },
+        },
       ],
     },
   },
   {
     $addFields: {
       isFromUser: {
-        $eq: ['$operator', ethAddress],
+        $eq: [
+          {
+            $toLower: '$from',
+          },
+          ethAddress.toLowerCase(),
+        ],
       },
       fee: {
         $multiply: ['$gasPrice', '$gasUsed'],
@@ -40,14 +60,6 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
       },
       feeDivisor: {
         $pow: [10, '$gasPriceDecimals'],
-      },
-      returnedEthDivisor: {
-        $pow: [
-          10,
-          {
-            $ifNull: ['$returnedEthDecimalsStored', 0],
-          },
-        ],
       },
     },
   },
@@ -76,69 +88,27 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
         ],
       },
       amount: {
-        $switch: {
-          branches: [
-            {
-              case: {
-                $eq: ['$type', 'ETH'],
-              },
-              then: {
-                $cond: [
-                  '$isFromUser',
-                  {
-                    $divide: [
-                      {
-                        $subtract: [0, '$amount'],
-                      },
-                      '$amountDivisor',
-                    ],
-                  },
-                  {
-                    $divide: ['$amount', '$amountDivisor'],
-                  },
-                ],
-              },
-            },
-            {
-              case: {
-                $eq: ['$type', 'ExternalContract'],
-              },
-              then: {
-                $add: [
-                  {
-                    $divide: [
-                      {
-                        $multiply: ['$amount', -1],
-                      },
-                      '$amountDivisor',
-                    ],
-                  },
-                  {
-                    $divide: [
-                      {
-                        $ifNull: ['$returnedEth', 0],
-                      },
-                      '$returnedEthDivisor',
-                    ],
-                  },
-                ],
-              },
-            },
-          ],
-          default: 0,
-        },
-      },
-    },
-  },
-  {
-    $addFields: {
-      amount: {
         $cond: [
-          '$isFromUser',
           {
-            $sum: ['$amount', '$fee'],
+            $in: ['$type', [TransactionType.Eth, TransactionType.InternalEth]],
           },
-          '$amount',
+          {
+            $cond: [
+              '$isFromUser',
+              {
+                $divide: [
+                  {
+                    $subtract: [0, '$amount'],
+                  },
+                  '$amountDivisor',
+                ],
+              },
+              {
+                $divide: ['$amount', '$amountDivisor'],
+              },
+            ],
+          },
+          0,
         ],
       },
     },
@@ -147,7 +117,7 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
     $group: {
       _id: '$hash',
       isFromUser: {
-        $first: '$isFromUser',
+        $max: '$isFromUser',
       },
       to: {
         $first: '$to',
@@ -162,16 +132,40 @@ export const ethBalanceTransactionsPipeline = (ethAddress: string) => [
         $first: '$blockNumber',
       },
       amount: {
-        $sum: '$amount',
+        $sum: {
+          $cond: [
+            {
+              $in: [
+                '$type',
+                [TransactionType.Eth, TransactionType.InternalEth],
+              ],
+            },
+            '$amount',
+            0,
+          ],
+        },
       },
       fee: {
-        $sum: '$fee',
+        $min: '$fee',
       },
       hash: {
         $first: '$hash',
       },
       status: {
         $first: '$status',
+      },
+    },
+  },
+  {
+    $addFields: {
+      amount: {
+        $cond: [
+          '$isFromUser',
+          {
+            $sum: ['$amount', '$fee'],
+          },
+          '$amount',
+        ],
       },
     },
   },

@@ -6,10 +6,6 @@ export interface AssignedNode {
 }
 
 export interface SpecificTransactionProperties {
-  returnedEth?: string;
-  returnedEthHex?: string;
-  returnedEthDecimals?: number;
-  returnedEthDecimalsStored?: number;
   baseId?: string;
   tokenId?: string;
   logIndex?: number | null;
@@ -24,10 +20,11 @@ export enum TransactionType {
   Eth = 'ETH',
   Erc1155 = 'ERC-1155',
   Erc20 = 'ERC-20',
-  ExternalContract = 'ExternalContract',
+  InternalEth = 'InternalEth',
 }
 
 export interface IWalletTransaction extends SpecificTransactionProperties {
+  indexerId: string;
   type: TransactionType;
   status: string;
   timestamp: number;
