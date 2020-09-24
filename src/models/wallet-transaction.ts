@@ -6,6 +6,7 @@ const schemaTypes = mongoose.Schema.Types as any;
 
 const walletTransactionSchema = new mongoose.Schema<IWalletTransaction>(
   {
+    indexerId: { type: String, unique: true },
     type: String,
     status: String,
     timestamp: Number,
@@ -17,15 +18,7 @@ const walletTransactionSchema = new mongoose.Schema<IWalletTransaction>(
       type: String,
       index: true,
     },
-    operator: {
-      type: String,
-      index: true,
-    },
     amount: schemaTypes.Long,
-    returnedEth: schemaTypes.Long,
-    returnedEthHex: String,
-    returnedEthDecimals: Number,
-    returnedEthDecimalsStored: Number,
     fullHexAmount: String,
     decimalsStored: Number,
     blockNumber: Number,
