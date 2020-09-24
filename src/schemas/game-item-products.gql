@@ -1,3 +1,9 @@
+type NodeProduct {
+  invoiceAddress: String!
+  name: String!
+  price: Int!
+}
+
 type GameItemProduct {
   invoiceAddress: String!
   price: Int!
@@ -13,4 +19,5 @@ type GameItemProduct {
 
 type Query {
   gameItemProducts: [GameItemProduct!]!
+  nodeProduct: NodeProduct!
 }
