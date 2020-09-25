@@ -86,13 +86,8 @@ export class ShareActivateResolvers extends ResolverBase {
     this.requireAuth(user);
     purchaseLog.lastCompletedOperation = 'authenticated';
     try {
-      const [
-        { userFromDb, referrer },
-        btcUsdPrice,
-        rewardConfig,
-      ] = await Promise.all([
+      const [{ userFromDb, referrer }, rewardConfig] = await Promise.all([
         user.findUserAndReferrer(),
-        cryptoFavorites.getBtcUsdPrice(),
         this.getRewardconfig(),
       ]);
       purchaseLog.lastCompletedOperation =
