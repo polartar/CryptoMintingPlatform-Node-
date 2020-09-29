@@ -12,7 +12,14 @@ export const getPipeline = (userId: string, startDate: Date, endDate: Date) => [
     $group: {
       _id: '$rewardType',
       pointType: { $first: '$rewardType' },
-      amount: { $round: [{ $sum: '$amount' }, 1] },
+      amount: { $sum: '$amount' },
+    },
+  },
+  {
+    $addFields: {
+      amount: {
+        $round: ['$amount', 1],
+      },
     },
   },
 ];
