@@ -84,7 +84,7 @@ export const getPipeline = (startDate: Date, endDate: Date) => [
       points: {
         $ifNull: [
           {
-            $arrayElemAt: ['$points.total', 0],
+            $round: [{ $arrayElemAt: ['$points.total', 0] }, 1],
           },
           0,
         ],

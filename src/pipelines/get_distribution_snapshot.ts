@@ -206,7 +206,7 @@ export const getPipeline = (userId: string) => [
         },
       },
       points: {
-        $sum: '$points.total',
+        $round: [{ $sum: '$points.total' }, 1],
       },
     },
   },
