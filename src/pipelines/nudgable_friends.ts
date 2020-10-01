@@ -119,6 +119,7 @@ export const getPipeline = (userId: string, nudgeCode: string) => [
       referrer: 1,
       referralLink: 1,
       communicationConsent: 1,
+      emailVerified: 1,
     },
   },
 ];

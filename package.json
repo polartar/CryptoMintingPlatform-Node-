@@ -15,7 +15,7 @@
     "precommit": "run-s format:fix fix lint"
   },
   "dependencies": {
-    "@blockbrothers/firebasebb": "^0.9.3",
+    "@blockbrothers/firebasebb": "^0.9.6",
     "@blockbrothers/legacy-simple-crypto": "^1.0.0",
     "@sentry/node": "^5.20.0",
     "apollo-datasource": "^0.3.1",

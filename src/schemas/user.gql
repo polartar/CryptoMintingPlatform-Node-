@@ -13,6 +13,7 @@ type UserProfile {
   communicationConsent: Boolean
   role: String!
   number: String
+  emailVerified: Boolean
 }
 
 input CreateUserInput {
@@ -65,4 +66,6 @@ type Mutation {
   updateUser(userInfo: UpdateUserInput!): MutationResponse!
   unsubscribe(userId: String!, emailList: String!): MutationResponse!
   acceptAgreements(agreementInfo: AcceptAgreementsInput!): MutationResponse!
+  sendVerifyEmail(newAccount: Boolean): MutationResponse!
+  verifyEmailAddress(token: String!): MutationResponse!
 }

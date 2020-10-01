@@ -24,6 +24,7 @@ class SendEmail extends DataSource {
     sendTo: {
       email: string;
       communicationConsent: Array<{ timestamp: Date; consentGiven: boolean }>;
+      emailVerified: boolean;
     },
     html: string,
     attachments?: Attachment[],
@@ -31,7 +32,11 @@ class SendEmail extends DataSource {
     logger.debug(`data-sources.SendEmail.sendMail.subject: ${subject}`);
     logger.debug(`data-sources.SendEmail.sendMail.sendTo: ${sendTo}`);
 
-    if (!this.checkUserConsent(sendTo) || !sendTo.email) {
+    if (
+      !this.checkUserConsent(sendTo) ||
+      !sendTo.email ||
+      !sendTo.emailVerified
+    ) {
       return false;
     }
 
@@ -164,6 +169,7 @@ class SendEmail extends DataSource {
         timestamp: Date;
         consentGiven: boolean;
       }>;
+      emailVerified: boolean;
     },
     unsubscribeLink: string,
   ) {
@@ -198,6 +204,39 @@ class SendEmail extends DataSource {
       // In the past, the user either could not create an account without explicitly consenting to communications, or implicitly consented by creating an account.
       // Therefore, if this property does not exist on the user document, they consented
       return true;
+    }
+  }
+
+  public async sendGalaVerifyEmail(
+    user: IUser,
+    token: string,
+    newAccount: boolean,
+  ) {
+    const verifyLink = `${config.walletClientDomain.replace(
+      /\/\w*$/g,
+      '',
+    )}/verify-email?token=${token}${newAccount ? `&newuser=true` : ''}`;
+
+    const { html, subject } = templateBuilder.buildGalaVerifyEmailHtml(
+      user.firstName,
+      verifyLink,
+      newAccount,
+    );
+
+    try {
+      const mailOptions: Options = {
+        to: user.email,
+        from: this.sendFromEmailAddress,
+        subject: subject,
+        html: html,
+      };
+
+      const { message } = await this.transport.sendMail(mailOptions);
+
+      return message === 'success';
+    } catch (error) {
+      logger.error(error);
+      return false;
     }
   }
 }
