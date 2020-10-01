@@ -107,6 +107,7 @@ export const getPipeline = (
       firstName: '$friend.firstName',
       referralLink: '$friend.referralLink',
       communicationConsent: '$friend.communicationConsent',
+      emailVerified: '$friend.emailVerified',
     },
   },
 ];

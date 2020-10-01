@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+​
+
+<head>
+  <meta charset="UTF-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <meta name="x-apple-disable-message-reformatting" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta content="telephone=no" name="format-detection" />
+  <title></title>
+  <style>
+    html,
+    body {
+      font-family: roboto, sans-serif;
+      line-height: 1.5;
+    }
+
+    ​ .container {
+      width: 90vw;
+      margin: 30px auto;
+      max-width: 550px;
+      padding: 50px;
+      border: 1px solid #373737;
+      border-radius: 8px;
+    }
+
+    ​ .unsubscribe {
+      margin-top: 15px;
+      display: block;
+      text-align: center;
+      font-size: 10px;
+    }
+
+    ​ .unsubscribe a,
+    .verify-btn {
+      cursor: pointer;
+    }
+
+    .confirm-btn {
+      color: white;
+      background-color: #0089ff;
+      border-radius: 10px;
+      padding: 12px 32px;
+      margin: auto;
+      display: block;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .confirm-btn a {
+      text-decoration: none;
+      color: white;
+    }
+  </style>
+  <!--[if !mso]><!-- -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400" rel="stylesheet" />
+  <!--<![endif]-->
+</head>
+​
+
+<body>
+  <div class="container">
+    <p>Hi {{ firstName }}!</p>
+    ​
+    <p>
+      This is the Gala Games team, writing because you are in the process of
+      signing up for an account at Gala Games! Well done! We think this is an
+      awesome move! We know you are probably excited to continue on with the
+      account creation process, so we don't want to take up too much time.
+    </p>
+    <p>
+      However, we also want to make sure that you meant to do this, and that
+      someone isn't trying to sign you up without your permission. If that is
+      the case, we understand. While we would LOVE to have you come see how we
+      are working to decentralize the billions of dollars spent on the gaming
+      industry annually, we don't want to be a nuisance, so if you stop
+      reading here, you won't get any more emails from us.&nbsp;
+    </p>
+    <p>
+      If you are ready to continue, just make sure you read the short note
+      below and click the magic button at the bottom!&nbsp;
+    </p>
+    <p>
+      IMPORTANT: The next step in the account creation process will involve
+      you being shown a 12-word recovery phrase. It is SUPER important that
+      you write this down and store it somewhere safe. This phrase is the key
+      to the wallet associated with the account, and can be used to import it
+      into third-party applications like Metamask. If you lose this 12-word
+      recovery phrase, there is nothing that anyone can do to help you recover
+      it. So, please, protect it so that you can always get access to your
+      GALA and in-game items!
+    </p>
+    <p align="center">
+      Ok, ready? Lets do this!
+      <a href="{{{ verifyLink }}}">Confirm my e-mail address!</a>&nbsp;
+    </p>
+    <button class="confirm-btn">
+      <a href="{{{ verifyLink }}}">Confirm my e-mail address! </a>
+    </button>
+    <p>We can't wait to see you in-game!&nbsp;&nbsp;</p>
+    <p>The Gala Games Team&nbsp;</p>
+    <p align="center">
+      <a href="https://twitter.com/GoGalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/TW.png" width="40" height="40" alt=""
+          padding="10px" /></a>&nbsp;
+      <a href="https://facebook.com/GoGalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/FB.png" width="40" height="40" alt=""
+          padding="10px" /></a>&nbsp;
+      <a href="https://instagram.com/GoGalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/IG.png" width="40" height="40" alt=""
+          padding="10px" /></a>&nbsp;
+      <a href="https://www.youtube.com/c/GalaGames" target="_blank"><img
+          src="https://gala.games/wp-content/uploads/2020/09/YT.png" width="40" height="40" alt=""
+          padding="10px" /></a>&nbsp;
+      <a href="http://galagames.chat" target="_blank"><img src="https://gala.games/wp-content/uploads/2020/09/DI.png"
+          width="40" height="40" alt="" padding="10px" /></a>&nbsp;
+      <a href="https://t.me/GoGalaGames" target="_blank"><img src="https://gala.games/wp-content/uploads/2020/09/TE.png"
+          width="40" height="40" alt="" padding="10px" /></a>&nbsp;
+    </p>
+    <p align="center">
+      See us online at
+      <a href="https://gala.games/" target="_blank">www.gala.games</a>!
+    </p>
+  </div>
+</body>
+​
+
+</html>

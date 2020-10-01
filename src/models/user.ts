@@ -105,6 +105,7 @@ export interface IUser extends mongoose.Document {
     ipAddress: string;
   }>;
   lastLogin: Date;
+  emailVerified: boolean;
 }
 
 async function getNextNumber({ firstName, lastName }: IUser) {
@@ -297,6 +298,7 @@ export const userSchema = new mongoose.Schema(
       },
     ],
     lastLogin: Date,
+    emailVerified: Boolean,
   },
   { id: false },
 );
