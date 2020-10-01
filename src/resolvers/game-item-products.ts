@@ -6,10 +6,12 @@ import { availableGameItemProductsPipeline } from '../pipelines';
 class Resolvers extends ResolverBase {
   getAvailableGameItemProducts = async (
     parent: any,
-    args: {},
+    args: { game: string },
     ctx: Context,
   ) => {
-    return GameitemProduct.aggregate(availableGameItemProductsPipeline);
+    return GameitemProduct.aggregate(
+      availableGameItemProductsPipeline(args.game),
+    );
   };
 
   getNodeProduct = async (parent: any, args: {}, ctx: Context) => {
