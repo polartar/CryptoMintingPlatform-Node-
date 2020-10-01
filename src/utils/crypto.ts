@@ -69,12 +69,6 @@ class Crypto {
     }
   };
 
-  public md5UrlSafe = (value: string) => {
-    return MD5(value)
-      .toString(this.enc.Base64)
-      .replace(/[^a-zA-Z0-9]/g, '');
-  };
-
   public hash = (value: string) => {
     logger.debug('utils.crypto.hash');
     return SHA256(value).toString();
