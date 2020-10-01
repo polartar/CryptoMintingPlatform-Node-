@@ -7,6 +7,7 @@ import {
   galaWelcome3,
   galaWelcome4,
   nudgeFriend,
+  galaVerifyEmail,
 } from './handlebars';
 import { IUser } from '../types';
 import config from '../common/config';
@@ -115,6 +116,18 @@ class TemplateBuilder {
         unsubscribeLink,
       }),
       subject: hbs.subject,
+    };
+  }
+
+  buildGalaVerifyEmailHtml(
+    firstName: string,
+    verifyLink: string,
+    newAccount: boolean,
+  ) {
+    const hbsTemplate = galaVerifyEmail(newAccount);
+    return {
+      html: Handlebars.compile(hbsTemplate.html)({ verifyLink, firstName }),
+      subject: hbsTemplate.subject,
     };
   }
 }

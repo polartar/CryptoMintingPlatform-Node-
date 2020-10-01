@@ -128,7 +128,6 @@ class Config {
   public readonly costPerLootBox = this.normalizeNumber(env.COST_PER_LOOT_BOX);
 
   public readonly supportsDisplayNames = env.SUPPORTS_DISPLAY_NAMES === 'true';
-
   public readonly alertApiUrls: string[] = JSON.parse(env.ALERT_API_URLS);
 
   public readonly supportsBtcPubsub = env.SUPPORTS_BTC_PUBSUB === 'true';
@@ -259,7 +258,7 @@ class Config {
       return 'blue';
     }
     if (hostName.includes('localhost')) {
-      return 'localhost';
+      return env.BRAND || 'localhost';
     }
   }
 

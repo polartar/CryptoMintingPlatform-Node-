@@ -65,3 +65,14 @@ export const nudgeFriend = () => ({
   html: readTemplate('nudgeFriend.hbs'),
   subject: `📜📜📜 Gala Games Planning Meeting Minutes`,
 });
+
+export const galaVerifyEmail = (newAccount: boolean) => {
+  const hbsTemplate = newAccount
+    ? 'galaVerifyNewAccountEmail.hbs'
+    : 'galaVerifyEmail.hbs';
+
+  return {
+    html: readTemplate(hbsTemplate),
+    subject: '✅ Confirm your Gala Games Account!',
+  };
+};

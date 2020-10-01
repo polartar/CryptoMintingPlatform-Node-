@@ -1,6 +1,6 @@
 type DistributionPoint {
   pointType: String!
-  amount: Int!
+  amount: Float!
 }
 
 type TokenReceived {
@@ -13,7 +13,7 @@ type UserDistributionData {
   lastName: String
   email: String
   userId: String
-  totalPoolPoints: Int
+  totalPoolPoints: Float
   points: [DistributionPoint!]
   tokensReceived: [TokenReceived!]
 }
@@ -22,7 +22,7 @@ type DistributionSnapshot {
   date: Date!
   gala: Int!
   items: Int!
-  points: Int!
+  points: Float!
 }
 
 type DistributionResult {
@@ -34,7 +34,7 @@ type DistributionResult {
 type DistributionGlobalResult {
   address: String!
   gala: Int!
-  points: Int!
+  points: Float!
   items: Int!
 }
 

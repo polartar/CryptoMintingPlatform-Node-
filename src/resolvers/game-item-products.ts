@@ -11,6 +11,10 @@ class Resolvers extends ResolverBase {
   ) => {
     return GameitemProduct.aggregate(availableGameItemProductsPipeline);
   };
+
+  getNodeProduct = async (parent: any, args: {}, ctx: Context) => {
+    return GameitemProduct.findOne({ baseId: 'gala-node-license' });
+  };
 }
 
 const resolvers = new Resolvers();
@@ -18,5 +22,6 @@ const resolvers = new Resolvers();
 export default {
   Query: {
     gameItemProducts: resolvers.getAvailableGameItemProducts,
+    nodeProduct: resolvers.getNodeProduct,
   },
 };

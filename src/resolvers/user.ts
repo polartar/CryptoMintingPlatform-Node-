@@ -3,10 +3,10 @@ import { auth, config, logger } from '../common';
 import { Context } from '../types/context';
 import { UserApi } from '../data-sources/';
 import { User, Template } from '../models';
-import { crypto } from '../utils';
 import { IOrderContext } from '../types';
 import { s3Service } from '../services';
 import { Types } from 'mongoose';
+import { AnalysisOptions } from 'aws-sdk/clients/cloudsearch';
 
 class Resolvers extends ResolverBase {
   public createUser = async (
@@ -29,7 +29,7 @@ class Resolvers extends ResolverBase {
     context: Context,
   ) => {
     const {
-      dataSources: { linkShortener, bitly },
+      dataSources: { linkShortener, bitly, sendEmail },
     } = context;
 
     try {
@@ -144,11 +144,27 @@ class Resolvers extends ResolverBase {
       const customToken = await auth.signIn(token, config.hostname);
       context.user = UserApi.fromToken(customToken);
 
-      return {
+      const response: {
+        twoFaEnabled: boolean;
+        token: string;
+        walletExists: boolean;
+        verificationEmailSent?: boolean;
+      } = {
         twoFaEnabled: false,
         token: customToken,
         walletExists: false,
       };
+
+      if (config.brand.toLowerCase() === 'gala') {
+        const verificationEmailSent = await sendEmail.sendGalaVerifyEmail(
+          newUser,
+          customToken,
+          true,
+        );
+        response.verificationEmailSent = verificationEmailSent;
+      }
+
+      return response;
     } catch (error) {
       logger.warn(`resolvers.auth.createUser.catch:${error}`);
       throw error;
@@ -169,10 +185,10 @@ class Resolvers extends ResolverBase {
         communicationConsent?: boolean;
       };
     },
-    { user }: Context,
+    context: Context,
   ) => {
+    const { user } = context;
     this.requireAuth(user);
-
     const {
       email,
       firstName,
@@ -190,6 +206,12 @@ class Resolvers extends ResolverBase {
     if (email) {
       emailPass.email = email;
       userDoc.set('email', email);
+      userDoc.set('emailVerified', false);
+      await auth.updateUserAuth(
+        user.uid,
+        { emailVerified: false },
+        config.hostname,
+      );
     }
     if (password) {
       emailPass.password = password;
@@ -222,6 +244,9 @@ class Resolvers extends ResolverBase {
       });
     }
     await userDoc.save();
+    if (email) {
+      await this.sendVerifyEmail('_', { newAccount: false }, context);
+    }
     return {
       success: true,
     };
@@ -367,6 +392,63 @@ class Resolvers extends ResolverBase {
     }
     return { agreementNames: neededAgreementNames };
   };
+
+  public sendVerifyEmail = async (
+    parent: any,
+    { newAccount }: { newAccount: boolean },
+    { user, dataSources, req }: Context,
+  ) => {
+    this.requireAuth(user);
+
+    const userDoc = await user.findFromDb();
+    const { sendEmail } = dataSources;
+    const token =
+      req && req.headers && req.headers.authorization
+        ? req.headers.authorization.replace('Bearer ', '')
+        : '';
+    if (token) {
+      const emailSent = await sendEmail.sendGalaVerifyEmail(
+        userDoc,
+        token,
+        newAccount,
+      );
+      return {
+        success: emailSent,
+      };
+    } else {
+      return {
+        success: false,
+        message: 'missing authorization token',
+      };
+    }
+  };
+
+  public verifyEmailAddress = async (
+    parent: any,
+    { token }: { token: string },
+  ) => {
+    const validToken = await auth.verifyAndDecodeToken(token, config.hostname, {
+      ignoreExpiration: true,
+    });
+    if (!validToken) {
+      return {
+        success: false,
+        message: 'invalid token',
+      };
+    }
+    const { claims, uid } = validToken;
+    const userDoc = await User.findById(claims.userId).exec();
+
+    if (!userDoc.emailVerified) {
+      userDoc.set('emailVerified', true);
+      userDoc.save();
+
+      auth.updateUserAuth(uid, { emailVerified: true }, config.hostname);
+    }
+    return {
+      success: true,
+    };
+  };
 }
 
 export const userResolver = new Resolvers();
@@ -382,5 +464,7 @@ export default {
     updateUser: userResolver.updateUser,
     unsubscribe: userResolver.unsubscribe,
     acceptAgreements: userResolver.acceptAgreements,
+    sendVerifyEmail: userResolver.sendVerifyEmail,
+    verifyEmailAddress: userResolver.verifyEmailAddress,
   },
 };

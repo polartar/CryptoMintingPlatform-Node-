@@ -15,4 +15,11 @@ export const getPipeline = (userId: string, startDate: Date, endDate: Date) => [
       amount: { $sum: '$amount' },
     },
   },
+  {
+    $addFields: {
+      amount: {
+        $round: ['$amount', 1],
+      },
+    },
+  },
 ];

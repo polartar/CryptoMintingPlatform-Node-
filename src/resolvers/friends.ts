@@ -42,6 +42,7 @@ class Resolvers extends ResolverBase {
       firstName,
       referralLink,
       communicationConsent,
+      emailVerified,
     } = await this.verifyNudgableFriend(user.userId, id);
 
     if (!isFriend) {
@@ -55,6 +56,13 @@ class Resolvers extends ResolverBase {
       return {
         success: false,
         message: `Already nudged`,
+      };
+    }
+
+    if (!emailVerified) {
+      return {
+        success: false,
+        message: `Friend has not verified their email address`,
       };
     }
 
@@ -73,6 +81,7 @@ class Resolvers extends ResolverBase {
         firstName,
         referralLink,
         communicationConsent,
+        emailVerified,
       },
       unsubscribeLink,
     );
@@ -98,6 +107,7 @@ class Resolvers extends ResolverBase {
         timestamp: Date;
         consentGiven: boolean;
       }>;
+      emailVerified: boolean;
     }> = await User.aggregate(pipeline);
 
     const nudges = await Promise.all(
