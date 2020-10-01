@@ -3,9 +3,9 @@ import { auth, config, logger } from '../common';
 import { Context } from '../types/context';
 import { UserApi } from '../data-sources/';
 import { User, Template } from '../models';
-import { crypto } from '../utils';
 import { IOrderContext } from '../types';
 import { s3Service } from '../services';
+import { Types } from 'mongoose';
 import { AnalysisOptions } from 'aws-sdk/clients/cloudsearch';
 
 class Resolvers extends ResolverBase {
@@ -72,7 +72,7 @@ class Resolvers extends ResolverBase {
       const privacyTemplateId = await this.getTemplateId('privacy-policy');
 
       const email = userEmail.toLowerCase();
-      const affiliateId = crypto.md5UrlSafe(email);
+      const affiliateId = new Types.ObjectId().toHexString();
 
       const profilePhotoUrl = profilePhotoFilename
         ? s3Service.getUrlFromFilename(profilePhotoFilename)
