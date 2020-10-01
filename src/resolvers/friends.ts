@@ -107,7 +107,7 @@ class Resolvers extends ResolverBase {
         timestamp: Date;
         consentGiven: boolean;
       }>;
-      emailVerified: boolean;
+      emailVerified: Date;
     }> = await User.aggregate(pipeline);
 
     const nudges = await Promise.all(

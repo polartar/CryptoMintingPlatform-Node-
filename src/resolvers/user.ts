@@ -206,7 +206,7 @@ class Resolvers extends ResolverBase {
     if (email) {
       emailPass.email = email;
       userDoc.set('email', email);
-      userDoc.set('emailVerified', false);
+      userDoc.set('emailVerified', undefined, { strict: false });
       await auth.updateUserAuth(
         user.uid,
         { emailVerified: false },
@@ -244,7 +244,7 @@ class Resolvers extends ResolverBase {
       });
     }
     await userDoc.save();
-    if (email) {
+    if (email && config.brand.toLowerCase() === 'gala') {
       await this.sendVerifyEmail('_', { newAccount: false }, context);
     }
     return {
@@ -440,7 +440,7 @@ class Resolvers extends ResolverBase {
     const userDoc = await User.findById(claims.userId).exec();
 
     if (!userDoc.emailVerified) {
-      userDoc.set('emailVerified', true);
+      userDoc.set('emailVerified', new Date());
       userDoc.save();
 
       auth.updateUserAuth(uid, { emailVerified: true }, config.hostname);
