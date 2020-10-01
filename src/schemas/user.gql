@@ -13,7 +13,7 @@ type UserProfile {
   communicationConsent: Boolean
   role: String!
   number: String
-  emailVerified: Boolean
+  emailVerified: Date
 }
 
 input CreateUserInput {
