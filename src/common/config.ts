@@ -105,19 +105,9 @@ class Config {
   public readonly baseNumberOfShares = this.normalizeNumber(
     env.BASE_NUMBER_OF_SHARES,
   );
-  public readonly dailyWalletStatsCronExpression =
-    env.WALLET_STATS_CRON_EXPRESSION;
   public readonly rewardWarnThreshold = this.normalizeNumber(
     env.REWARD_WARN_THRESHOLD,
   );
-  public readonly sendWalletReportToConnect = env.SEND_WALLET_REPORT_TO_CONNECT;
-  public readonly sendWalletReportToConnectArcade =
-    env.SEND_WALLET_REPORT_TO_CONNECTARCADE;
-  public readonly sendWalletReportToArcade = env.SEND_WALLET_REPORT_TO_ARCADE;
-  public readonly sendWalletReportToCodex = env.SEND_WALLET_REPORT_TO_CODEX;
-  public readonly sendWalletReportToGreen = env.SEND_WALLET_REPORT_TO_GREEN;
-  public readonly sendWalletReportToLocalhost =
-    env.SEND_WALLET_REPORT_TO_LOCALHOST;
   public readonly gameItemServiceUrl = env.GAME_ITEM_SERVICE_URL;
   public readonly galaGamingApiUrl = env.GALA_GAMING_API_URL;
 
