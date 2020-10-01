@@ -307,7 +307,8 @@ userSchema.pre('save', async function(this: IUser, next) {
   const user = this;
   if (user.email) {
     user.email = user.email.toLowerCase();
-    user.affiliateId = user.affiliateId || crypto.md5UrlSafe(user.email);
+    user.affiliateId =
+      user.affiliateId || new mongoose.Types.ObjectId().toHexString();
   }
   if (!user.number) {
     const number = await getNextNumber(user);
