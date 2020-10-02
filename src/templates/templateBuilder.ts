@@ -121,10 +121,21 @@ class TemplateBuilder {
 
   buildGalaVerifyEmailHtml(
     firstName: string,
-    verifyLink: string,
+    domain: string,
+    token: string,
     newAccount: boolean,
   ) {
-    const linkText = verifyLink.replace('://', '://&#8203;');
+    const encodedDomain = domain.replace(
+      /:\/\/|\./g,
+      match => `${match}&#8203;`,
+    );
+    const verifyLink = `${domain}/verify-email?token=${token}${
+      newAccount ? `&newuser=true` : ''
+    }`;
+    const linkText = `${encodedDomain}/verify-email?token=${token}${
+      newAccount ? `&newuser=true` : ''
+    }`;
+
     const hbsTemplate = galaVerifyEmail(newAccount);
     return {
       html: Handlebars.compile(hbsTemplate.html)({

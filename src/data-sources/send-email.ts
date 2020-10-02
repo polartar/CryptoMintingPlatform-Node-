@@ -212,14 +212,12 @@ class SendEmail extends DataSource {
     token: string,
     newAccount: boolean,
   ) {
-    const verifyLink = `${config.walletClientDomain.replace(
-      /\/\w*$/g,
-      '',
-    )}/verify-email?token=${token}${newAccount ? `&newuser=true` : ''}`;
+    const domain = config.walletClientDomain.replace(/\/\w*$/g, '');
 
     const { html, subject } = templateBuilder.buildGalaVerifyEmailHtml(
       user.firstName,
-      verifyLink,
+      domain,
+      token,
       newAccount,
     );
 
