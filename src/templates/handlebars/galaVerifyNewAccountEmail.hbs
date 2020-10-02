@@ -16,7 +16,7 @@
       line-height: 1.5;
     }
 
-    ​ .container {
+    .container {
       width: 90vw;
       margin: 30px auto;
       max-width: 550px;
@@ -25,24 +25,13 @@
       border-radius: 8px;
     }
 
-    ​ .unsubscribe {
-      margin-top: 15px;
-      display: block;
-      text-align: center;
-      font-size: 10px;
-    }
-
-    ​ .unsubscribe a,
-    .verify-btn {
-      cursor: pointer;
-    }
-
     .confirm-btn {
+      width: fit-content;
       color: white;
       background-color: #0089ff;
       border-radius: 10px;
       padding: 12px 32px;
-      margin: auto;
+      margin: 38px auto;
       display: block;
       border: none;
       font-size: 20px;
@@ -52,6 +41,15 @@
     .confirm-btn a {
       text-decoration: none;
       color: white;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .link-text {
+      font-size: 10px;
+      margin-bottom: 32px;
     }
   </style>
   <!--[if !mso]><!-- -->
@@ -94,11 +92,14 @@
     </p>
     <p align="center">
       Ok, ready? Lets do this!
-      <a href="{{{ verifyLink }}}">Confirm my e-mail address!</a>&nbsp;
     </p>
     <button class="confirm-btn">
       <a href="{{{ verifyLink }}}">Confirm my e-mail address! </a>
     </button>
+    <p class="center">
+      Button not working? Paste the following URL into your web browser:
+    </p>
+    <p class="center link-text">{{{ linkText }}}</p>
     <p>We can't wait to see you in-game!&nbsp;&nbsp;</p>
     <p>The Gala Games Team&nbsp;</p>
     <p align="center">

@@ -24,7 +24,7 @@ class SendEmail extends DataSource {
     sendTo: {
       email: string;
       communicationConsent: Array<{ timestamp: Date; consentGiven: boolean }>;
-      emailVerified: boolean;
+      emailVerified: Date;
     },
     html: string,
     attachments?: Attachment[],
@@ -35,7 +35,7 @@ class SendEmail extends DataSource {
     if (
       !this.checkUserConsent(sendTo) ||
       !sendTo.email ||
-      !sendTo.emailVerified
+      (config.brand.toLowerCase() === 'gala' && !sendTo.emailVerified)
     ) {
       return false;
     }
@@ -169,7 +169,7 @@ class SendEmail extends DataSource {
         timestamp: Date;
         consentGiven: boolean;
       }>;
-      emailVerified: boolean;
+      emailVerified: Date;
     },
     unsubscribeLink: string,
   ) {
@@ -212,14 +212,12 @@ class SendEmail extends DataSource {
     token: string,
     newAccount: boolean,
   ) {
-    const verifyLink = `${config.walletClientDomain.replace(
-      /\/\w*$/g,
-      '',
-    )}/verify-email?token=${token}${newAccount ? `&newuser=true` : ''}`;
+    const domain = config.walletClientDomain.replace(/\/\w*$/g, '');
 
     const { html, subject } = templateBuilder.buildGalaVerifyEmailHtml(
       user.firstName,
-      verifyLink,
+      domain,
+      token,
       newAccount,
     );
 

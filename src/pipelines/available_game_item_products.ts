@@ -1,103 +1,111 @@
 import { config } from '../common';
 
-export const availableGameItemProductsPipeline = [
-  {
+export const availableGameItemProductsPipeline = (game: string) => {
+  const matchStage: { [key: string]: any } = {
     $match: {
       baseId: new RegExp('^0x', 'i'),
     },
-  },
-  {
-    $sort: {
-      baseId: 1,
-    },
-  },
-  {
-    $lookup: {
-      from: 'erc1155-tokens',
-      localField: 'baseId',
-      foreignField: 'baseId',
-      as: 'token',
-    },
-  },
-  {
-    $project: {
-      _id: 0,
-      invoiceAddress: 1,
-      baseId: 1,
-      price: 1,
-      name: {
-        $arrayElemAt: ['$token.name', 0],
-      },
-      description: {
-        $arrayElemAt: ['$token.description', 0],
-      },
-      image: {
-        $arrayElemAt: ['$token.image', 0],
-      },
-      game: {
-        $arrayElemAt: ['$token.game', 0],
-      },
-      coin: 'GALA',
-      rarity: {
-        $arrayElemAt: ['$token.properties.rarity', 0],
+  };
+
+  if (game) {
+    matchStage.$match.game = game;
+  }
+
+  return [
+    matchStage,
+    {
+      $sort: {
+        baseId: 1,
       },
     },
-  },
-  {
-    $lookup: {
-      from: 'wallet-transactions',
-      let: {
-        baseId: '$baseId',
+    {
+      $lookup: {
+        from: 'erc1155-tokens',
+        localField: 'baseId',
+        foreignField: 'baseId',
+        as: 'token',
       },
-      as: 'transactions',
-      pipeline: [
-        {
-          $match: {
-            $or: [
-              {
-                to: config.galaMasterNodeWalletAddress,
-              },
-              {
-                from: config.galaMasterNodeWalletAddress,
-              },
-            ],
-            $expr: {
-              $eq: ['$$baseId', '$baseId'],
-            },
-          },
+    },
+    {
+      $project: {
+        _id: 0,
+        invoiceAddress: 1,
+        baseId: 1,
+        price: 1,
+        name: {
+          $arrayElemAt: ['$token.name', 0],
         },
-        {
-          $project: {
-            qtySubTotal: {
-              $cond: [
+        description: {
+          $arrayElemAt: ['$token.description', 0],
+        },
+        image: {
+          $arrayElemAt: ['$token.image', 0],
+        },
+        game: {
+          $arrayElemAt: ['$token.game', 0],
+        },
+        coin: 'GALA',
+        rarity: {
+          $arrayElemAt: ['$token.properties.rarity', 0],
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: 'wallet-transactions',
+        let: {
+          baseId: '$baseId',
+        },
+        as: 'transactions',
+        pipeline: [
+          {
+            $match: {
+              $or: [
                 {
-                  $eq: ['$from', config.galaMasterNodeWalletAddress],
+                  to: config.galaMasterNodeWalletAddress,
                 },
                 {
-                  $multiply: ['$amount', -1],
+                  from: config.galaMasterNodeWalletAddress,
                 },
-                '$amount',
               ],
+              $expr: {
+                $eq: ['$$baseId', '$baseId'],
+              },
             },
           },
-        },
-        {
-          $group: {
-            _id: '',
-            qtyLeft: {
-              $sum: '$qtySubTotal',
+          {
+            $project: {
+              qtySubTotal: {
+                $cond: [
+                  {
+                    $eq: ['$from', config.galaMasterNodeWalletAddress],
+                  },
+                  {
+                    $multiply: ['$amount', -1],
+                  },
+                  '$amount',
+                ],
+              },
             },
           },
-        },
-      ],
-    },
-  },
-  {
-    $addFields: {
-      qtyLeft: {
-        $ifNull: [{ $arrayElemAt: ['$transactions.qtyLeft', 0] }, 0],
+          {
+            $group: {
+              _id: '',
+              qtyLeft: {
+                $sum: '$qtySubTotal',
+              },
+            },
+          },
+        ],
       },
-      transactions: '$$REMOVE',
     },
-  },
-];
+    {
+      $addFields: {
+        qtyLeft: {
+          $ifNull: [{ $arrayElemAt: ['$transactions.qtyLeft', 0] }, 0],
+        },
+        transactions: '$$REMOVE',
+      },
+    },
+  ];
+};
