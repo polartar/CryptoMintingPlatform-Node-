@@ -267,7 +267,8 @@ class Config {
     if (
       !this.hostname.includes('localhost') ||
       (!this.hostname.includes('connectblockchain.net') &&
-        connectMongoUrl !== undefined)
+        connectMongoUrl !== undefined &&
+        this.brand !== 'gala')
     ) {
       this.connectMongoConnection = await createConnection(connectMongoUrl, {
         useNewUrlParser: true,
