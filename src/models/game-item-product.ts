@@ -4,6 +4,7 @@ interface IGameItemProduct {
   name: string;
   hdPath: string;
   invoiceAddress: string;
+  game: string;
   price: number;
   baseId: string;
 }
