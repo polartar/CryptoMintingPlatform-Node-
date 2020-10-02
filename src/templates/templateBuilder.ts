@@ -124,9 +124,14 @@ class TemplateBuilder {
     verifyLink: string,
     newAccount: boolean,
   ) {
+    const linkText = verifyLink.replace('://', '://&#8203;');
     const hbsTemplate = galaVerifyEmail(newAccount);
     return {
-      html: Handlebars.compile(hbsTemplate.html)({ verifyLink, firstName }),
+      html: Handlebars.compile(hbsTemplate.html)({
+        verifyLink,
+        firstName,
+        linkText,
+      }),
       subject: hbsTemplate.subject,
     };
   }

@@ -3,11 +3,11 @@
 ​
 
 <head>
-  <meta charset="UTF-8">
-  <meta content="width=device-width, initial-scale=1" name="viewport">
-  <meta name="x-apple-disable-message-reformatting">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta content="telephone=no" name="format-detection">
+  <meta charset="UTF-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <meta name="x-apple-disable-message-reformatting" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta content="telephone=no" name="format-detection" />
   <title></title>
   <style>
     html,
@@ -16,7 +16,7 @@
       line-height: 1.5;
     }
 
-    ​ .container {
+    .container {
       width: 90vw;
       margin: 30px auto;
       max-width: 550px;
@@ -26,6 +26,7 @@
     }
 
     .confirm-btn {
+      width: fit-content;
       color: white;
       background-color: #0089ff;
       border-radius: 10px;
@@ -41,9 +42,18 @@
       text-decoration: none;
       color: white;
     }
+
+    .center {
+      text-align: center;
+    }
+
+    .link-text {
+      font-size: 10px;
+      margin-bottom: 32px;
+    }
   </style>
   <!--[if !mso]><!-- -->
-  <link href="https://fonts.googleapis.com/css?family=Roboto:400" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400" rel="stylesheet" />
   <!--<![endif]-->
 </head>
 ​
@@ -51,33 +61,55 @@
 <body>
   <div class="container">
     <h4>IMPORTANT: ACTION REQUIRED</h4>
-    <p>At Gala Games, we work hard to bring you the best in gaming experiences. However, we can only do that if you
-      confirm your account. As we work on creating a newer, faster, and smoother account creation process, we are also
-      going back to confirm all of our existing users to weed out any fake accounts to make sure that everyone receiving
-      referral bonuses is a legitimate account holder. Those who created accounts just to play will continue to be able
-      to do so, but in order to receive points in the distribution, you need to confirm your email account.</p>
-    <p>You will have until October 15th to confirm your account. Those who do not confirm their account within this time
-      period will be ineligible to receive distribution points.&nbsp;</p>
-    <p>Please click the link below to confirm your account and email address:</p>
-    <button class="confirm-btn">
+    <p>
+      At Gala Games, we work hard to bring you the best in gaming experiences.
+      However, we can only do that if you confirm your account. As we work on
+      creating a newer, faster, and smoother account creation process, we are
+      also going back to confirm all of our existing users to weed out any
+      fake accounts to make sure that everyone receiving referral bonuses is a
+      legitimate account holder. Those who created accounts just to play will
+      continue to be able to do so, but in order to receive points in the
+      distribution, you need to confirm your email account.
+    </p>
+    <p>
+      You will have until October 15th to confirm your account. Those who do
+      not confirm their account within this time period will be ineligible to
+      receive distribution points.&nbsp;
+    </p>
+    <p>
+      Please click the link below to confirm your account and email address:
+    </p>
+    <div class="confirm-btn">
       <a href="{{{ verifyLink }}}">Confirm my e-mail address! </a>
-    </button>
+    </div>
+    <p class="center">
+      Button not working? Paste the following URL into your web browser:
+    </p>
+    <p class="center link-text">{{{ linkText }}}</p>
     <p>Owned by Players,</p>
     <p>The Gala Games Team&nbsp;</p>
-    <p align="center"> <a href="https://twitter.com/GoGalaGames" target="_blank"><img
+    <p align="center">
+      <a href="https://twitter.com/GoGalaGames" target="_blank"><img
           src="https://gala.games/wp-content/uploads/2020/09/TW.png" width="40" height="40" alt=""
-          padding="10px"></a>&nbsp; <a href="https://facebook.com/GoGalaGames" target="_blank"><img
+          padding="10px" /></a>&nbsp;
+      <a href="https://facebook.com/GoGalaGames" target="_blank"><img
           src="https://gala.games/wp-content/uploads/2020/09/FB.png" width="40" height="40" alt=""
-          padding="10px"></a>&nbsp; <a href="https://instagram.com/GoGalaGames" target="_blank"><img
+          padding="10px" /></a>&nbsp;
+      <a href="https://instagram.com/GoGalaGames" target="_blank"><img
           src="https://gala.games/wp-content/uploads/2020/09/IG.png" width="40" height="40" alt=""
-          padding="10px"></a>&nbsp; <a href="https://www.youtube.com/c/GalaGames" target="_blank"><img
+          padding="10px" /></a>&nbsp;
+      <a href="https://www.youtube.com/c/GalaGames" target="_blank"><img
           src="https://gala.games/wp-content/uploads/2020/09/YT.png" width="40" height="40" alt=""
-          padding="10px"></a>&nbsp; <a href="http://galagames.chat" target="_blank"><img
-          src="https://gala.games/wp-content/uploads/2020/09/DI.png" width="40" height="40" alt=""
-          padding="10px"></a>&nbsp; <a href="https://t.me/GoGalaGames" target="_blank"><img
-          src="https://gala.games/wp-content/uploads/2020/09/TE.png" width="40" height="40" alt=""
-          padding="10px"></a>&nbsp; </p>
-    <p align="center">See us online at <a href="https://gala.games/" target="_blank">www.gala.games</a>!</p>
+          padding="10px" /></a>&nbsp;
+      <a href="http://galagames.chat" target="_blank"><img src="https://gala.games/wp-content/uploads/2020/09/DI.png"
+          width="40" height="40" alt="" padding="10px" /></a>&nbsp;
+      <a href="https://t.me/GoGalaGames" target="_blank"><img src="https://gala.games/wp-content/uploads/2020/09/TE.png"
+          width="40" height="40" alt="" padding="10px" /></a>&nbsp;
+    </p>
+    <p align="center">
+      See us online at
+      <a href="https://gala.games/" target="_blank">www.gala.games</a>!
+    </p>
   </div>
 </body>
 ​
