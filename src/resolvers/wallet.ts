@@ -398,6 +398,72 @@ class Resolvers extends ResolverBase {
     }
   };
 
+  getPrivateKey = async (
+    parent: any,
+    {
+      coinSymbol,
+      walletPassword,
+    }: { coinSymbol: CoinSymbol; walletPassword: string },
+    { user, wallet }: Context,
+  ) => {
+    this.requireAuth(user);
+
+    try {
+      if (coinSymbol) {
+        const validPassword = await wallet
+          .coin(coinSymbol)
+          .checkPassword(user, walletPassword);
+
+        if (!validPassword) {
+          throw new Error('Incorrect password');
+        }
+
+        const encryptedKey = await wallet
+          .coin(coinSymbol)
+          .getEncryptedPrivKey(user.userId);
+
+        return {
+          result: [{ key: encryptedKey, symbol: coinSymbol }],
+          success: true,
+        };
+      }
+
+      const keys = await Promise.all(
+        wallet.parentInterfaces.map(async walletInterface => {
+          const validPassword = await walletInterface.checkPassword(
+            user,
+            walletPassword,
+          );
+
+          if (!validPassword) {
+            throw new Error('Incorrect password');
+          }
+
+          const key = await walletInterface.getEncryptedPrivKey(user.userId);
+
+          return { key, symbol: walletInterface.symbol };
+        }),
+      );
+
+      return {
+        result: keys,
+        success: true,
+      };
+    } catch (error) {
+      logger.error(`resolvers.wallet.getPrivateKey.catch: ${error}`);
+
+      const message =
+        error.message === 'Incorrect password'
+          ? error.message
+          : 'Something went wrong';
+
+      return {
+        success: false,
+        error: message,
+      };
+    }
+  };
+
   listenForNewBalance = (
     parent: any,
     { coinSymbol }: { coinSymbol: CoinSymbol },
@@ -423,6 +489,7 @@ export default {
     wallet: resolvers.getWallet,
     mnemonic: resolvers.generateMnemonic,
     validateMnemonic: resolvers.validateMnemonic,
+    privateKey: resolvers.getPrivateKey,
   },
   Wallet: {
     transactions: resolvers.getTransactions,

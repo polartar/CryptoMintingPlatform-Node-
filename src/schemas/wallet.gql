@@ -77,6 +77,17 @@ type ValidateMnemonicResponse {
   valid: Boolean!
 }
 
+type PrivateKey {
+  key: String!
+  symbol: String!
+}
+
+type PrivateKeyResponse {
+  result: [PrivateKey!]
+  success: Boolean!
+  error: String
+}
+
 input SendOutput {
   to: String!
   amount: String
@@ -88,6 +99,8 @@ type Query {
   wallet(coinSymbol: String): [Wallet!]!
   mnemonic(lang: String): String!
   validateMnemonic(mnemonic: String!): ValidateMnemonicResponse!
+  # If no coinSymbol is provided, all supported wallets will be returned
+  privateKey(walletPassword: String!, coinSymbol: String): PrivateKeyResponse!
 }
 
 type Mutation {

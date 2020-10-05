@@ -553,11 +553,11 @@ class EthWallet extends CoinWalletBase {
 
   public checkPassword = async (userApi: UserApi, password: string) => {
     try {
-      const encryptedPrivateKey = await this.getDecryptedPrivateKey(
+      const decryptedPrivateKey = await this.getDecryptedPrivateKey(
         userApi.userId,
         password,
       );
-      const decryptedPrivateKey = this.decrypt(encryptedPrivateKey, password);
+
       return !!decryptedPrivateKey;
     } catch (error) {
       logger.warn(
