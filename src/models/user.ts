@@ -109,9 +109,27 @@ export interface IUser extends mongoose.Document {
 }
 
 async function getNextNumber({ firstName, lastName }: IUser) {
-  const { sequence: id } = await mongoose.connection.db
-    .collection('sequences')
-    .findOne({ name: 'users' });
+  const result = await mongoose.connection.db
+    .collection<{ sequence: string }>('sequences')
+    .findOneAndUpdate(
+      {
+        name: 'users',
+      },
+      {
+        $inc: {
+          sequence: 1,
+        },
+      },
+      {
+        projection: {
+          sequence: 1,
+        },
+        maxTimeMS: 5000,
+        upsert: true,
+        returnOriginal: false,
+      },
+    );
+  const id = result.value.sequence;
   if (id && firstName && firstName.length && lastName.length) {
     const firstChar = firstName.substring(0, 1);
     const lastChar = lastName.substring(0, 1);
