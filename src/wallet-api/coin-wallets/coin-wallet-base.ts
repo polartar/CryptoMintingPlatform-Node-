@@ -2,6 +2,10 @@
 import { ITransaction } from '../../types';
 import { UserApi } from '../../data-sources';
 import { crypto } from '../../utils';
+import { credentialService } from '../../services';
+
+const BTC_RESOURCE = 'xprivkey';
+const ETH_RESOURCE = 'privatekey';
 
 abstract class CoinWalletBase {
   constructor(
@@ -93,5 +97,19 @@ abstract class CoinWalletBase {
     crypto.decrypt(encryptedText, secret);
 
   protected hash = (value: string) => crypto.hash(value);
+
+  public getEncryptedPrivKey = async (userId: string) => {
+    let symbol = this.symbol;
+
+    if (this.contractAddress) {
+      symbol = 'ETH';
+    }
+
+    const resource = symbol === 'BTC' ? BTC_RESOURCE : ETH_RESOURCE;
+
+    const encryptedKey = await credentialService.get(userId, symbol, resource);
+
+    return encryptedKey;
+  };
 }
 export default CoinWalletBase;
