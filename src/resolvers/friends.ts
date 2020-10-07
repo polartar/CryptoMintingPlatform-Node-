@@ -41,7 +41,6 @@ class Resolvers extends ResolverBase {
       email,
       firstName,
       referralLink,
-      communicationConsent,
       emailVerified,
     } = await this.verifyNudgableFriend(user.userId, id);
 
@@ -67,23 +66,18 @@ class Resolvers extends ResolverBase {
     }
 
     const referrer = await user.findFromDb();
-    const unsubscribeLink = `${config.walletClientDomain}/unsubscribe?list=friend-nudge&id=${id}`;
 
     await FriendNudge.create({
       code: config.nudgeCode,
       userId: user.userId,
       friend: id,
     });
-    await dataSources.sendEmail.nudgeFriend(
+    await dataSources.galaEmailer.sendNudgeFriendEmail(
+      email,
+      !!emailVerified,
+      firstName,
       referrer.firstName,
-      {
-        email,
-        firstName,
-        referralLink,
-        communicationConsent,
-        emailVerified,
-      },
-      unsubscribeLink,
+      referralLink,
     );
 
     return { success: true };
@@ -112,12 +106,12 @@ class Resolvers extends ResolverBase {
 
     const nudges = await Promise.all(
       nudgableFriends.map(async ({ referrer, ...friend }) => {
-        const unsubscribeLink = `${config.walletClientDomain}/unsubscribe?list=friend-nudge&id=${friend.userId}`;
-
-        await dataSources.sendEmail.nudgeFriend(
+        await dataSources.galaEmailer.sendNudgeFriendEmail(
+          friend.email,
+          !!friend.emailVerified,
+          friend.firstName,
           referrer,
-          friend,
-          unsubscribeLink,
+          friend.referralLink,
         );
 
         return new FriendNudge({

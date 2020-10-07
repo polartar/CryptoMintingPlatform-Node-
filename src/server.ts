@@ -17,6 +17,7 @@ import {
   Blockfunnels,
   SendEmail,
   LinkShortener,
+  GalaEmailer,
 } from './data-sources';
 import { walletApi } from './wallet-api';
 import { removeListeners } from './blockchain-listeners';
@@ -111,6 +112,7 @@ class Server {
       zendesk: new Zendesk(),
       sendEmail: new SendEmail(),
       blockfunnels: new Blockfunnels(),
+      galaEmailer: new GalaEmailer(),
     };
   }
 

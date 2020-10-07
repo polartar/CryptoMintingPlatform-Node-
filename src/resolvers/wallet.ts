@@ -49,7 +49,7 @@ class Resolvers extends ResolverBase {
   createWallet = async (
     parent: any,
     args: { mnemonic: string; walletPassword: string },
-    { user, wallet, dataSources: { sendEmail } }: Context,
+    { user, wallet, dataSources: { sendEmail, galaEmailer } }: Context,
   ) => {
     const keyServiceOk = await credentialService.checkHealth(user.userId);
     if (!keyServiceOk) {
@@ -94,6 +94,13 @@ class Resolvers extends ResolverBase {
           user.Model.findOne({ affiliateId: referredUser.referredBy })
             .exec()
             .then(referrer => {
+              galaEmailer.sendReferredNewUserEmail(
+                referrer.email,
+                !!referrer.emailVerified,
+                referrer.firstName,
+                referredUser.firstName,
+                referrer?.wallet?.shareLink,
+              );
               sendEmail.shareAccepted(referrer, referredUser);
             });
         }

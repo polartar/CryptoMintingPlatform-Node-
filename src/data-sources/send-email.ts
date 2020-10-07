@@ -159,39 +159,6 @@ class SendEmail extends DataSource {
     }
   }
 
-  public async nudgeFriend(
-    referrer: string,
-    friend: {
-      email: string;
-      firstName: string;
-      referralLink: string;
-      communicationConsent: Array<{
-        timestamp: Date;
-        consentGiven: boolean;
-      }>;
-      emailVerified: Date;
-    },
-    unsubscribeLink: string,
-  ) {
-    logger.debug(`data-sources.SendEmail.nudgeFriend.friend: ${friend.email}`);
-
-    if (!referrer || !friend) {
-      return false;
-    }
-
-    const { html, subject } = templateBuilder.buildNudgeFriendHtml(
-      referrer,
-      friend.firstName,
-      friend.referralLink,
-      unsubscribeLink,
-    );
-    const emailSent = await this.sendMail(subject, friend, html);
-
-    logger.debug(`data-sources.SendEmail.nudgeFriend.emailSent: ${emailSent}`);
-
-    return emailSent;
-  }
-
   public checkUserConsent(user: {
     communicationConsent: Array<{ timestamp: Date; consentGiven: boolean }>;
   }) {
@@ -204,37 +171,6 @@ class SendEmail extends DataSource {
       // In the past, the user either could not create an account without explicitly consenting to communications, or implicitly consented by creating an account.
       // Therefore, if this property does not exist on the user document, they consented
       return true;
-    }
-  }
-
-  public async sendGalaVerifyEmail(
-    user: IUser,
-    token: string,
-    newAccount: boolean,
-  ) {
-    const domain = config.walletClientDomain.replace(/\/\w*$/g, '');
-
-    const { html, subject } = templateBuilder.buildGalaVerifyEmailHtml(
-      user.firstName,
-      domain,
-      token,
-      newAccount,
-    );
-
-    try {
-      const mailOptions: Options = {
-        to: user.email,
-        from: this.sendFromEmailAddress,
-        subject: subject,
-        html: html,
-      };
-
-      const { message } = await this.transport.sendMail(mailOptions);
-
-      return message === 'success';
-    } catch (error) {
-      logger.error(error);
-      return false;
     }
   }
 }
