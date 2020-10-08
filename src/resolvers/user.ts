@@ -6,6 +6,7 @@ import { User, Template } from '../models';
 import { IOrderContext } from '../types';
 import { s3Service } from '../services';
 import { Types } from 'mongoose';
+import License from '../models/licenses';
 
 class Resolvers extends ResolverBase {
   private doesUserAlreadyExist = async (email: string) => {
@@ -60,7 +61,7 @@ class Resolvers extends ResolverBase {
     context: Context,
   ) => {
     const {
-      dataSources: { linkShortener, bitly, sendEmail },
+      dataSources: { linkShortener, bitly, sendEmail, galaEmailer },
     } = context;
 
     const {
@@ -203,12 +204,12 @@ class Resolvers extends ResolverBase {
       };
 
       if (config.brand.toLowerCase() === 'gala') {
-        const verificationEmailSent = await sendEmail.sendGalaVerifyEmail(
-          newUser,
+        await galaEmailer.sendNewUserEmailConfirmation(
+          email,
+          firstName,
           customToken,
-          true,
         );
-        response.verificationEmailSent = verificationEmailSent;
+        response.verificationEmailSent = true;
       }
 
       return response;
@@ -448,19 +449,27 @@ class Resolvers extends ResolverBase {
     this.requireAuth(user);
 
     const userDoc = await user.findFromDb();
-    const { sendEmail } = dataSources;
+    const { galaEmailer } = dataSources;
     const token =
       req && req.headers && req.headers.authorization
         ? req.headers.authorization.replace('Bearer ', '')
         : '';
     if (token) {
-      const emailSent = await sendEmail.sendGalaVerifyEmail(
-        userDoc,
-        token,
-        newAccount,
-      );
+      if (newAccount) {
+        await galaEmailer.sendNewUserEmailConfirmation(
+          userDoc.email,
+          userDoc.firstName,
+          token,
+        );
+      } else {
+        await galaEmailer.sendExistingUserEmailConfirmation(
+          userDoc.email,
+          userDoc.firstName,
+          token,
+        );
+      }
       return {
-        success: emailSent,
+        success: true,
       };
     } else {
       return {
@@ -473,6 +482,7 @@ class Resolvers extends ResolverBase {
   public verifyEmailAddress = async (
     parent: any,
     { token }: { token: string },
+    { dataSources }: Context,
   ) => {
     const validToken = await auth.verifyAndDecodeToken(token, config.hostname, {
       ignoreExpiration: true,
@@ -492,6 +502,31 @@ class Resolvers extends ResolverBase {
 
       auth.updateUserAuth(uid, { emailVerified: true }, config.hostname);
     }
+    const hasLicense = !!(await License.findOne({ userId: userDoc.id }));
+
+    const lists = [config.emailLists.general];
+
+    if (userDoc?.wallet?.activations?.gala?.activated) {
+      lists.push(config.emailLists.upgrade);
+    }
+    if (hasLicense) {
+      lists.push(config.emailLists.nodeOwner);
+    }
+
+    try {
+      await dataSources.galaEmailer.addContact(
+        userDoc.firstName,
+        userDoc.lastName,
+        userDoc.email,
+        !!userDoc.emailVerified,
+        lists,
+      );
+    } catch (error) {
+      logger.warn(
+        `resolvers.user.verifyEmailAddress.addContact.catch: ${error.stack}`,
+      );
+    }
+
     return {
       success: true,
     };

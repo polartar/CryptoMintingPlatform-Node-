@@ -9,6 +9,7 @@ import {
   SendEmail,
   Blockfunnels,
   LinkShortener,
+  GalaEmailer,
 } from '../data-sources/';
 import { WalletApi } from '../wallet-api';
 export interface IUserClaims {
@@ -32,6 +33,7 @@ export interface Context {
     zendesk: Zendesk;
     sendEmail: SendEmail;
     blockfunnels: Blockfunnels;
+    galaEmailer: GalaEmailer;
   };
   user: UserApi | null;
   logger: Logger;

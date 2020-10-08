@@ -40,6 +40,7 @@ class Config {
     env.BLOCKFUNNELS_BASIC_AUTH_PASSWORD;
   public readonly isDev = env.NODE_ENV !== 'production';
   public readonly isStage = env.IS_STAGE === 'true';
+  public readonly isProd = env.NODE_ENV === 'production' && !env.IS_STAGE;
   public readonly etherScanApiKey = env.ETHERSCAN_API_KEY;
   public readonly clientSecretKeyRequired: boolean =
     env.CLIENT_SECRET_KEY_REQUIRED !== undefined &&
@@ -146,6 +147,25 @@ class Config {
 
   public readonly linkShortenerUrl =
     env.LINK_SHORTENER_URL.length > 1 ? env.LINK_SHORTENER_URL : '';
+
+  public readonly emailLists = {
+    general: 'b6a6a9d6-6130-4567-8b43-6bb2b51457dd',
+    upgrade: '428d8fdc-921d-41b9-ad8d-2555b2018f90',
+    nodeOwner: 'a6c5b10b-7a11-47ad-b2f3-3fdab6d24eea',
+  };
+
+  public sendgridTemplateIds = {
+    verifyEmailNewUser: 'd-fb448b5842414c1faf568e9648dd3546',
+    verifyEmailExistingUser: 'd-5c4129cd88004c1e88182876350d527a',
+    referredNewUser: 'd-d34540ca262c4be48bcf1ab374180d3a',
+    firstNodePurchase: 'd-b2a96c51d933480f8af2e889a763a9f1',
+    nudgeFriend: 'd-349e75e16d764231b995bf2b2e140484',
+    referredUpgrade: 'd-560a41dccf96491fa07d53997d16828c',
+  };
+
+  public sendgridUnsubscribeGroupIds = {
+    general: 14643,
+  };
 
   constructor() {
     autoBind(this);
@@ -267,7 +287,8 @@ class Config {
     if (
       !this.hostname.includes('localhost') ||
       (!this.hostname.includes('connectblockchain.net') &&
-        connectMongoUrl !== undefined)
+        connectMongoUrl !== undefined &&
+        this.brand !== 'gala')
     ) {
       this.connectMongoConnection = await createConnection(connectMongoUrl, {
         useNewUrlParser: true,

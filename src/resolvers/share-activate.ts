@@ -32,10 +32,6 @@ interface IRewardConfig {
 }
 
 export class ShareActivateResolvers extends ResolverBase {
-  private isGalaReferrerEligible = (referrer: IUser) => {
-    return !!referrer?.wallet?.activations?.gala?.activated;
-  };
-
   private getRewardconfig = async () => {
     const { brand } = config;
     const rewardConfig = await WalletConfig.findOne({ brand });
@@ -65,12 +61,7 @@ export class ShareActivateResolvers extends ResolverBase {
       walletPassword: string;
       orderContext: IOrderContext;
     },
-    {
-      wallet,
-      user,
-      logger,
-      dataSources: { cryptoFavorites, sendEmail },
-    }: Context,
+    { wallet, user, logger, dataSources: { galaEmailer } }: Context,
   ) => {
     const purchaseLog = new PurchaseAttempt({
       userId: user?.userId,
@@ -165,14 +156,23 @@ export class ShareActivateResolvers extends ResolverBase {
 
       purchaseLog.lastCompletedOperation = 'Activation saved to DB';
 
-      this.emailReferrerAndIncrementUsedShares(
-        referrer,
-        userFromDb,
-        outputs.length,
-        sendEmail,
+      await galaEmailer.sendReferredUpgradeEmail(
+        referrer.email,
+        !!referrer.emailVerified,
+        userFromDb.firstName,
       );
 
-      purchaseLog.success = true;
+      purchaseLog.lastCompletedOperation = 'Send referrer upgrade email';
+
+      await galaEmailer.addContact(
+        userFromDb.firstName,
+        userFromDb.lastName,
+        userFromDb.email,
+        !!userFromDb.emailVerified,
+        [config.emailLists.upgrade],
+      );
+
+      purchaseLog.lastCompletedOperation = 'Add contact to gold list';
 
       await purchaseLog.save();
 

@@ -19,3 +19,4 @@ export * from './template';
 export * from './purchase-attempt';
 export * from './simplex-order';
 export * from './game-item-product';
+export * from './licenses';

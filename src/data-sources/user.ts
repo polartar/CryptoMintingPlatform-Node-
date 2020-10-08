@@ -70,7 +70,15 @@ export default class UserApi extends DataSource {
     return ConnectUser.findOne(query);
   };
 
-  public findUserAndReferrer = async () => {
+  private findUserAndLocalReferrer = async () => {
+    const userFromDb = await this.findFromDb();
+    const byAffiliateId = { affiliateId: userFromDb.referredBy };
+    const referrer = await User.findOne(byAffiliateId);
+
+    return { referrer, userFromDb };
+  };
+
+  private findUserAndReferrerIncludeConnect = async () => {
     const userFromDb = await this.findFromDb();
     const byAffiliateId = { affiliateId: userFromDb.referredBy };
     const [localReferrer, connectReferrer] = await Promise.all([
@@ -80,6 +88,12 @@ export default class UserApi extends DataSource {
     const referrer = localReferrer || connectReferrer;
 
     return { referrer, userFromDb };
+  };
+
+  public findUserAndReferrer = async () => {
+    return config.brand === 'gala'
+      ? this.findUserAndLocalReferrer()
+      : this.findUserAndReferrerIncludeConnect();
   };
 
   public async setWalletAccountToUser(
