@@ -6,7 +6,6 @@ import { credentialService } from '../services';
 import { config, logger } from '../common';
 import { ISendOutput, IBcoinTx, CoinSymbol } from '../types';
 import listeners from '../blockchain-listeners';
-import { emailScheduler } from '../services/email-scheduler';
 
 class Resolvers extends ResolverBase {
   private saveWalletPassword = async (
@@ -86,10 +85,6 @@ class Resolvers extends ResolverBase {
       }
 
       user.findFromDb().then(async referredUser => {
-        if (config.brand === 'gala') {
-          await emailScheduler.scheduleGalaWelcomeEmails(referredUser);
-        }
-
         if (referredUser && referredUser.referredBy) {
           user.Model.findOne({ affiliateId: referredUser.referredBy })
             .exec()
