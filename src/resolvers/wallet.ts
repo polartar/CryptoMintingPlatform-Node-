@@ -478,7 +478,7 @@ class Resolvers extends ResolverBase {
       );
     }
 
-    listeners[coinSymbol].listenForNewBalance(user.userId);
+    // listeners[coinSymbol].listenForNewBalance(user.userId);
 
     return config.pubsub.asyncIterator([config.newBalance]);
   };

@@ -203,7 +203,7 @@ class Resolvers extends ResolverBase {
         walletExists: false,
       };
 
-      if (config.brand.toLowerCase() === 'gala') {
+      if (config.brand === 'gala') {
         await galaEmailer.sendNewUserEmailConfirmation(
           email,
           firstName,

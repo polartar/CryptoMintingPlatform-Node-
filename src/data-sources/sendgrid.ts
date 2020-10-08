@@ -46,9 +46,9 @@ export class SendGrid extends RESTDataSource {
     if (!this.isOkToAddContacts || !emailVerified) {
       return Promise.resolve();
     }
-    sgClient.request({
+    return sgClient.request({
       method: 'PUT',
-      url: '/marketing/contacts',
+      url: '/v3/marketing/contacts',
       body: {
         list_ids: lists,
         contacts: [
