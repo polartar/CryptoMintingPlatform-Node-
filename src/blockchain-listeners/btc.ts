@@ -38,20 +38,19 @@ class BtcBlockchainListener implements BaseListener {
       logger.debug(
         `blockchain-listeners.btc.listenForNewBalance.walletId: ${walletId}`,
       );
-      const token = await this.btcWalletApi.getToken(walletId);
-      logger.debug(
-        `blockchain-listeners.btc.listenForNewBalance.token.length: ${
-          token ? token.length : 0
-        }`,
-      );
-      if (!token) return;
+      // const token = await this.btcWalletApi.getToken(walletId);
+      // logger.debug(
+      //   `blockchain-listeners.btc.listenForNewBalance.token.length: ${token ? token.length : 0
+      //   }`,
+      // );
+      // if (!token) return;
 
       await this.openPromise;
-      await this.walletClient.join(walletId, token);
+      // await this.walletClient.join(walletId, token);
 
-      this.walletClient.bind('balance', async wallet => {
-        this.publishNewBalance(wallet);
-      });
+      // this.walletClient.bind('balance', async wallet => {
+      //   this.publishNewBalance(wallet);
+      // });
     } catch (error) {
       logger.error(
         `blockchain-listeners.btc.listenForNewBalance.catch: ${error}`,
