@@ -6,3 +6,4 @@ export { default as Zendesk } from './zendesk';
 export { default as SendEmail } from './send-email';
 export { default as Blockfunnels } from './blockfunnels';
 export { default as LinkShortener } from './link-shortener';
+export { GalaEmailer } from './gala-emailer';
