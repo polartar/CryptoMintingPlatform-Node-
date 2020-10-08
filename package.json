@@ -12,10 +12,10 @@
     "format:fix": "pretty-quick --staged",
     "format:check": "prettier --config ./.prettierrc --list-different \"src/**/*{.ts,.js,.json}\"",
     "format:all": "prettier --config ./.prettierrc --write \"src/**/*{.ts,.js,.json}\"",
-    "precommit": "run-s format:fix fix lint"
+    "precommit": "run-s build"
   },
   "dependencies": {
-    "@blockbrothers/firebasebb": "^0.9.6",
+    "@blockbrothers/firebasebb": "^0.10.2",
     "@blockbrothers/legacy-simple-crypto": "^1.0.0",
     "@sendgrid/client": "^7.2.6",
     "@sendgrid/mail": "^7.2.6",

@@ -65,6 +65,7 @@ export default abstract class ResolverBase {
       throw err;
     }
   };
+
   protected requireAuth = (user: UserApi) => {
     if (!user) {
       logger.debug(`common.Resolver-Base.!user`);

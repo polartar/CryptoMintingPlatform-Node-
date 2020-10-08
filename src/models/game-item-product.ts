@@ -6,6 +6,7 @@ interface IGameItemProduct {
   invoiceAddress: string;
   game: string;
   price: number;
+  basePrice: number;
   baseId: string;
 }
 
@@ -26,6 +27,10 @@ const gameItemProductSchema = new Schema({
     unique: true,
   },
   price: {
+    type: Number,
+    required: true,
+  },
+  basePrice: {
     type: Number,
     required: true,
   },

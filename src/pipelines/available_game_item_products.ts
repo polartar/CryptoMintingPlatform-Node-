@@ -32,6 +32,7 @@ export const availableGameItemProductsPipeline = (game: string) => {
         invoiceAddress: 1,
         baseId: 1,
         price: 1,
+        basePrice: 1,
         name: {
           $arrayElemAt: ['$token.name', 0],
         },

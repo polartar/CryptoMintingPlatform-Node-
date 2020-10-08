@@ -9,11 +9,43 @@ import { Types } from 'mongoose';
 import License from '../models/licenses';
 
 class Resolvers extends ResolverBase {
+  private doesUserAlreadyExist = async (email: string) => {
+    const user = await User.findOne({ email });
+
+    return !!user;
+  };
+
+  private async findOrCreateFirebaseUser(email: string, password: string) {
+    try {
+      const user = await auth.createFirebaseUser(
+        { email, password },
+        config.hostname,
+      );
+
+      return user;
+    } catch (error) {
+      if (error.code === 'auth/email-already-exists') {
+        const user = await auth.getUserByEmail(email, config.hostname);
+        const updatedUser = await auth.updateUserAuth(
+          user.uid,
+          { password },
+          config.hostname,
+        );
+
+        return updatedUser;
+      }
+
+      throw error;
+    }
+  }
+
   public createUser = async (
     parent: any,
     args: {
       userInfo: {
-        token: string;
+        email?: string;
+        password?: string;
+        token?: string;
         firstName: string;
         lastName: string;
         displayName: string;
@@ -32,46 +64,60 @@ class Resolvers extends ResolverBase {
       dataSources: { linkShortener, bitly, sendEmail, galaEmailer },
     } = context;
 
-    try {
-      const {
-        token,
-        firstName,
-        lastName,
-        displayName,
-        profilePhotoFilename,
-        phone = null,
-        language,
-        referralContext = {},
-        communicationConsent,
-      } = args.userInfo;
-      const {
-        offer,
-        referredBy,
-        utm_campaign: utmCampaign = '',
-        utm_content: utmContent = '',
-        utm_keyword: utmKeyword = '',
-        utm_medium: utmMedium = '',
-        utm_name: utmName = '',
-        utm_source: utmSource = '',
-        utm_term: utmTerm = '',
-      } = referralContext;
+    const {
+      email,
+      password,
+      token,
+      firstName,
+      lastName,
+      displayName,
+      profilePhotoFilename,
+      phone = null,
+      language,
+      referralContext = {},
+      communicationConsent,
+    } = args.userInfo;
 
+    const {
+      offer,
+      referredBy,
+      utm_campaign: utmCampaign = '',
+      utm_content: utmContent = '',
+      utm_keyword: utmKeyword = '',
+      utm_medium: utmMedium = '',
+      utm_name: utmName = '',
+      utm_source: utmSource = '',
+      utm_term: utmTerm = '',
+    } = referralContext;
+
+    if (email) {
+      const userExists = await this.doesUserAlreadyExist(email);
+
+      if (userExists) {
+        throw new Error('Email already exists.');
+      }
+    }
+
+    try {
       const displayNameValid = await this.checkUniqueDisplayName(displayName);
       if (!displayNameValid) {
         throw new Error('Display name is taken or invalid');
       }
 
-      const firebaseUid = await auth.getFirebaseUid(token, config.hostname);
-      logger.debug(`resolvers.auth.createUser.firebaseUid:${firebaseUid}`);
+      let firebaseUser;
 
-      const { email: userEmail } = await auth.getUser(
-        firebaseUid,
-        config.hostname,
-      );
+      if (token) {
+        const firebaseUid = await auth.getFirebaseUid(token, config.hostname);
+        logger.debug(`resolvers.auth.createUser.firebaseUid:${firebaseUid}`);
+
+        firebaseUser = await auth.getUser(firebaseUid, config.hostname);
+      } else {
+        firebaseUser = await this.findOrCreateFirebaseUser(email, password);
+      }
+
       const termsTemplateId = await this.getTemplateId('terms-of-service');
       const privacyTemplateId = await this.getTemplateId('privacy-policy');
 
-      const email = userEmail.toLowerCase();
       const affiliateId = new Types.ObjectId().toHexString();
 
       const profilePhotoUrl = profilePhotoFilename
@@ -79,8 +125,8 @@ class Resolvers extends ResolverBase {
         : '';
 
       const userObj: any = {
-        email,
-        firebaseUid,
+        email: firebaseUser.email.toLowerCase(),
+        firebaseUid: firebaseUser.uid,
         firstName,
         lastName,
         displayName,
@@ -141,7 +187,9 @@ class Resolvers extends ResolverBase {
 
       await newUser.save();
 
-      const customToken = await auth.signIn(token, config.hostname);
+      const customToken = token
+        ? await auth.signIn(token, config.hostname)
+        : await auth.signInAfterRegister(firebaseUser.uid, config.hostname);
       context.user = UserApi.fromToken(customToken);
 
       const response: {
@@ -155,7 +203,7 @@ class Resolvers extends ResolverBase {
         walletExists: false,
       };
 
-      if (config.brand.toLowerCase() === 'gala') {
+      if (config.brand === 'gala') {
         await galaEmailer.sendNewUserEmailConfirmation(
           email,
           firstName,

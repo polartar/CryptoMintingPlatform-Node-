@@ -18,7 +18,7 @@ const {
 
 class Config {
   public readonly nodeEnv = env.NODE_ENV;
-  public readonly brand = this.getBrandFromHost();
+  public readonly brand = this.getBrandFromHost().toLowerCase();
   public readonly logLevel = env.LOG_LEVEL;
   public readonly port = this.normalizeNumber(env.PORT);
   public readonly hostname = env.HOSTNAME;
@@ -285,10 +285,9 @@ class Config {
   public async setConnectMongoConnection() {
     const connectMongoUrl = env.CONNECT_MONGODB_URI;
     if (
-      !this.hostname.includes('localhost') ||
-      (!this.hostname.includes('connectblockchain.net') &&
-        connectMongoUrl !== undefined &&
-        this.brand !== 'gala')
+      !this.hostname.includes('localhost') &&
+      !['gala', 'connect'].includes(this.brand) &&
+      connectMongoUrl !== undefined
     ) {
       this.connectMongoConnection = await createConnection(connectMongoUrl, {
         useNewUrlParser: true,
