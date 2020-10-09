@@ -35,7 +35,7 @@ class SendEmail extends DataSource {
     if (
       !this.checkUserConsent(sendTo) ||
       !sendTo.email ||
-      (config.brand.toLowerCase() === 'gala' && !sendTo.emailVerified)
+      config.brand === 'gala'
     ) {
       return false;
     }
