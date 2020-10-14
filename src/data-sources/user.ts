@@ -35,9 +35,31 @@ export default class UserApi extends DataSource {
     this.twoFaEnabled = twoFaEnabled;
   }
 
-  static fromToken(token: string) {
+  static fromCustomToken(token: string) {
     const { claims, uid } = auth.verifyAndDecodeToken(token, config.hostname);
+
     return new UserApi(claims, uid, token);
+  }
+
+  static async fromIdToken(token: string) {
+    if (config.brand !== 'gala') {
+      return this.fromCustomToken(token);
+    }
+
+    const {
+      userId,
+      role,
+      permissions,
+      authorized,
+      twoFaEnabled,
+      uid,
+    } = (await auth.verifyIdToken(token, config.hostname)) as any;
+
+    return new this(
+      { userId, role, permissions, authorized, twoFaEnabled },
+      uid,
+      token,
+    );
   }
 
   public findFromDb = async () => {

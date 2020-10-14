@@ -52,7 +52,7 @@ class Server {
         onDisconnect: async (socket, context) => {
           const { token } = await context.initPromise;
           if (token) {
-            const user = UserApi.fromToken(token);
+            const user = await UserApi.fromIdToken(token);
             await removeListeners(user.userId);
           }
         },
@@ -68,7 +68,7 @@ class Server {
     server.installSubscriptionHandlers(this.httpServer);
   }
 
-  private buildContext({
+  private async buildContext({
     req,
     res,
     connection,
@@ -91,7 +91,7 @@ class Server {
     const logger = new Logger(winstonLogger);
     if (token) {
       try {
-        user = UserApi.fromToken(token);
+        user = await UserApi.fromIdToken(token);
         logger.startSession(user.userId);
       } catch (error) {
         logger.startSession();
@@ -99,6 +99,7 @@ class Server {
         user = null;
       }
     }
+
     return { req, res, user, wallet: this.walletApi, logger };
   }
 
