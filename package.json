@@ -15,7 +15,7 @@
     "precommit": "run-s build"
   },
   "dependencies": {
-    "@blockbrothers/firebasebb": "^0.10.2",
+    "@blockbrothers/firebasebb": "^0.10.6",
     "@blockbrothers/legacy-simple-crypto": "^1.0.0",
     "@sendgrid/client": "^7.2.6",
     "@sendgrid/mail": "^7.2.6",
