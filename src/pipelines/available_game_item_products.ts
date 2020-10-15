@@ -27,12 +27,69 @@ export const availableGameItemProductsPipeline = (game: string) => {
       },
     },
     {
+      $lookup: {
+        from: 'token-prices',
+        as: 'tokenPrices',
+        pipeline: [
+          {
+            $match: {
+              token: 'GALA',
+            },
+          },
+          {
+            $sort: {
+              timestamp: -1,
+            },
+          },
+          {
+            $limit: 1,
+          },
+        ],
+      },
+    },
+    {
+      $addFields: {
+        tokenPriceInCents: {
+          $divide: [
+            {
+              $arrayElemAt: ['$tokenPrices.usdPrice', 0],
+            },
+            {
+              $pow: [
+                10,
+                {
+                  $subtract: [
+                    {
+                      $arrayElemAt: ['$tokenPrices.usdPriceDecimals', 0],
+                    },
+                    2,
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+    {
       $project: {
         _id: 0,
         invoiceAddress: 1,
         baseId: 1,
-        price: 1,
-        basePrice: 1,
+        price: {
+          $trunc: [
+            {
+              $divide: ['$usdPriceInCents', '$tokenPriceInCents'],
+            },
+          ],
+        },
+        basePrice: {
+          $trunc: [
+            {
+              $divide: ['$usdBasePriceInCents', '$tokenPriceInCents'],
+            },
+          ],
+        },
         name: {
           $arrayElemAt: ['$token.name', 0],
         },
@@ -103,7 +160,12 @@ export const availableGameItemProductsPipeline = (game: string) => {
     {
       $addFields: {
         qtyLeft: {
-          $ifNull: [{ $arrayElemAt: ['$transactions.qtyLeft', 0] }, 0],
+          $ifNull: [
+            {
+              $arrayElemAt: ['$transactions.qtyLeft', 0],
+            },
+            0,
+          ],
         },
         transactions: '$$REMOVE',
       },
