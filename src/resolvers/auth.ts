@@ -78,7 +78,7 @@ class Resolvers extends ResolverBase {
       logger.debug(`resolvers.auth.login.!!args.token:${!!args.token}`);
       const token = await auth.signIn(args.token, config.hostname);
       logger.debug(`resolvers.auth.login.!!token:${!!token}`);
-      const tempUserApi = UserApi.fromToken(token);
+      const tempUserApi = UserApi.fromCustomToken(token);
       tempUserApi.update({ $set: { lastLogin: new Date() } });
       const walletExists = await this.verifyWalletsExist(
         tempUserApi,
@@ -113,7 +113,7 @@ class Resolvers extends ResolverBase {
         config.hostname,
       );
       if (!newToken) throw new Error('Unauthorized');
-      const tempUser = UserApi.fromToken(newToken);
+      const tempUser = UserApi.fromCustomToken(newToken);
       const walletExists = await this.verifyWalletsExist(tempUser, wallet);
       logger.debug(
         `resolvers.auth.validateExistingToken.walletExists:${walletExists}`,

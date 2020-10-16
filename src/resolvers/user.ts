@@ -7,6 +7,7 @@ import { IOrderContext } from '../types';
 import { s3Service } from '../services';
 import { Types } from 'mongoose';
 import License from '../models/licenses';
+import { WalletApi } from '../wallet-api';
 
 class Resolvers extends ResolverBase {
   private doesUserAlreadyExist = async (email: string) => {
@@ -14,6 +15,29 @@ class Resolvers extends ResolverBase {
 
     return !!user;
   };
+
+  private async verifyWalletsExist(user: UserApi, wallet: WalletApi) {
+    logger.debug(`resolvers.auth.verifyWalletsExist.userId:${user.userId}`);
+
+    try {
+      const walletsExist = await Promise.all(
+        wallet.parentInterfaces.map(parentCoin =>
+          parentCoin.checkIfWalletExists(user),
+        ),
+      );
+      logger.debug(
+        `resolvers.auth.verifyWalletsExist.walletsExist:${walletsExist}`,
+      );
+      const bothWalletsExist = walletsExist.every(walletExists => walletExists);
+      logger.debug(
+        `resolvers.auth.verifyWalletsExist.bothWalletsExist:${bothWalletsExist}`,
+      );
+      return bothWalletsExist;
+    } catch (error) {
+      logger.warn(`resolvers.auth.verifyWalletsExist.catch:${error}`);
+      return false;
+    }
+  }
 
   private async findOrCreateFirebaseUser(email: string, password: string) {
     try {
@@ -190,7 +214,7 @@ class Resolvers extends ResolverBase {
       const customToken = token
         ? await auth.signIn(token, config.hostname)
         : await auth.signInAfterRegister(firebaseUser.uid, config.hostname);
-      context.user = UserApi.fromToken(customToken);
+      context.user = UserApi.fromCustomToken(customToken);
 
       const response: {
         twoFaEnabled: boolean;
@@ -303,7 +327,7 @@ class Resolvers extends ResolverBase {
   public getUserProfile = async (
     parent: { userApi: UserApi },
     args: {},
-    { user, dataSources }: Context,
+    { user, dataSources, wallet }: Context,
   ) => {
     logger.debug(`resolvers.auth.getUserProfile.userId:${user && user.userId}`);
     this.requireAuth(user);
@@ -314,7 +338,19 @@ class Resolvers extends ResolverBase {
     logger.debug(
       `resolvers.auth.getUserProfile.profile.id:${profile && profile.id}`,
     );
-    return profile;
+
+    const walletExists = await this.verifyWalletsExist(user, wallet);
+
+    const result = {
+      ...profile.toJSON(),
+      twoFaEnabled: !!profile.twoFaSecret,
+      walletExists,
+      twoFaAuthenticated: false,
+      twoFaSecret: '',
+      twoFaQrCode: '',
+    };
+
+    return result;
   };
 
   private checkUniqueDisplayName = async (displayName: string) => {

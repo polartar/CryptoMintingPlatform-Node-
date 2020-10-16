@@ -14,6 +14,11 @@ type UserProfile {
   role: String!
   number: String
   emailVerified: Date
+  twoFaEnabled: Boolean!
+  twoFaAuthenticated: Boolean!
+  walletExists: Boolean!
+  twoFaSecret: String
+  twoFaQrCode: String
 }
 
 input CreateUserInput {
