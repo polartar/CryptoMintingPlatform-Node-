@@ -9,3 +9,4 @@ export * from './eth_balance_transactions';
 export * from './token_balance_transactions';
 export * from './gala_balance_transactions';
 export * from './available_game_item_products';
+export * from './get_game_item_product_by_base_id';
