@@ -1,7 +1,11 @@
 import { Context } from '../types';
 import ResolverBase from '../common/Resolver-Base';
 import { GameitemProduct } from '../models';
-import { availableGameItemProductsPipeline } from '../pipelines';
+import {
+  availableGameItemProductsPipeline,
+  getGameItemProductByBaseId,
+  IGetGameItemProductByBaseIdResult,
+} from '../pipelines';
 
 class Resolvers extends ResolverBase {
   getAvailableGameItemProducts = async (
@@ -15,7 +19,14 @@ class Resolvers extends ResolverBase {
   };
 
   getNodeProduct = async (parent: any, args: {}, ctx: Context) => {
-    return GameitemProduct.findOne({ baseId: 'gala-node-license' });
+    const [product] = (await GameitemProduct.aggregate(
+      getGameItemProductByBaseId('gala-node-license'),
+    )) as IGetGameItemProductByBaseIdResult[];
+    if (!product) {
+      throw new Error('Node product not found');
+    }
+
+    return product;
   };
 }
 
