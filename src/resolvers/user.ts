@@ -1,3 +1,4 @@
+import * as jwt from 'jsonwebtoken';
 import ResolverBase from '../common/Resolver-Base';
 import { auth, config, logger } from '../common';
 import { Context } from '../types/context';
@@ -480,39 +481,34 @@ class Resolvers extends ResolverBase {
   public sendVerifyEmail = async (
     parent: any,
     { newAccount }: { newAccount: boolean },
-    { user, dataSources, req }: Context,
+    { user, dataSources }: Context,
   ) => {
     this.requireAuth(user);
 
     const userDoc = await user.findFromDb();
     const { galaEmailer } = dataSources;
-    const token =
-      req && req.headers && req.headers.authorization
-        ? req.headers.authorization.replace('Bearer ', '')
-        : '';
-    if (token) {
-      if (newAccount) {
-        await galaEmailer.sendNewUserEmailConfirmation(
-          userDoc.email,
-          userDoc.firstName,
-          token,
-        );
-      } else {
-        await galaEmailer.sendExistingUserEmailConfirmation(
-          userDoc.email,
-          userDoc.firstName,
-          token,
-        );
-      }
-      return {
-        success: true,
-      };
+
+    const token = jwt.sign(
+      { userId: user.userId, uid: userDoc.firebaseUid },
+      config.jwtPrivateKey,
+    );
+
+    if (newAccount) {
+      await galaEmailer.sendNewUserEmailConfirmation(
+        userDoc.email,
+        userDoc.firstName,
+        token,
+      );
     } else {
-      return {
-        success: false,
-        message: 'missing authorization token',
-      };
+      await galaEmailer.sendExistingUserEmailConfirmation(
+        userDoc.email,
+        userDoc.firstName,
+        token,
+      );
     }
+    return {
+      success: true,
+    };
   };
 
   public verifyEmailAddress = async (
@@ -520,17 +516,19 @@ class Resolvers extends ResolverBase {
     { token }: { token: string },
     { dataSources }: Context,
   ) => {
-    const validToken = await auth.verifyAndDecodeToken(token, config.hostname, {
+    const validToken = jwt.verify(token, config.jwtPublicKey, {
       ignoreExpiration: true,
-    });
+    }) as { userId: string; uid: string };
+
     if (!validToken) {
       return {
         success: false,
         message: 'invalid token',
       };
     }
-    const { claims, uid } = validToken;
-    const userDoc = await User.findById(claims.userId).exec();
+
+    const { userId, uid } = validToken;
+    const userDoc = await User.findById(userId).exec();
 
     if (!userDoc.emailVerified) {
       userDoc.set('emailVerified', new Date());
