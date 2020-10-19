@@ -6,8 +6,8 @@ type NodeProduct {
 
 type GameItemProduct {
   invoiceAddress: String!
-  price: Int!
-  basePrice: Int!
+  price: String!
+  basePrice: String!
   baseId: String
   name: String!
   description: String!
