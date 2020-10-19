@@ -77,18 +77,22 @@ export const availableGameItemProductsPipeline = (game: string) => {
         invoiceAddress: 1,
         baseId: 1,
         price: {
-          $trunc: [
-            {
-              $divide: ['$usdPriceInCents', '$tokenPriceInCents'],
-            },
-          ],
+          $toString: {
+            $trunc: [
+              {
+                $divide: ['$usdPriceInCents', '$tokenPriceInCents'],
+              },
+            ],
+          },
         },
         basePrice: {
-          $trunc: [
-            {
-              $divide: ['$usdBasePriceInCents', '$tokenPriceInCents'],
-            },
-          ],
+          $toString: {
+            $trunc: [
+              {
+                $divide: ['$usdBasePriceInCents', '$tokenPriceInCents'],
+              },
+            ],
+          },
         },
         name: {
           $arrayElemAt: ['$token.name', 0],
