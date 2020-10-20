@@ -491,6 +491,12 @@ class Resolvers extends ResolverBase {
     const token = jwt.sign(
       { userId: user.userId, uid: userDoc.firebaseUid },
       config.jwtPrivateKey,
+      {
+        algorithm: 'RS256',
+        issuer: `urn:${config.brand}`,
+        audience: `urn:${config.brand}`,
+        subject: `${config.brand}:subject`,
+      },
     );
 
     if (newAccount) {
@@ -517,6 +523,10 @@ class Resolvers extends ResolverBase {
     { dataSources }: Context,
   ) => {
     const validToken = jwt.verify(token, config.jwtPublicKey, {
+      algorithms: ['RS256'],
+      issuer: `urn:${config.brand}`,
+      audience: `urn:${config.brand}`,
+      subject: `${config.brand}:subject`,
       ignoreExpiration: true,
     }) as { userId: string; uid: string };
 
