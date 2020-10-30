@@ -229,10 +229,14 @@ class Resolvers extends ResolverBase {
       };
 
       if (config.brand === 'gala') {
+        const verifyEmailToken = this.signVerifyEmailToken(
+          newUser.id,
+          newUser.firebaseUid,
+        );
         await galaEmailer.sendNewUserEmailConfirmation(
           email,
           firstName,
-          customToken,
+          verifyEmailToken,
         );
         response.verificationEmailSent = true;
       }
@@ -488,16 +492,7 @@ class Resolvers extends ResolverBase {
     const userDoc = await user.findFromDb();
     const { galaEmailer } = dataSources;
 
-    const token = jwt.sign(
-      { userId: user.userId, uid: userDoc.firebaseUid },
-      config.jwtPrivateKey,
-      {
-        algorithm: 'RS256',
-        issuer: `urn:${config.brand}`,
-        audience: `urn:${config.brand}`,
-        subject: `${config.brand}:subject`,
-      },
-    );
+    const token = this.signVerifyEmailToken(user.userId, userDoc.firebaseUid);
 
     if (newAccount) {
       await galaEmailer.sendNewUserEmailConfirmation(
@@ -575,6 +570,15 @@ class Resolvers extends ResolverBase {
       success: true,
     };
   };
+
+  private signVerifyEmailToken(userId: string, uid: string) {
+    return jwt.sign({ userId, uid }, config.jwtPrivateKey, {
+      algorithm: 'RS256',
+      issuer: `urn:${config.brand}`,
+      audience: `urn:${config.brand}`,
+      subject: `${config.brand}:subject`,
+    });
+  }
 }
 
 export const userResolver = new Resolvers();
