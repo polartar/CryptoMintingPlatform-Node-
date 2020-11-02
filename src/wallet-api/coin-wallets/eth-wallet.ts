@@ -566,6 +566,55 @@ class EthWallet extends CoinWalletBase {
       return false;
     }
   };
+
+  public signTransaction = async (
+    userApi: UserApi,
+    outputs: ISendOutput[],
+    walletPassword: string,
+  ) => {
+    const [{ to, amount }] = outputs;
+
+    this.requireValidAddress(to);
+    const value = utils.parseEther(amount);
+
+    const { ethAddress, ethNonceFromDb } = await this.getEthAddress(userApi);
+    this.checkIfSendingToSelf(ethAddress, to);
+
+    const nonce = await this.getNonce(userApi, ethAddress, ethNonceFromDb);
+    await this.requireEnoughBalanceToSendEther(ethAddress, value);
+
+    const gasPrice = await this.provider.getGasPrice();
+    const { chainId } = await this.provider.getNetwork();
+
+    const privateKey = await this.getDecryptedPrivateKey(
+      userApi.userId,
+      walletPassword,
+    );
+
+    const wallet = new ethers.Wallet(privateKey, this.provider);
+
+    const transaction = await wallet.signTransaction({
+      to,
+      gasLimit: 21000,
+      value,
+      gasPrice,
+      nonce,
+      chainId,
+    });
+
+    await userApi.incrementTxCount();
+    this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
+
+    const { hash } = ethers.utils.parseTransaction(transaction);
+
+    return { hash, transaction };
+  };
+
+  public sendSignedTransaction = async (transaction: string) => {
+    const response = await this.provider.sendTransaction(transaction);
+
+    return response;
+  };
 }
 
 export default EthWallet;
