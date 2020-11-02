@@ -229,10 +229,10 @@ export default class UserApi extends DataSource {
     }
   }
 
-  incrementTxCount() {
+  incrementTxCount(inc = 1) {
     try {
       return this.Model.findByIdAndUpdate(this.userId, {
-        $inc: { 'wallet.ethNonce': 1 },
+        $inc: { 'wallet.ethNonce': inc },
       }).exec();
     } catch (error) {
       logger.warn(

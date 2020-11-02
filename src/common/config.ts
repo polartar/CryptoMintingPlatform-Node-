@@ -117,6 +117,9 @@ class Config {
   public readonly simplexJwtServiceSecret = env.SIMPLEX_JWT_SERVICE_SECRET;
   public readonly simplexPartnerName = env.SIMPLEX_PARTNER_NAME;
 
+  public readonly galaClaimFeeReceiveAddress =
+    env.GALA_CLAIM_FEE_RECEIVE_ADDRESS;
+  public readonly tokenClaimsApiUrl = env.TOKEN_CLAIMS_API_URL;
   public readonly nodeSelectorUrl = env.NODE_SELECTOR_URL;
   public readonly exchangeUrl = env.EXCHANGE_URL;
   public readonly actionRewardsApiUrl = env.ACTION_REWARDS_API_URL;
