@@ -310,8 +310,10 @@ export class ShareActivateResolvers extends ResolverBase {
       if (referrerMissedBtc > 0) {
         await UnclaimedReward.create({
           userId: referrer.id,
-          btcValue: referrerMissedBtc,
+          btcValue: referrerMissedBtc + '',
           hasWalletProperty: !!referrer.wallet,
+          created: new Date(),
+          updated: null,
         });
       }
     } catch (error) {

@@ -5,6 +5,7 @@ interface IUnclaimedWalletRewardDoc extends Document {
   btcValue: string;
   created: Date;
   updated: Date;
+  hasWalletProperty: boolean;
 }
 
 export const unclaimedWalletRewardSchema = new Schema(

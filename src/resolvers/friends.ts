@@ -71,6 +71,8 @@ class Resolvers extends ResolverBase {
       code: config.nudgeCode,
       userId: user.userId,
       friend: id,
+      created: new Date(),
+      updated: null,
     });
     await dataSources.galaEmailer.sendNudgeFriendEmail(
       email,

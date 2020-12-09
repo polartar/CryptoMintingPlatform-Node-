@@ -36,6 +36,7 @@ class DocReward {
       environmentType: config.brand,
       userId,
       rewardName,
+      created: new Date(),
     });
     logger.obj.debug({ createdRecordId });
     return createdRecordId;

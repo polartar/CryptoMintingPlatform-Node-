@@ -40,7 +40,7 @@ export const offersSchema = new Schema({
     type: String,
     default: '',
   },
-  created: Date,
+  created: { type: Date, default: Date.now },
   resourceURL: {
     type: String,
     default: '',
@@ -61,12 +61,6 @@ export const offersSchema = new Schema({
     type: String,
     default: '',
   },
-});
-
-offersSchema.pre('save', function(this: IOfferDoc, next) {
-  const doc = this;
-  doc.created = new Date();
-  next();
 });
 
 export default model<IOfferDoc>('offer', offersSchema);
