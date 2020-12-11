@@ -19,6 +19,15 @@ type UserProfile {
   walletExists: Boolean!
   twoFaSecret: String
   twoFaQrCode: String
+  userIds: UserIds
+}
+
+type UserIds {
+  connectUserId: String
+  arcadeUserId: String
+  greenUserId: String
+  codexUserId: String
+  blueUserId: String
 }
 
 input CreateUserInput {
