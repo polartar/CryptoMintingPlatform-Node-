@@ -408,7 +408,6 @@ class Resolvers extends ResolverBase {
     const { id } = await Template.findOne(
       { name: templateName },
       { id: '$id' },
-      { sort: { created: -1 } },
     );
     return id;
   };
