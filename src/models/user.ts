@@ -106,6 +106,13 @@ export interface IUser extends mongoose.Document {
   }>;
   lastLogin: Date;
   emailVerified: Date;
+  userIds?: {
+    codexUserId?: string;
+    greenUserId?: string;
+    connectUserId?: string;
+    arcadeUserId?: string;
+    blueUserId?: string;
+  };
 }
 
 async function getNextNumber({ firstName, lastName }: IUser) {
