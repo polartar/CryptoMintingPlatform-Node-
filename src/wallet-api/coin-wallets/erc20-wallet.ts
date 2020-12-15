@@ -23,10 +23,10 @@ class Erc20API extends EthWallet {
     const { abi, contractAddress, decimalPlaces } = tokenMetadata;
     this.contract = new ethers.Contract(contractAddress, abi, this.provider);
     this.decimalPlaces = decimalPlaces;
-    this.decimalFactor = this.bigNumberify(10).pow(decimalPlaces);
-    this.decimalFactorNegative = this.bigNumberify(10).pow(
-      this.bigNumberify(this.bigNumberify(0).sub(decimalPlaces)),
-    );
+    // this.decimalFactor = this.bigNumberify(10).pow(decimalPlaces);
+    // this.decimalFactorNegative = this.bigNumberify(10).pow(
+    //   this.bigNumberify(this.bigNumberify(0).sub(decimalPlaces)),
+    // );
   }
 
   private validateArguments({
