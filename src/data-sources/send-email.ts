@@ -110,6 +110,9 @@ class SendEmail extends DataSource {
     if (!user || !this.checkUserConsent(user)) {
       return false;
     }
+    if (upgradeAccountName.toLowerCase().includes('green')) {
+      return;
+    }
     const {
       html,
       subject,
