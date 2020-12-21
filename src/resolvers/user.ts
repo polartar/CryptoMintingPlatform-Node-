@@ -260,6 +260,7 @@ class Resolvers extends ResolverBase {
         phone?: string;
         password?: string;
         communicationConsent?: boolean;
+        secondaryEmail?: string;
       };
     },
     context: Context,
@@ -275,6 +276,7 @@ class Resolvers extends ResolverBase {
       phone,
       password,
       communicationConsent,
+      secondaryEmail,
     } = args.userInfo;
 
     const userDoc = await user.findFromDb();
@@ -289,6 +291,9 @@ class Resolvers extends ResolverBase {
         { emailVerified: false },
         config.hostname,
       );
+    }
+    if (secondaryEmail) {
+      userDoc.set('secondaryEmail', secondaryEmail);
     }
     if (password) {
       emailPass.password = password;

@@ -14,6 +14,7 @@ type UserProfile {
   role: String!
   number: String
   emailVerified: Date
+  secondaryEmail: String
   twoFaEnabled: Boolean!
   twoFaAuthenticated: Boolean!
   walletExists: Boolean!
@@ -54,6 +55,7 @@ input UpdateUserInput {
   phone: String
   email: String
   password: String
+  secondaryEmail: String
 }
 
 input AcceptAgreementsInput {
