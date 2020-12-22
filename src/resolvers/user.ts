@@ -261,6 +261,7 @@ class Resolvers extends ResolverBase {
         password?: string;
         communicationConsent?: boolean;
         secondaryEmail?: string;
+        language?: string;
       };
     },
     context: Context,
@@ -277,6 +278,7 @@ class Resolvers extends ResolverBase {
       password,
       communicationConsent,
       secondaryEmail,
+      language,
     } = args.userInfo;
 
     const userDoc = await user.findFromDb();
@@ -318,6 +320,9 @@ class Resolvers extends ResolverBase {
     }
     if (phone) {
       userDoc.set('phone', phone);
+    }
+    if (language) {
+      userDoc.set('language', language);
     }
     if (typeof communicationConsent === 'boolean') {
       userDoc.communicationConsent.push({
