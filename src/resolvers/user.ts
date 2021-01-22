@@ -6,6 +6,7 @@ import { UserApi } from '../data-sources/';
 import { User, Template } from '../models';
 import { IOrderContext } from '../types';
 import { s3Service } from '../services';
+import { emailService } from '../data-sources/send-email';
 import { Types } from 'mongoose';
 import License from '../models/licenses';
 import { WalletApi } from '../wallet-api';
@@ -211,6 +212,8 @@ class Resolvers extends ResolverBase {
       logger.debug(`resolvers.auth.createUser.newUser._id:${newUser._id}`);
 
       await newUser.save();
+
+      await emailService.sendWelcomeEmail({ email: newUser.email });
 
       const customToken = token
         ? await auth.signIn(token, config.hostname)
