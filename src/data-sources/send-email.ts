@@ -1,4 +1,4 @@
-const sgTransport = require('nodemailer-sendgrid-transport');
+const sgTransport = require('@blockbrothers/nodemailer-sendgrid-transport');
 import * as nodemailer from 'nodemailer';
 import { config, logger } from '../common';
 import templateBuilder from '../templates/templateBuilder';
@@ -6,6 +6,13 @@ import { IUser } from '../types';
 import { capitalize } from '../utils';
 import { DataSource } from 'apollo-datasource';
 import { Attachment, Options } from 'nodemailer/lib/mailer';
+import * as mail from '@sendgrid/mail';
+
+// mail.setApiKey(config.sendGridApiKey);
+// This needs to be config.sendGridApiKey as soon as Marcus figures out the Sendgrid account.
+mail.setApiKey(
+  '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',
+);
 
 class SendEmail extends DataSource {
   capitalizedBrand = capitalize(config.brand);
@@ -18,6 +25,27 @@ class SendEmail extends DataSource {
       },
     }),
   );
+
+  public sendWelcomeEmail(sendTo: { email: string }) {
+    return this.sendMailTemplate(
+      sendTo,
+      'e50b76d1-92fe-425d-a15f-32db5bbaf817',
+    );
+  }
+
+  protected async sendMailTemplate(
+    sendTo: { email: string },
+    templateId: string,
+  ) {
+    logger.debug(`data-sources.SendEmail.sendMail.sendTo: ${sendTo}`);
+    const msg = {
+      to: sendTo.email,
+      from: config.sendGridEmailFrom,
+      templateId,
+    };
+    const response = await mail.send(msg);
+    return response;
+  }
 
   public async sendMail(
     subject: string,
