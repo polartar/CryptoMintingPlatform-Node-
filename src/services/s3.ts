@@ -20,7 +20,7 @@ class S3Service {
   }
 
   public getUrlFromFilename = (filename: string) => {
-    const url = `https://${config.s3Bucket}.s3.amazonaws.com/${filename}`;
+    const url = `https://s3.amazonaws.com/${config.s3Bucket}/${filename}`;
 
     return url;
   };
