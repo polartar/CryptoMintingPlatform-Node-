@@ -87,7 +87,7 @@ class Resolvers extends ResolverBase {
     context: Context,
   ) => {
     const {
-      dataSources: { linkShortener, bitly, sendEmail, galaEmailer },
+      dataSources: { linkShortener, bitly, galaEmailer },
     } = context;
 
     const {

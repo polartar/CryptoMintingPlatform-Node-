@@ -3,7 +3,7 @@ import * as autoBind from 'auto-bind';
 import BaseListener from './base';
 import { config, logger } from '../common';
 import { walletApi } from '../wallet-api/WalletApi';
-import BtcWalletApi from '../wallet-api/coin-wallets/btc-wallet';
+//import BtcWalletApi from '../wallet-api/coin-wallets/btc-wallet';
 import { CoinSymbol } from '../types';
 
 class BtcBlockchainListener implements BaseListener {
@@ -11,8 +11,8 @@ class BtcBlockchainListener implements BaseListener {
   private openPromise = config.supportsBtcPubsub
     ? this.walletClient.open()
     : Promise.resolve();
-  private walletApi = walletApi;
-  private btcWalletApi = this.walletApi.coin('BTC') as BtcWalletApi;
+  //private walletApi = walletApi;
+  //private btcWalletApi = this.walletApi.coin('BTC') as BtcWalletApi;
   public coinSymbol = CoinSymbol.btc;
 
   constructor() {

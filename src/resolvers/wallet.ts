@@ -5,7 +5,6 @@ import ResolverBase from '../common/Resolver-Base';
 import { credentialService } from '../services';
 import { config, logger } from '../common';
 import { ISendOutput, IBcoinTx, CoinSymbol } from '../types';
-import listeners from '../blockchain-listeners';
 
 class Resolvers extends ResolverBase {
   private saveWalletPassword = async (

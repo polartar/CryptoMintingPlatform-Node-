@@ -15,7 +15,7 @@
     "precommit": "run-s build"
   },
   "dependencies": {
-    "@blockbrothers/firebasebb": "^0.10.6",
+    "@blockbrothers/firebasebb": "^0.10.10",
     "@blockbrothers/legacy-simple-crypto": "^1.0.0",
     "@blockbrothers/nodemailer-sendgrid-transport": "^0.3.0",
     "@sendgrid/client": "^7.4.2",
