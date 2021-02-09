@@ -240,19 +240,19 @@ class Erc20API extends EthWallet {
     }
   };
 
-  private getIndexedBalance = async (address: string) => {
-    const {
-      confirmedBalance,
-      pendingBalance,
-    } = (await transactionService.getGalaBalanceAndTransactions(address)) as {
-      confirmedBalance: number;
-      pendingBalance: number;
-    };
-    return {
-      confirmed: confirmedBalance.toString(),
-      unconfirmed: pendingBalance.toString(),
-    };
-  };
+  // private getIndexedBalance = async (address: string) => {
+  //   const {
+  //     confirmedBalance,
+  //     pendingBalance,
+  //   } = (await transactionService.getGalaBalanceAndTransactions(address)) as {
+  //     confirmedBalance: number;
+  //     pendingBalance: number;
+  //   };
+  //   return {
+  //     confirmed: confirmedBalance.toString(),
+  //     unconfirmed: pendingBalance.toString(),
+  //   };
+  // };
 
   async getTransactions(
     address: string,

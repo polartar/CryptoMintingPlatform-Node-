@@ -8,7 +8,6 @@ import { ItemReward } from '.';
 import { WalletTransaction, IRewardAudit } from '../../../models';
 import {
   availableRewardTokenSupplyPipeline,
-  IRewardTokenSupply,
 } from '../../../pipelines';
 import { gameItemService } from '../../../services';
 import { logDebug } from '../../../common';
@@ -86,7 +85,7 @@ export class Erc1155NFTReward extends ItemReward {
         this.rewardDistributerWallet.address,
         this.rewardConfig.tokenId,
       ),
-    )) as IRewardTokenSupply[];
+    ));
     if (result.supplyRemaining <= this.supplyWarnThreshold) {
       this.sendBalanceAlert(
         result.supplyRemaining.toString(),

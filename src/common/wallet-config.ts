@@ -11,7 +11,7 @@ import {
   Erc1155Wallet,
 } from '../wallet-api/coin-wallets';
 
-const { contractAddresses, tokenIds } = config;
+const { contractAddresses } = config;
 
 export const walletConfigurations: ICoinMetadata[] = [
   {

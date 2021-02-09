@@ -1,6 +1,5 @@
 import { Context } from '../types/context';
 import ResolverBase from '../common/Resolver-Base';
-import { logger } from '../common';
 import { Offer } from '../models';
 
 class Resolvers extends ResolverBase {
