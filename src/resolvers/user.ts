@@ -41,10 +41,10 @@ class Resolvers extends ResolverBase {
     }
   }
 
-  private async findOrCreateFirebaseUser(email: string, password: string) {
+  private async findOrCreateFirebaseUser(email: string, password: string, displayName?: string) {
     try {
       const user = await auth.createFirebaseUser(
-        { email, password },
+        { email, password, displayName },
         config.hostname,
       );
 
@@ -138,7 +138,7 @@ class Resolvers extends ResolverBase {
 
         firebaseUser = await auth.getUser(firebaseUid, config.hostname);
       } else {
-        firebaseUser = await this.findOrCreateFirebaseUser(email, password);
+        firebaseUser = await this.findOrCreateFirebaseUser(email, password, displayName);
       }
 
       const termsTemplateId = await this.getTemplateId('terms-of-service');

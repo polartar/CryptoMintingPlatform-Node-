@@ -158,6 +158,15 @@ export default class UserApi extends DataSource {
     return result;
   }
 
+  public async setDisplayNameToUser(displayName: string) {
+    const result = await this.Model.findByIdAndUpdate(
+      this.userId,
+      { 'displayName': displayName },
+      { new: true },
+    );
+    return result;
+  }
+
   async setTempTwoFaSecret() {
     logger.debug(`data-sources.user.setTempTwoFaSecret(${this.userId})`);
 
