@@ -41,7 +41,11 @@ class Resolvers extends ResolverBase {
     }
   }
 
-  private async findOrCreateFirebaseUser(email: string, password: string, displayName?: string) {
+  private async findOrCreateFirebaseUser(
+    email: string,
+    password: string,
+    displayName?: string,
+  ) {
     try {
       const user = await auth.createFirebaseUser(
         { email, password, displayName },
@@ -138,7 +142,11 @@ class Resolvers extends ResolverBase {
 
         firebaseUser = await auth.getUser(firebaseUid, config.hostname);
       } else {
-        firebaseUser = await this.findOrCreateFirebaseUser(email, password, displayName);
+        firebaseUser = await this.findOrCreateFirebaseUser(
+          email,
+          password,
+          displayName,
+        );
       }
 
       const termsTemplateId = await this.getTemplateId('terms-of-service');
@@ -382,7 +390,7 @@ class Resolvers extends ResolverBase {
     return !foundUser;
   };
 
-  public displayNameUnique = (parent: any, args: { displayName: string }) => {
+  public isDisplayNameUnique = (parent: any, args: { displayName: string }) => {
     const { displayName } = args;
     if (!config.supportsDisplayNames) {
       throw new Error('Display names not supported');
@@ -391,7 +399,6 @@ class Resolvers extends ResolverBase {
 
     return {
       unique,
-      displayName,
     };
   };
 
@@ -598,7 +605,7 @@ export const userResolver = new Resolvers();
 export default {
   Query: {
     profile: userResolver.getUserProfile,
-    displayNameUnique: userResolver.displayNameUnique,
+    isDisplayNameUnique: userResolver.isDisplayNameUnique,
     neededAgreements: userResolver.neededAgreements,
   },
   Mutation: {
