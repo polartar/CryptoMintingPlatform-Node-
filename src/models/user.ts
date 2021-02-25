@@ -231,7 +231,7 @@ export const userSchema = new mongoose.Schema(
   {
     firstName: String,
     lastName: String,
-    displayName: String,
+    displayName: { type: String, unique: true, index: true, trim: true },
     email: {
       type: String,
       unique: true,
