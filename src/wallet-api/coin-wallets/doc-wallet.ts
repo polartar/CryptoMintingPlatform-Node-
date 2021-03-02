@@ -27,8 +27,8 @@ class DocWallet extends CoinWalletBase {
 
   private setRewardName() {
     switch (this.symbol.toLowerCase()) {
-      case 'winx': {
-        this.rewardNames = ['WinX'];
+      case 'win': {
+        this.rewardNames = ['Win'];
         break;
       }
       case 'smart': {
@@ -41,6 +41,30 @@ class DocWallet extends CoinWalletBase {
       }
       case 'blue': {
         this.rewardNames = ['BLUE'];
+        break;
+      }
+      case 'switch': {
+        this.rewardNames = ['SWITCH'];
+        break;
+      }
+      case 'bxc': {
+        this.rewardNames = ['BXC'];
+        break;
+      }
+      case 'liberty': {
+        this.rewardNames = ['LIBERTY'];
+        break;
+      }
+      case 'grow': {
+        this.rewardNames = ['GROW'];
+        break;
+      }
+      case 'elevate': {
+        this.rewardNames = ['ELEVATE'];
+        break;
+      }
+      case 'give': {
+        this.rewardNames = ['GIVE'];
         break;
       }
       default: {
