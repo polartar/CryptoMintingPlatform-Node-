@@ -6,7 +6,7 @@ import * as topSupportedCryptoFavorites from '../data/topSupportedFavoriteOption
 import { UserInputError } from 'apollo-server-express';
 
 class Resolvers extends ResolverBase {
-  supportedFavorites = topSupportedCryptoFavorites.slice(0, 100);
+  supportedFavorites = topSupportedCryptoFavorites.slice(0, 200);
   supportedFavoritesMap: Map<
     string,
     { symbol: string; name: string }
