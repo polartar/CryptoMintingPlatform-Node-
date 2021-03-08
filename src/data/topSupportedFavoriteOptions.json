@@ -24,6 +24,10 @@
     "name": "Cardano"
   },
   {
+    "symbol": "GALA",
+    "name": "Gala"
+  },
+  {
     "symbol": "MIOTA",
     "name": "IOTA"
   },
