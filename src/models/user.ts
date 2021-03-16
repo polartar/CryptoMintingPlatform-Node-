@@ -103,6 +103,11 @@ export interface IUser extends mongoose.Document {
     timestamp: Date;
     ipAddress: string;
   }>;
+  activationTermsAndConditions: {
+    timestamp: Date;
+    ipAddress: string;
+    text: string;
+  }[];
   lastLogin: Date;
   emailVerified: Date;
   userIds?: {
@@ -318,6 +323,13 @@ export const userSchema = new mongoose.Schema(
       {
         timestamp: Date,
         templateId: String,
+        ipAddress: String,
+      },
+    ],
+    activationTermsAndConditions: [
+      {
+        timestamp: Date,
+        text: String,
         ipAddress: String,
       },
     ],

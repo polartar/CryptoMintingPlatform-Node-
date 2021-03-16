@@ -85,6 +85,7 @@ class Resolvers extends ResolverBase {
         language: string;
         referralContext: IOrderContext;
         communicationConsent: boolean;
+        activationTermsAndConditions: {}[];
       };
       ipAddress: string;
     },
@@ -106,6 +107,7 @@ class Resolvers extends ResolverBase {
       language,
       referralContext = {},
       communicationConsent,
+      activationTermsAndConditions,
     } = args.userInfo;
 
     const {
@@ -142,7 +144,6 @@ class Resolvers extends ResolverBase {
         await auth.updateDisplayName(token, config.hostname, displayName);
 
         firebaseUser = await auth.getUser(firebaseUid, config.hostname);
-
       } else {
         firebaseUser = await this.findOrCreateFirebaseUser(
           email,
@@ -197,6 +198,7 @@ class Resolvers extends ResolverBase {
             ipAddress: args.ipAddress || '',
           },
         ],
+        activationTermsAndConditions,
       };
 
       if (typeof communicationConsent === 'boolean') {
@@ -275,6 +277,7 @@ class Resolvers extends ResolverBase {
         communicationConsent?: boolean;
         secondaryEmail?: string;
         language?: string;
+        activationTermsAndConditions?: {}[];
         token?: string;
       };
     },
@@ -293,6 +296,7 @@ class Resolvers extends ResolverBase {
       communicationConsent,
       secondaryEmail,
       language,
+      activationTermsAndConditions,
     } = args.userInfo;
 
     const userDoc = await user.findFromDb();
@@ -308,8 +312,12 @@ class Resolvers extends ResolverBase {
         config.hostname,
       );
     }
-    if(displayName) {
-      await auth.updateDisplayName(context.user.token, config.hostname, displayName);
+    if (displayName) {
+      await auth.updateDisplayName(
+        context.user.token,
+        config.hostname,
+        displayName,
+      );
     }
     if (secondaryEmail) {
       userDoc.set('secondaryEmail', secondaryEmail);
@@ -346,6 +354,9 @@ class Resolvers extends ResolverBase {
         consentGiven: communicationConsent,
         timestamp: new Date(),
       });
+    }
+    if (activationTermsAndConditions?.length) {
+      userDoc.set('activationTermsAndConditions', activationTermsAndConditions);
     }
     await userDoc.save();
     if (email && config.brand.toLowerCase() === 'gala') {
