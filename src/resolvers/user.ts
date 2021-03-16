@@ -139,8 +139,10 @@ class Resolvers extends ResolverBase {
       if (token) {
         const firebaseUid = await auth.getFirebaseUid(token, config.hostname);
         logger.debug(`resolvers.auth.createUser.firebaseUid:${firebaseUid}`);
+        await auth.updateDisplayName(token, config.hostname, displayName);
 
         firebaseUser = await auth.getUser(firebaseUid, config.hostname);
+
       } else {
         firebaseUser = await this.findOrCreateFirebaseUser(
           email,
@@ -273,6 +275,7 @@ class Resolvers extends ResolverBase {
         communicationConsent?: boolean;
         secondaryEmail?: string;
         language?: string;
+        token?: string;
       };
     },
     context: Context,
@@ -304,6 +307,9 @@ class Resolvers extends ResolverBase {
         { emailVerified: false },
         config.hostname,
       );
+    }
+    if(displayName) {
+      await auth.updateDisplayName(context.user.token, config.hostname, displayName);
     }
     if (secondaryEmail) {
       userDoc.set('secondaryEmail', secondaryEmail);
