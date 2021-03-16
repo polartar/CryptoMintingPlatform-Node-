@@ -25,6 +25,9 @@ class Controller {
 
     return res.json(dates);
   }
+  public getIpAddress(req: Request, res: Response) {
+    res.send({ ip: req.ip });
+  }
 }
 
 export default new Controller();

@@ -21,6 +21,7 @@ type UserProfile {
   twoFaSecret: String
   twoFaQrCode: String
   userIds: UserIds
+  activationTermsAndConditions: [ActivationTermsAndConditions]
 }
 
 type UserIds {
@@ -29,6 +30,12 @@ type UserIds {
   greenUserId: String
   codexUserId: String
   blueUserId: String
+}
+
+type ActivationTermsAndConditions {
+  timestamp: Date
+  ipAddress: String
+  text: String
 }
 
 input CreateUserInput {
@@ -44,6 +51,13 @@ input CreateUserInput {
   referredBy: String
   language: String
   referralContext: OrderContext
+  activationTermsAndConditions: [ActivationTermsAndConditionsInput]!
+}
+
+input ActivationTermsAndConditionsInput {
+  timestamp: Date!
+  ipAddress: String!
+  text: String!
 }
 
 input UpdateUserInput {
@@ -57,6 +71,7 @@ input UpdateUserInput {
   password: String
   secondaryEmail: String
   language: String
+  activationTermsAndConditions: [ActivationTermsAndConditionsInput]
 }
 
 input AcceptAgreementsInput {
