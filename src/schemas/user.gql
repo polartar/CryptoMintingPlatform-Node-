@@ -15,8 +15,8 @@ type UserProfile {
   number: String
   emailVerified: Date
   secondaryEmail: String
-  twoFaEnabled: Boolean!
-  twoFaAuthenticated: Boolean!
+  twoFaEnabled: Boolean
+  twoFaAuthenticated: Boolean
   walletExists: Boolean!
   twoFaSecret: String
   twoFaQrCode: String
@@ -81,6 +81,11 @@ input AcceptAgreementsInput {
   ipAddress: String
 }
 
+type UpdateUserResponse {
+  success: Boolean
+  user: UserProfile
+}
+
 type IsDisplayNameUniqueResponse {
   unique: Boolean!
 }
@@ -97,7 +102,7 @@ type Query {
 
 type Mutation {
   createUser(userInfo: CreateUserInput!, ipAddress: String): ReturnToken!
-  updateUser(userInfo: UpdateUserInput!): MutationResponse!
+  updateUser(userInfo: UpdateUserInput!): UpdateUserResponse!
   unsubscribe(userId: String!, emailList: String!): MutationResponse!
   acceptAgreements(agreementInfo: AcceptAgreementsInput!): MutationResponse!
   sendVerifyEmail(newAccount: Boolean): MutationResponse!
