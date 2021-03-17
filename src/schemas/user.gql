@@ -71,6 +71,7 @@ input UpdateUserInput {
   password: String
   secondaryEmail: String
   language: String
+  updateUserNumber: Boolean
   activationTermsAndConditions: [ActivationTermsAndConditionsInput]
 }
 

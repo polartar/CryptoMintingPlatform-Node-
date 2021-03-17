@@ -119,7 +119,7 @@ export interface IUser extends mongoose.Document {
   };
 }
 
-async function getNextNumber({ firstName, lastName }: IUser) {
+export async function getNextNumber() {
   const result = await mongoose.connection.db
     .collection<{ sequence: number }>('sequences')
     .findOneAndUpdate(
@@ -141,11 +141,9 @@ async function getNextNumber({ firstName, lastName }: IUser) {
       },
     );
   const id = result.value.sequence;
-  if (id && firstName && firstName.length && lastName.length) {
-    const firstChar = firstName.substring(0, 1);
-    const lastChar = lastName.substring(0, 1);
+  if (id) {
     const padded = id.toString().padStart(6, '0');
-    const number = `${firstChar}${lastChar}${padded}`.toLowerCase();
+    const number = padded;
     return number;
   }
   return undefined;
@@ -347,7 +345,7 @@ userSchema.pre('save', async function(this: IUser, next) {
       user.affiliateId || new mongoose.Types.ObjectId().toHexString();
   }
   if (!user.number) {
-    const number = await getNextNumber(user);
+    const number = await getNextNumber();
     if (number) {
       user.number = number;
     }
