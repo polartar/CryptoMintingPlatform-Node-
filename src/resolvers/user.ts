@@ -10,6 +10,7 @@ import { emailService } from '../data-sources/send-email';
 import { Types } from 'mongoose';
 import License from '../models/licenses';
 import { WalletApi } from '../wallet-api';
+import { getNextNumber } from '../models/user';
 
 class Resolvers extends ResolverBase {
   private doesUserAlreadyExist = async (email: string) => {
@@ -279,6 +280,7 @@ class Resolvers extends ResolverBase {
         language?: string;
         activationTermsAndConditions?: {}[];
         token?: string;
+        updateUserNumber?: boolean;
       };
     },
     context: Context,
@@ -296,6 +298,7 @@ class Resolvers extends ResolverBase {
       communicationConsent,
       secondaryEmail,
       language,
+      updateUserNumber,
       activationTermsAndConditions,
     } = args.userInfo;
 
@@ -354,6 +357,10 @@ class Resolvers extends ResolverBase {
         consentGiven: communicationConsent,
         timestamp: new Date(),
       });
+    }
+    if (updateUserNumber) {
+      const number = await getNextNumber();
+      userDoc.set('number', number);
     }
     if (activationTermsAndConditions?.length) {
       userDoc.set('activationTermsAndConditions', activationTermsAndConditions);

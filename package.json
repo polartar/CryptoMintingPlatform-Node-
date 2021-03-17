@@ -45,7 +45,7 @@
     "lodash": "^4.17.20",
     "merge-graphql-schemas": "^1.5.8",
     "mongodb": "^3.6.3",
-    "mongoose": "^5.10.19",
+    "mongoose": "5.10.19",
     "mongoose-long": "^0.3.0",
     "node-cron": "^2.0.3",
     "nodemailer": "^6.3.1",
