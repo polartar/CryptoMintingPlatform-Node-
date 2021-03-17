@@ -155,7 +155,7 @@ class Resolvers extends ResolverBase {
 
       const termsTemplateId = await this.getTemplateId('terms-of-service');
       const privacyTemplateId = await this.getTemplateId('privacy-policy');
-
+      const number = await getNextNumber();
       const affiliateId = new Types.ObjectId().toHexString();
 
       const profilePhotoUrl = profilePhotoFilename
@@ -174,6 +174,7 @@ class Resolvers extends ResolverBase {
         language,
         referredBy: referredBy || config.defaultReferredBy,
         lastLogin: new Date(),
+        number,
         utmInfo: {
           offer,
           referredBy,

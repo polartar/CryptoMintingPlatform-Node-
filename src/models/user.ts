@@ -344,12 +344,6 @@ userSchema.pre('save', async function(this: IUser, next) {
     user.affiliateId =
       user.affiliateId || new mongoose.Types.ObjectId().toHexString();
   }
-  if (!user.number) {
-    const number = await getNextNumber();
-    if (number) {
-      user.number = number;
-    }
-  }
   if (!user.created) {
     user.created = new Date();
   }
