@@ -142,7 +142,7 @@ class Resolvers extends ResolverBase {
       if (token) {
         const firebaseUid = await auth.getFirebaseUid(token, config.hostname);
         logger.debug(`resolvers.auth.createUser.firebaseUid:${firebaseUid}`);
-        await auth.updateDisplayName(token, config.hostname, displayName);
+        await auth.updateDisplayName(firebaseUid, config.hostname, displayName);
 
         firebaseUser = await auth.getUser(firebaseUid, config.hostname);
       } else {
@@ -315,13 +315,6 @@ class Resolvers extends ResolverBase {
         config.hostname,
       );
     }
-    if (displayName) {
-      await auth.updateDisplayName(
-        context.user.token,
-        config.hostname,
-        displayName,
-      );
-    }
     if (secondaryEmail) {
       userDoc.set('secondaryEmail', secondaryEmail);
     }
@@ -338,6 +331,7 @@ class Resolvers extends ResolverBase {
       userDoc.set('lastName', lastName);
     }
     if (displayName) {
+      await auth.updateDisplayName(user.uid, config.hostname, displayName);
       userDoc.set('displayName', displayName);
     }
     if (profilePhotoFilename) {
