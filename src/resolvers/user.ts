@@ -352,19 +352,20 @@ class Resolvers extends ResolverBase {
         timestamp: new Date(),
       });
     }
-    if (updateUserNumber) {
+    if (updateUserNumber && !userDoc.number) {
       const number = await getNextNumber();
       userDoc.set('number', number);
     }
     if (activationTermsAndConditions?.length) {
       userDoc.set('activationTermsAndConditions', activationTermsAndConditions);
     }
-    await userDoc.save();
+    const savedUser = await userDoc.save();
     if (email && config.brand.toLowerCase() === 'gala') {
       await this.sendVerifyEmail('_', { newAccount: false }, context);
     }
     return {
       success: true,
+      user: savedUser,
     };
   };
 
