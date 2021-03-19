@@ -5,8 +5,14 @@ type Product {
   description: String!
 }
 
+type NodesInfo {
+  online: Int
+  owned: Int
+}
+
 type Query {
   productById(id: String!): Product!
+  nodesInfo: NodesInfo
 }
 type Mutation {
   buyNode(
