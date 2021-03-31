@@ -19,12 +19,12 @@ class Resolvers extends ResolverBase {
     try {
       const userId = ctx.user.userId;
       const now = Date.now();
-      const timeToCheckAgainst = now - 1000 * 60 * 30;
+      const timeToCheckAgainst = new Date(now - 1000 * 60 * 30);
       logger.debug(`resolvers.nodes.getNodesOnline.userId: ${userId}`);
       const nodesOnline = await MiningRecord.find({
         userId,
         stop: { $eq: null },
-        'lastCheckIn.time': { 'lastCheckIn.time': { $gt: timeToCheckAgainst } },
+        'lastCheckIn.time': { $gt: timeToCheckAgainst },
       })
         .countDocuments()
         .exec();
