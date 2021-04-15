@@ -1,19 +1,6 @@
 # Perfect Wallet Backend Handoff Notes
 
-Created by Travis Allen
-
-I know there are major architecture decisions that are still up in the air, but I did make some decent progress that I hope will become useful to the next developer that is assigned to work on this project.
-
 Current state of my code with notes https://git.netzilla.co/bb/wallet-server/tree/WIP-MSTR-1493
-
-**IMPORTANT**: I'm leaving a flash drive on my desk with a lot of the files that you are going to need to get the above code working. Its a very small flash drive in a silver drawstring bag that says BEBONCOOL on it. This is my personal flash drive and it's very tiny so please don't lose it (smile). I cleared that this was in keeping with company security policies with Phil.
-
-## My Assumptions Going Into This Project
-
-- The wallet would need to support GREEN, ETH, and BTC.
-- Further down the line, the need may arise to support other ERC20 tokens in addition to GREEN.
-- The wallet may need to support multiple accounts for each user down the line (i.e. Personal and Business accounts)
-- The private key, token (bcoin), passphrase (bcoin) and mnemonic would need to be stored in an instance of the apiKeyService
 
 ## Requirements
 
@@ -80,5 +67,3 @@ I was able to implement the getBalance query successfully for btc after creating
 Ideally for the ERC20 tokens, I want it to request all of the required data to create a new instance of the wallet from a mongoDb collection so that later on, if we want to add an ERC20 token, we just have to add all of the required fields (like the Name, symbol, ABI, and contractAddress to the database instead of hard-coding all of it). It would probably be more efficient to query as the server starts so that we don't need to make a db call with every request.
 
 ## Conclusion
-
-This overview is very brief and keep in mind that little to none of my code may be useful depending on the new project requirements and specs. Feel free to contact me if you have any questions.
