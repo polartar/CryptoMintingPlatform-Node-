@@ -1,7 +1,7 @@
 variables:
   # You can select just one (for single deployments) company name or multiple. The
-  # allowed values are: "COMPANY: blockchainjedi connect codex green give blue"
-  COMPANY: connect codex green blue
+  # allowed values are: "COMPANIES: blockchainjedi connect codex green give blue"
+  COMPANIES: connect codex green blue
 
   # putting "example" will generate example.domain.com, example-stage0.domain.com, etc..
   PROD_SUBDOMAIN: walletsrv
