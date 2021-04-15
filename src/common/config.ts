@@ -18,9 +18,6 @@ const {
 
 class Config {
   private getBrandFromHost() {
-    // console.log('Brant is awesome222');
-    // console.log(env);
-    // console.log(env.APP_HOSTNAME);
     const hostName = env.APP_HOSTNAME.toLowerCase();
     if (hostName.includes('connectblockchain')) {
       return 'connect';
