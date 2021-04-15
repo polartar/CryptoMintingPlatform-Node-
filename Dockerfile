@@ -24,7 +24,7 @@ COPY --chown=node:node package*.json .npmrc ./
 USER node
 ENV NODE_ENV=production
 RUN npm ci --only=production --ignore-scripts && npm cache clean --force
-EXPOSE 3000
+EXPOSE 4444
 CMD ["node", "./lib/index.js"]
 
 
@@ -43,5 +43,5 @@ COPY --chown=node:node jwtrsa-private.key jwtrsa-public.pem .env serviceAccountK
 USER node
 ENV NODE_ENV=development
 RUN npm ci --ignore-scripts && npm cache clean --force
-EXPOSE 3000
+EXPOSE 4444
 CMD ["node", "./lib/index.js"]
