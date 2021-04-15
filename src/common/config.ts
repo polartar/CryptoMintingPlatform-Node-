@@ -18,7 +18,10 @@ const {
 
 class Config {
   private getBrandFromHost() {
-    const hostName = env.HOSTNAME.toLowerCase();
+    // console.log('Brant is awesome222');
+    // console.log(env);
+    // console.log(env.APP_HOSTNAME);
+    const hostName = env.APP_HOSTNAME.toLowerCase();
     if (hostName.includes('connectblockchain')) {
       return 'connect';
     }
@@ -55,7 +58,7 @@ class Config {
   public readonly brand = this.getBrandFromHost().toLowerCase();
   public readonly logLevel = env.LOG_LEVEL;
   public readonly port = this.normalizeNumber(env.PORT);
-  public readonly hostname = env.HOSTNAME;
+  public readonly hostname = env.APP_HOSTNAME;
   public readonly mongodbUri = this.determineMongoDBUri(env.BRAND);
   public readonly cartUrl = env.CART_URL;
   public connectMongoConnection: Connection;
@@ -216,7 +219,7 @@ class Config {
       'NODE_ENV',
       'LOG_LEVEL',
       'PORT',
-      'HOSTNAME',
+      'APP_HOSTNAME',
       'CRYPTO_NETWORK',
       'GALA_ADDRESS',
       'GALA_TOKEN_ID',
