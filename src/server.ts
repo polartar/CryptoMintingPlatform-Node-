@@ -40,7 +40,7 @@ class Server {
     if (isDev) {
       this.app.use(cors());
     }
-    this.app.use('/api', restApi);
+    this.app.use('/', restApi);
 
     const server = new ApolloServer({
       typeDefs,

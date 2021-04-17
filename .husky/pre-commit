@@ -1,0 +1,5 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+npm run build
+curl -s https://bb-devops-files.s3.us-west-2.amazonaws.com/public/version_bump.sh | bash

@@ -17,12 +17,46 @@ const {
 } = ItemTokenName;
 
 class Config {
+  private getBrandFromHost() {
+    const hostName = env.APP_HOSTNAME.toLowerCase();
+    if (hostName.includes('connectblockchain')) {
+      return 'connect';
+    }
+    if (hostName.includes('green')) {
+      return 'green';
+    }
+    if (hostName.includes('codex')) {
+      return 'codex';
+    }
+    if (hostName.includes('arcade') || hostName.includes('gala')) {
+      return 'gala';
+    }
+    if (hostName.includes('blue')) {
+      return 'blue';
+    }
+    if (hostName.includes('localhost')) {
+      return env.BRAND || 'localhost';
+    }
+  }
+
+  // MONGODB_URI_<brand> Variables are present in the legacy K8S environment.
+  // This allows us to dynamically and securly update mongodb URIS.
+  // If the brand is not avaialble yet in the K8S environment it is a very
+  // simple task for DevOps to add it.
+  private determineMongoDBUri = (val: string) => {
+    const mongoDBUri = 'MONGODB_URI_' + val.toUpperCase();
+    systemLogger.info(
+      `CONFIG: Using ${mongoDBUri} as MongoDB Uri for the ${val} brand.`,
+    );
+    return process.env[mongoDBUri];
+  };
+
   public readonly nodeEnv = env.NODE_ENV;
   public readonly brand = this.getBrandFromHost().toLowerCase();
   public readonly logLevel = env.LOG_LEVEL;
   public readonly port = this.normalizeNumber(env.PORT);
-  public readonly hostname = env.HOSTNAME;
-  public readonly mongodbUri = env.MONGODB_URI;
+  public readonly hostname = env.APP_HOSTNAME;
+  public readonly mongodbUri = this.determineMongoDBUri(env.BRAND);
   public readonly cartUrl = env.CART_URL;
   public connectMongoConnection: Connection;
   public readonly jwtPrivateKey = keys.privateKey;
@@ -182,7 +216,7 @@ class Config {
       'NODE_ENV',
       'LOG_LEVEL',
       'PORT',
-      'HOSTNAME',
+      'APP_HOSTNAME',
       'CRYPTO_NETWORK',
       'GALA_ADDRESS',
       'GALA_TOKEN_ID',
@@ -263,30 +297,8 @@ class Config {
     });
   };
 
-  private getBrandFromHost() {
-    const hostName = env.HOSTNAME.toLowerCase();
-    if (hostName.includes('connectblockchain')) {
-      return 'connect';
-    }
-    if (hostName.includes('green')) {
-      return 'green';
-    }
-    if (hostName.includes('codex')) {
-      return 'codex';
-    }
-    if (hostName.includes('arcade') || hostName.includes('gala')) {
-      return 'gala';
-    }
-    if (hostName.includes('blue')) {
-      return 'blue';
-    }
-    if (hostName.includes('localhost')) {
-      return env.BRAND || 'localhost';
-    }
-  }
-
   public async setConnectMongoConnection() {
-    const connectMongoUrl = env.CONNECT_MONGODB_URI;
+    const connectMongoUrl = env.MONGODB_URI_CONNECT;
     if (
       !this.hostname.includes('localhost') &&
       !['gala', 'connect'].includes(this.brand) &&
