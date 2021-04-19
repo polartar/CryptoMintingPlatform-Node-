@@ -7,6 +7,7 @@ class Keys {
   public readonly privateKey = fs.readFileSync('jwtrsa-private.key');
   public readonly publicKey = fs.readFileSync('jwtrsa-public.pem');
   public serviceAccounts: any;
+  public serviceAccountKeys: any;
 
   constructor() {
     const rawServiceAccounts = JSON.parse(
@@ -17,7 +18,12 @@ class Keys {
       serviceAccount.domain = domain;
       return serviceAccount;
     });
+    this.serviceAccountKeys = Object.entries(rawServiceAccounts).map(entry => {
+      const [domain]: any[] = entry;
+      return domain;
+    });
   }
+  
 }
 
 const keys = new Keys();
