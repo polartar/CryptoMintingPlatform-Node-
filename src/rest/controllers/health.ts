@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import * as autoBind from 'auto-bind';
 import { systemLogger } from '../../common/logger';
-import { config } from 'src/common';
+import { config } from '../../common';
+import keys from '../../common/keys';
 
 class Controller {
   constructor() {
@@ -37,7 +38,7 @@ class Controller {
     }
   }
 
-   // This Healthcheck MUST respond to an unauthenticated GET request with
+  // This Healthcheck MUST respond to an unauthenticated GET request with
   // a 200 response. Any app-breaking errors should result in a 500 response.
   //
   // Ref: https://tools.ietf.org/html/draft-inadarei-api-health-check-05
@@ -48,9 +49,9 @@ class Controller {
       // If everything is good then this is the expected output.
 
       let brand = config.brand;
-      let hostname =  config.hostName;
-      let serviceRecords = config.serviceAccountsKeys;
-      
+      let hostname = config.hostname;
+      let serviceRecords = keys.serviceAccountKeys;
+
       return res.json({ brand, hostname, serviceRecords });
 
       // When something in the app is failing / taking too long etc, but the
