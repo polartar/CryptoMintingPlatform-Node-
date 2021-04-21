@@ -17,7 +17,7 @@ class Keys {
     this.serviceAccounts = Object.entries(rawServiceAccounts).map(entry => {
       const [domain, serviceAccount]: any[] = entry;
 
-      if (domain.includes(env.BRAND)) {
+      if (domain.includes(env.BLOCKFUNNELS_URL)) {
         serviceAccount.domain = env.APP_HOSTNAME;
       } else {
         serviceAccount.domain = domain;

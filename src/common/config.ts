@@ -69,7 +69,7 @@ class Config {
   public readonly bypassTwoFaInDev =
     env.BYPASS_TWOFA_IN_DEV && env.BYPASS_TWOFA_IN_DEV.toLowerCase() === 'true';
   public readonly apiKeyServiceUrl = env.API_KEY_SERVICE_URL;
-  public readonly blockfunnelsUrl = env.BLOCKFUNNELS_URL;
+  public readonly blockfunnelsUrl = `https://${env.BLOCKFUNNELS_URL}/api`;
   public readonly blockfunnelsBasicAuthPassword =
     env.BLOCKFUNNELS_BASIC_AUTH_PASSWORD;
   public readonly isDev = env.NODE_ENV !== 'production';
