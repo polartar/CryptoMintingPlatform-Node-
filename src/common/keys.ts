@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { env } from './env';
 
 // Generate keys with
 // KEYNAME=${1:-jwtrsa}
@@ -15,7 +16,13 @@ class Keys {
     );
     this.serviceAccounts = Object.entries(rawServiceAccounts).map(entry => {
       const [domain, serviceAccount]: any[] = entry;
-      serviceAccount.domain = domain;
+
+      if (domain.includes(env.BRAND)) {
+        serviceAccount.domain = env.APP_HOSTNAME;
+      } else {
+        serviceAccount.domain = domain;
+      }
+
       return serviceAccount;
     });
     this.serviceAccountKeys = Object.entries(rawServiceAccounts).map(entry => {
@@ -23,7 +30,6 @@ class Keys {
       return domain;
     });
   }
-  
 }
 
 const keys = new Keys();

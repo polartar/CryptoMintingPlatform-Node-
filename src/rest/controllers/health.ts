@@ -48,9 +48,9 @@ class Controller {
     try {
       // If everything is good then this is the expected output.
 
-      let brand = config.brand;
-      let hostname = config.hostname;
-      let serviceRecords = keys.serviceAccountKeys;
+      const brand = config.brand;
+      const hostname = config.hostname;
+      const serviceRecords = keys.serviceAccountKeys;
 
       return res.json({ brand, hostname, serviceRecords });
 
