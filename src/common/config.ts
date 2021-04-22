@@ -34,6 +34,12 @@ class Config {
     if (hostName.includes('blue')) {
       return 'blue';
     }
+    if (hostName.includes('liberty')) {
+      return 'liberty';
+    }
+    if (hostName.includes('switch')) {
+      return 'switch';
+    }
     if (hostName.includes('localhost')) {
       return env.BRAND || 'localhost';
     }
