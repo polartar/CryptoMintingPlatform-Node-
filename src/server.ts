@@ -37,9 +37,18 @@ class Server {
 
     const typeDefs: DocumentNode = gql(schemas);
     const isGqlDev = isDev || isStage;
-    if (isDev) {
-      this.app.use(cors());
-    }
+
+    const corsOptions = {
+      origin: function(origin: string, callback: any) {
+        if (config.corsWhitelist.indexOf(origin) !== -1 || !origin) {
+          callback(null, true);
+        } else {
+          callback(systemLogger.warn(`Bad CORS origin: ${origin}`));
+        }
+      },
+    };
+
+    this.app.use(cors(corsOptions));
     this.app.use('/', restApi);
 
     const server = new ApolloServer({
@@ -64,7 +73,7 @@ class Server {
 
     server.applyMiddleware({
       app: this.app,
-      cors: isDev ? { credentials: true, origin: true } : false,
+      cors: corsOptions,
     });
 
     this.httpServer = http.createServer(this.app);
