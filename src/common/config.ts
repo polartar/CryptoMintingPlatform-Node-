@@ -69,6 +69,7 @@ class Config {
   public readonly jwtPublicKey = keys.publicKey;
   public readonly bitlyToken = env.BITLY_API_KEY;
   public readonly serviceAccounts = keys.serviceAccounts;
+  public readonly corsWhitelist = process.env.CORS_ALLOWED.split(',');
   public readonly defaultCryptoFavorites = ['BTC', 'ETH', 'LTC', 'XRP'];
   public readonly nudgeTimeoutHours = 18;
   public readonly nudgeCode = 'play_townstar';
@@ -281,6 +282,7 @@ class Config {
       'LINK_SHORTENER_URL',
       'GALA_ITEM_CONTRACT_ADDRESS',
       'ERC20_GAS_VALUE',
+      'CORS_ALLOWED',
     ].filter(name => !env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
