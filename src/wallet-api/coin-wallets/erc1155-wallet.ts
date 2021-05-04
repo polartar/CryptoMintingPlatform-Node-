@@ -3,7 +3,7 @@ import EthWallet from './eth-wallet';
 import { config, logger } from '../../common';
 import { ITransaction, ICoinMetadata, ISendOutput } from '../../types';
 import { UserApi } from '../../data-sources';
-import nodeSelector from '../../services/node-selector';
+//import nodeSelector from '../../services/node-selector';
 import { transactionService } from '../../services';
 import { ITokenBalanceTransactions } from '../../pipelines';
 
@@ -356,7 +356,7 @@ class Erc1155API extends EthWallet {
 
       const { hash } = utils.parseTransaction(rawTransaction);
 
-      await nodeSelector.assignNodeToMineTransaction(hash);
+      //await nodeSelector.assignNodeToMineTransaction(hash);
 
       const transaction = await this.provider.sendTransaction(rawTransaction);
 
@@ -450,7 +450,7 @@ class Erc1155API extends EthWallet {
 
       const { hash } = utils.parseTransaction(rawTransaction);
 
-      await nodeSelector.assignNodeToMineTransaction(hash);
+      //await nodeSelector.assignNodeToMineTransaction(hash);
 
       const transaction = await this.provider.sendTransaction(rawTransaction);
 

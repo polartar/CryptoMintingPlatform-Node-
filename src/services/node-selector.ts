@@ -10,7 +10,8 @@ interface SignatureResponse {
 }
 
 class NodeSelector extends ServerToServerService {
-  baseUrl = `${config.nodeSelectorUrl}`;
+  baseUrl = '';
+  //baseUrl = `${config.nodeSelectorUrl}`;
 
   public assignNodeToMineTransaction = async (transactionHash: string) => {
     const jwtAxios = this.getAxios({ role: 'system' });

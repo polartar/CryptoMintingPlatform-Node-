@@ -1,4 +1,5 @@
 import * as winston from 'winston';
+import { config } from '..';
 import { env } from '../env';
 require('winston-mongodb');
 
@@ -8,13 +9,13 @@ const MESSAGE = Symbol.for('message');
 const logger = winston.createLogger();
 const colorizer = winston.format.colorize();
 
-if (env.NODE_ENV === 'production' && env.MONGODB_URI) {
+if (config.nodeEnv === 'production' && config.mongodbUri) {
   logger.add(
     // @ts-ignore
     new winston.transports.MongoDB({
       format: winston.format.json(),
-      level: env.LOG_LEVEL,
-      db: env.MONGODB_URI,
+      level: config.logLevel,
+      db: config.mongodbUri,
       collection: 'wallet-logs',
       storeHost: true,
       capped: true,
@@ -26,7 +27,7 @@ if (env.NODE_ENV === 'production' && env.MONGODB_URI) {
     new winston.transports.MongoDB({
       format: winston.format.json(),
       level: 'warn',
-      db: env.MONGODB_URI,
+      db: config.mongodbUri,
       collection: 'wallet-logs-error',
       storeHost: true,
       capped: true,
@@ -36,7 +37,7 @@ if (env.NODE_ENV === 'production' && env.MONGODB_URI) {
 } else if (!!env.VSCODE_PID) {
   logger.add(
     new winston.transports.Console({
-      level: env.LOG_LEVEL,
+      level: config.logLevel,
       format: winston.format.combine(
         winston.format.simple(),
         winston.format.printf(
@@ -68,7 +69,7 @@ if (env.NODE_ENV === 'production' && env.MONGODB_URI) {
 } else {
   logger.add(
     new winston.transports.Console({
-      level: env.LOG_LEVEL,
+      level: config.logLevel,
       format: winston.format.combine(
         winston.format.simple(),
         winston.format.printf(

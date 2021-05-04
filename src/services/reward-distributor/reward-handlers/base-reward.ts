@@ -17,7 +17,8 @@ import {
   IRewardAudit,
   RewardAudit,
 } from '../../../models';
-import { nodeSelector, transactionService } from '../..';
+import { transactionService } from '../..';
+//import { nodeSelector } from '../..';
 import { UserHelper } from '../../../utils';
 import { config, logger, AlertService, logDebug } from '../../../common';
 import { IWalletReferralCountAggregate } from '../../../pipelines';
@@ -186,7 +187,7 @@ export abstract class BaseReward {
       chainId: this.chainId,
     });
     const parsedTx = utils.parseTransaction(transaction);
-    await nodeSelector.assignNodeToMineTransaction(parsedTx.hash);
+    //await nodeSelector.assignNodeToMineTransaction(parsedTx.hash);  //enable again if we decide to assign node for each transaction mined
     const txResponse = await this.ethProvider.sendTransaction(transaction);
     this.logger.debug(
       'sendContractTransaction',

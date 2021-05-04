@@ -130,13 +130,7 @@ class Config {
     galaItem: env.GALA_ITEM_CONTRACT_ADDRESS,
   };
   public readonly tokenIds: { [key: string]: string } = {
-    gala: env.GALA_TOKEN_ID,
-    [BETA_KEY]: env.BETA_KEY_TOKEN_ID,
-    [ALFA_FOUNTAIN_OK]: env.ALFA_OK_TOKEN_ID,
-    [ALFA_FOUNTAIN_GOOD]: env.ALFA_GOOD_TOKEN_ID,
-    [ALFA_FOUNTAIN_GREAT]: env.ALFA_GREAT_TOKEN_ID,
-    [ALFA_FOUNTAIN_MAJESTIC]: env.ALFA_MAJESTIC_TOKEN_ID,
-    [EXPRESS_DEPOT]: env.EXPRESS_DEPOT_TOKEN_ID,
+    gala: env.GALA_TOKEN_ID
   };
 
   public pubsub = new PubSub();
@@ -161,9 +155,8 @@ class Config {
   public readonly galaClaimFeeReceiveAddress =
     env.GALA_CLAIM_FEE_RECEIVE_ADDRESS;
   public readonly tokenClaimsApiUrl = env.TOKEN_CLAIMS_API_URL;
-  public readonly nodeSelectorUrl = env.NODE_SELECTOR_URL;
+  //public readonly nodeSelectorUrl = env.NODE_SELECTOR_URL;
   public readonly exchangeUrl = env.EXCHANGE_URL;
-  public readonly actionRewardsApiUrl = env.ACTION_REWARDS_API_URL;
 
   public readonly s3Bucket = env.S3_BUCKET;
   public readonly awsAccessKey = env.AWS_ACCESS_KEY_ID;
@@ -262,7 +255,6 @@ class Config {
       'COST_PER_LOOT_BOX',
       'SUPPORTS_DISPLAY_NAMES',
       'ALERT_API_URLS',
-      'NODE_SELECTOR_URL',
       'GALA_TOKEN_ID',
       'BETA_KEY_TOKEN_ID',
       'ALFA_OK_TOKEN_ID',
@@ -276,7 +268,6 @@ class Config {
       'SUPPORTS_BTC_PUBSUB',
       'DISPLAYED_WALLETS',
       'REFERRAL_LINK_DOMAIN',
-      'ACTION_REWARDS_API_URL',
       'ZENDESK_URL',
       'SENTRY_DSN',
       'LINK_SHORTENER_URL',
