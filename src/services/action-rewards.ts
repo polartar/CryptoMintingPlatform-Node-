@@ -1,5 +1,5 @@
 import { ServerToServerService } from './server-to-server';
-import { config, logger } from '../common';
+import { logger } from '../common';
 import { IUser } from '../types';
 import { UserHelper } from '../utils';
 
@@ -8,7 +8,8 @@ export enum rewardableAction {
 }
 
 class ActionRewardService extends ServerToServerService {
-  private baseUrl = `${config.actionRewardsApiUrl}/api/action`;
+  //private baseUrl = `${config.actionRewardsApiUrl}/api/action`;
+  private baseUrl = '';
   public getUserHelper = (user: IUser) => new UserHelper(user);
   actions = rewardableAction;
 

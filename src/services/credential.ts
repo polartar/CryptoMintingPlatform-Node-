@@ -81,6 +81,19 @@ class CredentialService extends ServerToServerService {
       return false;
     }
   };
+
+  public checkHealthStatus = async (userId: string) => {
+    try {
+      const jwtAxios = this.getAxios({
+        userId,
+      });
+
+      const { data } = await jwtAxios.get(`${this.healthUrl}/`);
+      return data;
+    } catch (error) {
+      logger.warn(`services.credential.checkHealthStatus.catch: ${error}`);
+    }
+  };
 }
 
 export default new CredentialService();

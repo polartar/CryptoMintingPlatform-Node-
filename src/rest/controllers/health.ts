@@ -3,6 +3,7 @@ import * as autoBind from 'auto-bind';
 import { systemLogger } from '../../common/logger';
 import { config } from '../../common';
 import keys from '../../common/keys';
+import {credentialService} from '../../services';
 
 class Controller {
   constructor() {
@@ -51,8 +52,9 @@ class Controller {
       const brand = config.brand;
       const hostname = config.hostname;
       const serviceRecords = keys.serviceAccountKeys;
+      const apiKeyService = await credentialService.checkHealthStatus('11111111');
 
-      return res.json({ brand, hostname, serviceRecords });
+      return res.json({ brand, hostname, serviceRecords, apiKeyService });
 
       // When something in the app is failing / taking too long etc, but the
       // application is still working for the most part you would return 200
