@@ -1,5 +1,5 @@
 import * as winston from 'winston';
-import { config } from '..';
+import { config } from '../index';
 import { env } from '../env';
 require('winston-mongodb');
 
