@@ -3,7 +3,7 @@ import { AxiosError } from 'axios';
 import { ServerToServerService } from './server-to-server';
 
 class CredentialService extends ServerToServerService {
-  private apiKeyUrl = `${config.apiKeyServiceUrl}/api-keys`;
+  private apiKeyUrl = `${config.apiKeyServiceUrl}/api/v1/api-keys`;
   private healthUrl = `${config.apiKeyServiceUrl}/health`;
 
   public create = async (
