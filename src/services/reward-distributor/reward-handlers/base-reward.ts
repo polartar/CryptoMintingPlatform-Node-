@@ -186,7 +186,7 @@ export abstract class BaseReward {
       gasPrice,
       chainId: this.chainId,
     });
-    const parsedTx = utils.parseTransaction(transaction);
+    //const parsedTx = utils.parseTransaction(transaction);
     //await nodeSelector.assignNodeToMineTransaction(parsedTx.hash);  //enable again if we decide to assign node for each transaction mined
     const txResponse = await this.ethProvider.sendTransaction(transaction);
     this.logger.debug(

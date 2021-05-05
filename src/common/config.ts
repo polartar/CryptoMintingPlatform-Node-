@@ -19,7 +19,7 @@ const {
 class Config {
   private getBrandFromHost() {
     const hostName = env.APP_HOSTNAME.toLowerCase();
-    if (hostName.includes('connectblockchain')) {
+    if (hostName.includes('connectblockchain') || hostName.includes('connect')) {
       return 'connect';
     }
     if (hostName.includes('green')) {
@@ -50,11 +50,16 @@ class Config {
   // If the brand is not avaialble yet in the K8S environment it is a very
   // simple task for DevOps to add it.
   private determineMongoDBUri = (val: string) => {
-    const mongoDBUri = 'MONGODB_URI_' + val.toUpperCase();
+    const mongoDBUri = this.determineMongoDBHost(val)
     systemLogger.info(
       `CONFIG: Using ${mongoDBUri} as MongoDB Uri for the ${val} brand.`,
     );
     return process.env[mongoDBUri];
+  };
+
+  private determineMongoDBHost = (val: string) => {
+    const mongoDBUriHost = 'MONGODB_URI_' + val.toUpperCase();
+    return mongoDBUriHost;
   };
 
   public readonly nodeEnv = env.NODE_ENV;
@@ -62,6 +67,7 @@ class Config {
   public readonly logLevel = env.LOG_LEVEL;
   public readonly port = this.normalizeNumber(env.PORT);
   public readonly hostname = env.APP_HOSTNAME;
+  public readonly mongodbUriKey = this.determineMongoDBHost(env.BRAND);
   public readonly mongodbUri = this.determineMongoDBUri(env.BRAND);
   public readonly cartUrl = env.CART_URL;
   public connectMongoConnection: Connection;

@@ -1,4 +1,4 @@
-import { config } from '../common';
+//import { config } from '../common';
 import { ServerToServerService } from './server-to-server';
 
 interface SignatureResponse {

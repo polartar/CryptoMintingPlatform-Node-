@@ -2,7 +2,7 @@ import { WalletClient } from 'bclient';
 import * as autoBind from 'auto-bind';
 import BaseListener from './base';
 import { config, logger } from '../common';
-import { walletApi } from '../wallet-api/WalletApi';
+//import { walletApi } from '../wallet-api/WalletApi';
 //import BtcWalletApi from '../wallet-api/coin-wallets/btc-wallet';
 import { CoinSymbol } from '../types';
 

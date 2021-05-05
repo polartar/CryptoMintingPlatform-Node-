@@ -53,8 +53,9 @@ class Controller {
       const hostname = config.hostname;
       const serviceRecords = keys.serviceAccountKeys;
       const apiKeyService = await credentialService.checkHealthStatus('11111111');
+      const mongoDbHost = config.mongodbUriKey;
 
-      return res.json({ brand, hostname, serviceRecords, apiKeyService });
+      return res.json({ brand, hostname, serviceRecords, apiKeyService, mongoDbHost });
 
       // When something in the app is failing / taking too long etc, but the
       // application is still working for the most part you would return 200

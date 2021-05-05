@@ -13,7 +13,7 @@ import { UnclaimedReward, WalletConfig, PurchaseAttempt } from '../models';
 import { logResolver, Logger } from '../common/logger';
 import { WalletApi } from '../wallet-api';
 import { UserApi, SendEmail } from '../data-sources';
-import { actionRewardService } from '../services/action-rewards';
+//import { actionRewardService } from '../services/action-rewards';
 
 interface IActivationPayment {
   btcUsdPrice: number;
@@ -32,28 +32,28 @@ interface IRewardConfig {
 }
 
 export class ShareActivateResolvers extends ResolverBase {
-  private getRewardconfig = async () => {
-    const { brand } = config;
-    const rewardConfig = await WalletConfig.findOne({ brand });
-    const {
-      referrerReward,
-      companyFee,
-      rewardAmount,
-      rewardCurrency,
-      coupon: { photo: softnodePhoto, softnodeType },
-      upgradeAccountName,
-    } = rewardConfig;
+  // private getRewardconfig = async () => {
+  //   const { brand } = config;
+  //   const rewardConfig = await WalletConfig.findOne({ brand });
+  //   const {
+  //     referrerReward,
+  //     companyFee,
+  //     rewardAmount,
+  //     rewardCurrency,
+  //     coupon: { photo: softnodePhoto, softnodeType },
+  //     upgradeAccountName,
+  //   } = rewardConfig;
 
-    return {
-      companyFee,
-      referrerReward,
-      rewardAmount,
-      rewardCurrency,
-      softnodePhoto,
-      softnodeType,
-      upgradeAccountName,
-    };
-  };
+  //   return {
+  //     companyFee,
+  //     referrerReward,
+  //     rewardAmount,
+  //     rewardCurrency,
+  //     softnodePhoto,
+  //     softnodeType,
+  //     upgradeAccountName,
+  //   };
+  // };
 
   protected usdToBtc = (btcUsdPrice: number, amount: number) => {
     const btcPriceInCents = Math.round(btcUsdPrice * 100);

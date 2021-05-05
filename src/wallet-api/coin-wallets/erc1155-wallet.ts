@@ -354,7 +354,7 @@ class Erc1155API extends EthWallet {
         gasPrice,
       });
 
-      const { hash } = utils.parseTransaction(rawTransaction);
+      //const { hash } = utils.parseTransaction(rawTransaction);
 
       //await nodeSelector.assignNodeToMineTransaction(hash);
 
@@ -448,7 +448,7 @@ class Erc1155API extends EthWallet {
         gasPrice,
       });
 
-      const { hash } = utils.parseTransaction(rawTransaction);
+      //const { hash } = utils.parseTransaction(rawTransaction);
 
       //await nodeSelector.assignNodeToMineTransaction(hash);
 
