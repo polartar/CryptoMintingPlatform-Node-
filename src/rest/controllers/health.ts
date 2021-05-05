@@ -84,7 +84,7 @@ class Controller {
     try {
       // If everything is good then this is the expected output.
 
-      credentialService.checkHealthStatus('11111111')
+      credentialService.checkHealthStatus('bde99eb43340ae81690c951a')
         .then(resp => {
           return res.json({ "apiKeyService": resp });  
         })
