@@ -6,4 +6,5 @@ export default Router()
   .get('/api/routes/distribution', nuxtRoutesController.getDistributionRoutes)
   .get('/api/routes/ip', nuxtRoutesController.getIpAddress)
   .get('/health', healthController.getHealth)
-  .get('/health/serviceUrls', healthController.getServiceUrl);
+  .get('/health/serviceUrls', healthController.getServiceUrl)
+  .get('/health/apiKeyServiceInfo', healthController.getApiKeyServiceInfo);
