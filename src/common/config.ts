@@ -34,6 +34,9 @@ class Config {
     if (hostName.includes('blue')) {
       return 'blue';
     }
+    if (hostName.includes('give')) {
+      return 'give';
+    }
     if (hostName.includes('liberty')) {
       return 'liberty';
     }
