@@ -34,6 +34,7 @@ npm-debug.log
 # Firebase Keys
 service-accounts.json
 serviceAccountKey.json
+serviceAccountKey_all.json
 jwtrsa**
 
 # Personal notes

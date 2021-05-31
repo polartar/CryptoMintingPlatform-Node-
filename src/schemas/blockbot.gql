@@ -1,0 +1,35 @@
+type BlockbotReport {
+  UserId: String!
+  DatePrepared: Date!
+  TotalBlockbots: Int!
+  Day: BlockbotMemory!
+  Week: BlockbotMemory!
+  Month: BlockbotMemory!
+  Year: BlockbotMemory!
+  Quarter: BlockbotMemory!
+  All: BlockbotMemory!
+}
+
+type BlockbotMemory {
+  TotalBlockbotsNow: Float!
+  TotalBlockbotsPrevious: Float!
+  TotalRewardsCoin: Float!
+  TotalRewardsUsd: Float!
+  AverageUsdPerBlockbot: Float!
+  AveragePercentDifference: Float!
+  Memory: String!
+  FriendActivations: BlockbotActivation!
+  BlockchainActivations: BlockbotActivation!
+}
+
+type BlockbotActivation {
+  Name: String!
+  ActiveCount: Int!
+  ActivationsCount: Int!
+  Rewards: Float!
+  RewardsAllTime: Float!
+}
+
+type Query {
+  getBlockbotReport: BlockbotReport!
+}
