@@ -1,6 +1,6 @@
 {
   "name": "wallet-server",
-  "version": "0.4.27",
+  "version": "0.4.29",
   "main": "lib/index.js",
   "config": {
     "dockerport": 4444
@@ -16,6 +16,7 @@
     "docker:run": "docker run -p 127.0.0.1:$npm_package_config_dockerport:4444 --name $npm_package_name -d $npm_package_name:$npm_package_version",
     "docker:dev": "docker rm --force $npm_package_name ; run-s docker:build docker:run",
     "fix": "node_modules/tslint/bin/tslint -c tslint.json -p tsconfig.json --fix --force",
+    "gen-jwt": "NODE_OPTIONS='--no-deprecation' ts-node ./scripts/gen-jwt.ts",
     "tsc": "node node_modules/typescript/bin/tsc",
     "format:fix": "pretty-quick --staged",
     "format:check": "prettier --config ./.prettierrc --list-different \"src/**/*{.ts,.js,.json}\"",
