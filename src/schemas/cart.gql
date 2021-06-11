@@ -1,0 +1,18 @@
+type CartAddress {
+  coinSymbol: String!
+  address: String!
+  qrCode: String!
+}
+
+type Mutation {
+  getCartAddress(
+    coinSymbol: String!
+    orderId: String!
+  ): [CartAddress]!
+  sendCartTransaction(
+    coinSymbol: String!
+    orderId: String!
+    amount: String!
+    walletPassword: String!
+  ): TxSendResponse!
+}
