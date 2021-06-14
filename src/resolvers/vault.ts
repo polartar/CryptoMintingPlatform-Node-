@@ -16,7 +16,7 @@ class Resolvers extends ResolverBase {
       name: 'Green',
       symbol: 'GREEN',
       icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTUiIGhlaWdodD0iNTUiIHZpZXdCb3g9IjAgMCA1NSA1NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTI3LjY1IDU0LjQ3NWMxNS4wNDItLjIyNiAyNy4wNTItMTIuNjA0IDI2LjgyNS0yNy42NDZDNTQuMjUgMTEuNzg3IDQxLjg3MS0uMjIzIDI2LjgzLjAwMyAxMS43ODcuMjMtLjIyMyAxMi42MDcuMDAzIDI3LjY1LjIzIDQyLjY5MiAxMi42MDcgNTQuNzAyIDI3LjY1IDU0LjQ3NXptMS45NDMtNDMuODgybC0xMiAxOWgxMGwtMiAxNCAxMi0xOC05LTEgMS0xNHoiIGZpbGw9IiNmZmYiLz48L3N2Zz4=',
-      balance: '32382',
+      balance: 32382,
       fees: {
         symbolToMint: 'GREEN',
         symbolAcceptFee: 'ETH',
@@ -30,7 +30,7 @@ class Resolvers extends ResolverBase {
       name: 'Win',
       symbol: 'WIN',
       icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTUiIGhlaWdodD0iNTUiIHZpZXdCb3g9IjAgMCA1NSA1NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTI4LjA1NyA1NC44ODNjMTUuMDQyLS4yMjcgMjcuMDUyLTEyLjYwNSAyNi44MjYtMjcuNjQ3QzU0LjY1NiAxMi4xOTQgNDIuMjc4LjE4NCAyNy4yMzYuNDEgMTIuMTk0LjYzNy4xODQgMTMuMDE1LjQxIDI4LjA1N2MuMjI3IDE1LjA0MiAxMi42MDUgMjcuMDUyIDI3LjY0NyAyNi44MjZ6TTEwIDE3aDVsNC41IDE0LjUgNi0xNC41SDI5bDYgMTQuNUw0MC41IDE3SDQ1bC03IDIxLjVoLTQuNWwtNi0xNC41TDIyIDM4LjVoLTQuNUwxMCAxN3oiIGZpbGw9IiNmZmYiLz48L3N2Zz4=',
-      balance: '195057853',
+      balance: 195057853,
       fees: {
         symbolToMint: 'WIN',
         symbolAcceptFee: 'ETH',
@@ -81,7 +81,7 @@ class Resolvers extends ResolverBase {
     // }
     const returnItems: IVaultTransaction[] = [{
       symbol: 'GREEN',
-      amount: '8334',
+      amount: 8334,
       created: addDays(new Date(), -5),
       isNft: false,
       status: 'pending',
@@ -91,7 +91,7 @@ class Resolvers extends ResolverBase {
       txMint: undefined,
     },{
       symbol: 'GREEN',
-      amount: '7290',
+      amount: 7290,
       created: addDays(new Date(), -4),
       isNft: false,
       status: 'pending',
@@ -101,7 +101,7 @@ class Resolvers extends ResolverBase {
       txMint: undefined,
     },{
       symbol: 'GREEN',
-      amount: '8161',
+      amount: 8161,
       created: addDays(new Date(), -3),
       isNft: false,
       status: 'pending',
@@ -111,7 +111,7 @@ class Resolvers extends ResolverBase {
       txMint: undefined,
     },{
       symbol: 'GREEN',
-      amount: '8597',
+      amount: 8597,
       created: addDays(new Date(), -2),
       isNft: false,
       status: 'pending',

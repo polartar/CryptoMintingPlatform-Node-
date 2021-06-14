@@ -1,7 +1,7 @@
 import { Context, ITransaction } from '../types';
 import ResolverBase from '../common/Resolver-Base';
-import config from '../common/config';
-import { User } from '../models';
+// import config from '../common/config';
+// import { User } from '../models';
 
 
 class Resolvers extends ResolverBase {
@@ -17,7 +17,7 @@ class Resolvers extends ResolverBase {
   ) => {
     const { user } = ctx;
     this.requireAuth(user);
-    const { orderId, coinSymbol = {} } = args;
+    const {  coinSymbol = {} } = args;
     
     
     
@@ -92,7 +92,7 @@ class Resolvers extends ResolverBase {
   ) => {
     const { user } = ctx;
     this.requireAuth(user);
-    const { orderId, coinSymbol, amount, walletPassword = {} } = args;
+    const { coinSymbol, amount } = args;
 
     const trans: ITransaction = {
       id: 'asdf',
