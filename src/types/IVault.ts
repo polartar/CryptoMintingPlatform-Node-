@@ -1,11 +1,9 @@
-import { bool } from "aws-sdk/clients/signer"
-
 export interface IVault {
   symbol: string;
   name: string;
   icon: string;
   contractAddress: string;
-  balance: string;
+  balance: number;
   fees: IVaultGasFee
 }
 
@@ -13,8 +11,8 @@ export interface IVaultTransaction {
   userId: string;
   symbol: string;
   tokenId?: string;
-  isNft: bool;
-  amount: string;
+  isNft: boolean;
+  amount: number;
   created: Date;
   status: string;
   dateMint?: Date;

@@ -3,46 +3,38 @@ type Vault {
   name: String!
   icon: String!
   contractAddress: String!
-  balance: String!
+  balance: Float!
   fees: VaultGasFee!
 }
 
-VaultTransaction {
+type VaultTransaction {
   userId: String!
   symbol: String!
-  tokenId: String?
+  tokenId: String
   isNft: Boolean!
-  amount: String!
+  amount: Float!
   created: Date!
   status: String!
-  dateMint?: Date
-  txMint?: String
+  dateMint: Date
+  txMint: String
 }
 
-VaultGasFee {
+type VaultGasFee {
   symbolToMint: String!
   symbolAcceptFee: String!
-  amount: Number!
+  amount: Float!
   expires: Date!
   name: String!
 }
 
-VaultRetrieveResponse {
+type VaultRetrieveResponse {
   data: String
   error: String
 }
 
 type Mutation {
-  vault(): [Vault]!
-  vaultGas(
-    coinSymbol: String!
-  ): VaultGasFee!
-  vaultTransactions(
-    coinSymbol: String!
-    filterType: String
-  ):[VaultTransaction]
-  vaultRetrieve(
-    coinSymbol: String!
-    amount: Number!
-  ):[VaultRetrieveResponse]
+  vault: [Vault]!
+  vaultGas(coinSymbol: String!): VaultGasFee!
+  vaultTransactions(coinSymbol: String!, filterType: String): [VaultTransaction]
+  vaultRetrieve(coinSymbol: String!, amount: Float!): VaultRetrieveResponse!
 }
