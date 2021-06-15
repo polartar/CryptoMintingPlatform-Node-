@@ -7,6 +7,7 @@ import {
   ICoinMetadata,
   ISendOutput,
   IPromotionalRewardDoc,
+  ICartAddress,
 } from '../../types';
 import { UserApi } from '../../data-sources';
 
@@ -71,6 +72,15 @@ class DocWallet extends CoinWalletBase {
         throw new Error('Symbol not supported for DocWallet');
       }
     }
+  }
+
+  public async getCartAddress(symbol: string, orderId: string, amount: string): Promise<ICartAddress> {
+    const result: ICartAddress = {
+      address: '',
+      coinSymbol: symbol,
+      qrCode: ''
+    };
+    return result;
   }
 
   public async checkIfWalletExists(userApi: UserApi) {

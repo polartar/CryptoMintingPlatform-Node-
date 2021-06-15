@@ -1,10 +1,19 @@
 import { credentialService, transactionService } from '../../services';
 import CoinWalletBase from './coin-wallet-base';
 import { ethers, providers, utils, BigNumber } from 'ethers';
+
 import { config, logger } from '../../common';
-import { ITransaction, ICoinMetadata, ISendOutput } from '../../types';
+import {
+  ITransaction,
+  ICoinMetadata,
+  ISendOutput,
+  ICartAddress,
+} from '../../types';
 import { UserApi } from '../../data-sources';
 import { IEthBalanceTransactions } from '../../pipelines';
+import { getNextWalletNumber } from '../../models';
+import build from 'eth-url-parser';
+import * as QRCode from 'qrcode';
 
 const PRIVATEKEY = 'privatekey';
 
@@ -38,6 +47,39 @@ class EthWallet extends CoinWalletBase {
     } catch (error) {
       return false;
     }
+  }
+
+  public async getCartAddress(
+    symbol: string,
+    orderId: string,
+    amount: string,
+  ): Promise<ICartAddress> {
+    const nextWalletNumber = await getNextWalletNumber(symbol);
+    const accountLevel = config.cartEthDerivePath;
+    const path = `m/44'/60'/0'/${accountLevel}/${nextWalletNumber}`;
+    const mnemonic = config.getEthMnemonic(symbol);
+    const { address } = ethers.Wallet.fromMnemonic(mnemonic, path);
+    const qrCode = await QRCode.toDataURL(this.buildEthQrUrl(address, amount));
+
+    const result: ICartAddress = {
+      address,
+      coinSymbol: symbol,
+      qrCode,
+    };
+    return result;
+  }
+
+  private buildEthQrUrl(cartAddress: string, amount: string): string {
+    const url = build({
+      scheme: 'ethereum',
+      prefix: 'pay',
+      // eslint-disable-next-line
+      target_address: cartAddress,
+      parameters: {
+        value: +amount * Math.pow(10, 18),
+      },
+    });
+    return url;
   }
 
   public async createWallet(

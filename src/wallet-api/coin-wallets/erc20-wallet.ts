@@ -1,10 +1,13 @@
 import EthWallet from './eth-wallet';
 import { config, logger } from '../../common';
 import { ethers, utils, BigNumber, Overrides } from 'ethers';
-import { ITransaction, ICoinMetadata, ISendOutput } from '../../types';
+import { ITransaction, ICoinMetadata, ISendOutput, ICartAddress } from '../../types';
 import { UserApi } from '../../data-sources';
 import { transactionService } from '../../services';
 import { ITokenBalanceTransactions } from '../../pipelines';
+import { getNextWalletNumber } from '../../models';
+import { build } from 'eth-url-parser';
+import * as QRCode from 'qrcode';
 
 class Erc20API extends EthWallet {
   contract: ethers.Contract;
@@ -46,6 +49,39 @@ class Erc20API extends EthWallet {
       throw new Error(
         'No contractAddress provided in token configuration for wallet interface. This parameter is required.',
       );
+  }
+
+  public async getCartAddress(symbol: string, orderId: string, amount: string): Promise<ICartAddress> {
+    const nextWalletNumber = await getNextWalletNumber(symbol);
+    const accountLevel = config.cartEthDerivePath;
+    const path = `m/44'/60'/0'/${accountLevel}/${nextWalletNumber}`;
+    const mnemonic = config.getEthMnemonic(symbol);
+    const { address } = ethers.Wallet.fromMnemonic(mnemonic, path);
+    const qrCode = await QRCode.toDataURL(this.buildQrErc20Url(address, amount));
+
+    const result: ICartAddress = {
+      address,
+      coinSymbol: symbol,
+      qrCode
+    }
+    return result;
+  }
+
+  private buildQrErc20Url(cartAddress: string, amount: string): string {
+    if (!this.contractAddress) return undefined;
+    const url = build({
+      scheme: 'ethereum',
+      prefix: 'pay',
+      // eslint-disable-next-line
+      target_address: this.contractAddress,
+      parameters: {
+        address: cartAddress,
+        uint256: +amount * Math.pow(10, 8),
+      },
+      // eslint-disable-next-line
+      function_name: 'transfer',
+    });
+    return url;
   }
 
   async estimateFee(userApi: UserApi) {
