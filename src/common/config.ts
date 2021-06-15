@@ -65,6 +65,19 @@ class Config {
     return mongoDBUriHost;
   };
 
+  public getEthMnemonic(symbol: string): string {
+    const envSetting = `CART_${symbol.toUpperCase()}_WALLET_MNEMONIC`
+    return process.env[envSetting];
+  }
+
+  public readonly cartKeys = {
+    btcWalletName: env.CART_BTC_WALLET_NAME,
+    btcWalletPass: env.CART_BTC_WALLET_PASS,
+    ethMnemonic: this.getEthMnemonic('ETH'),
+    greenMnemonic: this.getEthMnemonic('GREEN'),
+    galaMnemonic: this.getEthMnemonic('GALA'),
+  }
+
   public readonly nodeEnv = env.NODE_ENV;
   public readonly brand = this.getBrandFromHost().toLowerCase();
   public readonly logLevel = env.LOG_LEVEL;
@@ -199,6 +212,7 @@ class Config {
     upgrade: '428d8fdc-921d-41b9-ad8d-2555b2018f90',
     nodeOwner: 'a6c5b10b-7a11-47ad-b2f3-3fdab6d24eea',
   };
+  public readonly cartEthDerivePath = env.CART_ETH_DERIVE_ACCOUNT;
 
   public sendgridTemplateIds = {
     verifyEmailNewUser: 'd-fb448b5842414c1faf568e9648dd3546',

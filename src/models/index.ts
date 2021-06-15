@@ -22,3 +22,4 @@ export * from './game-item-product';
 export * from './licenses';
 export * from './mining-record';
 export * from './block-bot-report';
+export * from './cart';

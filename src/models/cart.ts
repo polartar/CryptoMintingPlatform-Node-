@@ -1,23 +1,28 @@
-import { model, Schema, Document } from 'mongoose';
+import * as mongoose from 'mongoose';
 
-// interface IFriendNudgeDoc extends Document {
-//   code: string;
-//   userId: string;
-//   friend: string;
-//   created: Date;
-//   updated: Date;
-// }
+export async function getNextWalletNumber(symbol: string) {
+    const result = await mongoose.connection.db
+      .collection<{ sequence: number }>('sequences')
+      .findOneAndUpdate(
+        {
+          name: symbol,
+        },
+        {
+          $inc: {
+            sequence: 1,
+          },
+        },
+        {
+          projection: {
+            sequence: 1,
+          },
+          maxTimeMS: 5000,
+          upsert: true,
+          returnOriginal: false,
+        },
+      );
+    const id = result.value.sequence;
+    return id;
+  };
 
-// export const friendNudgeSchema = new Schema(
-//   {
-//     code: { type: String, index: true, required: true },
-//     userId: { type: String, index: true, required: true },
-//     friend: { type: String, index: true, required: true },
-//   },
-//   { timestamps: { createdAt: 'created', updatedAt: 'updated' } },
-// );
-
-// export const FriendNudge = model<IFriendNudgeDoc>(
-//   'friend-nudges',
-//   friendNudgeSchema,
-// );
+  

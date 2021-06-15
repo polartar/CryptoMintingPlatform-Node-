@@ -7,9 +7,11 @@ import {
   ICoinMetadata,
   IBcoinTx,
   ISendOutput,
+  ICartAddress
 } from '../../types';
 import { UserApi } from '../../data-sources';
 import { BigNumber } from 'bignumber.js';
+import * as QRCode from 'qrcode';
 const { WalletClient, NodeClient } = require('bclient');
 const autoBind = require('auto-bind');
 
@@ -108,6 +110,26 @@ class BtcWallet extends CoinWalletBase {
       );
       throw error;
     }
+  }
+
+  public async getCartAddress(symbol: string, orderId: string, amount: string): Promise<ICartAddress> {
+    const { btcWalletName, btcWalletPass } = config.cartKeys;
+    const cartWallet = this.walletClient.wallet(btcWalletName, btcWalletPass);
+    const scrubbedOrderId = orderId.replace(/^\s+|\s+$/g, "");
+
+    const { receiveAddress } = await cartWallet.getAccount(scrubbedOrderId);
+    const qrCode = await QRCode.toDataURL(this.buildQrUrl(receiveAddress, amount));
+
+    const toReturn: ICartAddress = {
+      address: receiveAddress,
+      coinSymbol: symbol,
+      qrCode: qrCode
+    };
+    return toReturn;
+  }
+  
+  private buildQrUrl(cartAddress: string, amount?: string): string {
+    return `bitcoin:${cartAddress}${amount ? '?amount=' + amount : ''}`;
   }
 
   public async estimateFee(userApi: UserApi) {
