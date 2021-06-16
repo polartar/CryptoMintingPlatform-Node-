@@ -53,5 +53,6 @@ export * from './IRewardTrigger';
 export * from './ITemplate';
 export * from './simplex';
 export * from './ISimplexOrder';
+export * from './IFirebaseClient';
 export * from './IVault';
 export * from './ICartAddress';

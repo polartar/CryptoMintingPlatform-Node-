@@ -42,6 +42,8 @@ class Server {
       origin: function(origin: string, callback: any) {
         if (config.corsWhitelist.indexOf(origin) !== -1 || !origin) {
           callback(null, true);
+        } else if (isDev || isStage) {
+          callback(null, true);
         } else {
           callback(systemLogger.warn(`Bad CORS origin: ${origin}`));
         }

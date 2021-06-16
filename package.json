@@ -1,6 +1,6 @@
 {
   "name": "wallet-server",
-  "version": "0.4.35",
+  "version": "0.4.36",
   "main": "lib/index.js",
   "config": {
     "dockerport": 4444
@@ -48,6 +48,7 @@
     "express": "^4.16.4",
     "graphql": "^14.0.2",
     "graphql-tools": "^4.0.3",
+    "graphql-type-json": "0.3.2",
     "handlebars": "^4.7.6",
     "https": "^1.0.0",
     "json2csv": "^4.5.4",
@@ -58,7 +59,9 @@
     "mongoose": "5.10.19",
     "mongoose-long": "^0.3.0",
     "node-cron": "^2.0.3",
+    "node-rsa": "1.1.1",
     "nodemailer": "^6.3.1",
+    "pem-jwk": "2.0.0",
     "qrcode": "^1.4.4",
     "simple-crypto-js": "^2.5.0",
     "speakeasy": "^2.0.0",

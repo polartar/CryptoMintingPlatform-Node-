@@ -3,7 +3,7 @@ import * as supportedFavoriteOptions from '../data/supportedFavoriteOptions.json
 import { PubSub } from 'apollo-server-express';
 import keys from './keys';
 import { Connection, createConnection } from 'mongoose';
-import { ItemTokenName } from '../types/ItemTokenName';
+import { ItemTokenName, IFirebaseClient } from '../types';
 import { systemLogger } from './logger';
 import { env } from './env';
 
@@ -19,7 +19,10 @@ const {
 class Config {
   private getBrandFromHost() {
     const hostName = env.APP_HOSTNAME.toLowerCase();
-    if (hostName.includes('connectblockchain') || hostName.includes('connect')) {
+    if (
+      hostName.includes('connectblockchain') ||
+      hostName.includes('connect')
+    ) {
       return 'connect';
     }
     if (hostName.includes('green')) {
@@ -53,7 +56,7 @@ class Config {
   // If the brand is not avaialble yet in the K8S environment it is a very
   // simple task for DevOps to add it.
   private determineMongoDBUri = (val: string) => {
-    const mongoDBUri = this.determineMongoDBHost(val)
+    const mongoDBUri = this.determineMongoDBHost(val);
     systemLogger.info(
       `CONFIG: Using ${mongoDBUri} as MongoDB Uri for the ${val} brand.`,
     );
@@ -152,7 +155,7 @@ class Config {
     galaItem: env.GALA_ITEM_CONTRACT_ADDRESS,
   };
   public readonly tokenIds: { [key: string]: string } = {
-    gala: env.GALA_TOKEN_ID
+    gala: env.GALA_TOKEN_ID,
   };
 
   public pubsub = new PubSub();
@@ -221,6 +224,12 @@ class Config {
     firstNodePurchase: 'd-b2a96c51d933480f8af2e889a763a9f1',
     nudgeFriend: 'd-349e75e16d764231b995bf2b2e140484',
     referredUpgrade: 'd-560a41dccf96491fa07d53997d16828c',
+  };
+
+  public readonly firebaseClientInfo: IFirebaseClient = {
+    ApiKey: env.FIREBASE_CLIENT_API_KEY,
+    AuthDomain: env.FIREBASE_CLIENT_AUTH_DOMAIN,
+    ProjectId: env.FIREBASE_CLIENT_PROJECT_ID,
   };
 
   public sendgridUnsubscribeGroupIds = {
@@ -297,6 +306,9 @@ class Config {
       'GALA_ITEM_CONTRACT_ADDRESS',
       'ERC20_GAS_VALUE',
       'CORS_ALLOWED',
+      'FIREBASE_CLIENT_API_KEY',
+      'FIREBASE_CLIENT_AUTH_DOMAIN',
+      'FIREBASE_CLIENT_PROJECT_ID',
     ].filter(name => !env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
