@@ -3,7 +3,14 @@ import * as autoBind from 'auto-bind';
 import { systemLogger } from '../../common/logger';
 import { config } from '../../common';
 import keys from '../../common/keys';
-import {credentialService} from '../../services';
+import { credentialService } from '../../services';
+
+const NodeRSA = require('node-rsa');
+const pem2jwk = require('pem-jwk');
+
+const jwksCache: { keys?: any[] } = {
+  keys: null,
+};
 
 class Controller {
   constructor() {
@@ -39,6 +46,34 @@ class Controller {
     }
   }
 
+  // TODO: move this to it's own controller
+  public async getJwks(req: Request, res: Response) {
+    res.setHeader('Content-Type', 'application/health+json');
+
+    // ugly proof of concept
+    if (!jwksCache.keys) {
+      jwksCache.keys = keys.serviceAccounts
+        // .filter( (k:any) => k.project_id === 'connectblockchain-stage')
+        .map((k: any) => {
+          const { project_id, private_key } = k;
+          const pub = new NodeRSA(private_key).exportKey('pkcs8-public-pem');
+          const jwk = pem2jwk.pem2jwk(pub);
+          jwk.kid = project_id;
+          return jwk;
+        })
+        .filter((jwk: any, idx: Number, jwks: any[]) => {
+          return idx === jwks.findIndex(t => t.kid === jwk.kid);
+        });
+    }
+
+    try {
+      return res.json({ keys: jwksCache.keys });
+    } catch (err) {
+      systemLogger.error(err.stack);
+      return res.sendStatus(500);
+    }
+  }
+
   // This Healthcheck MUST respond to an unauthenticated GET request with
   // a 200 response. Any app-breaking errors should result in a 500 response.
   //
@@ -52,10 +87,18 @@ class Controller {
       const brand = config.brand;
       const hostname = config.hostname;
       const serviceRecords = keys.serviceAccountKeys;
-      const apiKeyService = await credentialService.checkHealthStatus('11111111');
+      const apiKeyService = await credentialService.checkHealthStatus(
+        '11111111',
+      );
       const mongoDbHost = config.mongodbUriKey;
 
-      return res.json({ brand, hostname, serviceRecords, apiKeyService, mongoDbHost });
+      return res.json({
+        brand,
+        hostname,
+        serviceRecords,
+        apiKeyService,
+        mongoDbHost,
+      });
 
       // When something in the app is failing / taking too long etc, but the
       // application is still working for the most part you would return 200
@@ -84,15 +127,16 @@ class Controller {
     try {
       // If everything is good then this is the expected output.
 
-      credentialService.checkHealthStatus('bde99eb43340ae81690c951a')
+      credentialService
+        .checkHealthStatus('bde99eb43340ae81690c951a')
         .then(resp => {
-          return res.json({ "apiKeyService": resp });  
+          return res.json({ apiKeyService: resp });
         })
         .catch(err => {
           systemLogger.error(err.stack);
-          return res.status(500).json({ "error": err });
+          return res.status(500).json({ error: err });
         });
-      
+
       // When something in the app is failing / taking too long etc, but the
       // application is still working for the most part you would return 200
       // with a status message of "warn" a good practice to display a
@@ -110,7 +154,5 @@ class Controller {
     }
   }
 }
-
-
 
 export default new Controller();
