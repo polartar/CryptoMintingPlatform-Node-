@@ -1,4 +1,11 @@
-import { Context, IVault, IVaultTransaction, IVaultGasFee } from '../types';
+import { 
+  Context,
+  IVault, 
+  IVaultTransaction, 
+  IVaultGasFee, 
+  StatusResponse, 
+  ErrorResponseCode, 
+  IVaultRetrieveResponse } from '../types';
 import ResolverBase from '../common/Resolver-Base';
 import { addHours, addDays } from 'date-fns';
 
@@ -127,25 +134,55 @@ class Resolvers extends ResolverBase {
   mint = async (
     parent: any,
     args: {
-      coinSymbol: string;
+      symbol: string;
       amount: number;
+      encryptionPasscode: string;
     },
     ctx: Context,
   ) => {
     const { user } = ctx;
     this.requireAuth(user);
-    const { coinSymbol, amount } = args;
+    const { symbol, amount, encryptionPasscode } = args;
 
-    return {
+    const success: IVaultRetrieveResponse = {
       data: {
-        status: 'Success',
-        coinSymbol: coinSymbol,
-        amount: amount.toString()
+        symbol,
+        amount,
+        transactionId: '0x8aa729950e72a506616209862183af9cc3f914b538456a0767a57486854cedcf'
       },
-      error: {}
-    };
-  };
+      error: undefined,
+      status: StatusResponse.Success
+    } ;
 
+    const failed: IVaultRetrieveResponse = {
+      data: undefined,
+      error: {
+        code: ErrorResponseCode.InternalError,
+        message: "Internal Error",
+        stack: undefined
+      },
+      status: StatusResponse.Error
+    };
+
+    const badPassword: IVaultRetrieveResponse= {
+      data: undefined,
+      error: {
+        code: ErrorResponseCode.InvalidEncryptionPassword,
+        message: "Invalid password.",
+        stack: undefined
+      },
+      status: StatusResponse.Error
+    };
+
+    switch(encryptionPasscode.toLowerCase()) {
+      case "error":
+        return failed;
+      case "password":
+        return badPassword;
+      default:
+        return success;        
+    }
+  };
 }
 
 const resolvers = new Resolvers();
