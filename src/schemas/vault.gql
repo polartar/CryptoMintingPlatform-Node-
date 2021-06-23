@@ -1,4 +1,4 @@
-type Vault {
+type VaultItem {
   symbol: String!
   name: String!
   icon: String!
@@ -27,37 +27,35 @@ type VaultGasFee {
   name: String!
 }
 
-enum StatusResponse {
-  Success
-  Error
-}
-
-enum ErrorResponseCode {
-  InvalidEncryptionPassword
-  BlockchainError
-  InternalError
-}
-
 type ErrorResponse {
   message: String!
   code: String!
-}
-
-type VaultRetrieveResponse {
-  data: VaultRetrieveResponseData
-  error: ErrorResponse
-  status: StatusResponse!
+  stack: String
 }
 
 type VaultRetrieveResponseData {
   symbol: String!
   amount: Float!
-  transactionId: String!
+  transactionId: String
+  error: ErrorResponse
+}
+
+type VaultRetrieveResponse {
+  data: [VaultRetrieveResponseData]
+  error: ErrorResponse
+}
+
+input VaultItemRequest {
+  symbol: String!
+  amount: Float!
 }
 
 type Mutation {
-  vault: [Vault]!
+  vault: [VaultItem]!
   vaultGas(coinSymbol: String!): VaultGasFee!
   vaultTransactions(coinSymbol: String!, filterType: String): [VaultTransaction]
-  vaultRetrieve(symbol: String!, amount: Float!, encryptionPasscode: String!): VaultRetrieveResponse!
-}+-
+  vaultRetrieve(
+    items: [VaultItemRequest!]!
+    encryptionPasscode: String!
+  ): VaultRetrieveResponse!
+}
