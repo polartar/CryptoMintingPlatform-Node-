@@ -1,10 +1,10 @@
-export interface IVault {
+export interface IVaultItem {
   symbol: string;
   name: string;
   icon: string;
   contractAddress: string;
   balance: number;
-  fees: IVaultGasFee
+  fees: IVaultGasFee;
 }
 
 export interface IVaultTransaction {
@@ -27,11 +27,6 @@ export interface IVaultGasFee {
   name: string;
 }
 
-export enum StatusResponse {
-  Success,
-  Error
-}
-
 export enum ErrorResponseCode {
   InvalidEncryptionPassword,
   BlockchainError,
@@ -39,19 +34,24 @@ export enum ErrorResponseCode {
 }
 
 export interface IErrorResponse {
-  message: String
-  code: ErrorResponseCode,
-  stack?: string,
+  message: string;
+  code: ErrorResponseCode;
+  stack?: string;
 }
 
 export interface IVaultRetrieveResponseData {
-  symbol: string,
-  amount: number,
-  transactionId: string,
+  symbol: string;
+  amount: number;
+  transactionId?: string;
+  error?: IErrorResponse;
+}
+
+export interface IVaultItemRequest {
+  symbol: string;
+  amount: number;
 }
 
 export interface IVaultRetrieveResponse {
-  data?: IVaultRetrieveResponseData,
-  error?: IErrorResponse,
-  status: StatusResponse,
+  data?: IVaultRetrieveResponseData[];
+  error?: IErrorResponse;
 }
