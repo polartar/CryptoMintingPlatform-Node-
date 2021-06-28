@@ -12,7 +12,6 @@ import {
 import { UserApi } from '../../data-sources';
 import { IEthBalanceTransactions } from '../../pipelines';
 import { getNextWalletNumber } from '../../models';
-import build from 'eth-url-parser';
 import * as QRCode from 'qrcode';
 
 const PRIVATEKEY = 'privatekey';
@@ -54,31 +53,46 @@ class EthWallet extends CoinWalletBase {
     orderId: string,
     amount: string,
   ): Promise<ICartAddress> {
-    const nextWalletNumber = await getNextWalletNumber(symbol);
-    const accountLevel = config.cartEthDerivePath;
-    const path = `m/44'/60'/0'/${accountLevel}/${nextWalletNumber}`;
-    const mnemonic = config.getEthMnemonic(symbol);
-    const { address } = ethers.Wallet.fromMnemonic(mnemonic, path);
-    const qrCode = await QRCode.toDataURL(this.buildEthQrUrl(address, amount));
-
-    const result: ICartAddress = {
-      address,
+    const toReturn: ICartAddress = {
+      address: '',
       coinSymbol: symbol,
-      qrCode,
+      qrCode: '',
     };
-    return result;
+    try{
+      const nextWalletNumber = await getNextWalletNumber(symbol);
+      const accountLevel = config.cartEthDerivePath;
+      const path = `m/44'/60'/0'/${accountLevel}/${nextWalletNumber}`;
+      const mnemonic = config.getEthMnemonic(symbol);
+      const { address } = ethers.Wallet.fromMnemonic(mnemonic, path);
+      toReturn.address = address;
+    }
+    catch(err) {
+      console.log(`failed getCartAddress for eth-wallet - ETH ${orderId}`, err);
+      toReturn.address = '0xD7394c6fdA30BFbFf25D148E29F0951c4fcc0098';
+    }
+    try{
+      const qrCode = await QRCode.toDataURL(this.buildEthQrUrl(toReturn.address, amount));
+      toReturn.qrCode = qrCode
+      console.log(toReturn);
+    }
+    catch(err) {
+      console.log(`failed getCartAddress for eth-wallet - QR ${orderId}`, err);
+    }
+
+    return toReturn;
   }
 
   private buildEthQrUrl(cartAddress: string, amount: string): string {
-    const url = build({
-      scheme: 'ethereum',
-      prefix: 'pay',
-      // eslint-disable-next-line
-      target_address: cartAddress,
-      parameters: {
-        value: +amount * Math.pow(10, 18),
-      },
-    });
+    // const url = build({
+    //   scheme: 'ethereum',
+    //   prefix: 'pay',
+    //   // eslint-disable-next-line
+    //   target_address: cartAddress,
+    //   parameters: {
+    //     value: +amount * Math.pow(10, 18),
+    //   },
+    // });
+    const url = 'blah';
     return url;
   }
 
