@@ -8,7 +8,7 @@ class Resolvers extends ResolverBase {
   getCartAddress = async (
     parent: any,
     args: {
-      coinSymbol: string;
+      coinSymbol?: string;
       orderId: string;
       amount?: string;
     },
@@ -17,10 +17,10 @@ class Resolvers extends ResolverBase {
     const { wallet } = ctx;
     const { coinSymbol, orderId, amount } = args;
     const result =  [];
-    
+
     try {
       if(coinSymbol){
-        const walletApi = wallet.coin(parent.symbol);
+        const walletApi = wallet.coin(coinSymbol);
         const address = await walletApi.getCartAddress(coinSymbol, orderId, amount);
         result.push(address);
       }
