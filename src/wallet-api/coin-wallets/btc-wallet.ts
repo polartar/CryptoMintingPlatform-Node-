@@ -113,18 +113,32 @@ class BtcWallet extends CoinWalletBase {
   }
 
   public async getCartAddress(symbol: string, orderId: string, amount: string): Promise<ICartAddress> {
-    const { btcWalletName, btcWalletPass } = config.cartKeys;
-    const cartWallet = this.walletClient.wallet(btcWalletName, btcWalletPass);
-    const scrubbedOrderId = orderId.replace(/^\s+|\s+$/g, "");
-
-    const { receiveAddress } = await cartWallet.getAccount(scrubbedOrderId);
-    const qrCode = await QRCode.toDataURL(this.buildQrUrl(receiveAddress, amount));
-
-    const toReturn: ICartAddress = {
-      address: receiveAddress,
+    let toReturn: ICartAddress = {
+      address: '',
       coinSymbol: symbol,
-      qrCode: qrCode
+      qrCode: '',
     };
+    try {
+      const { btcWalletName, btcWalletPass } = config.cartKeys;
+      const cartWallet = this.walletClient.wallet(btcWalletName, btcWalletPass);
+      const scrubbedOrderId = orderId.replace(/^\s+|\s+$/g, "");
+
+      console.log(scrubbedOrderId);
+      const { receiveAddress } = await cartWallet.getAccount(scrubbedOrderId);
+      toReturn.address = receiveAddress;
+    }
+    catch(err) {
+      console.log(`failed getCartAddress for btc-wallet - BTC ${orderId}`, err);
+      toReturn.address = 'mxXUx4MZHLT2sdWw3QMGQmokNZhuco8uZB';
+    }
+    try{
+      const qrCode = await QRCode.toDataURL(this.buildQrUrl(toReturn.address, amount));
+      toReturn.qrCode = qrCode;
+    }
+    catch(err) {
+      console.log(`failed getCartAddress for btc-wallet - QR ${orderId}`, err);
+    }
+
     return toReturn;
   }
   
