@@ -1,12 +1,12 @@
 type CartAddress {
-  coinSymbol: String!
+  coinSymbol: String
   address: String!
   qrCode: String!
 }
 
 type Mutation {
   getCartAddress(
-    coinSymbol: String!
+    coinSymbol: String
     orderId: String!
   ): [CartAddress]!
   sendCartTransaction(
