@@ -14,12 +14,10 @@ class Resolvers extends ResolverBase {
     },
     ctx: Context,
   ) => {
-    const { user, wallet } = ctx;
-    this.requireAuth(user);
+    const { wallet } = ctx;
     const { coinSymbol, orderId, amount } = args;
-    this.requireAuth(user);
-
     const result =  [];
+    
     try {
       if(coinSymbol){
         const walletApi = wallet.coin(parent.symbol);
@@ -38,6 +36,14 @@ class Resolvers extends ResolverBase {
         const galaWalletApi = wallet.coin('GALA');
         const galaAddress = await galaWalletApi.getCartAddress('GALA', orderId, amount);
         result.push(galaAddress);
+
+        const greenWalletApi = wallet.coin('GREEN');
+        const greenAddress = await greenWalletApi.getCartAddress('GREEN', orderId, amount);
+        result.push(greenAddress);
+
+        // const batWalletApi = wallet.coin('BAT');
+        // const batAddress = await batWalletApi.getCartAddress('BAT', orderId, amount);
+        // result.push(batAddress);
       }
       return result;
       
