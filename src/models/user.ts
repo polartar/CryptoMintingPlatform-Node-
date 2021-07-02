@@ -117,6 +117,11 @@ export interface IUser extends mongoose.Document {
     arcadeUserId?: string;
     blueUserId?: string;
   };
+  dateOfBirth?: Date;
+  phoneNumber?: string;
+  country?: string;
+  clinic?: string;
+  careclixId?: string;
 }
 
 export async function getNextNumber() {
@@ -230,8 +235,7 @@ const utmSchema = new mongoose.Schema({
   offer: String,
 });
 
-export const userSchema = new mongoose.Schema(
-  {
+export const userSchema = new mongoose.Schema({
     firstName: String,
     lastName: String,
     displayName: { type: String, unique: true, index: true, trim: true },
@@ -367,6 +371,7 @@ userSchema.post('save', async function(
     }
   }
 });
+
 userSchema.post('insertMany', async function(
   doc: IUser,
   next: mongoose.HookNextFunction,
