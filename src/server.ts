@@ -165,7 +165,10 @@ class Server {
       set('useCreateIndex', true);
       set('useNewUrlParser', true);
       set('useFindAndModify', false);
+      set('useUnifiedTopology', true);
+
       connect(config.mongodbUri, { useNewUrlParser: true });
+      
       mongooseConnection.once('open', () => {
         systemLogger.info(`Connected to mongoDb`);
         resolve();
