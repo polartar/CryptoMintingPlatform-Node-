@@ -113,7 +113,7 @@ class BtcWallet extends CoinWalletBase {
   }
 
   public async getCartAddress(symbol: string, orderId: string, amount: string): Promise<ICartAddress> {
-    let toReturn: ICartAddress = {
+    const toReturn: ICartAddress = {
       address: '',
       coinSymbol: symbol,
       qrCode: '',

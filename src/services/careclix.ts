@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { IUser } from '../models/user';
-import { config, logger } from '../common';
+import { config } from '../common';
 import { ICareclixUser } from '../types';
 
 class CareclixService {

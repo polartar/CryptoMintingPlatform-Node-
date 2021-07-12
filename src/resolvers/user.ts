@@ -354,17 +354,6 @@ class Resolvers extends ResolverBase {
       language,
       updateUserNumber,
       activationTermsAndConditions,
-      gender,
-      dateOfBirth,
-      country,
-      countryCode,
-      countryPhoneCode,
-      clinic,
-      careclixId,
-      street,
-      city,
-      state,
-      zipCode,
     } = args.userInfo;
 
     const userDoc = await user.findFromDb();

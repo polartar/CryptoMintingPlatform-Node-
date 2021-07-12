@@ -9,7 +9,6 @@ export interface ICareclixUser {
   gender: string;
   dateOfBirth: Date;
   phoneNumber: {
-    type: string;
     countryCode: string;
     number: string;
     code: string;

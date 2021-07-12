@@ -83,9 +83,9 @@ class Server {
   }
 
   private getToken(connection: ExecutionParams, req: express.Request): string | null {
-    if (connection?.context.token != null) {
+    if (connection?.context.token) {
       return connection.context.token;
-    } else if (req?.headers.authorization != null) {
+    } else if (req?.headers.authorization) {
       return req.headers.authorization.replace(/bearer /gi, '');
     }
 
@@ -103,9 +103,9 @@ class Server {
   }) {
     const logger = new Logger(winstonLogger);
     let user = null;
-    let token = this.getToken(connection, req);
+    const token = this.getToken(connection, req);
 
-    if (token != null) {
+    if (token) {
       try {
         user = await UserApi.fromIdToken(token);
         logger.startSession(user.userId);
