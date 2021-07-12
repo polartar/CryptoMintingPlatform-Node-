@@ -92,7 +92,9 @@ export interface IUser extends mongoose.Document {
   profilePhotoUrl: string;
   referralContext: IOrderContext;
   unsubscriptions: Array<{ list: string; timestamp: Date }>;
-  communicationConsent: Array<{ consentGiven: boolean; timestamp: Date }>;
+  communicationConsent: {
+    consentGiven: boolean; timestamp: Date
+  }[];
   termsAndConditionsAgreement: Array<{
     templateId: string;
     timestamp: Date;
@@ -108,6 +110,17 @@ export interface IUser extends mongoose.Document {
     ipAddress: string;
     text: string;
   }[];
+  gender?: string;
+  dateOfBirth?: Date;
+  country?: string;
+  countryCode?: string;
+  countryPhoneCode?: string;
+  clinic?: string;
+  careclixId?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
   lastLogin: Date;
   emailVerified: Date;
   userIds?: {
@@ -117,11 +130,6 @@ export interface IUser extends mongoose.Document {
     arcadeUserId?: string;
     blueUserId?: string;
   };
-  dateOfBirth?: Date;
-  phoneNumber?: string;
-  country?: string;
-  clinic?: string;
-  careclixId?: string;
 }
 
 export async function getNextNumber() {
@@ -310,7 +318,7 @@ export const userSchema = new mongoose.Schema({
     ],
     communicationConsent: [
       {
-        consentGiven: Boolean,
+        consentGiven: false,
         timestamp: Date,
       },
     ],
@@ -335,6 +343,17 @@ export const userSchema = new mongoose.Schema({
         ipAddress: String,
       },
     ],
+    gender: String,
+    dateOfBirth: Date,
+    country: String,
+    countryCode: String,
+    countryPhoneCode: String,
+    clinic: String,
+    careclixId: String,
+    street: String,
+    city: String,
+    state: String,
+    zipCode: String,
     lastLogin: Date,
     emailVerified: Date,
   },

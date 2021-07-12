@@ -56,3 +56,4 @@ export * from './ISimplexOrder';
 export * from './IFirebaseClient';
 export * from './IVault';
 export * from './ICartAddress';
+export * from './ICareclixUser';

@@ -217,6 +217,8 @@ class Config {
   };
   public readonly cartEthDerivePath = env.CART_ETH_DERIVE_ACCOUNT;
 
+  public readonly careclixSignUpUrl = `https://${env.CARECLIX_URL}/auth/signup`;
+
   public sendgridTemplateIds = {
     verifyEmailNewUser: 'd-fb448b5842414c1faf568e9648dd3546',
     verifyEmailExistingUser: 'd-5c4129cd88004c1e88182876350d527a',
@@ -260,6 +262,7 @@ class Config {
       'API_KEY_SERVICE_URL',
       'ETHERSCAN_API_KEY',
       'ETH_ADD_FOR_ERC20_FEE_CALC',
+      'CARECLIX_URL',
       'COMPANY_FEE_BTC_ADDRESS_GREEN',
       'COMPANY_FEE_BTC_ADDRESS_WINX',
       'COMPANY_FEE_BTC_ADDRESS_GALA',
