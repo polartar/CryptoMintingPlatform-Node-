@@ -5,12 +5,32 @@ import { ICareclixUser } from '../types';
 
 class CareclixService {
   public signUp = async (user: IUser, password: string) => {
-    const careclixUser: ICareclixUser = {
+    try {
+      const { data } = await axios.get(config.careclixSignUpUrl, {
+        data: this.createUser(user, password),
+      });
+
+      if (data.status === 'ok') {
+        user.careclixId = data.payload.id;
+
+        return true;
+      }
+
+      throw new Error(`Received response: ${JSON.stringify(data)}`);
+    } catch (err) {
+      throw new Error(
+        `An error happened while creating Careclix account: ${err.toString()}`,
+      );
+    }
+  };
+
+  private createUser = (user: IUser, password: string): ICareclixUser => {
+    return {
       username: user.email,
       password: password,
       confirmPassword: password,
       email: user.email,
-      clinicIds: [ user.clinic ],
+      clinicIds: [user.clinic],
       firstName: user.firstName,
       lastName: user.lastName,
       gender: user.gender,
@@ -18,7 +38,7 @@ class CareclixService {
       phoneNumber: {
         code: user.countryPhoneCode,
         countryCode: user.countryCode,
-        number: user.phone
+        number: user.phone,
       },
       address: {
         street: user.street,
@@ -27,22 +47,8 @@ class CareclixService {
         zipCode: user.zipCode,
         country: user.country,
         countryCode: user.countryCode,
-      }
-    }
-
-    try {
-      const { data } = await axios.get(config.careclixSignUpUrl, { data: careclixUser });
-
-      if (data.status === "ok") {
-        user.careclixId = data.payload.id;
-      }
-
-      throw new Error(`Careclix account wasn\'t created: ${data}`);
-    } catch (err) {
-      throw new Error(`Unexpected error while creating Careclix account: ${err}`);
-    }
-
-    return true;
+      },
+    };
   };
 }
 

@@ -57,6 +57,7 @@ export interface IUserWalletDoc extends mongoose.Document {
 interface ISoftNodeLicenses {
   [key: string]: number;
 }
+
 export interface IUser extends mongoose.Document {
   email: string;
   firebaseUid: string;
@@ -93,7 +94,8 @@ export interface IUser extends mongoose.Document {
   referralContext: IOrderContext;
   unsubscriptions: Array<{ list: string; timestamp: Date }>;
   communicationConsent: {
-    consentGiven: boolean; timestamp: Date
+    consentGiven: boolean;
+    timestamp: Date;
   }[];
   termsAndConditionsAgreement: Array<{
     templateId: string;
@@ -243,7 +245,8 @@ const utmSchema = new mongoose.Schema({
   offer: String,
 });
 
-export const userSchema = new mongoose.Schema({
+export const userSchema = new mongoose.Schema(
+  {
     firstName: String,
     lastName: String,
     displayName: { type: String, unique: true, index: true, trim: true },
