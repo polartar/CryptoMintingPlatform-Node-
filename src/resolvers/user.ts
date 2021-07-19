@@ -227,7 +227,7 @@ class Resolvers extends ResolverBase {
 
       await newUser.save();
 
-      await emailService.sendWelcomeEmail({ email: newUser.email });
+      //await emailService.sendWelcomeEmail({ email: newUser.email });
 
       const customToken = token
         ? await auth.signIn(token, config.hostname)

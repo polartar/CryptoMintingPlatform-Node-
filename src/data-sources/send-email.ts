@@ -8,15 +8,12 @@ import { DataSource } from 'apollo-datasource';
 import { Attachment, Options } from 'nodemailer/lib/mailer';
 import * as mail from '@sendgrid/mail';
 
-// mail.setApiKey(config.sendGridApiKey);
-// This needs to be config.sendGridApiKey as soon as Marcus figures out the Sendgrid account.
-mail.setApiKey(
-  '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',
-);
+mail.setApiKey(config.sendGridApiKey);
 
 class SendEmail extends DataSource {
   capitalizedBrand = capitalize(config.brand);
   sendFromEmailAddress = config.sendGridEmailFrom;
+  canSendEmail = false;
   transport = nodemailer.createTransport(
     sgTransport({
       auth: {

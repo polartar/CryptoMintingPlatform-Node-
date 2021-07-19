@@ -26,6 +26,7 @@ class BtcBlockchainListener implements BaseListener {
         walletId,
       };
       config.pubsub.publish(config.newBalance, payload);
+
     } catch (error) {
       logger.error(
         `blockchain-listeners.btc.publishNewBalance.catch: ${error}`,

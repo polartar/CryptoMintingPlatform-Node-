@@ -9,6 +9,7 @@ export class SendGrid extends RESTDataSource {
     private isOkToAddContacts: boolean,
   ) {
     super();
+    //TODO : this is called over and over in server.ts as part of the datasource. 
     sgMail.setApiKey(config.sendGridApiKey);
     sgClient.setApiKey(config.sendGridApiKey);
   }
