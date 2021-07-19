@@ -12,6 +12,8 @@ variables:
   # kubernetes - high traffic, long running or resource intensive apps.
   # traditional - special use cases.
   DEPLOY_TYPE: kubernetes
+  
+  ignore_errors: yes
 
   # Due to server abstractions in serverless and kubernetes it is nessesary to declare
   # The resource requirements of your app. If it's too low your app won't run. If it's
