@@ -75,11 +75,12 @@ class Config {
 
   public readonly cartKeys = {
     btcWalletName: env.CART_BTC_WALLET_NAME,
+    btcWalletToken: env.CART_BTC_WALLET_TOKEN,
     btcWalletPass: env.CART_BTC_WALLET_PASS,
     ethMnemonic: this.getEthMnemonic('ETH'),
     greenMnemonic: this.getEthMnemonic('GREEN'),
     galaMnemonic: this.getEthMnemonic('GALA'),
-  }
+  };
 
   public readonly nodeEnv = env.NODE_ENV;
   public readonly brand = this.getBrandFromHost().toLowerCase();

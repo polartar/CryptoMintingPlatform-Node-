@@ -8,46 +8,55 @@ import {
   IVaultRetrieveResponseData,
   IVaultItemRequest,
 } from '../types';
+import { GreenCoinResult } from '../models';
 import ResolverBase from '../common/Resolver-Base';
-import { addHours, addDays } from 'date-fns';
+import { addHours } from 'date-fns';
+import { logger } from '../common';
 
 class Resolvers extends ResolverBase {
   getVaultItems = async (parent: any, args: {}, ctx: Context) => {
     const { user } = ctx;
     this.requireAuth(user);
+    const returnItems: IVaultItem[] = [];
 
-    const returnItems: IVaultItem[] = [
-      {
+    try {
+      const userId = ctx.user.userId;
+      const now = Date.now();
+      logger.debug(`resolvers.getVaultItems: ${userId}`);
+      const greens = await GreenCoinResult.find({
+        userId,
+        status: 'unminted'
+      })
+        .exec();
+      
+      const toAdd: IVaultItem = {
         contractAddress: '0xa280eed7be2121b84cae9e4d0760fad1992c0278',
         name: 'Green',
         symbol: 'GREEN',
         icon:
           'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTUiIGhlaWdodD0iNTUiIHZpZXdCb3g9IjAgMCA1NSA1NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTI3LjY1IDU0LjQ3NWMxNS4wNDItLjIyNiAyNy4wNTItMTIuNjA0IDI2LjgyNS0yNy42NDZDNTQuMjUgMTEuNzg3IDQxLjg3MS0uMjIzIDI2LjgzLjAwMyAxMS43ODcuMjMtLjIyMyAxMi42MDcuMDAzIDI3LjY1LjIzIDQyLjY5MiAxMi42MDcgNTQuNzAyIDI3LjY1IDU0LjQ3NXptMS45NDMtNDMuODgybC0xMiAxOWgxMGwtMiAxNCAxMi0xOC05LTEgMS0xNHoiIGZpbGw9IiNmZmYiLz48L3N2Zz4=',
-        balance: 32382,
+        balance: 0,
         fees: {
-          symbolToMint: 'GREEN',
-          symbolAcceptFee: 'ETH',
-          amount: 0.01,
-          expires: addHours(Date.now(), 1),
-          name: 'Gas Fees',
-        },
-      },
-      {
-        contractAddress: '0xa280eed7be2121b84cae9e4d0760fad1992c0278',
-        name: 'Win',
-        symbol: 'WIN',
-        icon:
-          'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTUiIGhlaWdodD0iNTUiIHZpZXdCb3g9IjAgMCA1NSA1NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTI4LjA1NyA1NC44ODNjMTUuMDQyLS4yMjcgMjcuMDUyLTEyLjYwNSAyNi44MjYtMjcuNjQ3QzU0LjY1NiAxMi4xOTQgNDIuMjc4LjE4NCAyNy4yMzYuNDEgMTIuMTk0LjYzNy4xODQgMTMuMDE1LjQxIDI4LjA1N2MuMjI3IDE1LjA0MiAxMi42MDUgMjcuMDUyIDI3LjY0NyAyNi44MjZ6TTEwIDE3aDVsNC41IDE0LjUgNi0xNC41SDI5bDYgMTQuNUw0MC41IDE3SDQ1bC03IDIxLjVoLTQuNWwtNi0xNC41TDIyIDM4LjVoLTQuNUwxMCAxN3oiIGZpbGw9IiNmZmYiLz48L3N2Zz4=',
-        balance: 195057853,
-        fees: {
-          symbolToMint: 'WIN',
-          symbolAcceptFee: 'ETH',
-          amount: 0.02,
-          expires: addHours(Date.now(), 1),
-          name: 'Gas Fees',
-        },
-      },
-    ];
+            symbolToMint: 'GREEN',
+            symbolAcceptFee: 'ETH',
+            amount: 0.04,
+            expires: addHours(Date.now(), 1),
+            name: 'Gas Fees',
+          },
+      };
+
+      greens.forEach(a => {
+        toAdd.balance = toAdd.balance + a.greenDecimal;
+      });
+
+      returnItems.push(toAdd);
+    } catch (err) {
+      logger.warn(`resolvers.getVaultItems.catch: ${err}`);
+      return {
+        success: false,
+        message: err,
+      };
+    }
 
     return returnItems;
   };
@@ -66,7 +75,7 @@ class Resolvers extends ResolverBase {
     const returnItem: IVaultGasFee = {
       symbolToMint: coinSymbol,
       symbolAcceptFee: 'ETH',
-      amount: 0.01,
+      amount: 0.04,
       expires: addHours(Date.now(), 1),
       name: 'Gas Fees',
     };
@@ -84,56 +93,39 @@ class Resolvers extends ResolverBase {
     const { user } = ctx;
     this.requireAuth(user);
     const { coinSymbol, filterType } = args;
+    const returnItems: IVaultTransaction[] = [];
 
-    // if(!filterType){
-    //   filterType = 'unminted';
-    // }
-    const returnItems: IVaultTransaction[] = [
-      {
-        symbol: 'GREEN',
-        amount: 8334,
-        created: addDays(new Date(), -5),
-        isNft: false,
-        status: 'pending',
-        userId: user.userId,
-        dateMint: undefined,
-        tokenId: undefined,
-        txMint: undefined,
-      },
-      {
-        symbol: 'GREEN',
-        amount: 7290,
-        created: addDays(new Date(), -4),
-        isNft: false,
-        status: 'pending',
-        userId: user.userId,
-        dateMint: undefined,
-        tokenId: undefined,
-        txMint: undefined,
-      },
-      {
-        symbol: 'GREEN',
-        amount: 8161,
-        created: addDays(new Date(), -3),
-        isNft: false,
-        status: 'pending',
-        userId: user.userId,
-        dateMint: undefined,
-        tokenId: undefined,
-        txMint: undefined,
-      },
-      {
-        symbol: 'GREEN',
-        amount: 8597,
-        created: addDays(new Date(), -2),
-        isNft: false,
-        status: 'pending',
-        userId: user.userId,
-        dateMint: undefined,
-        tokenId: undefined,
-        txMint: undefined,
-      },
-    ];
+    try {
+      const userId = ctx.user.userId;
+      const now = Date.now();
+      logger.debug(`resolvers.getVaultItems: ${userId}`);
+      const greens = await GreenCoinResult.find({
+        userId,
+      })
+        .exec();
+
+      greens.forEach(a => {
+        const toAdd: IVaultTransaction = {
+          created: a.runTime,
+          isNft: false,
+          status: a.status,
+          amount: a.greenDecimal,
+          userId: a.userId,
+          dateMint: a.dateMint,
+          tokenId: undefined,
+          txMint: undefined,
+          symbol: coinSymbol
+        };
+        returnItems.push(toAdd);
+      });
+
+    } catch (err) {
+      logger.warn(`resolvers.getVaultItems.catch: ${err}`);
+      return {
+        success: false,
+        message: err,
+      };
+    }
 
     return returnItems;
   };
