@@ -4,7 +4,6 @@ import { PubSub } from 'apollo-server-express';
 import keys from './keys';
 import { Connection, createConnection } from 'mongoose';
 import { ItemTokenName, IFirebaseClient } from '../types';
-import { systemLogger } from './logger';
 import { env } from './env';
 
 const {
@@ -57,9 +56,6 @@ class Config {
   // simple task for DevOps to add it.
   private determineMongoDBUri = (val: string) => {
     const mongoDBUri = this.determineMongoDBHost(val);
-    systemLogger.info(
-      `CONFIG: Using ${mongoDBUri} as MongoDB Uri for the ${val} brand.`,
-    );
     return process.env[mongoDBUri];
   };
 
@@ -319,19 +315,7 @@ class Config {
         )} undefined.`,
       );
     }
-  }
-
-  public logConfigAtStartup = () => {
-    [
-      ['ETH_NODE', this.ethNodeUrl],
-      ['DISPLAYED_WALLETS', this.displayedWallets.join(',')],
-      ['INDEXED_TRANSACTIONS', this.indexedTransactions],
-      ['LINK_SHORTENER_URL', this.linkShortenerUrl],
-      ['GALA_MASTER_NODE_WALLET_ADDRESS', this.galaMasterNodeWalletAddress],
-    ].forEach(([label, value]) => {
-      systemLogger.info(`CONFIG: ${label}=${value}`);
-    });
-  };
+  }  
 
   public async setConnectMongoConnection() {
     const connectMongoUrl = env.MONGODB_URI_CONNECT;
