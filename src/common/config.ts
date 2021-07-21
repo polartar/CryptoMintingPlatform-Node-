@@ -149,6 +149,7 @@ class Config {
 
   public readonly btcTxLink = env.BTC_TX_LINK_BASE;
   public readonly ethTxLink = env.ETH_TX_LINK_BASE;
+  public readonly vscodePid = env.VSCODE_PID;
 
   public readonly contractAddresses = {
     green: env.GREEN_ADDRESS,
