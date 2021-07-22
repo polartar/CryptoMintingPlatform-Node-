@@ -9,7 +9,7 @@ const logger = winston.createLogger();
 const colorizer = winston.format.colorize();
 
 const nodeEnv = config.nodeEnv; // env.NODE_ENV;
-const brand = config.brand; //env.BRAND;
+//const brand = config.brand; //env.BRAND;
 const mongoDBUri = config.mongodbUri; //'MONGODB_URI_' + brand.toUpperCase();
 const logLevel = config.logLevel; //env.LOG_LEVEL;
 

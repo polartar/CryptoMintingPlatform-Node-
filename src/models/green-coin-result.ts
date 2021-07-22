@@ -1,29 +1,21 @@
-import { model, Schema, Document } from 'mongoose';
-import { IGreenCoinResult } from '../types';
-import { orderContextSchema } from './schemas';
+import { Schema, model, Document } from 'mongoose';
 
-export interface IGreenCoinResultDocument extends IGreenCoinResult, Document {}
+export interface IGreenCoinResultDocument extends Document {
+  userId: string;
+  greenDecimal: string;
+  status: string;
+  runTime: Date;
+  dateMint?: Date;
+}
 
-export const greenCoinSchema = new Schema({
-  userId: {
-    type: String,
-    required: true,
-  },
-  greenDecimal: {
-    type: Number,
-    required: true,
-  },
-  runTime: {
-    type: Date,
-    required: true,
-  },
-  status: {
-    type: String,
-    required: true,
-  },  
+export const greenCoinResultSchema = new Schema({
+  userId: String,
+  greenDecimal: String,
+  status: String,
+  runTime: Date,
+  dateMint: Date,
 });
 
-export const GreenCoinResult = model<IGreenCoinResultDocument>(
-  'green-test-coins-result',
-  greenCoinSchema,
-);
+const GreenCoinResult = model<IGreenCoinResultDocument>('green-test-coins-result', greenCoinResultSchema);
+
+export default GreenCoinResult;
