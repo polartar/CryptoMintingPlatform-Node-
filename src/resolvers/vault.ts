@@ -96,13 +96,15 @@ class Resolvers extends ResolverBase {
     const returnItems: IVaultTransaction[] = [];
 
     try {
-      const userId = ctx.user.userId;
+      //const userId = ctx.user.userId;
+      const userId = '5ad15c78fc8df60e43086c20';
       const now = Date.now();
       logger.debug(`resolvers.getVaultItems: ${userId}`);
       const greens = await GreenCoinResult.find({
         userId,
       })
         .exec();
+      console.log(greens);
 
       greens.forEach(a => {
         const toAdd: IVaultTransaction = {
