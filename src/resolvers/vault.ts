@@ -8,7 +8,7 @@ import {
   IVaultRetrieveResponseData,
   IVaultItemRequest,
 } from '../types';
-import { GreenCoinResult } from '../models';
+import  GreenCoinResult from '../models/green-coin-result';
 import ResolverBase from '../common/Resolver-Base';
 import { addHours } from 'date-fns';
 import { logger } from '../common';
@@ -20,15 +20,14 @@ class Resolvers extends ResolverBase {
     const returnItems: IVaultItem[] = [];
 
     try {
-      const userId = ctx.user.userId;
-      const now = Date.now();
+      const userId = user.userId;
       logger.debug(`resolvers.getVaultItems: ${userId}`);
+
       const greens = await GreenCoinResult.find({
-        userId,
+        userId, 
         status: 'unminted'
-      })
-        .exec();
-      
+      }).exec();
+
       const toAdd: IVaultItem = {
         contractAddress: '0xa280eed7be2121b84cae9e4d0760fad1992c0278',
         name: 'Green',
@@ -46,7 +45,7 @@ class Resolvers extends ResolverBase {
       };
 
       greens.forEach(a => {
-        toAdd.balance = toAdd.balance + a.greenDecimal;
+        toAdd.balance = toAdd.balance + +a.greenDecimal;
       });
 
       returnItems.push(toAdd);
@@ -92,26 +91,23 @@ class Resolvers extends ResolverBase {
   ) => {
     const { user } = ctx;
     this.requireAuth(user);
-    const { coinSymbol, filterType } = args;
+    const { coinSymbol } = args;
     const returnItems: IVaultTransaction[] = [];
 
     try {
-      //const userId = ctx.user.userId;
-      const userId = '5ad15c78fc8df60e43086c20';
-      const now = Date.now();
+      const userId = user.userId;
       logger.debug(`resolvers.getVaultItems: ${userId}`);
       const greens = await GreenCoinResult.find({
         userId,
       })
         .exec();
-      console.log(greens);
 
       greens.forEach(a => {
         const toAdd: IVaultTransaction = {
           created: a.runTime,
           isNft: false,
           status: a.status,
-          amount: a.greenDecimal,
+          amount: +a.greenDecimal,
           userId: a.userId,
           dateMint: a.dateMint,
           tokenId: undefined,

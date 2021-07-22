@@ -6,7 +6,7 @@ import { UserApi } from '../data-sources/';
 import { User, Template } from '../models';
 import { IOrderContext } from '../types';
 import { s3Service } from '../services';
-import { emailService } from '../data-sources/send-email';
+//import { emailService } from '../data-sources/send-email';
 import { Types } from 'mongoose';
 import License from '../models/licenses';
 import { WalletApi } from '../wallet-api';
