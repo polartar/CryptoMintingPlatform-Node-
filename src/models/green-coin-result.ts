@@ -24,6 +24,6 @@ export const greenCoinSchema = new Schema({
 });
 
 export const GreenCoinResult = model<IGreenCoinResultDocument>(
-  'green-test-coin-result',
+  'green-test-coins-result',
   greenCoinSchema,
 );
