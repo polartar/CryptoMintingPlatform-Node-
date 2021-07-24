@@ -1,5 +1,5 @@
 import * as winston from 'winston';
-import { env } from '../env';
+import { config } from '../';
 require('winston-mongodb');
 
 const LEVEL = Symbol.for('level');
@@ -8,10 +8,10 @@ const MESSAGE = Symbol.for('message');
 const logger = winston.createLogger();
 const colorizer = winston.format.colorize();
 
-const nodeEnv = env.NODE_ENV;
-const brand = env.BRAND;
-const mongoDBUri = 'MONGODB_URI_' + brand.toUpperCase();
-const logLevel = env.LOG_LEVEL;
+const nodeEnv = config.nodeEnv; // env.NODE_ENV;
+//const brand = config.brand; //env.BRAND;
+const mongoDBUri = config.mongodbUri; //'MONGODB_URI_' + brand.toUpperCase();
+const logLevel = config.logLevel; //env.LOG_LEVEL;
 
 if (nodeEnv === 'production' && mongoDBUri) {
   logger.add(
@@ -38,7 +38,7 @@ if (nodeEnv === 'production' && mongoDBUri) {
       cappedMax: 10000,
     }),
   );
-} else if (!!env.VSCODE_PID) {
+} else if (!!config.vscodePid) {
   logger.add(
     new winston.transports.Console({
       level: logLevel,

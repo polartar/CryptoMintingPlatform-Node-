@@ -21,7 +21,7 @@ import {
 } from './data-sources';
 import { walletApi } from './wallet-api';
 import { removeListeners } from './blockchain-listeners';
-import { Logger, winstonLogger, systemLogger } from './common/logger';
+import { Logger, winstonLogger, systemLogger, logMessage } from './common/logger';
 import { Wallet } from 'ethers';
 import restApi from './rest/routes';
 import * as cors from 'cors';
@@ -148,7 +148,7 @@ class Server {
       this.logRewardDistributerAddress();
       await this.connectToMongodb();
       this.listen();
-      config.logConfigAtStartup();
+      logMessage.logConfigAtStartup();
     } catch (error) {
       throw error;
     }

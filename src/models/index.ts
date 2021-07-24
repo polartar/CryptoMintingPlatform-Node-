@@ -23,3 +23,4 @@ export * from './licenses';
 export * from './mining-record';
 export * from './block-bot-report';
 export * from './cart';
+export * from './green-coin-result';

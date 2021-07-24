@@ -34,6 +34,7 @@ variables:
   # DON'T EDIT BELOW HERE
   DEFAULT_DEPLOY: 'true'
   LEGACY_K8S_APP: 'true'
+  NPM_AUDIT: 'false'
 
 include:
   - project: 'netzilla/ci-templates'

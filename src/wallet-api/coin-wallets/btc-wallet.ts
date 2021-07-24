@@ -119,13 +119,19 @@ class BtcWallet extends CoinWalletBase {
       qrCode: '',
     };
     try {
-      const { btcWalletName, btcWalletPass } = config.cartKeys;
-      const cartWallet = this.walletClient.wallet(btcWalletName, btcWalletPass);
+      const { btcWalletName, btcWalletPass, btcWalletToken } = config.cartKeys;
+      const cartWallet = this.walletClient.wallet(btcWalletName, btcWalletToken);
       const scrubbedOrderId = orderId.replace(/^\s+|\s+$/g, "");
-
-      console.log(scrubbedOrderId);
-      const { receiveAddress } = await cartWallet.getAccount(scrubbedOrderId);
-      toReturn.address = receiveAddress;
+      const accountReturn = await cartWallet.getAccount(scrubbedOrderId);
+      if(accountReturn) {
+        const receiveAddress = accountReturn.receiveAddress;
+        toReturn.address = receiveAddress;
+      }
+      else {
+        const newAccountReturn = await cartWallet.createAccount(scrubbedOrderId, {name: scrubbedOrderId, type: 'pubkeyhash', passphrase: btcWalletPass});
+        const receiveAddress = newAccountReturn.receiveAddress;
+        toReturn.address = receiveAddress;
+      }
     }
     catch(err) {
       console.log(`failed getCartAddress for btc-wallet - BTC ${orderId}`, err);
@@ -145,6 +151,8 @@ class BtcWallet extends CoinWalletBase {
   private buildQrUrl(cartAddress: string, amount?: string): string {
     return `bitcoin:${cartAddress}${amount ? '?amount=' + amount : ''}`;
   }
+
+  
 
   public async estimateFee(userApi: UserApi) {
     try {

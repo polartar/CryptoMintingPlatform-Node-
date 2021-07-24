@@ -4,7 +4,6 @@ import { PubSub } from 'apollo-server-express';
 import keys from './keys';
 import { Connection, createConnection } from 'mongoose';
 import { ItemTokenName, IFirebaseClient } from '../types';
-import { systemLogger } from './logger';
 import { env } from './env';
 
 const {
@@ -57,9 +56,6 @@ class Config {
   // simple task for DevOps to add it.
   private determineMongoDBUri = (val: string) => {
     const mongoDBUri = this.determineMongoDBHost(val);
-    systemLogger.info(
-      `CONFIG: Using ${mongoDBUri} as MongoDB Uri for the ${val} brand.`,
-    );
     return process.env[mongoDBUri];
   };
 
@@ -75,11 +71,12 @@ class Config {
 
   public readonly cartKeys = {
     btcWalletName: env.CART_BTC_WALLET_NAME,
+    btcWalletToken: env.CART_BTC_WALLET_TOKEN,
     btcWalletPass: env.CART_BTC_WALLET_PASS,
     ethMnemonic: this.getEthMnemonic('ETH'),
     greenMnemonic: this.getEthMnemonic('GREEN'),
     galaMnemonic: this.getEthMnemonic('GALA'),
-  }
+  };
 
   public readonly nodeEnv = env.NODE_ENV;
   public readonly brand = this.getBrandFromHost().toLowerCase();
@@ -148,6 +145,7 @@ class Config {
 
   public readonly btcTxLink = env.BTC_TX_LINK_BASE;
   public readonly ethTxLink = env.ETH_TX_LINK_BASE;
+  public readonly vscodePid = env.VSCODE_PID;
 
   public readonly contractAddresses = {
     green: env.GREEN_ADDRESS,
@@ -320,19 +318,7 @@ class Config {
         )} undefined.`,
       );
     }
-  }
-
-  public logConfigAtStartup = () => {
-    [
-      ['ETH_NODE', this.ethNodeUrl],
-      ['DISPLAYED_WALLETS', this.displayedWallets.join(',')],
-      ['INDEXED_TRANSACTIONS', this.indexedTransactions],
-      ['LINK_SHORTENER_URL', this.linkShortenerUrl],
-      ['GALA_MASTER_NODE_WALLET_ADDRESS', this.galaMasterNodeWalletAddress],
-    ].forEach(([label, value]) => {
-      systemLogger.info(`CONFIG: ${label}=${value}`);
-    });
-  };
+  }  
 
   public async setConnectMongoConnection() {
     const connectMongoUrl = env.MONGODB_URI_CONNECT;
