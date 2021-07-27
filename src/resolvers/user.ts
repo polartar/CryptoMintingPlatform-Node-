@@ -1,8 +1,7 @@
 import * as jwt from 'jsonwebtoken';
-import ResolverBase from '../common/Resolver-Base';
-import { auth, config, logger } from '../common';
+import { auth, config, logger, ResolverBase } from '../common';
 import { Context } from '../types/context';
-import { UserApi } from '../data-sources/';
+import { UserApi } from '../data-sources';
 import { User, Template } from '../models';
 import { IOrderContext } from '../types';
 import { s3Service } from '../services';
@@ -11,6 +10,7 @@ import { Types } from 'mongoose';
 import License from '../models/licenses';
 import { WalletApi } from '../wallet-api';
 import { getNextNumber } from '../models/user';
+import { careclix } from '../services/careclix';
 
 class Resolvers extends ResolverBase {
   private doesUserAlreadyExist = async (email: string) => {
@@ -87,6 +87,17 @@ class Resolvers extends ResolverBase {
         referralContext: IOrderContext;
         communicationConsent: boolean;
         activationTermsAndConditions: {}[];
+        gender?: string;
+        dateOfBirth?: Date;
+        country?: string;
+        countryCode?: string;
+        countryPhoneCode?: string;
+        clinic?: string;
+        careclixId?: string;
+        street?: string;
+        city?: string;
+        state?: string;
+        zipCode?: string;
       };
       ipAddress: string;
     },
@@ -109,6 +120,17 @@ class Resolvers extends ResolverBase {
       referralContext = {},
       communicationConsent,
       activationTermsAndConditions,
+      gender,
+      dateOfBirth,
+      country,
+      countryCode,
+      countryPhoneCode,
+      clinic,
+      careclixId,
+      street,
+      city,
+      state,
+      zipCode,
     } = args.userInfo;
 
     const {
@@ -201,6 +223,17 @@ class Resolvers extends ResolverBase {
           },
         ],
         activationTermsAndConditions,
+        gender,
+        dateOfBirth,
+        country,
+        countryCode,
+        countryPhoneCode,
+        clinic,
+        careclixId,
+        street,
+        city,
+        state,
+        zipCode,
       };
 
       if (typeof communicationConsent === 'boolean') {
@@ -221,9 +254,14 @@ class Resolvers extends ResolverBase {
         logger.warn(`resolvers.auth.createUser.getLink.catch:${error}`);
         url = await bitly.getLink(newUser);
       }
+
       newUser.set('wallet.shareLink', url);
       newUser.set('wallet.userCreatedInWallet', true);
       logger.debug(`resolvers.auth.createUser.newUser._id:${newUser._id}`);
+
+      if (config.brand === 'blue') {
+        await careclix.signUp(newUser, password);
+      }
 
       await newUser.save();
 
@@ -243,6 +281,7 @@ class Resolvers extends ResolverBase {
         twoFaEnabled: false,
         token: customToken,
         walletExists: false,
+        verificationEmailSent: false,
       };
 
       if (config.brand === 'gala') {
@@ -250,11 +289,13 @@ class Resolvers extends ResolverBase {
           newUser.id,
           newUser.firebaseUid,
         );
+
         await galaEmailer.sendNewUserEmailConfirmation(
           email,
           firstName,
           verifyEmailToken,
         );
+
         response.verificationEmailSent = true;
       }
 
@@ -280,6 +321,17 @@ class Resolvers extends ResolverBase {
         secondaryEmail?: string;
         language?: string;
         activationTermsAndConditions?: {}[];
+        gender?: string;
+        dateOfBirth?: Date;
+        country?: string;
+        countryCode?: string;
+        countryPhoneCode?: string;
+        clinic?: string;
+        careclixId?: string;
+        street?: string;
+        city?: string;
+        state?: string;
+        zipCode?: string;
         token?: string;
         updateUserNumber?: boolean;
       };

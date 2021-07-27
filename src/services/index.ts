@@ -9,3 +9,4 @@ export * from './transaction';
 export * from './simplex-jwt';
 export * from './simplex-events';
 export * from './token-claim';
+export * from './careclix';

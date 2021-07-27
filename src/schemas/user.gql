@@ -10,7 +10,7 @@ type UserProfile {
   currency: String!
   profilePhotoUrl: String
   language: String
-  communicationConsent: Boolean
+  communicationConsent: [CommunicationConsent]
   role: String!
   number: String
   emailVerified: Date
@@ -22,6 +22,17 @@ type UserProfile {
   twoFaQrCode: String
   userIds: UserIds
   activationTermsAndConditions: [ActivationTermsAndConditions]
+  gender: String
+  dateOfBirth: Date
+  country: String
+  countryCode: String
+  countryPhoneCode: String
+  clinic: String
+  careclixId: String
+  street: String
+  city: String
+  state: String
+  zipCode: String
 }
 
 type UserIds {
@@ -38,6 +49,11 @@ type ActivationTermsAndConditions {
   text: String
 }
 
+type CommunicationConsent {
+  timestamp: Date
+  consentGiven: Boolean
+}
+
 input CreateUserInput {
   email: String
   password: String
@@ -46,12 +62,23 @@ input CreateUserInput {
   lastName: String!
   displayName: String
   profilePhotoFilename: String
-  communicationConsent: Boolean
+  communicationConsent: [CommunicationConsentInput]
   phone: String
   referredBy: String
   language: String
   referralContext: OrderContext
   activationTermsAndConditions: [ActivationTermsAndConditionsInput]!
+  gender: String
+  dateOfBirth: Date
+  country: String
+  countryCode: String
+  countryPhoneCode: String
+  clinic: String
+  careclixId: String
+  street: String
+  city: String
+  state: String
+  zipCode: String
 }
 
 input ActivationTermsAndConditionsInput {
@@ -60,12 +87,17 @@ input ActivationTermsAndConditionsInput {
   text: String!
 }
 
+input CommunicationConsentInput {
+  timestamp: Date
+  consentGiven: Boolean
+}
+
 input UpdateUserInput {
   firstName: String
   lastName: String
   displayName: String
   profilePhotoFilename: String
-  communicationConsent: Boolean
+  communicationConsent: [CommunicationConsentInput]
   phone: String
   email: String
   password: String
@@ -73,6 +105,17 @@ input UpdateUserInput {
   language: String
   updateUserNumber: Boolean
   activationTermsAndConditions: [ActivationTermsAndConditionsInput]
+  gender: String
+  dateOfBirth: Date
+  country: String
+  countryCode: String
+  countryPhoneCode: String
+  clinic: String
+  careclixId: String
+  street: String
+  city: String
+  state: String
+  zipCode: String
 }
 
 input AcceptAgreementsInput {

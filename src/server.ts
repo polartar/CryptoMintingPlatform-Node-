@@ -82,6 +82,16 @@ class Server {
     server.installSubscriptionHandlers(this.httpServer);
   }
 
+  private getToken(connection: ExecutionParams, req: express.Request): string | null {
+    if (connection?.context.token) {
+      return connection.context.token;
+    } else if (req?.headers.authorization) {
+      return req.headers.authorization.replace(/bearer /gi, '');
+    }
+
+    return null;
+  }
+
   private async buildContext({
     req,
     res,
@@ -91,18 +101,10 @@ class Server {
     res: express.Response;
     connection: ExecutionParams;
   }) {
-    let token;
-    if (connection && connection.context && connection.context.token) {
-      token = connection.context.token;
-    } else {
-      token =
-        req && req.headers && req.headers.authorization
-          ? req.headers.authorization.replace('Bearer ', '')
-          : '';
-    }
-
-    let user = null;
     const logger = new Logger(winstonLogger);
+    let user = null;
+    const token = this.getToken(connection, req);
+
     if (token) {
       try {
         user = await UserApi.fromIdToken(token);
@@ -164,11 +166,9 @@ class Server {
     return new Promise(resolve => {
       set('useCreateIndex', true);
       set('useNewUrlParser', true);
-      set('useFindAndModify', false);
-      set('useUnifiedTopology', true);
 
-      connect(config.mongodbUri, { useNewUrlParser: true });
-      
+      connect(config.mongodbUri, { useNewUrlParser: true, useUnifiedTopology: true });
+
       mongooseConnection.once('open', () => {
         systemLogger.info(`Connected to mongoDb`);
         resolve();

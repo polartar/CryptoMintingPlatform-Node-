@@ -47,3 +47,6 @@ authDbConnections.json
 
 dump.rdb
 report.html
+
+# Test coverage output
+.nyc_output/

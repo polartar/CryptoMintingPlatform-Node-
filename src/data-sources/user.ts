@@ -1,5 +1,5 @@
 import { DataSource } from 'apollo-datasource';
-import { config, logger } from '../common';
+import { auth, config, logger } from '../common';
 import { Model } from 'mongoose';
 import { User, userSchema } from '../models';
 import { IUser } from '../types';
@@ -7,7 +7,6 @@ import { IUserClaims } from '../types/context';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
 import { ApolloError } from 'apollo-server-express';
-import auth from '../common/auth';
 import { capitalize } from '../utils';
 
 export default class UserApi extends DataSource {
