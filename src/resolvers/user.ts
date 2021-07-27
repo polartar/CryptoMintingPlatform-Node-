@@ -1,8 +1,7 @@
 import * as jwt from 'jsonwebtoken';
-import ResolverBase from '../common/Resolver-Base';
-import { auth, config, logger } from '../common';
+import { auth, config, logger, ResolverBase } from '../common';
 import { Context } from '../types/context';
-import { UserApi } from '../data-sources/';
+import { UserApi } from '../data-sources';
 import { User, Template } from '../models';
 import { IOrderContext } from '../types';
 import { s3Service } from '../services';
