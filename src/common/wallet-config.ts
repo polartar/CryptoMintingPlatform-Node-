@@ -1,6 +1,7 @@
 import { eSupportedInterfaces, ICoinMetadata } from '../types';
 import { config } from '.';
 import * as erc20Abi from './ABI/erc20.json';
+import * as erc20GreenAbi from './ABI/erc20-green.json';
 import * as erc1155Abi from './ABI/erc1155.json';
 
 import {
@@ -56,7 +57,7 @@ export const walletConfigurations: ICoinMetadata[] = [
     backgroundColor: '#0ACE00',
     icon:
       'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTUiIGhlaWdodD0iNTUiIHZpZXdCb3g9IjAgMCA1NSA1NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTI3LjY1IDU0LjQ3NWMxNS4wNDItLjIyNiAyNy4wNTItMTIuNjA0IDI2LjgyNS0yNy42NDZDNTQuMjUgMTEuNzg3IDQxLjg3MS0uMjIzIDI2LjgzLjAwMyAxMS43ODcuMjMtLjIyMyAxMi42MDcuMDAzIDI3LjY1LjIzIDQyLjY5MiAxMi42MDcgNTQuNzAyIDI3LjY1IDU0LjQ3NXptMS45NDMtNDMuODgybC0xMiAxOWgxMGwtMiAxNCAxMi0xOC05LTEgMS0xNHoiIGZpbGw9IiNmZmYiLz48L3N2Zz4=',
-    abi: erc20Abi,
+    abi: erc20GreenAbi,
     walletApi: eSupportedInterfaces.erc20,
     contractAddress: contractAddresses.green,
     decimalPlaces: 8,

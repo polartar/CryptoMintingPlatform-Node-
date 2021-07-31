@@ -74,6 +74,20 @@ class Controller {
     }
   }
 
+  // TODO: move this to it's own controller
+  public async getVault(req: Request, res: Response) {
+    res.setHeader('Content-Type', 'application/health+json');
+
+    
+
+    try {
+      return res.json({ keys: jwksCache.keys });
+    } catch (err) {
+      systemLogger.error(err.stack);
+      return res.sendStatus(500);
+    }
+  }
+
   // This Healthcheck MUST respond to an unauthenticated GET request with
   // a 200 response. Any app-breaking errors should result in a 500 response.
   //

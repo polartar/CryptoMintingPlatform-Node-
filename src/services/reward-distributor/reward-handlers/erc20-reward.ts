@@ -40,38 +40,7 @@ class Erc20Reward {
     }
   };
 
-  // TODO: Refactor for rocket chat
-  // private checkErc20RewardWalletBalance = async (
-  //   contract: ethers.Contract,
-  //   rewardDistributerAddress: string,
-  //   rewardCurrency: string,
-  //   rewardAmount: ethers.utils.BigNumber,
-  // ) => {
-  //   const { erc20RewardWarnThreshold } = config;
-  //   const estWeiPerTx = ethers.utils.bigNumberify(60000000000000);
-  //   const [weiBalance, tokenBalance, decimals] = await Promise.all([
-  //     this.provider.getBalance(rewardDistributerAddress),
-  //     contract.balanceOf(rewardDistributerAddress),
-  //     contract.decimals(),
-  //   ]);
-  //   const estTxsRemaining = weiBalance.div(estWeiPerTx);
-  //   const lowOnWei = estTxsRemaining.lte(erc20RewardWarnThreshold);
-  //   const estTokenTxsRemaining = tokenBalance.div(rewardAmount);
-  //   const lowOnTokens = estTokenTxsRemaining.lte(erc20RewardWarnThreshold);
-  //   if (lowOnWei) {
-  //     // send tx to rocket chat
-  //   }
-  //   if (lowOnTokens) {
-  //     slackService.postMessage(
-  //       `Low on ${rewardCurrency}!\nSend ${rewardCurrency} to ${rewardDistributerAddress} ASAP!\nCurrent balance: ${utils.formatUnits(
-  //         tokenBalance,
-  //         decimals,
-  //       )} ${rewardCurrency}.\nEstimated ${estTokenTxsRemaining.toString()} transactions until empty.
-  //       `,
-  //     );
-  //   }
-  // }
-
+  //Sends rewards from central reward wallet, to user for action on site
   public send = async (
     rewardCurrency: string,
     rewardAmount: number,
