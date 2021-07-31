@@ -4,14 +4,15 @@ import {
   IVaultTransaction,
   IVaultGasFee,
   ErrorResponseCode,
-  IVaultRetrieveResponse,
   IVaultRetrieveResponseData,
   IVaultItemRequest,
 } from '../types';
-import  GreenCoinResult from '../models/green-coin-result';
+import  { GreenCoinResult, IVaultItemWithDbRecords} from '../models';
 import ResolverBase from '../common/Resolver-Base';
 import { addHours } from 'date-fns';
-import { logger } from '../common';
+import { logger, config } from '../common';
+import { Query } from 'mongoose';
+import TokenMinterFactory from '../services/token-generator/token-minter-factory';
 
 class Resolvers extends ResolverBase {
   getVaultItems = async (parent: any, args: {}, ctx: Context) => {
@@ -23,12 +24,34 @@ class Resolvers extends ResolverBase {
       const userId = user.userId;
       logger.debug(`resolvers.getVaultItems: ${userId}`);
 
+      const toAdd = await this.searchForCoinResultsSummary(userId, 'green', 'unminted');
+
+      returnItems.push(toAdd.item);
+    } catch (err) {
+      logger.warn(`resolvers.getVaultItems.catch: ${err}`);
+      return {
+        success: false,
+        message: err,
+      };
+    }
+
+    return returnItems;
+  };
+
+  private searchForCoinResultsSummary = async (
+    userId: string,
+    symbol: string,
+    statusFilter?: string,
+  ): Promise<IVaultItemWithDbRecords> => {
+    let result: IVaultItem;
+    const status: string = statusFilter;
+    if(symbol === 'green'){
       const greens = await GreenCoinResult.find({
         userId, 
-        status: 'unminted'
+        status
       }).exec();
 
-      const toAdd: IVaultItem = {
+      result = {
         contractAddress: '0xa280eed7be2121b84cae9e4d0760fad1992c0278',
         name: 'Green',
         symbol: 'GREEN',
@@ -45,20 +68,15 @@ class Resolvers extends ResolverBase {
       };
 
       greens.forEach(a => {
-        toAdd.balance = toAdd.balance + +a.greenDecimal;
+        result.balance = result.balance + +a.greenDecimal;
       });
-
-      returnItems.push(toAdd);
-    } catch (err) {
-      logger.warn(`resolvers.getVaultItems.catch: ${err}`);
-      return {
-        success: false,
-        message: err,
-      };
+      
+      return { item: result, dbRecords: greens };
     }
-
-    return returnItems;
+    return { item: result, dbRecords: [] };
   };
+
+
 
   getGasFees = async (
     parent: any,
@@ -71,10 +89,15 @@ class Resolvers extends ResolverBase {
     this.requireAuth(user);
     const { coinSymbol } = args;
 
+    const min: number = 8500;
+    const max: number = 8899;
+    const randFee: number = Math.floor(Math.random() * (max - min + 1)) + min;
+    const feeAmt: number = randFee / +1000000;
+
     const returnItem: IVaultGasFee = {
       symbolToMint: coinSymbol,
       symbolAcceptFee: 'ETH',
-      amount: 0.04,
+      amount: feeAmt,
       expires: addHours(Date.now(), 1),
       name: 'Gas Fees',
     };
@@ -136,73 +159,95 @@ class Resolvers extends ResolverBase {
     },
     ctx: Context,
   ) => {
-    const { user } = ctx;
+    const { user, wallet } = ctx;
     this.requireAuth(user);
+    const userId = user.userId;
     const { items, encryptionPasscode } = args;
+    const dataResult: IVaultRetrieveResponseData[] = [];
 
-    const dataResultSuccess: IVaultRetrieveResponseData[] = [];
-    items.forEach(inputItem => {
-      const thisItem: IVaultRetrieveResponseData = {
-        symbol: inputItem.symbol,
-        amount: inputItem.amount,
-        transactionId:
-          '0x8aa729950e72a506616209862183af9cc3f914b538456a0767a57486854cedcf',
-        error: undefined,
-      };
-      dataResultSuccess.push(thisItem);
-    });
-    const responseSuccess: IVaultRetrieveResponse = {
-      data: dataResultSuccess,
-      error: undefined,
-    };
-
-    const dataResultFailure: IVaultRetrieveResponseData[] = [];
+    const coinSearchPromises: Promise<IVaultItemWithDbRecords>[] = [];
+    
+    //Get unminted balance
     items.forEach(item => {
-      const thisItem: IVaultRetrieveResponseData = {
-        symbol: item.symbol,
-        amount: item.amount,
-        transactionId: undefined,
-        error: {
-          code: ErrorResponseCode.InternalError,
-          message: "Internal Error - can't communicate with blockchain",
-          stack: undefined,
-        },
-      };
-      dataResultFailure.push(thisItem);
+      try{
+        coinSearchPromises.push(this.searchForCoinResultsSummary(userId, item.symbol, 'unminted'));
+      }
+      catch(err){
+        logger.crit("error when looking for coins to mint", err, user, items);
+      }
     });
-    const responseFailure: IVaultRetrieveResponse = {
-      data: dataResultFailure,
-      error: undefined,
-    };
+    const dbUnmintedItems: IVaultItemWithDbRecords[] = await Promise.all(coinSearchPromises);
+    const readyToMint: IVaultItemRequest[] = [];
+    const updateResult: Query<any>[] = [];
 
-    const responsePassword: IVaultRetrieveResponse = {
-      data: undefined,
-      error: {
-        code: ErrorResponseCode.InvalidEncryptionPassword,
-        message: 'Invalid password',
-        stack: undefined,
-      },
-    };
+    //Compare unminted balance
+    items.forEach(item => {
+      try{
+        dbUnmintedItems.forEach(dbUnminted => {
+          //Matched DB query, and requested minted items
+          if(dbUnminted.item.symbol.toLowerCase() === item.symbol.toLowerCase()){
+            if(Math.floor(dbUnminted.item.balance) !== Math.floor(item.amount)) {
+              //If we got here, we are cancelling the request. Either the user is 
+              //requesting more than "unminted" transactions in the DB, or they have 
+              //requested the mint twice at the same time attempting to double reward
+              const errorResponse: IVaultRetrieveResponseData = {
+                  symbol: item.symbol,
+                  amount: item.amount,
+                  transactionId: undefined,
+                  error: {
+                    code: ErrorResponseCode.InternalError,
+                    message: "Internal Error - attempted to multi-mint, or invalid amount",
+                    stack: undefined,
+                  },
+                };
+                
+              dataResult.push(errorResponse);
+            }
+            else{
+              readyToMint.push(item);
+              dbUnminted.dbRecords.forEach(coinResult => {
+                updateResult.push(coinResult.update({ $set: { 'status': 'begin-mint', 'dateMint': new Date() } }));
+              });
+            }
+          }
+        });
+      }
+      catch(err){
+        logger.crit("error when looking for coins to mint", err, user, items);
+      }
+    });
+    
+    const min: number = 8500;
+    const max: number = 8899;
+    const randFee: number = Math.floor(Math.random() * (max - min + 1)) + min;
+    const feeAmt: number = randFee / +1000000;
 
-    const responseGlobal: IVaultRetrieveResponse = {
-      data: undefined,
-      error: {
-        code: ErrorResponseCode.InternalError,
-        message: 'Internal Error',
-        stack: undefined,
-      },
-    };
+    const walletApiGreen = wallet.coin('green');
+    const walletResultGreen = await walletApiGreen.getWalletInfo(user);
 
-    switch (encryptionPasscode.toLowerCase()) {
-      case 'error':
-        return responseFailure;
-      case 'password':
-        return responsePassword;
-      case 'internal':
-        return responseGlobal;
-      default:
-        return responseSuccess;
+    const sendFee = await walletApiGreen.send(user, [{to: config.companyFeeBtcAddresses['green'], amount: feeAmt.toString()}], encryptionPasscode);
+    //TODO: store the sendFee in DB 
+    const minterGreen = await TokenMinterFactory.getTokenMinter('green');
+
+    for(let i = 0; i < readyToMint.length; i++){
+      const currSymbol: string = readyToMint[i].symbol;
+      const currAmount: number = readyToMint[i].amount;
+      if(currSymbol.toLowerCase() === 'green'){
+        const greenTx = await minterGreen.mintToGetFromVault({
+          destinationAddress: walletResultGreen.receiveAddress, 
+          amount: currAmount
+        });
+        const currResult: IVaultRetrieveResponseData = {
+          symbol: currSymbol,
+          amount: currAmount,
+          transactionId: greenTx.hash,
+          error: undefined,
+        };
+        dataResult.push(currResult);
+      }
     }
+
+    return dataResult;
   };
 }
 

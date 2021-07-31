@@ -1,4 +1,5 @@
 import { Schema, model, Document } from 'mongoose';
+import { IVaultItem } from '../types';
 
 export interface IGreenCoinResultDocument extends Document {
   userId: string;
@@ -6,6 +7,11 @@ export interface IGreenCoinResultDocument extends Document {
   status: string;
   runTime: Date;
   dateMint?: Date;
+}
+
+export interface IVaultItemWithDbRecords {
+  item: IVaultItem;
+  dbRecords: IGreenCoinResultDocument[];
 }
 
 export const greenCoinResultSchema = new Schema({
