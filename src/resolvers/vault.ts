@@ -6,6 +6,7 @@ import {
   ErrorResponseCode,
   IVaultRetrieveResponseData,
   IVaultItemRequest,
+  IVaultRetrieveResponse,
 } from '../types';
 import  { GreenCoinResult, IVaultItemWithDbRecords} from '../models';
 import ResolverBase from '../common/Resolver-Base';
@@ -26,7 +27,9 @@ class Resolvers extends ResolverBase {
 
       const toAdd = await this.searchForCoinResultsSummary(userId, 'green', 'unminted');
 
-      returnItems.push(toAdd.item);
+      if(toAdd.item.balance > 0) {
+        returnItems.push(toAdd.item);
+      }
     } catch (err) {
       logger.warn(`resolvers.getVaultItems.catch: ${err}`);
       return {
@@ -166,6 +169,36 @@ class Resolvers extends ResolverBase {
     const dataResult: IVaultRetrieveResponseData[] = [];
 
     const coinSearchPromises: Promise<IVaultItemWithDbRecords>[] = [];
+
+    logger.warn("checking request", {items, user, wallet});
+
+    const walletApiGreen = wallet.coin('green');
+    try{
+      const correctPassword = await walletApiGreen.checkPassword(user, encryptionPasscode);
+      if(!correctPassword){
+        const errorReturn: IVaultRetrieveResponse = {
+          data: undefined,
+          error: {
+            code: ErrorResponseCode.InvalidEncryptionPassword,
+            message: 'Invalid Encryption Passcode',
+            stack: undefined,
+          }
+        };
+        return errorReturn;
+      }
+    }
+    catch(err) {
+      logger.error("checking password failed", {err, user});
+      const errorReturn: IVaultRetrieveResponse = {
+        data: undefined,
+        error: {
+          code: ErrorResponseCode.InternalError,
+          message: 'Internal Error: Password Validation.',
+          stack: undefined,
+        }
+      };
+      return errorReturn;
+    }
     
     //Get unminted balance
     items.forEach(item => {
@@ -173,7 +206,7 @@ class Resolvers extends ResolverBase {
         coinSearchPromises.push(this.searchForCoinResultsSummary(userId, item.symbol, 'unminted'));
       }
       catch(err){
-        logger.error("error when looking for coins to mint", err, user, items);
+        logger.error("error when looking for coins to mint", {err, user, items});
       }
     });
     const dbUnmintedItems: IVaultItemWithDbRecords[] = await Promise.all(coinSearchPromises);
@@ -197,7 +230,7 @@ class Resolvers extends ResolverBase {
                   error: {
                     code: ErrorResponseCode.InternalError,
                     message: "Internal Error - attempted to multi-mint, or invalid amount",
-                    stack: undefined,
+                    stack: undefined ,
                   },
                 };
                 
@@ -213,7 +246,7 @@ class Resolvers extends ResolverBase {
         });
       }
       catch(err){
-        logger.error("error when looking for coins to mint", err, user, items);
+        logger.error("error when looking for coins to mint", {err, user, items});
       }
     });
     
@@ -222,10 +255,9 @@ class Resolvers extends ResolverBase {
     const randFee: number = Math.floor(Math.random() * (max - min + 1)) + min;
     const feeAmt: number = randFee / +1000000;
 
-    const walletApiGreen = wallet.coin('green');
     const walletResultGreen = await walletApiGreen.getWalletInfo(user);
-
     const sendFee = await walletApiGreen.send(user, [{to: config.companyFeeBtcAddresses['green'], amount: feeAmt.toString()}], encryptionPasscode);
+
     //TODO: store the sendFee in DB 
     const minterGreen = await TokenMinterFactory.getTokenMinter('green');
 
@@ -247,7 +279,11 @@ class Resolvers extends ResolverBase {
       }
     }
 
-    return dataResult;
+    const toReturn: IVaultRetrieveResponse = {
+      data: dataResult,
+      error: undefined,
+    };
+    return toReturn;
   };
 }
 
