@@ -6,7 +6,7 @@ class ErrorHander {
             logger.error("Uncaught exception. Caught on application.", error);
         } catch (er) {
             const message = `Unable to log catch-all logging. Bubbling to kill process. Including ErrorUncaught ----${error.message} , and FailureToLogError ----${er.message} `;
-            logger.crit(message,  [error, er]);
+            logger.error(message,  [error, er]);
             throw er;
         }
     };
