@@ -177,6 +177,8 @@ class Config {
 
   public readonly galaClaimFeeReceiveAddress =
     env.GALA_CLAIM_FEE_RECEIVE_ADDRESS;
+  public readonly claimFeeReceiveAddress =
+    env.CLAIM_FEE_RECEIVE_ADDRESS;
   public readonly tokenClaimsApiUrl = env.TOKEN_CLAIMS_API_URL;
   //public readonly nodeSelectorUrl = env.NODE_SELECTOR_URL;
   public readonly exchangeUrl = env.EXCHANGE_URL;
@@ -310,6 +312,7 @@ class Config {
       'FIREBASE_CLIENT_API_KEY',
       'FIREBASE_CLIENT_AUTH_DOMAIN',
       'FIREBASE_CLIENT_PROJECT_ID',
+      'CLAIM_FEE_RECEIVE_ADDRESS',
     ].filter(name => !env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(

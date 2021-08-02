@@ -14,6 +14,7 @@ import { addHours } from 'date-fns';
 import { logger, config } from '../common';
 import { Query } from 'mongoose';
 import TokenMinterFactory from '../services/token-generator/token-minter-factory';
+import { EthWallet } from '../wallet-api/coin-wallets';
 
 class Resolvers extends ResolverBase {
   getVaultItems = async (parent: any, args: {}, ctx: Context) => {
@@ -176,9 +177,10 @@ class Resolvers extends ResolverBase {
 
     logger.warn("checking request : " + JSON.stringify({items, user, wallet}));
 
-    const walletApiGreen = wallet.coin('green');
+    const ethWallet = wallet.coin('ETH') as EthWallet;
+
     try{
-      const correctPassword = await walletApiGreen.checkPassword(user, encryptionPasscode);
+      const correctPassword = await ethWallet.checkPassword(user, encryptionPasscode);
       if(!correctPassword){
         const errorReturn: IVaultRetrieveResponse = {
           data: undefined,
@@ -242,22 +244,27 @@ class Resolvers extends ResolverBase {
             }
             else{
               readyToMint.push(item);
-              dbUnminted.dbRecords.forEach(coinResult => {
-                updateResult.push(coinResult.update({ $set: { 'status': 'begin-mint', 'dateMint': new Date() } }));
-              });
+              try{
+                dbUnminted.dbRecords.forEach(coinResult => {
+                  updateResult.push(coinResult.update({ $set: { 'status': 'begin-mint', 'dateMint': new Date() } }));
+                });
+              }
+              catch(err) {
+                logger.error("error when tryign to set to 'begin-mint' : " + err.message + " : " + JSON.stringify({err, dbUnminted }));
+              }
             }
           }
         });
       }
       catch(err){
-        logger.error("error when looking for coins to mint : " + JSON.stringify({err, user, items}));
+        logger.error("error when looking for coins to mint : " + JSON.stringify({err, item, readyToMint, user}));
       }
     });
     
     const feeAmt = this.gasRandom();
 
-    const walletResultGreen = await walletApiGreen.getWalletInfo(user);
-    const sendFee = await walletApiGreen.send(user, [{to: config.companyFeeBtcAddresses['green'], amount: feeAmt.toString()}], encryptionPasscode);
+    const walletResultGreen = await ethWallet.getWalletInfo(user);
+    const sendFee = await ethWallet.send(user, [{to: config.claimFeeReceiveAddress, amount: feeAmt.toString()}], encryptionPasscode);
 
     //TODO: store the sendFee in DB 
     const minterGreen = await TokenMinterFactory.getTokenMinter('green');
