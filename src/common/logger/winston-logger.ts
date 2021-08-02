@@ -22,8 +22,6 @@ if (nodeEnv === 'production' && mongoDBUri) {
       db: mongoDBUri,
       collection: 'wallet-logs',
       storeHost: true,
-      capped: true,
-      cappedMax: 5000,
     }),
   );
   logger.add(
@@ -34,8 +32,6 @@ if (nodeEnv === 'production' && mongoDBUri) {
       db: mongoDBUri,
       collection: 'wallet-logs-error',
       storeHost: true,
-      capped: true,
-      cappedMax: 10000,
     }),
   );
 } else if (!!config.vscodePid) {
