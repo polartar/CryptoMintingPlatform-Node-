@@ -280,7 +280,7 @@ class Resolvers extends ResolverBase {
           if(currSymbol.toLowerCase() === 'green') {
             const greenTx = await minterGreen.mintToGetFromVault({
               destinationAddress: walletResultGreen.receiveAddress, 
-              amount: currAmount
+              amountDecimal: currAmount
             });
             const currResult: IVaultRetrieveResponseData = {
               symbol: currSymbol,
