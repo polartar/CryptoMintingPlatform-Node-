@@ -64,7 +64,7 @@ class Resolvers extends ResolverBase {
         fees: {
             symbolToMint: 'GREEN',
             symbolAcceptFee: 'ETH',
-            amount: 0.04,
+            amount: this.gasRandom(),
             expires: addHours(Date.now(), 1),
             name: 'Gas Fees',
           },
@@ -80,6 +80,13 @@ class Resolvers extends ResolverBase {
   };
 
 
+  private gasRandom = () => {
+    const min: number = 8500;
+    const max: number = 8899;
+    const randFee: number = Math.floor(Math.random() * (max - min + 1)) + min;
+    const feeAmt: number = randFee / +1000000;
+    return feeAmt;
+  }
 
   getGasFees = async (
     parent: any,
@@ -92,15 +99,12 @@ class Resolvers extends ResolverBase {
     this.requireAuth(user);
     const { coinSymbol } = args;
 
-    const min: number = 8500;
-    const max: number = 8899;
-    const randFee: number = Math.floor(Math.random() * (max - min + 1)) + min;
-    const feeAmt: number = randFee / +1000000;
+    
 
     const returnItem: IVaultGasFee = {
       symbolToMint: coinSymbol,
       symbolAcceptFee: 'ETH',
-      amount: feeAmt,
+      amount: this.gasRandom(),
       expires: addHours(Date.now(), 1),
       name: 'Gas Fees',
     };
@@ -170,7 +174,7 @@ class Resolvers extends ResolverBase {
 
     const coinSearchPromises: Promise<IVaultItemWithDbRecords>[] = [];
 
-    logger.warn("checking request", {items, user, wallet});
+    logger.warn("checking request : " + JSON.stringify({items, user, wallet}));
 
     const walletApiGreen = wallet.coin('green');
     try{
@@ -206,7 +210,7 @@ class Resolvers extends ResolverBase {
         coinSearchPromises.push(this.searchForCoinResultsSummary(userId, item.symbol, 'unminted'));
       }
       catch(err){
-        logger.error("error when looking for coins to mint", {err, user, items});
+        logger.error("error when looking for coins to mint : " + JSON.stringify({err, user, items}));
       }
     });
     const dbUnmintedItems: IVaultItemWithDbRecords[] = await Promise.all(coinSearchPromises);
@@ -246,14 +250,11 @@ class Resolvers extends ResolverBase {
         });
       }
       catch(err){
-        logger.error("error when looking for coins to mint", {err, user, items});
+        logger.error("error when looking for coins to mint : " + JSON.stringify({err, user, items}));
       }
     });
     
-    const min: number = 8500;
-    const max: number = 8899;
-    const randFee: number = Math.floor(Math.random() * (max - min + 1)) + min;
-    const feeAmt: number = randFee / +1000000;
+    const feeAmt = this.gasRandom();
 
     const walletResultGreen = await walletApiGreen.getWalletInfo(user);
     const sendFee = await walletApiGreen.send(user, [{to: config.companyFeeBtcAddresses['green'], amount: feeAmt.toString()}], encryptionPasscode);
