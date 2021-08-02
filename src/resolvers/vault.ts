@@ -219,7 +219,6 @@ class Resolvers extends ResolverBase {
     const readyToMint: IVaultItemRequest[] = [];
     const updateResult: Query<any>[] = [];
     
-    logger.warn("checking request : " + JSON.stringify({items, dbUnmintedItems, user, wallet}));
 
     //Compare unminted balance
     items.forEach(item => {
@@ -262,6 +261,9 @@ class Resolvers extends ResolverBase {
         logger.error("error when looking for coins to mint : " + JSON.stringify({err, item, readyToMint, user}));
       }
     });
+
+    logger.warn("checking request : " + JSON.stringify({items, dbUnmintedItems, readyToMint, user, wallet}));
+
     
     const feeAmt = this.gasRandom();
 
