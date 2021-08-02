@@ -49,7 +49,7 @@ class Resolvers extends ResolverBase {
   ): Promise<IVaultItemWithDbRecords> => {
     let result: IVaultItem;
     const status: string = statusFilter;
-    if(symbol === 'green'){
+    if(symbol.toLowerCase() === 'green'){
       const greens = await GreenCoinResult.find({
         userId, 
         status
@@ -175,13 +175,13 @@ class Resolvers extends ResolverBase {
 
     const coinSearchPromises: Promise<IVaultItemWithDbRecords>[] = [];
 
-    logger.warn("checking request : " + JSON.stringify({items, user, wallet}));
+    
 
     const ethWallet = wallet.coin('ETH') as EthWallet;
 
     try{
       const correctPassword = await ethWallet.checkPassword(user, encryptionPasscode);
-      if(!correctPassword){
+      if(!correctPassword) {
         const errorReturn: IVaultRetrieveResponse = {
           data: undefined,
           error: {
@@ -218,13 +218,15 @@ class Resolvers extends ResolverBase {
     const dbUnmintedItems: IVaultItemWithDbRecords[] = await Promise.all(coinSearchPromises);
     const readyToMint: IVaultItemRequest[] = [];
     const updateResult: Query<any>[] = [];
+    
+    logger.warn("checking request : " + JSON.stringify({items, dbUnmintedItems, user, wallet}));
 
     //Compare unminted balance
     items.forEach(item => {
       try{
         dbUnmintedItems.forEach(dbUnminted => {
           //Matched DB query, and requested minted items
-          if(dbUnminted.item.symbol.toLowerCase() === item.symbol.toLowerCase()){
+          if(dbUnminted.item.symbol.toLowerCase() === item.symbol.toLowerCase()) {
             if(Math.floor(dbUnminted.item.balance) !== Math.floor(item.amount)) {
               //If we got here, we are cancelling the request. Either the user is 
               //requesting more than "unminted" transactions in the DB, or they have 
