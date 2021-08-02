@@ -173,7 +173,7 @@ class Resolvers extends ResolverBase {
         coinSearchPromises.push(this.searchForCoinResultsSummary(userId, item.symbol, 'unminted'));
       }
       catch(err){
-        logger.crit("error when looking for coins to mint", err, user, items);
+        logger.error("error when looking for coins to mint", err, user, items);
       }
     });
     const dbUnmintedItems: IVaultItemWithDbRecords[] = await Promise.all(coinSearchPromises);
@@ -213,7 +213,7 @@ class Resolvers extends ResolverBase {
         });
       }
       catch(err){
-        logger.crit("error when looking for coins to mint", err, user, items);
+        logger.error("error when looking for coins to mint", err, user, items);
       }
     });
     
