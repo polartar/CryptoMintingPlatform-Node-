@@ -39,12 +39,12 @@ class TokenMinter {
         const destinationAmount: BigNumber[] = [amountConverted];
 
         //let tx = await this.contract.distributeMinting(destinationAddresses, destinationAmount);
-        const parameterToDistribute = {
-            distAddresses: destinationAddresses,
-            distValues: destinationAmount
-        };
+        // const parameterToDistribute = {
+        //     distAddresses: destinationAddresses,
+        //     distValues: destinationAmount
+        // };
 
-        const contractMethod = this.contract.interface.encodeFunctionData("distributeMinting", [parameterToDistribute]);
+        const contractMethod = this.contract.interface.encodeFunctionData("distributeMinting", [destinationAddresses, destinationAmount]);
 
         const transaction = await this.signer.signTransaction({
             to: this.contract.address,
