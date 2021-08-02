@@ -269,23 +269,32 @@ class Resolvers extends ResolverBase {
     //TODO: store the sendFee in DB 
     const minterGreen = await TokenMinterFactory.getTokenMinter('green');
 
-    for(let i = 0; i < readyToMint.length; i++){
-      const currSymbol: string = readyToMint[i].symbol;
-      const currAmount: number = readyToMint[i].amount;
-      if(currSymbol.toLowerCase() === 'green'){
-        const greenTx = await minterGreen.mintToGetFromVault({
-          destinationAddress: walletResultGreen.receiveAddress, 
-          amount: currAmount
-        });
-        const currResult: IVaultRetrieveResponseData = {
-          symbol: currSymbol,
-          amount: currAmount,
-          transactionId: greenTx.hash,
-          error: undefined,
-        };
-        dataResult.push(currResult);
+    
+      for(let i = 0; i < readyToMint.length; i++){
+        const currSymbol: string = readyToMint[i].symbol;
+        const currAmount: number = readyToMint[i].amount;
+
+        try {
+          if(currSymbol.toLowerCase() === 'green') {
+            const greenTx = await minterGreen.mintToGetFromVault({
+              destinationAddress: walletResultGreen.receiveAddress, 
+              amount: currAmount
+            });
+            const currResult: IVaultRetrieveResponseData = {
+              symbol: currSymbol,
+              amount: currAmount,
+              transactionId: greenTx.hash,
+              error: undefined,
+            };
+            dataResult.push(currResult);
+          }
+        }
+        catch(err){
+          logger.error("MINT error : " + JSON.stringify({err, currSymbol, currAmount, dataResult, user}));
+        }
       }
-    }
+    
+    
 
     const toReturn: IVaultRetrieveResponse = {
       data: dataResult,
