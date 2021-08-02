@@ -4,6 +4,8 @@ import * as abi from '../../common/ABI/erc20-green.json';
 import { config } from '../../common';
 //import { UserWithTokenAmount } from '../types/user';
 import { ContractData } from '../../types/eth-contracts/contract';
+import { Long } from 'mongodb';
+import BigNumber from 'bignumber.js';
 //import { Erc20 as Erc20Contract } from '../../types/eth-contracts/erc20-green';
 //import nodeSelector from './node-selector';
 
@@ -14,6 +16,7 @@ class TokenMinter {
 
     private signer: ethers.Wallet;
     private contract: ethers.Contract;
+    private decimalPlaces: number;
 
     constructor(contractData: ContractData) {
         this.signer = new ethers.Wallet(contractData.privateKey, this.provider);
@@ -30,8 +33,10 @@ class TokenMinter {
             this.provider.getGasPrice(),
         ]);
 
+        const amountConverted:BigNumber = new BigNumber(+toMint.amountDecimal * +Math.pow(10, this.decimalPlaces));
+
         const destinationAddresses: string[] = [toMint.destinationAddress];
-        const destinationAmount: number[] = [toMint.amount];
+        const destinationAmount: BigNumber[] = [amountConverted];
 
         //let tx = await this.contract.distributeMinting(destinationAddresses, destinationAmount);
         const parameterToDistribute = {
@@ -60,7 +65,7 @@ class TokenMinter {
 }
 export interface IMintDestination{
     destinationAddress: string;
-    amount: number;
+    amountDecimal: number;
 }
 
 export default TokenMinter;
