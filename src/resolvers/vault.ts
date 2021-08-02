@@ -7,12 +7,12 @@ import {
   IVaultRetrieveResponseData,
   IVaultItemRequest,
   IVaultRetrieveResponse,
+
 } from '../types';
 import  { GreenCoinResult, IVaultItemWithDbRecords} from '../models';
 import ResolverBase from '../common/Resolver-Base';
 import { addHours } from 'date-fns';
 import { logger, config } from '../common';
-import { Query } from 'mongoose';
 import TokenMinterFactory from '../services/token-generator/token-minter-factory';
 import { EthWallet } from '../wallet-api/coin-wallets';
 
@@ -217,7 +217,7 @@ class Resolvers extends ResolverBase {
     });
     const dbUnmintedItems: IVaultItemWithDbRecords[] = await Promise.all(coinSearchPromises);
     const readyToMint: IVaultItemRequest[] = [];
-    const updateResult: Query<any>[] = [];
+    const updateResult: Promise<any>[] = [];
     
 
     //Compare unminted balance
@@ -246,9 +246,10 @@ class Resolvers extends ResolverBase {
             else{
               readyToMint.push(item);
               try{
-                dbUnminted.dbRecords.forEach(coinResult => {
-                  updateResult.push(coinResult.update({ $set: { 'status': 'begin-mint', 'dateMint': new Date() } }));
-                });
+                updateResult.push(this.updateMultipleCoinRecords(userId, 'unminted', 'begin-mint'));
+                // dbUnminted.dbRecords.forEach(coinResult => {
+                //   updateResult.push(coinResult.update({ $set: { 'status': 'begin-mint', 'dateMint': new Date() } }));
+                // });
               }
               catch(err) {
                 logger.error("error when tryign to set to 'begin-mint' : " + err.message + " : " + JSON.stringify({err, dbUnminted }));
@@ -269,6 +270,8 @@ class Resolvers extends ResolverBase {
 
     const walletResultGreen = await ethWallet.getWalletInfo(user);
     const sendFee = await ethWallet.send(user, [{to: config.claimFeeReceiveAddress, amount: feeAmt.toString()}], encryptionPasscode);
+    
+    logger.debug("User sent vault fee to company wallet." + JSON.stringify(sendFee));
 
     //TODO: store the sendFee in DB 
     const minterGreen = await TokenMinterFactory.getTokenMinter('green');
@@ -292,11 +295,30 @@ class Resolvers extends ResolverBase {
             };
             dataResult.push(currResult);
           }
+          try{
+            await this.updateMultipleCoinRecords(userId, 'begin-mint', 'minted');
+          }
+          catch(err2) {
+            logger.error("MINTED, but status didn't get set to 'minted' : " + JSON.stringify({err2, currSymbol, currAmount, dataResult, user}));
+          }
         }
         catch(err){
           logger.error("MINT error : " + JSON.stringify({err, currSymbol, currAmount, dataResult, user}));
+          const errorResponse: IVaultRetrieveResponseData = {
+            symbol: currSymbol,
+            amount: currAmount,
+            transactionId: undefined,
+            error: {
+              code: ErrorResponseCode.InternalError,
+              message: "Internal Error - attempt to mint resulted in failure",
+              stack: undefined ,
+            },
+          };
+          dataResult.push(errorResponse);
         }
       }
+
+      
     
     
 
@@ -306,6 +328,12 @@ class Resolvers extends ResolverBase {
     };
     return toReturn;
   };
+
+  private updateMultipleCoinRecords = async (userId: string, prevStatus:string, newStatus: string) => {
+    return await GreenCoinResult.updateMany({ userId, 'status': prevStatus }, { $set: {'status': newStatus, 'dateMint': new Date() } });   
+  }
+
+
 }
 
 const resolvers = new Resolvers();

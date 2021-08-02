@@ -4,7 +4,6 @@ import * as abi from '../../common/ABI/erc20-green.json';
 import { config } from '../../common';
 //import { UserWithTokenAmount } from '../types/user';
 import { ContractData } from '../../types/eth-contracts/contract';
-import { Long } from 'mongodb';
 import BigNumber from 'bignumber.js';
 //import { Erc20 as Erc20Contract } from '../../types/eth-contracts/erc20-green';
 //import nodeSelector from './node-selector';
