@@ -1,7 +1,7 @@
 import ResolverBase from '../common/Resolver-Base';
 import { logger } from '../common';
 import { Context } from '../types';
-import { BlockbotReportRecord } from '../models';
+import { BlockbotReportResult } from '../models';
 
 class Resolvers extends ResolverBase {
 
@@ -17,7 +17,7 @@ class Resolvers extends ResolverBase {
 
       const twoDaysAgo = Date.now() - 1000 * 60 * 60 * 24 * 2;
 
-      const latestReport = await BlockbotReportRecord.find({
+      const latestReport = await BlockbotReportResult.find({
         DatePrepared: { $gt: twoDaysAgo },
         UserId: user.userId,
       }).exec();
