@@ -35,9 +35,10 @@ class Resolvers extends ResolverBase {
         'unminted',
       );
 
-      if (toAdd.item.balance > 0) {
+      //TODO : taken out to show '0' balance (to then see the transactions details.)
+      //if (toAdd.item.balance > 0) {
         returnItems.push(toAdd.item);
-      }
+      //}
     } catch (err) {
       logger.warn(`resolvers.getVaultItems.catch: ${err}`);
       return {
@@ -313,7 +314,7 @@ class Resolvers extends ResolverBase {
     for (let i = 0; i < readyToMint.length; i++) {
       const currSymbol: string = readyToMint[i].symbol;
       const currAmount: number = readyToMint[i].amount;
-      let currResult: IVaultRetrieveResponseData = {
+      const currResult: IVaultRetrieveResponseData = {
         symbol: currSymbol,
         amount: currAmount,
         transactionId: undefined,
