@@ -4,8 +4,14 @@ import { Context } from '../types';
 import { BlockbotReportRecord } from '../models';
 
 class Resolvers extends ResolverBase {
-  getBlockbotReport = async (parent: any, args: {}, ctx: Context) => {
-    logger.debug('GET_BLOCKBOT_REPORT');
+
+  getBlockbotReport = async (
+    parent: any,
+    args: {},
+    ctx: Context
+  ) => {
+    const { user } = ctx;
+    this.requireAuth(user);
     try {
       logger.debug(`resolvers.blockbot.getBlockBotReport`);
 
@@ -13,6 +19,7 @@ class Resolvers extends ResolverBase {
 
       const latestReport = await BlockbotReportRecord.find({
         DatePrepared: { $gt: twoDaysAgo },
+        UserId: user.userId,
       }).exec();
 
       //TODO : this can be replaced with a proper projection in mongo query.
