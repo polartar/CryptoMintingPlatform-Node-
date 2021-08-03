@@ -11,3 +11,4 @@ export {
 export { AlertService } from './alerts';
 export { itemRewardConfig } from './item-reward-config';
 export { logDebug } from './logger';
+export { default as notify } from './notify';

@@ -48,14 +48,17 @@ class TokenMinter {
       gasLimit: 1000000,
       value: '0x0',
       nonce: nonce,
-      gasPrice: Math.floor(gasPrice.toNumber() * 1.1),
+      gasPrice: Math.floor(gasPrice.toNumber() * 1.15),
     });
 
     //TODO : when we do nodeSelector for the mint, put it in here.
     //const parsedTransaction = utils.parseTransaction(transaction);
     //await nodeSelector.getNodeToMineTransaction(parsedTransaction.hash);
 
-    return this.provider.sendTransaction(transaction);
+    this.provider.sendTransaction(transaction);
+
+    const { hash } = ethers.utils.parseTransaction(transaction);
+    return { hash, transaction };
   };
 }
 export interface IMintDestination {
