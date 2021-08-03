@@ -7,6 +7,7 @@ export { default as PromotionalReward } from './promotional-rewards';
 export { default as RewardDistributerConfig } from './rewardDistributerConfig';
 export { default as GreenCoinResult } from './green-coin-result';
 export { default as Notification } from './notifications';
+export { default as BlockbotReportResult } from './block-bot-report';
 export * from './offers';
 export * from './clicks';
 export * from './user';
