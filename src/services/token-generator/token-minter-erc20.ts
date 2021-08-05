@@ -26,8 +26,8 @@ class TokenMinter {
       this.provider.getGasPrice(),
     ]);
 
-    const uint256Amt: number = +toMint.amountDecimal * Math.pow(10, 8); //TODO : pull decimalPlaces from this.decimalPlaces
-
+    const uint256Amt: number = Math.floor(+toMint.amountDecimal * Math.pow(10, 8)); //TODO : pull decimalPlaces from this.decimalPlaces
+    
     const destinationAddresses: string[] = [toMint.destinationAddress];
     const destinationAmount: number[] = [uint256Amt];
 
