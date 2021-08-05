@@ -1,9 +1,9 @@
 import { AuthenticationError, ForbiddenError } from 'apollo-server-express';
-import { UserApi } from '../data-sources';
-import { config } from '../common';
-import { crypto } from '../utils';
-import { Context } from '../types/context';
-import logger from './logger/winston-logger';
+import { UserApi } from 'src/data-sources';
+import { config } from 'src/common';
+import { crypto } from 'src/utils';
+import { Context } from 'src/types/context';
+import logger from 'src/common/logger/winston-logger';
 
 export default abstract class ResolverBase {
   // Common method to throw an graphQL auth error if the user is null

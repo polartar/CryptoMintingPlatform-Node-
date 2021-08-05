@@ -1,13 +1,13 @@
 import { DataSource } from 'apollo-datasource';
-import { auth, config, logger } from '../common';
-import { Model } from 'mongoose';
-import { User, userSchema } from '../models';
-import { IUser } from '../types';
-import { IUserClaims } from '../types/context';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
 import { ApolloError } from 'apollo-server-express';
-import { capitalize } from '../utils';
+import { Model } from 'mongoose';
+import { auth, config, logger } from 'src/common';
+import { User, userSchema } from 'src/models';
+import { IUser } from 'src/types';
+import { IUserClaims } from 'src/types/context';
+import { capitalize } from 'src/utils';
 
 export default class UserApi extends DataSource {
   Model: Model<IUser> = User;

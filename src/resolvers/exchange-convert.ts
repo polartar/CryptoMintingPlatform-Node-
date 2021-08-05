@@ -9,7 +9,6 @@ import {
   IGetPrice,
   IGetFeeResponse,
 } from '../types';
-import { BtcWallet, EthWallet } from '../wallet-api/coin-wallets';
 
 class Resolvers extends ResolverBase {
   status = async (

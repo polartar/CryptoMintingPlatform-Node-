@@ -1,6 +1,6 @@
 import { RESTDataSource, RequestOptions } from 'apollo-datasource-rest';
-import { config, logger } from '../common';
-import { IUser } from '../models/user';
+import { config, logger } from 'src/common';
+import { IUser } from 'src/models/user';
 
 class Bitly extends RESTDataSource {
   baseURL = 'https://api-ssl.bitly.com/v4';

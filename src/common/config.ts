@@ -1,10 +1,10 @@
 import * as autoBind from 'auto-bind';
-import * as supportedFavoriteOptions from '../data/supportedFavoriteOptions.json';
 import { PubSub } from 'apollo-server-express';
-import keys from './keys';
 import { Connection, createConnection } from 'mongoose';
-import { ItemTokenName, IFirebaseClient } from '../types';
-import { env } from './env';
+import * as supportedFavoriteOptions from 'src/data/supportedFavoriteOptions.json';
+import keys from 'src/common/keys';
+import { ItemTokenName, IFirebaseClient } from 'src/types';
+import { env } from 'src/common/env';
 
 const {
   ALFA_FOUNTAIN_GOOD,
@@ -321,7 +321,7 @@ class Config {
         )} undefined.`,
       );
     }
-  }  
+  }
 
   public async setConnectMongoConnection() {
     const connectMongoUrl = env.MONGODB_URI_CONNECT;

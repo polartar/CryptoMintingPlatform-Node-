@@ -58,7 +58,7 @@ class Zendesk extends RESTDataSource {
     const { results } = (await this.get('/search.json', {
       query: `type:ticket external_id:${userId}`,
       page: page,
-    })) as { results: any[] };
+    }));
     return results.map((result: any) => {
       const {
         created_at: createdAt,

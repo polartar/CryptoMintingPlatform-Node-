@@ -1,13 +1,13 @@
 // This abstract class is intended to provide a framework for each of the wallet interfaces to ensure they implement the same methods and return the same data shape
-import { ITransaction, ICartAddress } from '../../types';
-import { UserApi } from '../../data-sources';
-import { crypto } from '../../utils';
-import { credentialService } from '../../services';
+import { ITransaction, ICartAddress } from 'src/types';
+import { UserApi } from 'src/data-sources';
+import { crypto } from 'src/utils';
+import { credentialService } from 'src/services';
 
 const BTC_RESOURCE = 'xprivkey';
 const ETH_RESOURCE = 'privatekey';
 
-abstract class CoinWalletBase {
+export default abstract class CoinWalletBase {
   constructor(
     protected name: string,
     public symbol: string,
@@ -113,7 +113,4 @@ abstract class CoinWalletBase {
 
     return encryptedKey;
   };
-
-  
 }
-export default CoinWalletBase;

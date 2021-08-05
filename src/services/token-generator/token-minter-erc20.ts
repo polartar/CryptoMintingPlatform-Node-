@@ -1,5 +1,4 @@
 import { ethers } from 'ethers';
-import { chunk, round } from 'lodash';
 import * as abi from '../../common/ABI/erc20-green.json';
 import { config } from '../../common';
 //import { UserWithTokenAmount } from '../types/user';
