@@ -14,12 +14,13 @@ class Resolvers extends ResolverBase {
     this.requireAuth(user);
     try {
       logger.debug(`resolvers.blockbot.getBlockBotReport`);
+      const userId = user.userId;
 
       const twoDaysAgo = Date.now() - 1000 * 60 * 60 * 24 * 2;
 
       const latestReport = await BlockbotReportResult.find({
+        UserId: userId,
         DatePrepared: { $gt: twoDaysAgo },
-        UserId: user.userId,
       }).exec();
 
       //TODO : this can be replaced with a proper projection in mongo query.
