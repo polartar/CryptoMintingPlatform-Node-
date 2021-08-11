@@ -20,14 +20,27 @@ export class CartService extends ServerToServerService {
     return result.data;
   };
 
-  public updateOrderToWooCart = async (woo_tx_id: string, balance: number): Promise<WooTxOrders[]> => {
-    const axios = this.getAxios({ role: 'system' });
+  public updateOrderToWooCart = async (woo_tx_id: string, address: string, balance: number, coinSymbol: string): Promise<WooTxOrders[]> => {
+    const postBody:any = {
+      ApiKey: '338a3ba7-69b8-41ac-a920-9727ae939ba3',
+      Address: address,
+      CoinSymbol: coinSymbol,
+      AmtTotal: balance,
+      TxIds: woo_tx_id
+    };
 
-    const result = await axios.post<WooTxOrders[]>(
-      `${config.wpCartApiUrl}/update_woo_tx_order?ApiKey=338a3ba7-69b8-41ac-a920-9727ae939ba3&id=${woo_tx_id}`,
-       {balance});    //TODO : verify the balance parameter is spelled correctly here.
+    try{
+      const axios = this.getAxios({ role: 'system' });
 
-    return result.data;
+      const result = await axios.post<WooTxOrders[]>(
+        `${config.wpCartApiUrl}/update_woo_tx_order`, postBody
+      );
+
+      return result.data;
+    }
+    catch(err){
+      console.log(`cart-service.CartService.updateOrderToWooCart : ${JSON.stringify(postBody)}`);
+    }
   };
 
   private dateString(val: Date) {
