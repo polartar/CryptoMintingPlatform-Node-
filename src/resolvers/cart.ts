@@ -20,7 +20,7 @@ class Resolvers extends ResolverBase {
     const result =  [];
 
     try {
-      const expDate = addHours(Date.now(), 1);
+      const expDate = addHours(new Date(), 1);
 
       if(coinSymbol){
         const walletApi = wallet.coin(coinSymbol);

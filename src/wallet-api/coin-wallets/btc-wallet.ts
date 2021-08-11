@@ -135,8 +135,8 @@ class BtcWallet extends CoinWalletBase {
       }
     }
     catch(err) {
-      console.log(`failed getCartAddress for btc-wallet - BTC ${orderId}`, err);
-      toReturn.address = 'mxXUx4MZHLT2sdWw3QMGQmokNZhuco8uZB';
+      console.log(`failed getCartAddress for btc-wallet - BTC ${orderId}. THIS HAPPENS WHEN THE BTC WALLET HAS NOT BEEN CREATED ON BTC SERVER, OR .ENV IS NOT SET TO CORRECT WALLET/PASSWORD. `, err);
+      toReturn.address = 'CRITICAL FAILURE :: SEE TECHNICAL SERVICE FOR BTC ADDRESS';
     }
     try{
       const qrCode = await QRCode.toDataURL(this.buildQrUrl(toReturn.address, amount));
