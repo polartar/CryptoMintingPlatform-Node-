@@ -192,6 +192,7 @@ class Config {
 
   public readonly supportsDisplayNames = env.SUPPORTS_DISPLAY_NAMES === 'true';
   public readonly alertApiUrls: string[] = JSON.parse(env.ALERT_API_URLS);
+  public readonly wpCartApiUrl: string = env.WP_API_URL;
 
   public readonly supportsBtcPubsub = env.SUPPORTS_BTC_PUBSUB === 'true';
 
@@ -313,6 +314,7 @@ class Config {
       'FIREBASE_CLIENT_AUTH_DOMAIN',
       'FIREBASE_CLIENT_PROJECT_ID',
       'CLAIM_FEE_RECEIVE_ADDRESS',
+      'WP_API_URL',
     ].filter(name => !env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(

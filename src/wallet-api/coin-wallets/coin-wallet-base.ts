@@ -1,5 +1,5 @@
 // This abstract class is intended to provide a framework for each of the wallet interfaces to ensure they implement the same methods and return the same data shape
-import { ITransaction, ICartAddress } from '../../types';
+import { ITransaction, ICartAddress, ICartBalance } from '../../types';
 import { UserApi } from '../../data-sources';
 import { crypto } from '../../utils';
 import { credentialService } from '../../services';
@@ -91,6 +91,7 @@ abstract class CoinWalletBase {
   ): Promise<boolean>;
   abstract checkPassword(user: UserApi, password: string): Promise<boolean>;
   abstract getCartAddress(symbol: string, orderId: string, amount: string): Promise<ICartAddress>;
+  abstract getCartBalance(symbol: string, orderId: string, address: string): Promise<ICartBalance>;
 
   protected encrypt = (plainText: string, secret: string) =>
     crypto.encrypt(plainText, secret);

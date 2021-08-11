@@ -8,6 +8,7 @@ import {
   ISendOutput,
   IPromotionalRewardDoc,
   ICartAddress,
+  ICartBalance,
 } from '../../types';
 import { UserApi } from '../../data-sources';
 
@@ -82,6 +83,18 @@ class DocWallet extends CoinWalletBase {
     };
     return result;
   }
+
+  public async getCartBalance(symbol: string, orderId: string, address: string): Promise<ICartBalance> {
+    const result: ICartBalance = {
+      coinSymbol: symbol,
+      address,
+      amountConfirmed: 0,
+      amountUnconfirmed: 0,
+      lastTransactions: [],
+    };
+    return result;
+  }
+
 
   public async checkIfWalletExists(userApi: UserApi) {
     logger.debug(`walletApi.coin-wallets.DocWallet.checkIfWalletExists: true`);

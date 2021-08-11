@@ -1,7 +1,7 @@
 import EthWallet from './eth-wallet';
 import { config, logger } from '../../common';
 import { ethers, utils, BigNumber, Overrides } from 'ethers';
-import { ITransaction, ICoinMetadata, ISendOutput, ICartAddress } from '../../types';
+import { ITransaction, ICoinMetadata, ISendOutput, ICartAddress, ICartBalance } from '../../types';
 import { UserApi } from '../../data-sources';
 import { transactionService } from '../../services';
 import { ITokenBalanceTransactions } from '../../pipelines';
@@ -65,6 +65,18 @@ class Erc20API extends EthWallet {
       qrCode
     }
     return result;
+  }
+
+  public async getCartBalance(symbol: string, orderId: string, address: string): Promise<ICartBalance> {
+    const ethBalance = await this.getBalanceFromContract(address);
+    const toReturn: ICartBalance = {
+      address,
+      coinSymbol: symbol,
+      amountConfirmed: +ethBalance,
+      amountUnconfirmed: +ethBalance,
+      lastTransactions: [],
+    };
+    return toReturn;
   }
 
   private buildQrErc20Url(cartAddress: string, amount: string): string {
