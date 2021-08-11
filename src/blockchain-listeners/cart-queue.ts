@@ -23,7 +23,7 @@ export class CartQueue {
         promisifyAll(redis);
         this.client = redis.createClient(redisInfo);
 
-        this.cronTask = cron.schedule('*/5 * * * * *', () => {
+        this.cronTask = cron.schedule('* * * * *', () => {
             console.log(`Cron Check ${new Date()}`);
             Promise.all([
                 this.lookAtTransactionsBySymbol('BTC'),
@@ -60,7 +60,7 @@ export class CartQueue {
 
             const value = await this.client.getAsync(key);
             console.log(`gotValue ${key} : ${value}`)
-            
+
             const valueObj = JSON.parse(value);
 
             if (!valueObj.exp || valueObj.exp < new Date()) {
@@ -83,83 +83,30 @@ export class CartQueue {
 
                 if (balance && balance.amountUnconfirmed > 0) {
                     const service: CartService = new CartService();
-                    service.updateOrderToWooCart("", valueObj.address, balance.amountUnconfirmed, symbol);
+                    try {
+                        service.updateOrderToWooCart("", valueObj.address, balance.amountUnconfirmed, symbol);
+                    }
+                    catch(err){
+                        logger.error(`cart-queue.getCartWatcher.updateOrderToWooCart failed to update - ${err} : ${JSON.stringify(valueObj)} : ${JSON.stringify(balance)} : ${symbol}`);
+                    }
                 }
-                else{
+                else {
                     //Do we need some error handling if balance not found??
                 }
 
             }
             console.log(`ending ${symbol} search : iterations ${counter}`);
         }
+    }
 
-            // this.client.keysAsync(`${symbol}.*`, function(err: any, keys: any) {
-            //     console.log(`keys error: ${err}`);
-            //     console.log(`keys res: ${keys}`);
+    async getValueAndUpdateAtCart(key: string, symbol: string, client: any) {
+        return await this.client.getAsync(key);
+    }
 
-            //     const results: string[] = [];
-            //     if(err) {
-            //         logger.error(`getCartWatcher failed to get Keys for ${symbol} : ${JSON.stringify(err)}`);
-            //     }
-            //     for (const key of keys) {
-            //         results.push(key);
-            //     }
-
-
-
-            //     let counter: number = 0;
-            //     for (const key in keys) {
-            //         counter = counter + 1;
-            //         const keyParts: string[] = key.split('.');
-
-            //         //this.getValueAndUpdateAtCart(key, symbol, this.client);
-
-            //     }
-            //     console.log(`ending ${symbol} search : iterations ${counter}`);
-            //     return results;
-            // }, this.getValueAndUpdateAtCart);
-
-            //console.log('HHEEERRREE :' + JSON.stringify(values));
-
-        }
-
-        async getValueAndUpdateAtCart(key: string, symbol: string, client: any) {
-            return await this.client.getAsync(key);
-
-            // client.get(key, function(err: any, res: any) {
-            //     console.log(`get error: ${err}`);
-            //     console.log(`get res: ${res}`);
-            //     const keyParts: string[] = key.split('.');
-
-            //     const value: {address: string, expDate: Date} = JSON.parse(res);
-            //     if(value.expDate < new Date()) {
-            //         this.deleteCartWatcher(key);
-            //     }
-            //     else{
-            //         //const brand: string = keyParts[1];
-            //         const orderId: string = keyParts[2];
-
-            //         const coin = walletApi.coin(symbol);
-            //         coin.getCartBalance(symbol, orderId, value.address)
-            //             .then(balance => {
-            //                 if(balance.amountUnconfirmed > 0){
-            //                     const service: CartService = new CartService();
-            //                     service.updateOrderToWooCart(orderId, balance.amountUnconfirmed);
-            //                 }
-            //             }, (er2 => {
-            //                 console.log(`FAILED WHEN TRYING TO UPDATE WOO CART : ${symbol}/${orderId}/${value}`);
-            //                 console.log(JSON.stringify(er2));
-
-            //             }));
-            //     }
-
-            // });
-        }
-
-        async deleteCartWatcher(key: string) {
-            const deleteResult = await this.client.delAsync(key);
-            return deleteResult;
-        }
+    async deleteCartWatcher(key: string) {
+        const deleteResult = await this.client.delAsync(key);
+        return deleteResult;
+    }
 
     private async cronFunction() {
         console.log(`Cron Check ${new Date()}`);

@@ -1,6 +1,6 @@
 import { config } from '../common';
 import { ServerToServerService } from '../services/server-to-server';
-import { subDays } from 'date-fns';
+import { addDays, subDays } from 'date-fns';
 
 export class CartService extends ServerToServerService {
   constructor() {
@@ -11,10 +11,11 @@ export class CartService extends ServerToServerService {
     const axios = this.getAxios({ role: 'system' });
 
     const currDate = new Date();
+    const tomorrow = addDays(currDate, 1);
     const yesterday = subDays(currDate, 1);
 
     const result = await axios.post<WooTxOrders[]>(
-      `${config.wpCartApiUrl}/get_woo_tx_orders?ApiKey=338a3ba7-69b8-41ac-a920-9727ae939ba3&date_start=${this.dateString(yesterday)}&date_end=${this.dateString(currDate)}`,
+      `${config.wpCartApiUrl}/get_woo_tx_orders?ApiKey=338a3ba7-69b8-41ac-a920-9727ae939ba3&date_start=${this.dateString(yesterday)}&date_end=${this.dateString(tomorrow)}`,
        {});
 
     return result.data;
