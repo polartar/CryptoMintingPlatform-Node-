@@ -83,7 +83,8 @@ class Resolvers extends ResolverBase {
         result.balance = result.balance + +a.greenDecimal;
       });
 
-      return { item: result, dbRecords: greens };
+      const resultCombined: IVaultItemWithDbRecords = { item: result, dbRecords: greens };
+      return resultCombined;
     }
     return { item: result, dbRecords: [] };
   };
@@ -211,7 +212,7 @@ class Resolvers extends ResolverBase {
     items.forEach(item => {
       try {
         coinSearchPromises.push(
-          this.searchForCoinResultsSummary(userId, item.symbol, 'unminted'),
+          this.searchForCoinResultsSummary(userId, item.symbol, 'unminted')
         );
       } catch (err) {
         logger.error(
@@ -269,6 +270,7 @@ class Resolvers extends ResolverBase {
                     userId,
                     'unminted',
                     'begin-mint',
+                    
                   ),
                 );
               } catch (err) {
@@ -311,9 +313,9 @@ class Resolvers extends ResolverBase {
     //TODO: store the sendFee in DB
     const minterGreen = await TokenMinterFactory.getTokenMinter('green');
 
-    for (let i = 0; i < readyToMint.length; i++) {
-      const currSymbol: string = readyToMint[i].symbol;
-      const currAmount: number = readyToMint[i].amount;
+    for (const ready of readyToMint) {
+      const currSymbol: string = ready.symbol;
+      const currAmount: number = ready.amount;
       const currResult: IVaultRetrieveResponseData = {
         symbol: currSymbol,
         amount: currAmount,
@@ -383,7 +385,7 @@ class Resolvers extends ResolverBase {
   private updateMultipleCoinRecords = async (
     userId: string,
     prevStatus: string,
-    newStatus: string,
+    newStatus: string
   ) => {
     return await GreenCoinResult.updateMany(
       { userId, status: prevStatus },

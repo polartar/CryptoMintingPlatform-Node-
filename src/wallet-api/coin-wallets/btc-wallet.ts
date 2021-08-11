@@ -7,7 +7,8 @@ import {
   ICoinMetadata,
   IBcoinTx,
   ISendOutput,
-  ICartAddress
+  ICartAddress,
+  ICartBalance
 } from '../../types';
 import { UserApi } from '../../data-sources';
 import { BigNumber } from 'bignumber.js';
@@ -152,7 +153,24 @@ class BtcWallet extends CoinWalletBase {
     return `bitcoin:${cartAddress}${amount ? '?amount=' + amount : ''}`;
   }
 
-  
+  public async getCartBalance(symbol: string, orderId: string, address: string): Promise<ICartBalance> {
+    const toReturn: ICartBalance = {
+      address,
+      coinSymbol: symbol,
+      amountConfirmed: 0,
+      amountUnconfirmed: 0,
+      lastTransactions: [],
+    };
+    const { btcWalletName, btcWalletToken } = config.cartKeys;
+    const cartWallet = this.walletClient.wallet(btcWalletName, btcWalletToken);
+    const scrubbedOrderId = orderId.replace(/^\s+|\s+$/g, "");
+    const accountReturn = await cartWallet.getAccount(scrubbedOrderId);
+
+    toReturn.amountConfirmed = accountReturn.balance.confirmed;
+    toReturn.amountUnconfirmed = accountReturn.balance.unconfirmed;
+
+    return toReturn;
+  }
 
   public async estimateFee(userApi: UserApi) {
     try {

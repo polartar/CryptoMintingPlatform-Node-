@@ -2,10 +2,7 @@ import { ethers } from 'ethers';
 import { chunk, round } from 'lodash';
 import * as abi from '../../common/ABI/erc20-green.json';
 import { config } from '../../common';
-//import { UserWithTokenAmount } from '../types/user';
 import { ContractData } from '../../types/eth-contracts/contract';
-//import { Erc20 as Erc20Contract } from '../../types/eth-contracts/erc20-green';
-//import nodeSelector from './node-selector';
 
 class TokenMinter {
   private provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
@@ -26,16 +23,10 @@ class TokenMinter {
       this.provider.getGasPrice(),
     ]);
 
-    const uint256Amt: number = Math.floor(+toMint.amountDecimal * Math.pow(10, 8)); //TODO : pull decimalPlaces from this.decimalPlaces
+    const uint256Amt: number = Math.floor(+toMint.amountDecimal * Math.pow(10, this.decimalPlaces)); 
     
     const destinationAddresses: string[] = [toMint.destinationAddress];
     const destinationAmount: number[] = [uint256Amt];
-
-    //let tx = await this.contract.distributeMinting(destinationAddresses, destinationAmount);
-    // const parameterToDistribute = {
-    //     distAddresses: destinationAddresses,
-    //     distValues: destinationAmount
-    // };
 
     const contractMethod = this.contract.interface.encodeFunctionData(
       'distributeMinting',
