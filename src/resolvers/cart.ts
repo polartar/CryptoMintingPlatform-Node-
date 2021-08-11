@@ -1,6 +1,6 @@
 import { Context } from '../types';
 import ResolverBase from '../common/Resolver-Base';
-import CartQueue from '../blockchain-listeners/cart-queue';
+import {cartQueue} from '../blockchain-listeners/cart-queue';
 import config from '../common/config';
 // import { User } from '../models';
 import { addHours } from 'date-fns';
@@ -20,35 +20,34 @@ class Resolvers extends ResolverBase {
     const result =  [];
 
     try {
+      const expDate = addHours(Date.now(), 1);
+
       if(coinSymbol){
         const walletApi = wallet.coin(coinSymbol);
         const address = await walletApi.getCartAddress(coinSymbol, orderId, amount);
-        const expDate = addHours(1, Date.now());
-        CartQueue.setCartWatcher(config.brand, coinSymbol.toUpperCase(), orderId, {address: address.address, exp: expDate});
+        cartQueue.setCartWatcher(config.brand, coinSymbol.toUpperCase(), orderId, {address: address.address, exp: expDate});
         result.push(address);
       }
       else{
-        const expDate = addHours(1, Date.now());
-        
         const btcWalletApi = wallet.coin('BTC');
         const btcAddress = await btcWalletApi.getCartAddress('BTC', orderId, amount);
-        CartQueue.setCartWatcher(config.brand, 'BTC', orderId, {address: btcAddress.address, exp: expDate});
+        cartQueue.setCartWatcher(config.brand, 'BTC', orderId, {address: btcAddress.address, exp: expDate});
         result.push(btcAddress);
 
         const ethWalletApi = wallet.coin('ETH');
         const ethAddress = await ethWalletApi.getCartAddress('ETH', orderId, amount);
-        CartQueue.setCartWatcher(config.brand, 'ETH', orderId, {address: ethAddress.address, exp: expDate});
+        cartQueue.setCartWatcher(config.brand, 'ETH', orderId, {address: ethAddress.address, exp: expDate});
         result.push(ethAddress);
 
-        const galaWalletApi = wallet.coin('GALA');
-        const galaAddress = await galaWalletApi.getCartAddress('GALA', orderId, amount);
-        CartQueue.setCartWatcher(config.brand, 'GALA', orderId, {address: galaAddress.address, exp: expDate});
-        result.push(galaAddress);
+        // const galaWalletApi = wallet.coin('GALA');
+        // const galaAddress = await galaWalletApi.getCartAddress('GALA', orderId, amount);
+        // cartQueue.setCartWatcher(config.brand, 'GALA', orderId, {address: galaAddress.address, exp: expDate});
+        // result.push(galaAddress);
 
-        const greenWalletApi = wallet.coin('GREEN');
-        const greenAddress = await greenWalletApi.getCartAddress('GREEN', orderId, amount);
-        CartQueue.setCartWatcher(config.brand, 'GREEN', orderId, {address: greenAddress.address, exp: expDate});
-        result.push(greenAddress);
+        // const greenWalletApi = wallet.coin('GREEN');
+        // const greenAddress = await greenWalletApi.getCartAddress('GREEN', orderId, amount);
+        // cartQueue.setCartWatcher(config.brand, 'GREEN', orderId, {address: greenAddress.address, exp: expDate});
+        // result.push(greenAddress);
 
         // const batWalletApi = wallet.coin('BAT');
         // const batAddress = await batWalletApi.getCartAddress('BAT', orderId, amount);
@@ -82,7 +81,6 @@ class Resolvers extends ResolverBase {
 
     return result;
   };
-
 }
 
 const resolvers = new Resolvers();

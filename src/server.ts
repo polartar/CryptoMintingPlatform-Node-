@@ -20,6 +20,7 @@ import {
   GalaEmailer,
 } from './data-sources';
 import { walletApi } from './wallet-api';
+import { cartQueue } from './blockchain-listeners/cart-queue';
 import { removeListeners } from './blockchain-listeners';
 import { Logger, winstonLogger, systemLogger, logMessage } from './common/logger';
 import { Wallet } from 'ethers';
@@ -30,6 +31,7 @@ class Server {
   public app: express.Application = express();
   public httpServer: http.Server;
   public walletApi = walletApi;
+  public cartQueue = cartQueue;
 
   constructor() {
     autoBind(this);
@@ -116,7 +118,7 @@ class Server {
       }
     }
 
-    return { req, res, user, wallet: this.walletApi, logger };
+    return { req, res, user, wallet: this.walletApi, logger, cart: this.cartQueue };
   }
 
   private buildDataSources() {
