@@ -1,6 +1,6 @@
 {
   "name": "wallet-server",
-  "version": "0.4.66",
+  "version": "0.4.70",
   "main": "lib/index.js",
   "config": {
     "dockerport": 4444
@@ -41,6 +41,7 @@
     "bclient": "^0.1.7",
     "bignumber.js": "^9.0.0",
     "bip39": "^3.0.2",
+    "bluebird": "^3.7.2",
     "cors": "^2.8.5",
     "crypto-js": "^3.1.9-1",
     "date-fns": "^2.11.0",

@@ -12,6 +12,7 @@ import {
   IBcoinTx,
   ISendOutput,
   ICartAddress
+  ICartBalance
 } from 'src/types';
 import { UserApi } from 'src/data-sources';
 
@@ -134,8 +135,8 @@ class BtcWallet extends CoinWalletBase {
       }
     }
     catch(err) {
-      console.log(`failed getCartAddress for btc-wallet - BTC ${orderId}`, err);
-      toReturn.address = 'mxXUx4MZHLT2sdWw3QMGQmokNZhuco8uZB';
+      console.log(`failed getCartAddress for btc-wallet - BTC ${orderId}. THIS HAPPENS WHEN THE BTC WALLET HAS NOT BEEN CREATED ON BTC SERVER, OR .ENV IS NOT SET TO CORRECT WALLET/PASSWORD. `, err);
+      toReturn.address = 'CRITICAL FAILURE :: SEE TECHNICAL SERVICE FOR BTC ADDRESS';
     }
     try{
       const qrCode = await QRCode.toDataURL(this.buildQrUrl(toReturn.address, amount));
@@ -152,7 +153,24 @@ class BtcWallet extends CoinWalletBase {
     return `bitcoin:${cartAddress}${amount ? '?amount=' + amount : ''}`;
   }
 
+  public async getCartBalance(symbol: string, orderId: string, address: string): Promise<ICartBalance> {
+    const toReturn: ICartBalance = {
+      address,
+      coinSymbol: symbol,
+      amountConfirmed: 0,
+      amountUnconfirmed: 0,
+      lastTransactions: [],
+    };
+    const { btcWalletName, btcWalletToken } = config.cartKeys;
+    const cartWallet = this.walletClient.wallet(btcWalletName, btcWalletToken);
+    const scrubbedOrderId = orderId.replace(/^\s+|\s+$/g, "");
+    const accountReturn = await cartWallet.getAccount(scrubbedOrderId);
 
+    toReturn.amountConfirmed = accountReturn.balance.confirmed;
+    toReturn.amountUnconfirmed = accountReturn.balance.unconfirmed;
+
+    return toReturn;
+  }
 
   public async estimateFee(userApi: UserApi) {
     try {

@@ -1,11 +1,6 @@
 import { auth, config } from '../common';
 import { Context } from '../types/context';
 import ResolverBase from '../common/Resolver-Base';
-import { credentialService } from '../services';
-import { walletApi } from '../wallet-api';
-import { User } from '../models';
-import { UserApi } from '../data-sources';
-import { CoinWalletBase } from '../wallet-api/coin-wallets';
 
 class Resolvers extends ResolverBase {
   

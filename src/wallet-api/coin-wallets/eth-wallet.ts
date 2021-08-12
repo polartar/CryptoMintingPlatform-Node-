@@ -8,6 +8,7 @@ import {
   ICoinMetadata,
   ISendOutput,
   ICartAddress,
+  ICartBalance,
 } from '../../types';
 import { UserApi } from '../../data-sources';
 import { IEthBalanceTransactions } from '../../pipelines';
@@ -79,6 +80,18 @@ class EthWallet extends CoinWalletBase {
       console.log(`failed getCartAddress for eth-wallet - QR ${orderId}`, err);
     }
 
+    return toReturn;
+  }
+
+  public async getCartBalance(symbol: string, orderId: string, address: string): Promise<ICartBalance> {
+    const ethBalance = await this.getBalanceNonIndexed(address);
+    const toReturn: ICartBalance = {
+      address,
+      coinSymbol: symbol,
+      amountConfirmed: +ethBalance.confirmed,
+      amountUnconfirmed: +ethBalance.unconfirmed,
+      lastTransactions: [],
+    };
     return toReturn;
   }
 
@@ -430,9 +443,11 @@ class EthWallet extends CoinWalletBase {
     addressFromDb: string,
     userApi: UserApi,
   ) {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const { address } = userWallet;
-      if (address.toLowerCase() === addressFromDb.toLowerCase()) resolve();
+      if (address.toLowerCase() === addressFromDb.toLowerCase()){
+        resolve();
+      } 
       else {
         userApi.Model.findByIdAndUpdate(
           userApi.userId,
