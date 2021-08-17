@@ -54,7 +54,7 @@ export class CartQueue {
 
     async getCartWatcher(symbol: string) {
         const allKeys = await this.client.keysAsync(`${symbol}.*`);
-        console.log(allKeys);
+        //console.log(allKeys);
 
         let counter: number = 0;
         for (const key of allKeys) {
@@ -63,7 +63,7 @@ export class CartQueue {
             const value = await this.client.getAsync(key);
             const valueObj = JSON.parse(value);
 
-            if (!valueObj.exp || valueObj.exp < new Date()) {
+            if (!valueObj.exp || new Date(valueObj.exp) < new Date()) {
                 console.log(`deleting ${valueObj.exp} | ${new Date()}`);
                 this.deleteCartWatcher(key);
             }
@@ -78,7 +78,8 @@ export class CartQueue {
                         return undefined;
                     }));
 
-                console.log(balance);
+                // console.log(value);
+                // console.log(balance);
 
                 if (balance && balance.amountUnconfirmed > 0) {
                     const service: CartService = new CartService();
@@ -100,10 +101,8 @@ export class CartQueue {
                                         {
                                             //TODO : email the user saying that they didn't send enough
                                         }
-
                                     }
                                 }
-
                             }
                         }
                     }
@@ -114,7 +113,6 @@ export class CartQueue {
                 else {
                     //Do we need some error handling if balance not found??
                 }
-
             }
             console.log(`ending ${symbol} search : iterations ${counter}`);
         }
