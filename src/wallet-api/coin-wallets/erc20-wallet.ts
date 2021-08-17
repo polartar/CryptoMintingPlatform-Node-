@@ -68,14 +68,23 @@ class Erc20API extends EthWallet {
   }
 
   public async getCartBalance(symbol: string, orderId: string, address: string): Promise<ICartBalance> {
-    const ethBalance = await this.getBalanceFromContract(address);
     const toReturn: ICartBalance = {
       address,
       coinSymbol: symbol,
-      amountConfirmed: +ethBalance,
-      amountUnconfirmed: +ethBalance,
+      amountConfirmed: 0,
+      amountUnconfirmed: 0,
       lastTransactions: [],
     };
+    
+    try{
+      const ethBalance = await this.getBalanceFromContract(address);
+
+      toReturn.amountConfirmed = +ethBalance;
+      toReturn.amountUnconfirmed = +ethBalance;
+    }
+    catch(err) {
+      logger.error(`coin-wallets.erc20-wallet-getCartBalance : ${symbol}/${orderId}/${address}/${JSON.stringify(toReturn)}`);
+    }
     return toReturn;
   }
 
