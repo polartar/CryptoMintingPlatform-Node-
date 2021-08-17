@@ -8,6 +8,8 @@ export { default as RewardDistributerConfig } from './rewardDistributerConfig';
 export { default as GreenCoinResult } from './green-coin-result';
 export { default as Notification } from './notifications';
 export { default as BlockbotReportResult } from './block-bot-report';
+export { default as AffiliateAction }  from './affiliate-action';
+export { default as AffiliateLink }  from './affiliate-link';
 export * from './offers';
 export * from './clicks';
 export * from './user';

@@ -90,6 +90,7 @@ class Config {
   public readonly jwtPrivateKey = keys.privateKey;
   public readonly jwtPublicKey = keys.publicKey;
   public readonly bitlyToken = env.BITLY_API_KEY;
+  public readonly bitlyGuid = env.BITLY_GUID;
   public readonly serviceAccounts = keys.serviceAccounts;
   public readonly corsWhitelist = process.env.CORS_ALLOWED.split(',');
   public readonly defaultCryptoFavorites = ['BTC', 'ETH', 'LTC', 'XRP'];

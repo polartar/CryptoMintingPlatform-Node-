@@ -11,7 +11,7 @@ import {
   ICoinMetadata,
   IBcoinTx,
   ISendOutput,
-  ICartAddress
+  ICartAddress,
   ICartBalance
 } from 'src/types';
 import { UserApi } from 'src/data-sources';
