@@ -161,13 +161,18 @@ class BtcWallet extends CoinWalletBase {
       amountUnconfirmed: 0,
       lastTransactions: [],
     };
+    try{
     const { btcWalletName, btcWalletToken } = config.cartKeys;
-    const cartWallet = this.walletClient.wallet(btcWalletName, btcWalletToken);
-    const scrubbedOrderId = orderId.replace(/^\s+|\s+$/g, "");
-    const accountReturn = await cartWallet.getAccount(scrubbedOrderId);
+      const cartWallet = this.walletClient.wallet(btcWalletName, btcWalletToken);
+      const scrubbedOrderId = orderId.replace(/^\s+|\s+$/g, "");
+      const accountReturn = await cartWallet.getAccount(scrubbedOrderId);
 
-    toReturn.amountConfirmed = accountReturn.balance.confirmed;
-    toReturn.amountUnconfirmed = accountReturn.balance.unconfirmed;
+      toReturn.amountConfirmed = accountReturn.balance.confirmed;
+      toReturn.amountUnconfirmed = accountReturn.balance.unconfirmed;
+    }
+    catch(err) {
+      logger.error(`coin-wallets.btc-wallet-getCartBalance : ${symbol}/${orderId}/${address}/${JSON.stringify(toReturn)}`);
+    }
 
     return toReturn;
   }
