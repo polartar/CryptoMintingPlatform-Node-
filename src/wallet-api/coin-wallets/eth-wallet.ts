@@ -84,14 +84,24 @@ class EthWallet extends CoinWalletBase {
   }
 
   public async getCartBalance(symbol: string, orderId: string, address: string): Promise<ICartBalance> {
-    const ethBalance = await this.getBalanceNonIndexed(address);
     const toReturn: ICartBalance = {
       address,
       coinSymbol: symbol,
-      amountConfirmed: +ethBalance.confirmed,
-      amountUnconfirmed: +ethBalance.unconfirmed,
+      amountConfirmed: 0,
+      amountUnconfirmed: 0,
       lastTransactions: [],
     };
+
+    try{
+      const ethBalance = await this.getBalanceNonIndexed(address);
+
+      toReturn.amountConfirmed = +ethBalance.confirmed;
+      toReturn.amountUnconfirmed = +ethBalance.unconfirmed;
+    }
+    catch(err) {
+      logger.error(`coin-wallets.eth-wallet-getCartBalance : ${symbol}/${orderId}/${address}/${JSON.stringify(toReturn)}`);
+    }    
+
     return toReturn;
   }
 

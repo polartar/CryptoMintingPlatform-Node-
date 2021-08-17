@@ -75,7 +75,6 @@ export class CartQueue {
                 const balance = await coin.getCartBalance(symbol, orderId, valueObj.address)
                     .then(a => a, (er2 => {
                         logger.error(`FAILED WHEN TRYING TO UPDATE WOO CART : ${symbol}/${orderId}/${value}`);
-                        logger.error(JSON.stringify(er2));
                         return undefined;
                     }));
 
