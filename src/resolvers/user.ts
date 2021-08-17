@@ -1,16 +1,15 @@
 import * as jwt from 'jsonwebtoken';
-import { auth, config, logger, ResolverBase } from '../common';
-import { Context } from '../types/context';
-import { UserApi } from '../data-sources';
-import { User, Template } from '../models';
-import { IOrderContext } from '../types';
-import { s3Service } from '../services';
-//import { emailService } from '../data-sources/send-email';
 import { Types } from 'mongoose';
-import License from '../models/licenses';
-import { WalletApi } from '../wallet-api';
-import { getNextNumber } from '../models/user';
-import { careclix } from '../services/careclix';
+import { auth, config, logger, ResolverBase } from 'src/common';
+import { Context } from 'src/types/context';
+import { UserApi } from 'src/data-sources';
+import { User, Template } from 'src/models';
+import { IOrderContext } from 'src/types';
+import { careclix, s3Service } from 'src/services';
+//import { emailService } from '../data-sources/send-email';
+import License from 'src/models/licenses';
+import { WalletApi } from 'src/wallet-api';
+import { getNextNumber } from 'src/models/user';
 
 class Resolvers extends ResolverBase {
   private doesUserAlreadyExist = async (email: string) => {
@@ -42,11 +41,11 @@ class Resolvers extends ResolverBase {
     }
   }
 
-  private async findOrCreateFirebaseUser(
+  private findOrCreateFirebaseUser = async (
     email: string,
     password: string,
     displayName?: string,
-  ) {
+  ) => {
     try {
       const user = await auth.createFirebaseUser(
         { email, password, displayName },
@@ -400,10 +399,10 @@ class Resolvers extends ResolverBase {
       userDoc.set('language', language);
     }
     if (typeof communicationConsent === 'boolean') {
-      userDoc.communicationConsent.push({
+      userDoc.set('communicationConsent', [ {
         consentGiven: communicationConsent,
         timestamp: new Date(),
-      });
+      } ]);
     }
     if (updateUserNumber && !userDoc.number) {
       const number = await getNextNumber();

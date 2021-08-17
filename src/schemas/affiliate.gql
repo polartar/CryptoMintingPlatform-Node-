@@ -2,31 +2,31 @@ type LogAffiliateResponse {
   data: String
   error: String
 }
+
 type AffiliateLink {
   affiliateId: String!
   pageUrl: String!
   name: String!
   brand: String!
   userId: String!
-  fullUrl: String!
   bitlyLink: String!
 }
 
 type Query {
   logAffiliateVisit(
-    affiliateId: String!, 
-    sessionId: String!, 
+    affiliateId: String!,
+    sessionId: String!,
     url: String!
-   ): LogAffiliateResponse!
-   affiliateLink(
+  ): LogAffiliateResponse!
+  affiliateLink(
      affiliateId: String
-   ): AffiliateLink!
+  ): AffiliateLink!
 }
+
 type Mutation {
   assignReferredBy(
     affiliateId: String!,
-    sessionId: String!,
-    userId: String!
+    sessionId: String!
   ): LogAffiliateResponse!
   createAffiliateLink(
     pageUrl: String!,

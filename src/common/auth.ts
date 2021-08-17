@@ -1,6 +1,5 @@
-import { keys } from '../common';
 import { ServerAuth } from '@blockbrothers/firebasebb';
-import { config } from '../common/';
+import { keys, config } from 'src/common';
 
 export default new ServerAuth(
   {

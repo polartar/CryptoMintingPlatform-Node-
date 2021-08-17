@@ -1,7 +1,11 @@
-import CoinWalletBase from './coin-wallet-base';
 import { v4 as generateRandomId } from 'uuid';
-import { config, logger } from '../../common';
-import { credentialService } from '../../services';
+import { BigNumber } from 'bignumber.js';
+import * as QRCode from 'qrcode';
+import { WalletClient, NodeClient } from 'bclient';
+const autoBind = require('auto-bind');
+import CoinWalletBase from './coin-wallet-base';
+import { config, logger } from 'src/common';
+import { credentialService } from 'src/services';
 import {
   ITransaction,
   ICoinMetadata,
@@ -9,12 +13,8 @@ import {
   ISendOutput,
   ICartAddress,
   ICartBalance
-} from '../../types';
-import { UserApi } from '../../data-sources';
-import { BigNumber } from 'bignumber.js';
-import * as QRCode from 'qrcode';
-const { WalletClient, NodeClient } = require('bclient');
-const autoBind = require('auto-bind');
+} from 'src/types';
+import { UserApi } from 'src/data-sources';
 
 const XPRIVKEY = 'xprivkey';
 const TOKEN = 'token';
@@ -148,7 +148,7 @@ class BtcWallet extends CoinWalletBase {
 
     return toReturn;
   }
-  
+
   private buildQrUrl(cartAddress: string, amount?: string): string {
     return `bitcoin:${cartAddress}${amount ? '?amount=' + amount : ''}`;
   }

@@ -11,8 +11,8 @@ class DbHandler {
     const uri = await this.mongo.getUri();
 
     const mongooseOpts = {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     };
 
     mongoose.set('useCreateIndex', true);
@@ -25,18 +25,18 @@ class DbHandler {
   }
 
   public async closeDatabase() {
-      await mongoose.connection.dropDatabase();
-      await mongoose.connection.close();
-      await this.mongo.stop();
+    await mongoose.connection.dropDatabase();
+    await mongoose.connection.close();
+    await this.mongo.stop();
   }
 
   public async clearDatabase() {
-      const collections = mongoose.connection.collections;
+    const collections = mongoose.connection.collections;
 
-      for (const key in collections) {
-          const collection = collections[key];
-          await collection.deleteMany({});
-      }
+    for (const key in collections) {
+      const collection = collections[key];
+      await collection.deleteMany({});
+    }
   }
 }
 

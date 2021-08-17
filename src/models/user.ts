@@ -79,7 +79,12 @@ export interface IUser extends mongoose.Document {
   };
   phone: string;
   affiliateId: string;
+  affiliate?: {
+    affiliateId: string;
+    sessionId: string;
+  };
   referredBy: string;
+  referredByLocked: boolean;
   permissions: string[];
   id: string;
   wallet?: IUserWalletDoc;
@@ -272,6 +277,11 @@ export const userSchema = new mongoose.Schema(
     phoneCountry: String,
     affiliateId: { type: String, index: true },
     referredBy: { type: String, index: true },
+    affiliate: {
+      affiliateId: String,
+      sessionId: String,
+    },
+    referredByLocked: Boolean,
     language: String,
     created: { type: Date, index: true },
     id: { type: String, index: true },

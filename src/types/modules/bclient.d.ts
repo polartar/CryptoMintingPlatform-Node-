@@ -535,4 +535,10 @@ declare module 'bclient' {
     bind(event: string, cb: (walletId: string, tx: Transaction) => any): any;
     leave(walletId: string): Promise<void>;
   }
+
+  class NodeClient {
+    constructor(nodeOptions: {});
+
+    execute(name: string, params: any[]): Promise<void>;
+  }
 }

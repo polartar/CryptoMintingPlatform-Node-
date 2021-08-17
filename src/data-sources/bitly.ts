@@ -1,9 +1,14 @@
 import { RESTDataSource, RequestOptions } from 'apollo-datasource-rest';
-import { config, logger } from '../common';
-import { IUser } from '../models/user';
+import { DataSourceConfig } from 'apollo-datasource';
+import { config, logger } from 'src/common';
+import { IUser } from 'src/models/user';
 
 class Bitly extends RESTDataSource {
-  baseURL = 'https://api-ssl.bitly.com/v4';
+  constructor() {
+    super();
+    this.baseURL = 'https://api-ssl.bitly.com/v4';
+    this.initialize({} as DataSourceConfig<any>);
+  }
 
   willSendRequest(request: RequestOptions) {
     request.headers.set('Authorization', `Bearer ${config.bitlyToken}`);
@@ -18,7 +23,7 @@ class Bitly extends RESTDataSource {
     return response.groups[0].guid;
   }
 
-  private async shortenLongUrl(longUrl: string, guid: string) {
+  public async shortenLongUrl(longUrl: string, guid: string) {
     const response = await this.post<{ link: string }>('/shorten', {
       group_guid: guid,
       long_url: longUrl,

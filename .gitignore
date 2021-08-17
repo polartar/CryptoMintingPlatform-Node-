@@ -48,5 +48,7 @@ authDbConnections.json
 dump.rdb
 report.html
 
-# Test coverage output
+# nyc coverage output
 .nyc_output/
+
+coverage/
