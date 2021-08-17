@@ -70,6 +70,14 @@ class Resolvers extends ResolverBase {
     }
   }
 
+  public userExists = async (
+    parent: any,
+    args: {email: string},
+    context: Context,
+  ) => {
+    return this.doesUserAlreadyExist(args.email);
+  }
+
   public createUser = async (
     parent: any,
     args: {
@@ -676,6 +684,7 @@ export const userResolver = new Resolvers();
 
 export default {
   Query: {
+    userExists: userResolver.userExists,
     profile: userResolver.getUserProfile,
     isDisplayNameUnique: userResolver.isDisplayNameUnique,
     neededAgreements: userResolver.neededAgreements,
