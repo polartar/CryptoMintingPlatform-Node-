@@ -15,7 +15,6 @@ class Resolvers extends ResolverBase {
 
       const latestReport = await BlockbotReportResult.find({
         UserId: userId,
-        DatePrepared: { $gt: twoDaysAgo },
       })
         .sort({ DatePrepared: -1 })
         .limit(1)
