@@ -50,8 +50,8 @@ export const memorySchema = new mongoose.Schema({
   AverageUsdPerBlockbot: Number,
   AveragePercentDifference: Number,
   Memory: String,
-  FriendActivations: activationSchema,
-  BlockchainActivations: activationSchema,
+  FriendActivations: [activationSchema],
+  BlockchainActivations: [activationSchema],
 });
 
 export const winReportBlockbot = new mongoose.Schema({
