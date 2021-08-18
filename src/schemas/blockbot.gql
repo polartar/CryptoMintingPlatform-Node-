@@ -31,5 +31,5 @@ type BlockbotActivation {
 }
 
 type Query {
-  getBlockbotReport: BlockbotReport!
+  getBlockbotReport: BlockbotReport
 }
