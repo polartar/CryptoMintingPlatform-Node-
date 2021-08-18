@@ -3,6 +3,7 @@
 
 # compiled output
 /lib
+junit.xml
 
 # IDEs and editors
 /.idea
