@@ -4,6 +4,8 @@ module.exports = {
   ...tsPreset,
   clearMocks: true,
   collectCoverage: true,
+  coverageReporters: ['json', 'cobertura', 'text'],
+  reporters: ['default', 'jest-junit'],
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
   moduleNameMapper: {
