@@ -32,6 +32,9 @@ void (async () => {
       wallet: walletApi,
       logger: new Logger(winstonLogger),
     };
+
+    await sleep(2000);
+
     const { token } = await authResolver.Mutation.login(
       null,
       { token: firebaseToken },
@@ -46,3 +49,7 @@ void (async () => {
     process.exit(1);
   }
 })();
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

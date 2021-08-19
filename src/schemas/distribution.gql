@@ -43,11 +43,18 @@ type ValidDistributionDates {
   end: Date!
 }
 
+type DistributionInfo {
+  runTime: Date
+  address: String
+  greenDecimal: Float
+}
+
 type Query {
   distributionData(email: String!, date: Date!): UserDistributionData
   distributionSnapshot: DistributionSnapshot!
   distributionResults(date: Date!): [DistributionResult!]!
   distributionPoints(date: Date!): [DistributionPoint!]!
   distributionGlobalResults(date: Date!): [DistributionGlobalResult!]!
+  distributionInfo(date: Date!): [DistributionInfo]
   validDistributionDates: ValidDistributionDates!
 }
