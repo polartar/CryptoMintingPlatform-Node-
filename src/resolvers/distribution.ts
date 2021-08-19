@@ -1,15 +1,15 @@
 import { startOfDay, endOfDay } from 'date-fns';
-import { Context } from '../types/context';
-import ResolverBase from '../common/Resolver-Base';
-import User from '../models/user';
-import { ProcessLog } from '../models/process-log';
-import { DistributionResult } from '../models/distribution-result';
-import PromotionalReward from '../models/promotional-rewards';
-import { getPipeline as getDistributionDataPipeline } from '../pipelines/get_distribution_data';
-import { getPipeline as getDistributionSnapshotPipeline } from '../pipelines/get_distribution_snapshot';
-import { getPipeline as getTokenResultsPipeline } from '../pipelines/get_token_results';
-import { getPipeline as getDistributionPointsPipeline } from '../pipelines/get_distribution_points';
-import { getPipeline as getGlobalDistributionResultsPipeline } from '../pipelines/get_global_distribution_results';
+import { Context } from 'src/types/context';
+import ResolverBase from 'src/common/Resolver-Base';
+import { User, GreenResult } from 'src/models';
+import { ProcessLog } from 'src/models/process-log';
+import { DistributionResult } from 'src/models/distribution-result';
+import PromotionalReward from 'src/models/promotional-rewards';
+import { getPipeline as getDistributionDataPipeline } from 'src/pipelines/get_distribution_data';
+import { getPipeline as getDistributionSnapshotPipeline } from 'src/pipelines/get_distribution_snapshot';
+import { getPipeline as getTokenResultsPipeline } from 'src/pipelines/get_token_results';
+import { getPipeline as getDistributionPointsPipeline } from 'src/pipelines/get_distribution_points';
+import { getPipeline as getGlobalDistributionResultsPipeline } from 'src/pipelines/get_global_distribution_results';
 
 class Resolvers extends ResolverBase {
   getDistributionDataByEmail = async (
@@ -100,6 +100,35 @@ class Resolvers extends ResolverBase {
     };
   };
 
+  public getDistributionInfo = async (
+    parent: any,
+    args: { date: Date },
+    context: Context,
+  ) => {
+    const { user } = context;
+    this.requireAuth(user);
+
+    const startDate = startOfDay(args.date);
+    const endDate = endOfDay(args.date);
+
+    const query = {
+      runTime: {
+        $gte: startDate,
+        $lte: endDate
+      }
+    };
+
+    const results = await GreenResult.find(query).exec();
+
+    return results.map(res => {
+      return {
+        runTime: res.runTime,
+        address: res.address,
+        greenDecimal: res.greenDecimal
+      }
+    });
+  }
+
   public getGlobalResults = async (
     parent: any,
     { date }: { date: Date },
@@ -126,6 +155,7 @@ export default {
     distributionResults: resolvers.getTokenResults,
     distributionPoints: resolvers.getDistributionPoints,
     distributionGlobalResults: resolvers.getGlobalResults,
+    distributionInfo: resolvers.getDistributionInfo,
     validDistributionDates: resolvers.getValidDistributionDates,
   },
 };
