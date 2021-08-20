@@ -14,7 +14,7 @@ export class CartQueue {
     private cronTask: any;
     private coinsToWatch: string[] = ['BTC', 'ETH'];
     constructor() {
-        console.log('building queue');
+        //console.log('building queue');
         const redisInfo = {
             host: 'redis-13847.c111.us-east-1-mz.ec2.cloud.redislabs.com',
             port: 13847,
@@ -37,11 +37,11 @@ export class CartQueue {
     async setCartWatcher(brand: string, blockchain: string, orderId: string, data: any) {
         const keyToAdd: string = `${blockchain}.${brand}.${orderId}`;
         const valueToAdd: string = JSON.stringify(data);
-        console.log(`setting ${keyToAdd} : ${valueToAdd}`)
+        //console.log(`setting ${keyToAdd} : ${valueToAdd}`)
 
         this.client.set(keyToAdd, valueToAdd, function (err: any, res: any) {
             console.log(`set error: ${err}`);
-            console.log(`set res: ${res}`);
+            //console.log(`set res: ${res}`);
         });
     }
 
@@ -64,7 +64,7 @@ export class CartQueue {
             const valueObj = JSON.parse(value);
 
             if (!valueObj.exp || new Date(valueObj.exp) < new Date()) {
-                console.log(`deleting ${valueObj.exp} | ${new Date()}`);
+                //console.log(`deleting ${valueObj.exp} | ${new Date()}`);
                 this.deleteCartWatcher(key);
             }
             else {
@@ -114,7 +114,7 @@ export class CartQueue {
                     //Do we need some error handling if balance not found??
                 }
             }
-            console.log(`ending ${symbol} search : iterations ${counter}`);
+            // console.log(`ending ${symbol} search : iterations ${counter}`);
         }
     }
 
