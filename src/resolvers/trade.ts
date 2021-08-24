@@ -81,38 +81,6 @@ class TradeResolvers extends ResolverBase {
         };
       }
     }
-
-    // try {
-
-    // 	this.requireAuth(user);
-    // 	this.maybeRequireStrongWalletPassword(args.walletPassword);
-    // 	// const twoFaValid = await user.validateTwoFa(totpToken);
-    // 	// this.requireTwoFa(twoFaValid);
-
-    //const walletApi = wallet.coin(args.coinSymbol);
-    // 	const result = await walletApi.send(user, args.outputs, args.walletPassword);
-    // 	return result;
-    // } catch (error) {
-    // 	logger.warn(`resolvers.trade.startTrade.catch: ${error}`);
-    // 	let message;
-    // 	switch (error.message) {
-    // 		case 'Weak Password': {
-    // 			message = 'Incorrect Password';
-    // 			break;
-    // 		}
-    // 		case 'Invalid two factor auth token': {
-    // 			message = 'Invalid one-time password';
-    // 			break;
-    // 		}
-    // 		default: {
-    // 			throw error;
-    // 		}
-    // 	}
-    // 	return {
-    // 		success: false,
-    // 		message,
-    // 	};
-    // }
   };
 }
 
