@@ -72,6 +72,7 @@ class Resolvers extends ResolverBase {
           parentCoin.createWallet(user, walletPassword, recoveryPhrase),
         ),
       );
+      console.log(walletsCreated);
 
       if (walletsCreated.some(createdWallet => !createdWallet))
         throw new Error('Error creating wallet');
@@ -160,6 +161,7 @@ class Resolvers extends ResolverBase {
 
   getBalance = async (parent: any, args: {}, { user, wallet }: Context) => {
     this.requireAuth(user);
+    console.log('This is parent ' + parent);
     try {
       const walletApi = wallet.coin(parent.symbol);
       const walletResult = await walletApi.getBalance(

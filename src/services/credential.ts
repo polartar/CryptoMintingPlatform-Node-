@@ -73,7 +73,6 @@ class CredentialService extends ServerToServerService {
       const jwtAxios = this.getAxios({
         userId,
       });
-
       const { data } = await jwtAxios.get(`${this.healthUrl}/`);
       return data.redis.ok === true;
     } catch (error) {
