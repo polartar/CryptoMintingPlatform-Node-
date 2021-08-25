@@ -1,4 +1,4 @@
-export default interface ITradeToken {
+export default interface ISwapToken {
   chainId: number;
   address: string;
   decimals: number;

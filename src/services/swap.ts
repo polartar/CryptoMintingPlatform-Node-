@@ -1,5 +1,5 @@
 import UNISWAP = require('@uniswap/sdk');
-import { ITradeToken } from '../types';
+import { ISwapToken } from '../types';
 import { ServerToServerService } from './server-to-server';
 import ethers = require('ethers');
 import { WETH } from '@uniswap/sdk';
@@ -10,11 +10,11 @@ const chainId = UNISWAP.ChainId.MAINNET;
 
 class StartSwap extends ServerToServerService {
   public uniswapSwap = async (
-    inputToken: ITradeToken[],
-    outputToken: ITradeToken[],
+    inputToken: ISwapToken[],
+    outputToken: ISwapToken[],
     amount: string,
     toAddress: string,
-    encryptedKey: any,
+    decryptedKey: any,
   ) => {
     try {
       const InToken = new UNISWAP.Token(
@@ -33,11 +33,7 @@ class StartSwap extends ServerToServerService {
         outputToken[0].name,
       );
 
-      const pair = await UNISWAP.Fetcher.fetchPairData(
-        OutToken,
-        InToken,
-        //this.provider
-      );
+      const pair = await UNISWAP.Fetcher.fetchPairData(OutToken, InToken);
 
       const route = new UNISWAP.Route([pair], InToken);
       const trade = new UNISWAP.Trade(
@@ -54,17 +50,17 @@ class StartSwap extends ServerToServerService {
       const to = toAddress;
       const deadLine = Math.floor(Date.now() / 1000 / 60) + 60;
 
-      console.log(
-        'Mid Price inputToken --> outputToken:',
-        route.midPrice.toSignificant(6),
-      );
-      console.log(
-        'Mid Price outputToken --> inputToken:',
-        route.midPrice.invert().toSignificant(6),
-      );
+      //   console.log(
+      //     'Mid Price inputToken --> outputToken:',
+      //     route.midPrice.toSignificant(6),
+      //   );
+      //   console.log(
+      //     'Mid Price outputToken --> inputToken:',
+      //     route.midPrice.invert().toSignificant(6),
+      //   );
 
       const provider = new ethers.providers.JsonRpcProvider(ETHEREUM_NODE_URL);
-      const signer = new ethers.Wallet(encryptedKey, provider);
+      const signer = new ethers.Wallet(decryptedKey, provider);
       const account = signer.connect(provider);
       const uniswap = new ethers.Contract(
         CONTRACT_ADDRESS,
@@ -88,8 +84,8 @@ class StartSwap extends ServerToServerService {
       } else if (outputToken[0].address === WETH[chainId].address) {
         console.log(`Swap exact tokens for ETH`);
         tx = await uniswap.swapExactTokensForETH(
-          amountIn, //maybe in 18 decimal
-          amountOutMin, //need to get getamountout by calling getamountout
+          amountIn,
+          amountOutMin,
           path,
           to,
           deadLine,
@@ -106,7 +102,6 @@ class StartSwap extends ServerToServerService {
       }
       console.log(`Transaction hash: ${tx.hash}`);
       const receipt = await tx.wait();
-      console.log(receipt);
       console.log(`Transaction has been mint in block ${receipt.blocknumber}`);
       return { message: 'Success' };
     } catch (error) {

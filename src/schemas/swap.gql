@@ -6,11 +6,6 @@ type Token {
   address: String
 }
 
-# type Balance {
-#   confirmed: String
-#   unconfirmed: String
-# }
-
 type Receipt {
   message: String!
 }
@@ -40,12 +35,11 @@ input SendOutput {
 }
 
 type Mutation {
-  startTrade(
+  startSwap(
     coinSymbol: String!
     outputs: [SendOutput!]!
     inputToken: [InputToken!]!
     outputToken: [OutputToken!]!
-    # totpToken: String,
     walletPassword: String
   ): Receipt
 }

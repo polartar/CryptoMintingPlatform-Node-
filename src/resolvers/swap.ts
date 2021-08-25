@@ -1,41 +1,32 @@
-import { startSwap } from './../services/swap';
+import { startSwap } from '../services/swap';
 import { Context } from '../types/context';
 import ResolverBase from '../common/Resolver-Base';
-import { ISendOutput, ITradeToken } from '../types';
+import { ISendOutput, ISwapToken } from '../types';
 import { logger } from 'src/common';
+import EthWallet from '../wallet-api/coin-wallets/eth-wallet';
 
-class TradeResolvers extends ResolverBase {
-  startTrade = async (
+class SwapResolvers extends ResolverBase {
+  startSwap = async (
     parent: any,
     args: {
       coinSymbol: string;
       outputs: ISendOutput[];
-      inputToken: ITradeToken[];
-      outputToken: ITradeToken[];
-      // accountId: string;
-      // totpToken: string;
+      inputToken: ISwapToken[];
+      outputToken: ISwapToken[];
       walletPassword: string;
     },
     { user, wallet }: Context,
   ) => {
     this.requireAuth(user);
-    this.maybeRequireStrongWalletPassword(args.walletPassword);
-    const walletApi = wallet.coin(args.coinSymbol);
 
     const [{ to, amount }] = args.outputs;
 
-    // const walletResult = {
-    // 	confirmed: "1000000000000000000"
-    // }
+    this.maybeRequireStrongWalletPassword(args.walletPassword);
+    const walletApi = wallet.coin(args.coinSymbol) as EthWallet;
 
-    // const fee = await exchangeService.getFee({ coin: args.inputToken[0].symbol });
-    // console.log(fee)
+    const { confirmed } = await walletApi.getBalance(user.userId);
 
-    const walletResult = await walletApi.getBalance(
-      parent.lookupTransactionsBy,
-    );
-
-    if (parseFloat(walletResult.confirmed) < parseFloat(amount)) {
+    if (parseFloat(confirmed) < parseFloat(amount)) {
       throw new Error('Insufficient founds');
     } else {
       const validPassword = await walletApi.checkPassword(
@@ -49,18 +40,23 @@ class TradeResolvers extends ResolverBase {
 
       const encryptedKey = await walletApi.getEncryptedPrivKey(user.userId);
 
+      const decryptedPrivateKey = this.decrypt(
+        encryptedKey,
+        args.walletPassword,
+      );
+
       try {
-        const trade = await startSwap.uniswapSwap(
+        const Swap = await startSwap.uniswapSwap(
           args.inputToken,
           args.outputToken,
           amount,
           to,
-          encryptedKey,
+          decryptedPrivateKey,
         );
 
-        return trade;
+        return Swap;
       } catch (error) {
-        logger.warn(`resolvers.trade.startTrade.catch: ${error}`);
+        logger.warn(`resolvers.Swap.startSwap.catch: ${error}`);
         let message;
         switch (error.message) {
           case 'Weak Password': {
@@ -84,10 +80,10 @@ class TradeResolvers extends ResolverBase {
   };
 }
 
-export const tradeResolver = new TradeResolvers();
+export const swapResolver = new SwapResolvers();
 
 export default {
   Mutation: {
-    startTrade: tradeResolver.startTrade,
+    startSwap: swapResolver.startSwap,
   },
 };
