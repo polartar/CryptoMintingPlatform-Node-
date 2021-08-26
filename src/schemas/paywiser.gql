@@ -1,0 +1,11 @@
+type ReferenceNumber {
+  StatusCode: Int
+  StatusDescription: String
+  ReferenceNumber: String
+  ReferenceID: String
+  CallerReferenceID: String
+}
+
+type Query {
+  referenceNumber: ReferenceNumber!
+}
