@@ -12,18 +12,25 @@ import { config, logger } from '../common';
 class PaywiserService {
   public getReferenceNumber = async (user: UserApi): Promise<IPaywiserReferenceNumberResponse> => {
     try {
-      const userDbObject = await user.findFromDb();
+      let userId: string = 'aa335452';
+      let userEmail: string = 'default@blockchainjedi.com';
+      if(user) {
+        const userDbObject = await user.findFromDb();
+        userId = userDbObject.id;
+        userEmail = userDbObject.email;
+      }
+      
       const url = `${config.paywiserHost}/Whitelabel/GetReferenceNumber`;
       const req: IPaywiserReferenceNumberRequest = {
         MobileNumber: "",
-        Email: userDbObject.email,
+        Email: userEmail,
         AddressChanged: false,
         DocumentChanged: false,
         IbanTypeID: undefined,
-        ReferenceID: userDbObject.id
+        ReferenceID: userId
       }
 
-      const resp: IPaywiserReferenceNumberResponse = await axios.post(
+      const resp: {data: IPaywiserReferenceNumberResponse} = await axios.post(
         url,
         req,
         {
@@ -33,7 +40,7 @@ class PaywiserService {
           }
         });
 
-      return resp;
+      return resp.data;
     } catch (err) {
       logger.error(`services.paywiser.PaywiserService.getReferenceNumber: ${user.userId} : ${err.toString()}`,
       );
