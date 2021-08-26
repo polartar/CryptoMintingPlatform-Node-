@@ -4,7 +4,6 @@ type EnvironmentResponse {
   favicon: String
 }
 
-
 type Query {
   environment(host: String): EnvironmentResponse!
 }

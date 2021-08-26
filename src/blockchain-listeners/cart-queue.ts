@@ -1,13 +1,12 @@
 import { walletApi } from '../wallet-api';
-import { logger } from "../common";
+import { logger, config } from "../common";
 import {
     CartService
 } from './cart-service';
 const cron = require('node-cron');
 const redis = require("redis");
 const { promisifyAll } = require('bluebird');
-
-
+import axios from 'axios';
 
 export class CartQueue {
     private client: any;
@@ -94,7 +93,9 @@ export class CartQueue {
                                         const orderExpectedAmount = +meta.value;
                                         if(+balance.amountUnconfirmed >= orderExpectedAmount) {
                                             //Checking the order from WOO. Is our amount > expected amount??
-                                            
+                                            let arryOfItems: string = JSON.stringify(Object.keys(order.line_items));
+                                            arryOfItems = arryOfItems.replace(/\s+/g, '');
+                                            await this.sendGooglePixelFire(order.billing.first_name ,arryOfItems , +order.total);
                                             await this.deleteCartWatcherOthercoins(brand, orderId);
                                         }
                                         else
@@ -115,6 +116,33 @@ export class CartQueue {
                 }
             }
             // console.log(`ending ${symbol} search : iterations ${counter}`);
+        }
+    }
+
+    async sendGooglePixelFire (customerNumber: string, product: string, price: number) {
+        try{
+        let ua = ''
+        switch(config.brand) {
+            case "green": 
+                ua = 'UA-132009155-2';
+                break;
+            case "connect": 
+                ua = 'UA-132009155-8';
+                break;                
+            case "switch": 
+                ua = 'UA-132009155-10';
+                break;
+            case "blue":
+                ua = 'UA-132009155-9';
+                break;
+        }
+
+        const parameters: string = `v=1&tid=${ua}&cid=${customerNumber}&t=event&ec=App&ea=buy_product&el=${product}&ev=${price}`;
+
+        const { data } = await axios.post(`www.google-analytics.com/collect`, parameters);
+        }
+        catch(err){
+            logger.error(`cart-queue.sendGooglePixelFire.failedToSendToGoogle`);
         }
     }
 

@@ -14,6 +14,7 @@ import { UserApi } from '../../data-sources';
 import { IEthBalanceTransactions } from '../../pipelines';
 import { getNextWalletNumber } from '../../models';
 import * as QRCode from 'qrcode';
+import { build } from 'eth-url-parser';
 
 const PRIVATEKEY = 'privatekey';
 
@@ -106,16 +107,15 @@ class EthWallet extends CoinWalletBase {
   }
 
   private buildEthQrUrl(cartAddress: string, amount: string): string {
-    // const url = build({
-    //   scheme: 'ethereum',
-    //   prefix: 'pay',
-    //   // eslint-disable-next-line
-    //   target_address: cartAddress,
-    //   parameters: {
-    //     value: +amount * Math.pow(10, 18),
-    //   },
-    // });
-    const url = 'blah';
+    const url = build({
+      scheme: 'ethereum',
+      prefix: 'pay',
+      // eslint-disable-next-line
+      target_address: cartAddress,
+      parameters: {
+        value: +amount * Math.pow(10, 18),
+      },
+    });
     return url;
   }
 
