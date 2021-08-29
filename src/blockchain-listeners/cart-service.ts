@@ -7,6 +7,8 @@ export class CartService extends ServerToServerService {
     super();
   }
 
+
+
   public getOrdersFromWooCart = async (): Promise<WooTxOrders> => {
     const axios = this.getAxios({ role: 'system' });
 
@@ -18,23 +20,28 @@ export class CartService extends ServerToServerService {
       `${config.wpCartApiUrl}/get_woo_tx_orders?ApiKey=338a3ba7-69b8-41ac-a920-9727ae939ba3&date_start=${this.dateString(yesterday)}&date_end=${this.dateString(tomorrow)}`,
        {});
 
+       //** NOTE orderId that is in result will prepend with the following code: */
+       // Woocommerce - wooc-<ID>
+       // Memberpress - mepr-<ID>
+
     return result.data;
   };
 
-  public updateOrderToWooCart = async (woo_tx_id: string, address: string, balance: number, coinSymbol: string): Promise<WooTxOrders[]> => {
+  public updateOrderToWooCart = async (woo_tx_id: string, address: string, balance: number, coinSymbol: string, orderId: string): Promise<WooTxOrders[]> => {
     const postBody:any = {
       ApiKey: '338a3ba7-69b8-41ac-a920-9727ae939ba3',
+      OrderId: woo_tx_id,
       Address: address,
       CoinSymbol: coinSymbol,
       AmtTotal: balance,
-      TxIds: woo_tx_id
+      BlockchainTxIds: woo_tx_id
     };
 
     try{
       const axios = this.getAxios({ role: 'system' });
 
       const result = await axios.post<WooTxOrders[]>(
-        `${config.wpCartApiUrl}/update_woo_tx_order`, postBody
+        `${config.wpCartApiUrl}/update_wp_tx_order`, postBody
       );
 
       return result.data;

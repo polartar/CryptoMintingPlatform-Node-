@@ -33,14 +33,13 @@ export class CartQueue {
         this.cronTask.start();
     }
 
-    async setCartWatcher(brand: string, blockchain: string, orderId: string, data: any) {
-        const keyToAdd: string = `${blockchain}.${brand}.${orderId}`;
+    async setCartWatcher(symbol: string, orderId: string, data: any) {
+        const brand = config.brand;
+        const keyToAdd: string = `${symbol}.${brand}.${orderId}`;
         const valueToAdd: string = JSON.stringify(data);
-        //console.log(`setting ${keyToAdd} : ${valueToAdd}`)
 
         this.client.set(keyToAdd, valueToAdd, function (err: any, res: any) {
             console.log(`set error: ${err}`);
-            //console.log(`set res: ${res}`);
         });
     }
 
@@ -52,8 +51,8 @@ export class CartQueue {
     // }
 
     async getCartWatcher(symbol: string) {
-        const allKeys = await this.client.keysAsync(`${symbol}.*`);
-        //console.log(allKeys);
+        const brand = config.brand;
+        const allKeys = await this.client.keysAsync(`${symbol}.${brand}.*`);
 
         let counter: number = 0;
         for (const key of allKeys) {
@@ -63,11 +62,11 @@ export class CartQueue {
             const valueObj = JSON.parse(value);
 
             if (!valueObj.exp || new Date(valueObj.exp) < new Date()) {
-                //console.log(`deleting ${valueObj.exp} | ${new Date()}`);
-                this.deleteCartWatcher(key);
+                await this.deleteCartWatcher(key);
+
+                //TODO : wooCommerce needs to be notified of 'expired' transaction.
             }
             else {
-                const brand: string = keyParts[1];
                 const orderId: string = keyParts[2];
 
                 const coin = walletApi.coin(symbol);
@@ -77,13 +76,10 @@ export class CartQueue {
                         return undefined;
                     }));
 
-                // console.log(value);
-                // console.log(balance);
-
                 if (balance && balance.amountUnconfirmed > 0) {
                     const service: CartService = new CartService();
                     try {
-                        service.updateOrderToWooCart("", valueObj.address, balance.amountUnconfirmed, symbol);
+                        service.updateOrderToWooCart("", valueObj.address, balance.amountUnconfirmed, symbol, orderId);
 
                         const orderResponse = await service.getOrdersFromWooCart();
                         for(const order of orderResponse.orders){
@@ -115,7 +111,6 @@ export class CartQueue {
                     //Do we need some error handling if balance not found??
                 }
             }
-            // console.log(`ending ${symbol} search : iterations ${counter}`);
         }
     }
 
