@@ -7,7 +7,7 @@ import { User, Template } from 'src/models';
 import { IOrderContext } from 'src/types';
 import { careclix, s3Service } from 'src/services';
 //import { emailService } from '../data-sources/send-email';
-import License from 'src/models/licenses';
+import License from 'src/models/license';
 import { WalletApi } from 'src/wallet-api';
 import { getNextNumber } from 'src/models/user';
 

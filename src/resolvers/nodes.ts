@@ -3,7 +3,7 @@ import ResolverBase from '../common/Resolver-Base';
 import { IOrderContext } from '../types';
 import { logger } from '../common';
 import { Product, PurchaseAttempt, MiningRecord } from '../models';
-import License from '../models/licenses';
+import License from '../models/license';
 
 class Resolvers extends ResolverBase {
   getProductById = async (parent: any, { id }: { id: string }) => {
