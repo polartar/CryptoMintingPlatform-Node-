@@ -1,7 +1,13 @@
 import EthWallet from './eth-wallet';
 import { config, logger } from '../../common';
 import { ethers, utils, BigNumber, Overrides } from 'ethers';
-import { ITransaction, ICoinMetadata, ISendOutput, ICartAddress, ICartBalance } from '../../types';
+import {
+  ITransaction,
+  ICoinMetadata,
+  ISendOutput,
+  ICartAddress,
+  ICartBalance,
+} from '../../types';
 import { UserApi } from '../../data-sources';
 import { transactionService } from '../../services';
 import { ITokenBalanceTransactions } from '../../pipelines';
@@ -51,23 +57,33 @@ class Erc20API extends EthWallet {
       );
   }
 
-  public async getCartAddress(symbol: string, orderId: string, amount: string): Promise<ICartAddress> {
+  public async getCartAddress(
+    symbol: string,
+    orderId: string,
+    amount: string,
+  ): Promise<ICartAddress> {
     const nextWalletNumber = await getNextWalletNumber(symbol);
     const accountLevel = config.cartEthDerivePath;
     const path = `m/44'/60'/0'/${accountLevel}/${nextWalletNumber}`;
     const mnemonic = config.getEthMnemonic(symbol);
     const { address } = ethers.Wallet.fromMnemonic(mnemonic, path);
-    const qrCode = await QRCode.toDataURL(this.buildQrErc20Url(address, amount));
+    const qrCode = await QRCode.toDataURL(
+      this.buildQrErc20Url(address, amount),
+    );
 
     const result: ICartAddress = {
       address,
       coinSymbol: symbol,
-      qrCode
-    }
+      qrCode,
+    };
     return result;
   }
 
-  public async getCartBalance(symbol: string, orderId: string, address: string): Promise<ICartBalance> {
+  public async getCartBalance(
+    symbol: string,
+    orderId: string,
+    address: string,
+  ): Promise<ICartBalance> {
     const toReturn: ICartBalance = {
       address,
       coinSymbol: symbol,
@@ -75,15 +91,18 @@ class Erc20API extends EthWallet {
       amountUnconfirmed: 0,
       lastTransactions: [],
     };
-    
-    try{
+
+    try {
       const ethBalance = await this.getBalanceFromContract(address);
 
       toReturn.amountConfirmed = +ethBalance;
       toReturn.amountUnconfirmed = +ethBalance;
-    }
-    catch(err) {
-      logger.error(`coin-wallets.erc20-wallet-getCartBalance : ${symbol}/${orderId}/${address}/${JSON.stringify(toReturn)}`);
+    } catch (err) {
+      logger.error(
+        `coin-wallets.erc20-wallet-getCartBalance : ${symbol}/${orderId}/${address}/${JSON.stringify(
+          toReturn,
+        )}`,
+      );
     }
     return toReturn;
   }
@@ -342,7 +361,6 @@ class Erc20API extends EthWallet {
   public async getBalance(address: string) {
     try {
       const balance = await this.getBalanceFromContract(address);
-
       return {
         confirmed: balance.toString(),
         unconfirmed: balance.toString(),

@@ -1,0 +1,45 @@
+type Token {
+  decimals: Int
+  symbol: String
+  name: String
+  chainId: Int
+  address: String
+}
+
+type Receipt {
+  message: String!
+}
+
+input InputToken {
+  #INPUT token
+  chainId: Int!
+  decimals: Int!
+  symbol: String
+  name: String
+  address: String!
+}
+
+input OutputToken {
+  #OUTPUT token
+  chainId: Int!
+  decimals: Int!
+  symbol: String
+  name: String
+  address: String!
+}
+
+input SendOutput {
+  to: String!
+  amount: String
+  tokenId: String
+}
+
+type Mutation {
+  startSwap(
+    coinSymbol: String!
+    outputs: [SendOutput!]!
+    inputToken: [InputToken!]!
+    outputToken: [OutputToken!]!
+    walletPassword: String
+  ): Receipt
+}
