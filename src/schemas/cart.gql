@@ -8,11 +8,15 @@ type Mutation {
   getCartAddress(
     coinSymbol: String
     orderId: String!
+    affiliateId: String
+    affiliateSessionId: String
   ): [CartAddress]!
   sendCartTransaction(
     coinSymbol: String!
     orderId: String!
     amount: String!
     walletPassword: String!
+    affiliateId: String
+    affiliateSessionId: String
   ): TxSendResponse!
 }
