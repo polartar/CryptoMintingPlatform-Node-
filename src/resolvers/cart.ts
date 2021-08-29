@@ -12,6 +12,8 @@ class Resolvers extends ResolverBase {
       coinSymbol?: string;
       orderId: string;
       amount?: string;
+      affiliateId: string;
+      affiliateSessionId: string;
     },
     ctx: Context,
   ) => {
@@ -67,15 +69,17 @@ class Resolvers extends ResolverBase {
       orderId: string;
       amount: string;
       walletPassword: string;
+      affiliateId: string;
+      affiliateSessionId: string;
     },
     ctx: Context,
   ) => {
     const { user, wallet } = ctx;
     this.requireAuth(user);
-    const { coinSymbol, amount, orderId, walletPassword } = args;
+    const { coinSymbol, amount, orderId, walletPassword, affiliateSessionId, affiliateId } = args;
 
     const walletApi = wallet.coin(parent.symbol);
-    const addressArry = await this.getCartAddress(parent, {coinSymbol, orderId}, ctx);
+    const addressArry = await this.getCartAddress(parent, {coinSymbol, orderId, affiliateId, affiliateSessionId }, ctx);
     const addressToSend = addressArry[0].address;
     const result = await walletApi.send(user, [{to:addressToSend, amount}], walletPassword);
 

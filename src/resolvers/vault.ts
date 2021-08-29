@@ -178,6 +178,7 @@ class Resolvers extends ResolverBase {
     const dataResult: IVaultRetrieveResponseData[] = [];
     const coinSearchPromises: Promise<IVaultItemWithDbRecords>[] = [];
     const ethWallet = wallet.coin('ETH') as EthWallet;
+    
 
     try {
       const correctPassword = await ethWallet.checkPassword(
