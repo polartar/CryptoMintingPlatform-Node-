@@ -84,7 +84,11 @@ class EthWallet extends CoinWalletBase {
     return toReturn;
   }
 
-  public async getCartBalance(symbol: string, orderId: string, address: string): Promise<ICartBalance> {
+  public async getCartBalance(
+    symbol: string,
+    orderId: string,
+    address: string,
+  ): Promise<ICartBalance> {
     const toReturn: ICartBalance = {
       address,
       coinSymbol: symbol,
@@ -93,15 +97,18 @@ class EthWallet extends CoinWalletBase {
       lastTransactions: [],
     };
 
-    try{
+    try {
       const ethBalance = await this.getBalanceNonIndexed(address);
 
       toReturn.amountConfirmed = +ethBalance.confirmed;
       toReturn.amountUnconfirmed = +ethBalance.unconfirmed;
+    } catch (err) {
+      logger.error(
+        `coin-wallets.eth-wallet-getCartBalance : ${symbol}/${orderId}/${address}/${JSON.stringify(
+          toReturn,
+        )}`,
+      );
     }
-    catch(err) {
-      logger.error(`coin-wallets.eth-wallet-getCartBalance : ${symbol}/${orderId}/${address}/${JSON.stringify(toReturn)}`);
-    }    
 
     return toReturn;
   }
@@ -455,10 +462,9 @@ class EthWallet extends CoinWalletBase {
   ) {
     return new Promise<void>((resolve, reject) => {
       const { address } = userWallet;
-      if (address.toLowerCase() === addressFromDb.toLowerCase()){
+      if (address.toLowerCase() === addressFromDb.toLowerCase()) {
         resolve();
-      } 
-      else {
+      } else {
         userApi.Model.findByIdAndUpdate(
           userApi.userId,
           { $set: { 'wallet.ethAddress': address } },
