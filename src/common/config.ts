@@ -65,7 +65,7 @@ class Config {
   };
 
   public getEthMnemonic(symbol: string): string {
-    const envSetting = `CART_${symbol.toUpperCase()}_WALLET_MNEMONIC`
+    const envSetting = `CART_${symbol.toUpperCase()}_WALLET_MNEMONIC`;
     return process.env[envSetting];
   }
 
@@ -143,6 +143,7 @@ class Config {
   };
 
   public readonly ethNodeUrl = env.ETH_NODE_URL;
+  public readonly chainId: number = +env.CHAIN_ID;
 
   public readonly btcTxLink = env.BTC_TX_LINK_BASE;
   public readonly ethTxLink = env.ETH_TX_LINK_BASE;
@@ -178,8 +179,7 @@ class Config {
 
   public readonly galaClaimFeeReceiveAddress =
     env.GALA_CLAIM_FEE_RECEIVE_ADDRESS;
-  public readonly claimFeeReceiveAddress =
-    env.CLAIM_FEE_RECEIVE_ADDRESS;
+  public readonly claimFeeReceiveAddress = env.CLAIM_FEE_RECEIVE_ADDRESS;
   public readonly tokenClaimsApiUrl = env.TOKEN_CLAIMS_API_URL;
   //public readonly nodeSelectorUrl = env.NODE_SELECTOR_URL;
   public readonly exchangeUrl = env.EXCHANGE_URL;

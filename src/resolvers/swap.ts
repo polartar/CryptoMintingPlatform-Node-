@@ -22,11 +22,17 @@ class SwapResolvers extends ResolverBase {
     const [{ to, amount }] = args.outputs;
 
     this.maybeRequireStrongWalletPassword(args.walletPassword);
+
     const walletApi = wallet.coin(args.coinSymbol) as EthWallet;
+    const walletInfo = await walletApi.getWalletInfo(user);
 
-    const { confirmed } = await walletApi.getBalance(user.userId);
+    const walletResult = await walletApi.getBalance(walletInfo.receiveAddress);
 
-    if (parseFloat(confirmed) < parseFloat(amount)) {
+    console.log(walletResult);
+
+    const confiramed = '10';
+
+    if (parseFloat(confiramed) < parseFloat(amount)) {
       throw new Error('Insufficient founds');
     } else {
       const validPassword = await walletApi.checkPassword(

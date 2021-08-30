@@ -161,7 +161,6 @@ class Resolvers extends ResolverBase {
 
   getBalance = async (parent: any, args: {}, { user, wallet }: Context) => {
     this.requireAuth(user);
-    console.log('This is parent ' + parent);
     try {
       const walletApi = wallet.coin(parent.symbol);
       const walletResult = await walletApi.getBalance(

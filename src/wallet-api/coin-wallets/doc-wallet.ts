@@ -22,8 +22,19 @@ class DocWallet extends CoinWalletBase {
     abi,
     backgroundColor,
     icon,
+    chainId,
+    decimalPlaces,
   }: ICoinMetadata) {
-    super(name, symbol, contractAddress, abi, backgroundColor, icon);
+    super(
+      name,
+      symbol,
+      contractAddress,
+      abi,
+      backgroundColor,
+      icon,
+      chainId,
+      decimalPlaces,
+    );
     this.setRewardName();
   }
 
@@ -75,16 +86,24 @@ class DocWallet extends CoinWalletBase {
     }
   }
 
-  public async getCartAddress(symbol: string, orderId: string, amount: string): Promise<ICartAddress> {
+  public async getCartAddress(
+    symbol: string,
+    orderId: string,
+    amount: string,
+  ): Promise<ICartAddress> {
     const result: ICartAddress = {
       address: '',
       coinSymbol: symbol,
-      qrCode: ''
+      qrCode: '',
     };
     return result;
   }
 
-  public async getCartBalance(symbol: string, orderId: string, address: string): Promise<ICartBalance> {
+  public async getCartBalance(
+    symbol: string,
+    orderId: string,
+    address: string,
+  ): Promise<ICartBalance> {
     const result: ICartBalance = {
       coinSymbol: symbol,
       address,
@@ -94,7 +113,6 @@ class DocWallet extends CoinWalletBase {
     };
     return result;
   }
-
 
   public async checkIfWalletExists(userApi: UserApi) {
     logger.debug(`walletApi.coin-wallets.DocWallet.checkIfWalletExists: true`);
@@ -131,6 +149,8 @@ class DocWallet extends CoinWalletBase {
         icon: this.icon,
         canSendFunds: false,
         lookupTransactionsBy: userApi.userId,
+        chainId: this.chainId,
+        decimalPlaces: this.decimalPlaces,
       };
     } catch (error) {
       logger.warn(

@@ -31,8 +31,19 @@ class EthWallet extends CoinWalletBase {
     abi,
     backgroundColor,
     icon,
+    chainId,
+    decimalPlaces,
   }: ICoinMetadata) {
-    super(name, symbol, contractAddress, abi, backgroundColor, icon);
+    super(
+      name,
+      symbol,
+      contractAddress,
+      abi,
+      backgroundColor,
+      icon,
+      chainId,
+      decimalPlaces,
+    );
   }
 
   public async checkIfWalletExists(userApi: UserApi) {
@@ -229,6 +240,8 @@ class EthWallet extends CoinWalletBase {
         icon: this.icon,
         canSendFunds: true,
         lookupTransactionsBy: ethAddress,
+        chainId: this.chainId,
+        decimalPlaces: this.decimalPlaces,
       };
     } catch (error) {
       logger.warn(
@@ -238,7 +251,7 @@ class EthWallet extends CoinWalletBase {
     }
   }
 
-  async getBalance(address: string) {
+  public async getBalance(address: string) {
     return this.getBalanceNonIndexed(address);
   }
 

@@ -15,6 +15,7 @@ export default interface ICoinMetadata {
   abi: any;
   contractAddress: string | null;
   decimalPlaces: number;
+  chainId: number;
   walletApi: eSupportedInterfaces;
   tokenId?: string;
   WalletInterface:
