@@ -28,11 +28,9 @@ class SwapResolvers extends ResolverBase {
 
     const walletResult = await walletApi.getBalance(walletInfo.receiveAddress);
 
-    console.log(walletResult);
+    const confirmed = walletResult.confirmed;
 
-    const confiramed = '10';
-
-    if (parseFloat(confiramed) < parseFloat(amount)) {
+    if (parseFloat(confirmed) < parseFloat(amount)) {
       throw new Error('Insufficient founds');
     } else {
       const validPassword = await walletApi.checkPassword(

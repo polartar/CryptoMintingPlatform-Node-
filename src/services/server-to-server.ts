@@ -30,8 +30,6 @@ export class ServerToServerService {
     payload: string | Buffer | object,
     options?: IJwtSignOptions,
   ) {
-    console.log(payload);
-    console.log(options);
     try {
       const token = this.sign(payload, options);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
