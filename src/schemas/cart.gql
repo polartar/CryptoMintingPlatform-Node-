@@ -10,6 +10,7 @@ type Mutation {
     orderId: String!
     affiliateId: String
     affiliateSessionId: String
+    utmVariables: String
   ): [CartAddress]!
   sendCartTransaction(
     coinSymbol: String!
@@ -18,5 +19,6 @@ type Mutation {
     walletPassword: String!
     affiliateId: String
     affiliateSessionId: String
+    utmVariables: String
   ): TxSendResponse!
 }

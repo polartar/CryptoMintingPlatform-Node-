@@ -34,7 +34,8 @@ export class CartService extends ServerToServerService {
       Address: address,
       CoinSymbol: coinSymbol,
       AmtTotal: balance,
-      BlockchainTxIds: woo_tx_id
+      BlockchainTxIds: woo_tx_id,
+      OrderStatus: 'complete' // | 'failed'
     };
 
     try{
