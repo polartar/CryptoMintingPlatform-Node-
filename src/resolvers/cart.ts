@@ -13,11 +13,12 @@ class Resolvers extends ResolverBase {
       amount?: string;
       affiliateId: string;
       affiliateSessionId: string;
+      utmVariables: string;
     },
     ctx: Context,
   ) => {
     const { wallet } = ctx;
-    const { coinSymbol, orderId, amount } = args;
+    const { coinSymbol, orderId, amount, utmVariables } = args;
     const result =  [];
 
     try {
@@ -30,6 +31,9 @@ class Resolvers extends ResolverBase {
         result.push(address);
       }
       else{
+
+        //TODO : USE THE utmContent
+
         const btcWalletApi = wallet.coin('BTC');
         const btcAddress = await btcWalletApi.getCartAddress('BTC', orderId, amount);
         cartQueue.setCartWatcher('BTC', orderId, {address: btcAddress.address, exp: expDate});
@@ -70,15 +74,16 @@ class Resolvers extends ResolverBase {
       walletPassword: string;
       affiliateId: string;
       affiliateSessionId: string;
+      utmVariables: string
     },
     ctx: Context,
   ) => {
     const { user, wallet } = ctx;
     this.requireAuth(user);
-    const { coinSymbol, amount, orderId, walletPassword, affiliateSessionId, affiliateId } = args;
+    const { coinSymbol, amount, orderId, walletPassword, affiliateSessionId, affiliateId, utmVariables } = args;
 
     const walletApi = wallet.coin(parent.symbol);
-    const addressArry = await this.getCartAddress(parent, {coinSymbol, orderId, affiliateId, affiliateSessionId }, ctx);
+    const addressArry = await this.getCartAddress(parent, {coinSymbol, orderId, affiliateId, affiliateSessionId, utmVariables }, ctx);
     const addressToSend = addressArry[0].address;
     const result = await walletApi.send(user, [{to:addressToSend, amount}], walletPassword);
 
