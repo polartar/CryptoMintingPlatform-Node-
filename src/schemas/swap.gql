@@ -1,3 +1,26 @@
+type Balance {
+  confirmed: String
+  unconfirmed: String
+}
+
+type FeeEstimate {
+  estimatedFee: String!
+  feeCurrency: String!
+  feeCurrencyBalance: String!
+}
+
+type Tokens {
+  symbol: String!
+  name: String!
+  balance: Balance!
+  icon: String!
+  receiveAddress: String!
+  feeEstimate: FeeEstimate!
+  contractAddress: String
+  chainId: Int
+  decimalPlaces: Int
+}
+
 type Token {
   decimals: Int
   symbol: String
@@ -32,6 +55,10 @@ input SendOutput {
   to: String!
   amount: String
   tokenId: String
+}
+
+type Query {
+  swapParams(coinSymbol: String): [Tokens!]!
 }
 
 type Mutation {
