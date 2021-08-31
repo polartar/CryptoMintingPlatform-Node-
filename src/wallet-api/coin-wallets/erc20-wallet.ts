@@ -19,6 +19,7 @@ class Erc20API extends EthWallet {
   contract: ethers.Contract;
   decimalPlaces: number;
   decimalFactor: BigNumber;
+  chainId: number;
   decimalFactorNegative: BigNumber;
   provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
   abi: any;
@@ -42,6 +43,7 @@ class Erc20API extends EthWallet {
     abi,
     decimalPlaces,
     contractAddress,
+    chainId,
   }: ICoinMetadata) {
     if (!abi)
       throw new Error(
@@ -208,6 +210,8 @@ class Erc20API extends EthWallet {
         blockNumAtCreation,
         canSendFunds: true,
         lookupTransactionsBy: ethAddress,
+        decimalPlaces: this.decimalPlaces,
+        chainId: this.chainId,
       };
     } catch (error) {
       logger.warn(

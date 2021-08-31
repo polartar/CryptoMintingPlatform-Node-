@@ -6,6 +6,59 @@ import { logger } from 'src/common';
 import EthWallet from '../wallet-api/coin-wallets/eth-wallet';
 
 class SwapResolvers extends ResolverBase {
+  getSwapParams = async (
+    parent: any,
+    { coinSymbol }: { coinSymbol?: string },
+    { user, wallet }: Context,
+  ) => {
+    this.requireAuth(user);
+    try {
+      if (coinSymbol) {
+        const walletApi = wallet.coin(coinSymbol);
+        const walletResult = await walletApi.getWalletInfo(user);
+        return [walletResult];
+      }
+      const { allCoins } = wallet;
+      const walletData = await Promise.all(
+        allCoins.map(walletCoinApi => walletCoinApi.getWalletInfo(user)),
+      );
+      return walletData;
+    } catch (error) {
+      logger.warn(`resolvers.wallet.getWallet.catch: ${error}`);
+      throw error;
+    }
+  };
+
+  getBalance = async (parent: any, args: {}, { user, wallet }: Context) => {
+    this.requireAuth(user);
+    try {
+      const walletApi = wallet.coin(parent.symbol);
+      const walletResult = await walletApi.getBalance(
+        parent.lookupTransactionsBy,
+      );
+      return walletResult;
+    } catch (error) {
+      logger.debug(`resolvers.wallet.getBalance.catch: ${error}`);
+      throw error;
+    }
+  };
+
+  estimateFee = async (
+    { symbol }: { symbol: string },
+    args: any,
+    { user, wallet }: Context,
+  ) => {
+    try {
+      this.requireAuth(user);
+      const walletApi = wallet.coin(symbol);
+      const feeEstimate = await walletApi.estimateFee(user);
+      return feeEstimate;
+    } catch (error) {
+      logger.warn(`resolvers.wallet.estimateFee.catch: ${error}`);
+      throw error;
+    }
+  };
+
   startSwap = async (
     parent: any,
     args: {
@@ -83,6 +136,15 @@ class SwapResolvers extends ResolverBase {
 export const swapResolver = new SwapResolvers();
 
 export default {
+  Query: {
+    swapParams: swapResolver.getSwapParams,
+  },
+
+  Tokens: {
+    feeEstimate: swapResolver.estimateFee,
+    balance: swapResolver.getBalance,
+  },
+
   Mutation: {
     startSwap: swapResolver.startSwap,
   },

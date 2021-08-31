@@ -19,7 +19,7 @@ jest.mock('src/data-sources', () => ({
 
 import { Bitly, UserApi } from 'src/data-sources';
 
-const config = { };
+const config = {};
 
 const resolverBase = jest.fn().mockImplementation(() => ({
   requireAuth: (user: UserApi) => false,
@@ -42,7 +42,11 @@ describe('Affiliate Resolver', () => {
   const sessionId = 'session';
   const pageUrl = 'https://www.tests.com';
   const name = 'name';
-  const context = createContext(createRequest(token), createDataSources(bitly), userApi);
+  const context = createContext(
+    createRequest(token),
+    createDataSources(bitly),
+    userApi,
+  );
 
   const affiliateLink = {
     _id: Types.ObjectId(affiliateId),
@@ -51,7 +55,7 @@ describe('Affiliate Resolver', () => {
     brand: brand,
     userId: blueUser.userId,
     bitlyLink: bitlyLink,
-    affiliateId: affiliateId
+    affiliateId: affiliateId,
   };
 
   beforeAll(async () => {
@@ -76,7 +80,7 @@ describe('Affiliate Resolver', () => {
     const response = await affiliateResolver.Query.logAffiliateVisit(
       null,
       args,
-      context
+      context,
     );
 
     expect(response).not.toBeNull();
@@ -93,7 +97,7 @@ describe('Affiliate Resolver', () => {
     const response = await affiliateResolver.Query.affiliateLink(
       null,
       args,
-      context
+      context,
     );
 
     expect(response).not.toBeNull();
@@ -117,7 +121,7 @@ describe('Affiliate Resolver', () => {
     const response = await affiliateResolver.Mutation.assignReferredBy(
       null,
       args,
-      context
+      context,
     );
 
     expect(response).not.toBeNull();
@@ -134,7 +138,7 @@ describe('Affiliate Resolver', () => {
     const response = await affiliateResolver.Mutation.createAffiliateLink(
       null,
       args,
-      context
+      context,
     );
 
     expect(response).not.toBeNull();

@@ -16,7 +16,8 @@ const careclix = {
 };
 
 const s3 = {
-  getUrlFromFilename: (filename: string) => `https://bucket.s3.amazonaws.com/${filename}`,
+  getUrlFromFilename: (filename: string) =>
+    `https://bucket.s3.amazonaws.com/${filename}`,
 };
 
 const bitly = createBitly('https://bittly.com/short');

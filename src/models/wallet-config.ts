@@ -26,6 +26,8 @@ export interface IWalletConfig extends Document {
     softnodeType: string;
   };
   galaToUsdRatio: number;
+  chainId: number;
+  decimalPlaces: number;
 }
 
 export const walletConfigSchema = new Schema({

@@ -12,7 +12,7 @@ export { default as AffiliateAction } from './affiliate-action';
 export { default as AffiliateLink } from './affiliate-link';
 export { default as GreenResult } from './green-result';
 export { default as Environment } from './environment';
-export { default as License }  from './license';
+export { default as License } from './license';
 export { default as linkedDevice } from './linked-devices';
 export * from './offers';
 export * from './clicks';

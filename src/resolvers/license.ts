@@ -9,12 +9,12 @@ class Resolvers extends ResolverBase {
 
     const query = {
       userId: user.userId,
-      ...(args.type && { licenseTypeId: args.type })
+      ...(args.type && { licenseTypeId: args.type }),
     };
 
     const licenses = await License.find(query).exec();
     return licenses;
-  }
+  };
 }
 
 const resolvers = new Resolvers();
@@ -22,5 +22,5 @@ const resolvers = new Resolvers();
 export default {
   Query: {
     getLicenses: resolvers.getLicenses,
-  }
+  },
 };

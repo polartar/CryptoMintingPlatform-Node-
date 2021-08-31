@@ -7,37 +7,33 @@ class Resolvers extends ResolverBase {
   getEnvironment = async (
     parent: any,
     args: { host: string },
-    { user }: Context
+    { user }: Context,
   ): Promise<IEnvironmentModel> => {
     this.requireAuth(user);
-    const {host} = args;
+    const { host } = args;
 
     try {
       const envs = await Environment.find({}).exec();
-      
-      if(host && host.toLowerCase().indexOf('localhost') > 0){
+
+      if (host && host.toLowerCase().indexOf('localhost') > 0) {
         for (const env of envs) {
-          if(env.domain.indexOf("localhost") > 0) {
+          if (env.domain.indexOf('localhost') > 0) {
             return env;
           }
         }
-      }
-      else {
+      } else {
         for (const env of envs) {
-          if(env.domain.indexOf("localhost") < 0) {
+          if (env.domain.indexOf('localhost') < 0) {
             return env;
           }
         }
       }
     } catch (error) {
-      logger.warn(
-        `resolvers.environments.catch:${error}`,
-      );
+      logger.warn(`resolvers.environments.catch:${error}`);
       throw error;
     }
     return undefined;
   };
- 
 }
 
 const resolvers = new Resolvers();

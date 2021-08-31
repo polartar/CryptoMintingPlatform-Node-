@@ -16,7 +16,7 @@ jest.mock('src/data-sources', () => ({
 
 import { Bitly, UserApi } from 'src/data-sources';
 
-const config = { };
+const config = {};
 
 const resolverBase = jest.fn().mockImplementation(() => ({
   requireAuth: (user: UserApi) => false,
@@ -36,7 +36,11 @@ describe('License Resolver', () => {
   const token = 'token';
   const licenseId = '6114c774f28b6b4544c3de47';
   const licenseType = '5e692efd426618edbed9b9a7';
-  const context = createContext(createRequest(token), createDataSources(bitly), userApi);
+  const context = createContext(
+    createRequest(token),
+    createDataSources(bitly),
+    userApi,
+  );
 
   const license = {
     _id: Types.ObjectId(licenseId),
@@ -47,10 +51,11 @@ describe('License Resolver', () => {
     ownershipHistory: [
       {
         _id: Types.ObjectId('5e87914b7bc3ef58c6782408'),
-        receivedReason: 'connect-stage::OrderId::5ce70f00b2ea3f09e352ab3a::license migration sc...',
+        receivedReason:
+          'connect-stage::OrderId::5ce70f00b2ea3f09e352ab3a::license migration sc...',
         received: new Date(),
-      }
-    ]
+      },
+    ],
   };
 
   beforeAll(async () => {
@@ -74,13 +79,13 @@ describe('License Resolver', () => {
     const type: string = null;
 
     const args = {
-      type: type
+      type: type,
     };
 
     const response = await licenseResolver.Query.getLicenses(
       null,
       args,
-      context
+      context,
     );
 
     expect(response).not.toBeNull();
@@ -101,7 +106,7 @@ describe('License Resolver', () => {
     const response = await licenseResolver.Query.getLicenses(
       null,
       args,
-      context
+      context,
     );
 
     expect(response).not.toBeNull();
@@ -118,13 +123,13 @@ describe('License Resolver', () => {
     const type: string = null;
 
     const args = {
-      type: type
+      type: type,
     };
 
     const response = await licenseResolver.Query.getLicenses(
       null,
       args,
-      context
+      context,
     );
 
     expect(response).not.toBeNull();

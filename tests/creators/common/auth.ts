@@ -45,12 +45,14 @@ export default function create(token: string, userId: string): ServerAuth {
     sub: '',
     uid: '',
     claims: claims,
-    userId: userId
-  }
+    userId: userId,
+  };
 
   const auth: Partial<ServerAuth> = {
-    createFirebaseUser: (user: IArgsUser, domain: string) => Promise.resolve(firebaseUser),
-    getFirebaseUid: (firebaseToken: string, domain: string) => Promise.resolve('testid'),
+    createFirebaseUser: (user: IArgsUser, domain: string) =>
+      Promise.resolve(firebaseUser),
+    getFirebaseUid: (firebaseToken: string, domain: string) =>
+      Promise.resolve('testid'),
     getUser: async (uid: string, domain: string) => firebaseUser,
     signIn: async (firebaseToken: string, domain: string) => token,
     signInAfterRegister: async (firebaseUid: string, domain: string) => token,
@@ -64,7 +66,8 @@ export default function create(token: string, userId: string): ServerAuth {
       userInfo: IUserInfo,
       domain: string,
     ) => true,
-    verifyAndDecodeToken: (token: string, domain: string, options?: IOptions) => decodedToken,
+    verifyAndDecodeToken: (token: string, domain: string, options?: IOptions) =>
+      decodedToken,
   };
 
   return auth as ServerAuth;

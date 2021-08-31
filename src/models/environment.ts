@@ -1,39 +1,39 @@
 import * as mongoose from 'mongoose';
 
 export interface IEnvironmentModel extends mongoose.Document {
-    created: Date;
-    descriptionMeta: string;
-    domain: string;
-    etherscanApiKey: string;
-    favicon: string;
-    permissions: string[];
-    keywordsMeta: string;
-    myDomain: string;
-    newsFeedUrl: string;
-    primaryColor: string;
-    publicPort: number;
-    signedTemplates: string[];
-    referralLinkPath: string;
-    referralUrl: string;
-    sendEmailFrom: string;
-    sendGridApiKey: string;
-    webpageTitle: string;
-    defaultUserId: string;
-    terms: string[];
-    userAgreements: string[];
-    widgetsShown: string[];
-    walletCompanyFee: number;
-    walletReferrerReward: number;
-    walletRewardAmount: number;
-    walletRewardCurrency: string;
-    walletShareLimit: number;
-    walletUserBalanceThreshold: number;
-    availablePoolTypes: string[];
-    demoUserEmail: string;
-    walletsShown: string[];
-    bitlyApiKey: string;
-    defaultReferredBy: string;
-  }
+  created: Date;
+  descriptionMeta: string;
+  domain: string;
+  etherscanApiKey: string;
+  favicon: string;
+  permissions: string[];
+  keywordsMeta: string;
+  myDomain: string;
+  newsFeedUrl: string;
+  primaryColor: string;
+  publicPort: number;
+  signedTemplates: string[];
+  referralLinkPath: string;
+  referralUrl: string;
+  sendEmailFrom: string;
+  sendGridApiKey: string;
+  webpageTitle: string;
+  defaultUserId: string;
+  terms: string[];
+  userAgreements: string[];
+  widgetsShown: string[];
+  walletCompanyFee: number;
+  walletReferrerReward: number;
+  walletRewardAmount: number;
+  walletRewardCurrency: string;
+  walletShareLimit: number;
+  walletUserBalanceThreshold: number;
+  availablePoolTypes: string[];
+  demoUserEmail: string;
+  walletsShown: string[];
+  bitlyApiKey: string;
+  defaultReferredBy: string;
+}
 
 export const environmentSchema = new mongoose.Schema({
   domain: { type: String, index: true },

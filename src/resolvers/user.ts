@@ -67,15 +67,15 @@ class Resolvers extends ResolverBase {
 
       throw error;
     }
-  }
+  };
 
   public userExists = async (
     parent: any,
-    args: {email: string},
+    args: { email: string },
     context: Context,
   ) => {
     return this.doesUserAlreadyExist(args.email);
-  }
+  };
 
   public createUser = async (
     parent: any,
@@ -407,10 +407,12 @@ class Resolvers extends ResolverBase {
       userDoc.set('language', language);
     }
     if (typeof communicationConsent === 'boolean') {
-      userDoc.set('communicationConsent', [ {
-        consentGiven: communicationConsent,
-        timestamp: new Date(),
-      } ]);
+      userDoc.set('communicationConsent', [
+        {
+          consentGiven: communicationConsent,
+          timestamp: new Date(),
+        },
+      ]);
     }
     if (updateUserNumber && !userDoc.number) {
       const number = await getNextNumber();

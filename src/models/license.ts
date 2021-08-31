@@ -20,8 +20,8 @@ export const licenseSchema = new Schema({
     {
       receivedReason: String,
       received: Date,
-    }
-  ]
+    },
+  ],
 });
 
 const License = model<ILicense>('license', licenseSchema);

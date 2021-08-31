@@ -26,33 +26,31 @@ export interface IGreenResult extends Document {
   userId: string;
 }
 
-export const greenResultSchema = new Schema(
-  {
-    id: { type: String, unique: true, index: true, trim: true },
-    runTime: Date,
-    address: String,
-    btc: Number,
-    efficiency: Number,
-    efficiencyPercent: Number,
-    green: {
-      _hex: String,
-      _isBigNumber: Boolean,
-    },
-    greenDecimal: Number,
-    hashRate: Number,
-    hashRateEfficiency: Number,
-    hashRateEfficiencyPercent: Number,
-    hashRatePercent: Number,
-    lastDistributionTimecreated: Date,
-    licensedTotalDuration: Number,
-    power: Number,
-    satoshiValue: Number,
-    totalDuration: Number,
-    totalGreen: Number,
-    unlicensedTotalDuration: Number,
-    userId: String,
-  }
-);
+export const greenResultSchema = new Schema({
+  id: { type: String, unique: true, index: true, trim: true },
+  runTime: Date,
+  address: String,
+  btc: Number,
+  efficiency: Number,
+  efficiencyPercent: Number,
+  green: {
+    _hex: String,
+    _isBigNumber: Boolean,
+  },
+  greenDecimal: Number,
+  hashRate: Number,
+  hashRateEfficiency: Number,
+  hashRateEfficiencyPercent: Number,
+  hashRatePercent: Number,
+  lastDistributionTimecreated: Date,
+  licensedTotalDuration: Number,
+  power: Number,
+  satoshiValue: Number,
+  totalDuration: Number,
+  totalGreen: Number,
+  unlicensedTotalDuration: Number,
+  userId: String,
+});
 
 const GreenResult = model<IGreenResult>('green-result', greenResultSchema);
 

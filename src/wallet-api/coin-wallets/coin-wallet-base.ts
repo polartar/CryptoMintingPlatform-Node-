@@ -15,6 +15,8 @@ export default abstract class CoinWalletBase {
     protected abi: any,
     protected backgroundColor: string,
     protected icon: string,
+    protected chainId: number,
+    protected decimalPlaces: number,
   ) {
     if (!name)
       throw new Error(
@@ -44,6 +46,8 @@ export default abstract class CoinWalletBase {
     backgroundColor: string;
     canSendFunds: boolean;
     lookupTransactionsBy: string;
+    chainId: number;
+    decimalPlaces: number;
   }>;
 
   abstract getBalance(
@@ -90,8 +94,16 @@ export default abstract class CoinWalletBase {
     newPassword: string,
   ): Promise<boolean>;
   abstract checkPassword(user: UserApi, password: string): Promise<boolean>;
-  abstract getCartAddress(symbol: string, orderId: string, amount: string): Promise<ICartAddress>;
-  abstract getCartBalance(symbol: string, orderId: string, address: string): Promise<ICartBalance>;
+  abstract getCartAddress(
+    symbol: string,
+    orderId: string,
+    amount: string,
+  ): Promise<ICartAddress>;
+  abstract getCartBalance(
+    symbol: string,
+    orderId: string,
+    address: string,
+  ): Promise<ICartBalance>;
 
   protected encrypt = (plainText: string, secret: string) =>
     crypto.encrypt(plainText, secret);

@@ -114,8 +114,8 @@ class Resolvers extends ResolverBase {
     const query = {
       runTime: {
         $gte: startDate,
-        $lte: endDate
-      }
+        $lte: endDate,
+      },
     };
 
     const results = await GreenResult.find(query).exec();
@@ -124,10 +124,10 @@ class Resolvers extends ResolverBase {
       return {
         runTime: res.runTime,
         address: res.address,
-        amount: res.greenDecimal
-      }
+        amount: res.greenDecimal,
+      };
     });
-  }
+  };
 
   public getGlobalResults = async (
     parent: any,
