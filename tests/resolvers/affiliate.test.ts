@@ -1,22 +1,16 @@
 import { Request } from 'express';
 import { Types } from 'mongoose';
-import { AffiliateAction, AffiliateLink, User } from 'src/models';
+import { AffiliateAction, AffiliateLink } from 'src/models';
+import { blueUser } from 'tests/mocks/models';
+import { createBitly, createUser } from 'tests/creators/data-sources';
+import { createContext, createDataSources } from 'tests/creators/types';
+import { createRequest } from 'tests/creators/express';
+import { logger } from 'tests/mocks/common/logger';
 
 const bitlyLink = 'https://bittly.com/short';
 
-const bitly = {
-  shortenLongUrl: (l: string, g: string) => Promise.resolve(bitlyLink),
-};
-
-const userId = '60fd24fce7d789ae04cee939';
-
-const userApi = {
-  userId: userId,
-  findFromDb: async () => {
-    const user = await User.findById(userId).exec();
-    return user;
-  },
-};
+const bitly = createBitly(bitlyLink);
+const userApi = createUser(blueUser.userId);
 
 jest.mock('src/data-sources', () => ({
   Bitly: jest.fn().mockImplementation(() => bitly),
@@ -25,13 +19,11 @@ jest.mock('src/data-sources', () => ({
 
 import { Bitly, UserApi } from 'src/data-sources';
 
-const config = { };
+const config = {};
 
 const resolverBase = jest.fn().mockImplementation(() => ({
   requireAuth: (user: UserApi) => false,
 }));
-
-import { logger } from 'tests/mocks/common/logger';
 
 jest.mock('src/common', () => ({
   config: config,
@@ -50,49 +42,20 @@ describe('Affiliate Resolver', () => {
   const sessionId = 'session';
   const pageUrl = 'https://www.tests.com';
   const name = 'name';
-  const context = createContext();
+  const context = createContext(
+    createRequest(token),
+    createDataSources(bitly),
+    userApi,
+  );
 
   const affiliateLink = {
     _id: Types.ObjectId(affiliateId),
     pageUrl: pageUrl,
     name: name,
     brand: brand,
-    userId: userId,
+    userId: blueUser.userId,
     bitlyLink: bitlyLink,
-    affiliateId: affiliateId
-  };
-
-  const blueUser = {
-    _id: Types.ObjectId(userId),
-    userId: userId,
-    email: 'blueuser@test.com',
-    password: 'Bluetest0!',
-    firstName: 'Blue',
-    lastName: 'User',
-    displayName: 'Blue',
-    profilePhotoFilename: '',
-    phone: '32233224',
-    phoneCountry: 'US',
-    language: 'en',
-    referralContext: {},
-    communicationConsent: true,
-    activationTermsAndConditions: [
-      {
-        timestamp: new Date(),
-        ipAddress: '127.0.0.1',
-        text: '',
-      },
-    ],
-    gender: 'Male',
-    dateOfBirth: new Date(1980, 0, 1),
-    country: 'United States',
-    countryCode: 'US',
-    countryPhoneCode: '380',
-    clinic: 'shassan',
-    street: 'Echols Ave',
-    city: 'Clovis',
-    state: 'New Mexico',
-    zipCode: '88101',
+    affiliateId: affiliateId,
   };
 
   beforeAll(async () => {
@@ -117,7 +80,7 @@ describe('Affiliate Resolver', () => {
     const response = await affiliateResolver.Query.logAffiliateVisit(
       null,
       args,
-      context
+      context,
     );
 
     expect(response).not.toBeNull();
@@ -134,7 +97,7 @@ describe('Affiliate Resolver', () => {
     const response = await affiliateResolver.Query.affiliateLink(
       null,
       args,
-      context
+      context,
     );
 
     expect(response).not.toBeNull();
@@ -158,7 +121,7 @@ describe('Affiliate Resolver', () => {
     const response = await affiliateResolver.Mutation.assignReferredBy(
       null,
       args,
-      context
+      context,
     );
 
     expect(response).not.toBeNull();
@@ -175,7 +138,7 @@ describe('Affiliate Resolver', () => {
     const response = await affiliateResolver.Mutation.createAffiliateLink(
       null,
       args,
-      context
+      context,
     );
 
     expect(response).not.toBeNull();
@@ -183,37 +146,4 @@ describe('Affiliate Resolver', () => {
     expect(response.name).toBe(name);
     expect(response.brand).toBe(brand);
   });
-
-  function createRequest(): Request {
-    function header(s: 'set-cookie'): string[];
-    function header(s: string): string;
-    function header(s: 'set-cookie' | string): string[] | string {
-      return token;
-    }
-
-    const request: Partial<Request> = {
-      header: header,
-    };
-
-    return request as Request;
-  }
-
-  function createDataSources(): DataSources {
-    const dataSources: Partial<DataSources> = {
-      bitly: (bitly as Partial<Bitly>) as Bitly,
-      linkShortener: (bitly as Partial<Bitly>) as Bitly,
-    };
-
-    return dataSources as DataSources;
-  }
-
-  function createContext(): Context {
-    const context: Partial<Context> = {
-      req: createRequest(),
-      dataSources: createDataSources(),
-      user: (userApi as Partial<UserApi>) as UserApi,
-    };
-
-    return context as Context;
-  }
 });

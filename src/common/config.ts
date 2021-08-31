@@ -221,6 +221,10 @@ class Config {
 
   public readonly careclixSignUpUrl = `https://${env.CARECLIX_URL}/auth/signup`;
 
+  public readonly paywiserHost = env.PAYWISER_KYC_HOST;
+  public readonly paywiserUsername = env.PAYWISER_KYC_USERNAME;
+  public readonly paywiserPassword = env.PAYWISER_KYC_PASSWORD;
+
   public sendgridTemplateIds = {
     verifyEmailNewUser: 'd-fb448b5842414c1faf568e9648dd3546',
     verifyEmailExistingUser: 'd-5c4129cd88004c1e88182876350d527a',
@@ -323,6 +327,32 @@ class Config {
           ', ',
         )} undefined.`,
       );
+    }
+    //--------- SWITCH ONLY -------------
+    if (this.brand === 'switch') {
+      const missingSwitchVariables = [
+        'PAYWISER_KYC_HOST',
+        'PAYWISER_KYC_USERNAME',
+        'PAYWISER_KYC_PASSWORD',
+      ].filter(name => !env[name]);
+      if (missingSwitchVariables.length > 0) {
+        throw new Error(
+          `Required SWITCH environment variable(s) ${missingEnvVariables.join(
+            ', ',
+          )} undefined.`,
+        );
+      }
+    }
+    //--------- BLUE ONLY -------------
+    if (this.brand === 'blue') {
+      const missingBlueVariables = ['CARECLIX_URL'].filter(name => !env[name]);
+      if (missingBlueVariables.length > 0) {
+        throw new Error(
+          `Required BLUE environment variable(s) ${missingEnvVariables.join(
+            ', ',
+          )} undefined.`,
+        );
+      }
     }
   }
 

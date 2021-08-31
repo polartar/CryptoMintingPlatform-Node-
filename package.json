@@ -1,6 +1,6 @@
 {
   "name": "wallet-server",
-  "version": "0.4.79",
+  "version": "0.4.88",
   "main": "lib/index.js",
   "config": {
     "dockerport": 4444
@@ -11,7 +11,7 @@
     "start": "npm run build && node ./lib/index.js",
     "dev": "run-s watch",
     "watch": "npx nodemon --watch 'src/**/*' -e ts,graphql,gql --exec ts-node --files -r tsconfig-paths/register ./src/index.ts",
-    "test": "jest",
+    "test": "jest --coverage",
     "docker:build": "docker build -t $npm_package_name:$npm_package_version --target dev .",
     "docker:build_prod": "docker build --target prod -t $npm_package_name:$npm_package_version .",
     "docker:run": "docker run -p 127.0.0.1:$npm_package_config_dockerport:4444 --name $npm_package_name -d $npm_package_name:$npm_package_version",
@@ -93,6 +93,7 @@
     "@uniswap/v3-sdk": "^3.3.2",
     "husky": "^6.0.0",
     "jest": "^27.0.6",
+    "jest-junit": "^12.2.0",
     "lodash.chunk": "^4.2.0",
     "mongodb-memory-server": "^7.3.0",
     "nodemon": "^2.0.7",

@@ -59,3 +59,4 @@ export * from './IVault';
 export * from './ICartAddress';
 export * from './IGreenCoinResult';
 export * from './ICareclixUser';
+export * from './IPaywiser';

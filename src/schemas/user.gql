@@ -138,6 +138,7 @@ type NeededAgreementsResponse {
 }
 
 type Query {
+  userExists(email: String!): Boolean!
   profile: UserProfile!
   isDisplayNameUnique(displayName: String!): IsDisplayNameUniqueResponse!
   neededAgreements: NeededAgreementsResponse!

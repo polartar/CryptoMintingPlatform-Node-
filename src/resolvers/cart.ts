@@ -1,7 +1,6 @@
 import { Context } from '../types';
 import ResolverBase from '../common/Resolver-Base';
-import {cartQueue} from '../blockchain-listeners/cart-queue';
-import config from '../common/config';
+import { cartQueue } from '../blockchain-listeners/cart-queue';
 // import { User } from '../models';
 import { addHours } from 'date-fns';
 
@@ -12,31 +11,56 @@ class Resolvers extends ResolverBase {
       coinSymbol?: string;
       orderId: string;
       amount?: string;
+      affiliateId: string;
+      affiliateSessionId: string;
+      utmVariables: string;
     },
     ctx: Context,
   ) => {
     const { wallet } = ctx;
-    const { coinSymbol, orderId, amount } = args;
-    const result =  [];
+    const { coinSymbol, orderId, amount, utmVariables } = args;
+    const result = [];
 
     try {
       const expDate = addHours(new Date(), 1);
 
-      if(coinSymbol){
+      if (coinSymbol) {
         const walletApi = wallet.coin(coinSymbol);
-        const address = await walletApi.getCartAddress(coinSymbol, orderId, amount);
-        cartQueue.setCartWatcher(config.brand, coinSymbol.toUpperCase(), orderId, {address: address.address, exp: expDate});
+        const address = await walletApi.getCartAddress(
+          coinSymbol,
+          orderId,
+          amount,
+        );
+        cartQueue.setCartWatcher(coinSymbol.toUpperCase(), orderId, {
+          address: address.address,
+          exp: expDate,
+        });
         result.push(address);
-      }
-      else{
+      } else {
+        //TODO : USE THE utmContent
+
         const btcWalletApi = wallet.coin('BTC');
-        const btcAddress = await btcWalletApi.getCartAddress('BTC', orderId, amount);
-        cartQueue.setCartWatcher(config.brand, 'BTC', orderId, {address: btcAddress.address, exp: expDate});
+        const btcAddress = await btcWalletApi.getCartAddress(
+          'BTC',
+          orderId,
+          amount,
+        );
+        cartQueue.setCartWatcher('BTC', orderId, {
+          address: btcAddress.address,
+          exp: expDate,
+        });
         result.push(btcAddress);
 
         const ethWalletApi = wallet.coin('ETH');
-        const ethAddress = await ethWalletApi.getCartAddress('ETH', orderId, amount);
-        cartQueue.setCartWatcher(config.brand, 'ETH', orderId, {address: ethAddress.address, exp: expDate});
+        const ethAddress = await ethWalletApi.getCartAddress(
+          'ETH',
+          orderId,
+          amount,
+        );
+        cartQueue.setCartWatcher('ETH', orderId, {
+          address: ethAddress.address,
+          exp: expDate,
+        });
         result.push(ethAddress);
 
         // const galaWalletApi = wallet.coin('GALA');
@@ -54,7 +78,6 @@ class Resolvers extends ResolverBase {
         // result.push(batAddress);
       }
       return result;
-      
     } catch (error) {
       // logger.warn(`resolvers.wallet.getTransactions.catch: ${error}`);
       throw error;
@@ -67,17 +90,36 @@ class Resolvers extends ResolverBase {
       orderId: string;
       amount: string;
       walletPassword: string;
+      affiliateId: string;
+      affiliateSessionId: string;
+      utmVariables: string;
     },
     ctx: Context,
   ) => {
     const { user, wallet } = ctx;
     this.requireAuth(user);
-    const { coinSymbol, amount, orderId, walletPassword } = args;
+    const {
+      coinSymbol,
+      amount,
+      orderId,
+      walletPassword,
+      affiliateSessionId,
+      affiliateId,
+      utmVariables,
+    } = args;
 
     const walletApi = wallet.coin(parent.symbol);
-    const addressArry = await this.getCartAddress(parent, {coinSymbol, orderId}, ctx);
+    const addressArry = await this.getCartAddress(
+      parent,
+      { coinSymbol, orderId, affiliateId, affiliateSessionId, utmVariables },
+      ctx,
+    );
     const addressToSend = addressArry[0].address;
-    const result = await walletApi.send(user, [{to:addressToSend, amount}], walletPassword);
+    const result = await walletApi.send(
+      user,
+      [{ to: addressToSend, amount }],
+      walletPassword,
+    );
 
     return result;
   };

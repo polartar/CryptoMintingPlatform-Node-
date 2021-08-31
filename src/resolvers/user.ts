@@ -7,7 +7,7 @@ import { User, Template } from 'src/models';
 import { IOrderContext } from 'src/types';
 import { careclix, s3Service } from 'src/services';
 //import { emailService } from '../data-sources/send-email';
-import License from 'src/models/licenses';
+import License from 'src/models/license';
 import { WalletApi } from 'src/wallet-api';
 import { getNextNumber } from 'src/models/user';
 
@@ -67,7 +67,15 @@ class Resolvers extends ResolverBase {
 
       throw error;
     }
-  }
+  };
+
+  public userExists = async (
+    parent: any,
+    args: { email: string },
+    context: Context,
+  ) => {
+    return this.doesUserAlreadyExist(args.email);
+  };
 
   public createUser = async (
     parent: any,
@@ -399,10 +407,12 @@ class Resolvers extends ResolverBase {
       userDoc.set('language', language);
     }
     if (typeof communicationConsent === 'boolean') {
-      userDoc.set('communicationConsent', [ {
-        consentGiven: communicationConsent,
-        timestamp: new Date(),
-      } ]);
+      userDoc.set('communicationConsent', [
+        {
+          consentGiven: communicationConsent,
+          timestamp: new Date(),
+        },
+      ]);
     }
     if (updateUserNumber && !userDoc.number) {
       const number = await getNextNumber();
@@ -675,6 +685,7 @@ export const userResolver = new Resolvers();
 
 export default {
   Query: {
+    userExists: userResolver.userExists,
     profile: userResolver.getUserProfile,
     isDisplayNameUnique: userResolver.isDisplayNameUnique,
     neededAgreements: userResolver.neededAgreements,

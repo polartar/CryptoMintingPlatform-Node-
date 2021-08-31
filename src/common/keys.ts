@@ -25,10 +25,12 @@ class Keys {
 
       return serviceAccount;
     });
-    this.serviceAccountKeys = Object.entries(rawServiceAccounts).map(entry => {
-      const [domain]: any[] = entry;
-      return domain;
-    });
+    this.serviceAccountKeys = Object.entries(this.serviceAccounts).map(
+      entry => {
+        const [domain]: any[] = entry;
+        return domain;
+      },
+    );
   }
 }
 

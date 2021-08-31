@@ -37,7 +37,7 @@ class Resolvers extends ResolverBase {
 
       //TODO : taken out to show '0' balance (to then see the transactions details.)
       //if (toAdd.item.balance > 0) {
-        returnItems.push(toAdd.item);
+      returnItems.push(toAdd.item);
       //}
     } catch (err) {
       logger.warn(`resolvers.getVaultItems.catch: ${err}`);
@@ -83,7 +83,10 @@ class Resolvers extends ResolverBase {
         result.balance = result.balance + +a.greenDecimal;
       });
 
-      const resultCombined: IVaultItemWithDbRecords = { item: result, dbRecords: greens };
+      const resultCombined: IVaultItemWithDbRecords = {
+        item: result,
+        dbRecords: greens,
+      };
       return resultCombined;
     }
     return { item: result, dbRecords: [] };
@@ -212,7 +215,7 @@ class Resolvers extends ResolverBase {
     items.forEach(item => {
       try {
         coinSearchPromises.push(
-          this.searchForCoinResultsSummary(userId, item.symbol, 'unminted')
+          this.searchForCoinResultsSummary(userId, item.symbol, 'unminted'),
         );
       } catch (err) {
         logger.error(
@@ -270,7 +273,6 @@ class Resolvers extends ResolverBase {
                     userId,
                     'unminted',
                     'begin-mint',
-                    
                   ),
                 );
               } catch (err) {
@@ -385,7 +387,7 @@ class Resolvers extends ResolverBase {
   private updateMultipleCoinRecords = async (
     userId: string,
     prevStatus: string,
-    newStatus: string
+    newStatus: string,
   ) => {
     return await GreenCoinResult.updateMany(
       { userId, status: prevStatus },

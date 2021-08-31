@@ -15,32 +15,53 @@ export class CartService extends ServerToServerService {
     const yesterday = subDays(currDate, 1);
 
     const result = await axios.post<WooTxOrders>(
-      `${config.wpCartApiUrl}/get_woo_tx_orders?ApiKey=338a3ba7-69b8-41ac-a920-9727ae939ba3&date_start=${this.dateString(yesterday)}&date_end=${this.dateString(tomorrow)}`,
-       {});
+      `${
+        config.wpCartApiUrl
+      }/get_woo_tx_orders?ApiKey=338a3ba7-69b8-41ac-a920-9727ae939ba3&date_start=${this.dateString(
+        yesterday,
+      )}&date_end=${this.dateString(tomorrow)}`,
+      {},
+    );
+
+    //** NOTE orderId that is in result will prepend with the following code: */
+    // Woocommerce - wooc-<ID>
+    // Memberpress - mepr-<ID>
 
     return result.data;
   };
 
-  public updateOrderToWooCart = async (woo_tx_id: string, address: string, balance: number, coinSymbol: string): Promise<WooTxOrders[]> => {
-    const postBody:any = {
+  public updateOrderToWooCart = async (
+    woo_tx_id: string,
+    address: string,
+    balance: number,
+    coinSymbol: string,
+    orderId: string,
+  ): Promise<WooTxOrders[]> => {
+    const postBody: any = {
       ApiKey: '338a3ba7-69b8-41ac-a920-9727ae939ba3',
+      OrderId: woo_tx_id,
       Address: address,
       CoinSymbol: coinSymbol,
       AmtTotal: balance,
-      TxIds: woo_tx_id
+      BlockchainTxIds: woo_tx_id,
+      OrderStatus: 'complete', // | 'failed'
     };
 
-    try{
+    try {
       const axios = this.getAxios({ role: 'system' });
 
       const result = await axios.post<WooTxOrders[]>(
-        `${config.wpCartApiUrl}/update_woo_tx_order`, postBody
+        `${config.wpCartApiUrl}/update_wp_tx_order`,
+        postBody,
       );
 
       return result.data;
-    }
-    catch(err){
-      console.log(`cart-service.CartService.updateOrderToWooCart : ${JSON.stringify(postBody)}`);
+    } catch (err) {
+      console.log(
+        `cart-service.CartService.updateOrderToWooCart : ${JSON.stringify(
+          postBody,
+        )}`,
+      );
     }
   };
 
@@ -50,50 +71,49 @@ export class CartService extends ServerToServerService {
 }
 
 export class WooTxOrders {
-  "success": number;
-  "message": string;
-  "orders": WooTxOrderDetail[];
-  "orders-json": string;
+  'success': number;
+  'message': string;
+  'orders': WooTxOrderDetail[];
+  'orders-json': string;
 }
 
 export class WooTxOrderDetail {
-  "id": string;
-  "parent_id": number;
-  "status": string;
-  "currency": string;
-  "version": string;
-  "prices_include_tax": boolean;
-  "date_created": WordpressDate;
-  "discount_total": string;
-  "discount_tax": string;
-  "shipping_total": string;
-  "shipping_tax": string;
-  "cart_tax": string;
-  "total": string;
-  "total_tax": string;
-  "customer_id": number;
-  "order_key": string;
-  "billing": any; //todo: update this
-  "payment_method": string;
-  "payment_method_title": string;
-  "transaction_id": string;
-  "customer_ip_address": string;
-  "customer_user_agent": string;
-  "created_via": string;
-  "customer_note": string;
-  "date_completed": WordpressDate;
-  "date_paid": WordpressDate;
-  "cart_hash": string;
-  "number": string;
-  "meta_data": WooTxOrderDetailMeta[];
-  "line_items": any;
-  "tax_lines": any[];
-  "shipping_lines": any[];
-  "fee_lines": any[];
-  "coupon_lines": any[];
-  "custom_field": any;
+  'id': string;
+  'parent_id': number;
+  'status': string;
+  'currency': string;
+  'version': string;
+  'prices_include_tax': boolean;
+  'date_created': WordpressDate;
+  'discount_total': string;
+  'discount_tax': string;
+  'shipping_total': string;
+  'shipping_tax': string;
+  'cart_tax': string;
+  'total': string;
+  'total_tax': string;
+  'customer_id': number;
+  'order_key': string;
+  'billing': any; //todo: update this
+  'payment_method': string;
+  'payment_method_title': string;
+  'transaction_id': string;
+  'customer_ip_address': string;
+  'customer_user_agent': string;
+  'created_via': string;
+  'customer_note': string;
+  'date_completed': WordpressDate;
+  'date_paid': WordpressDate;
+  'cart_hash': string;
+  'number': string;
+  'meta_data': WooTxOrderDetailMeta[];
+  'line_items': any;
+  'tax_lines': any[];
+  'shipping_lines': any[];
+  'fee_lines': any[];
+  'coupon_lines': any[];
+  'custom_field': any;
 }
-
 
 // "billing": {
 //   "first_name": "Brant",
@@ -127,16 +147,14 @@ export class WooTxOrderDetail {
 //   "payment_type": "internal"
 // }
 
-
-
 export class WordpressDate {
-  "date": string;
-  "timezone_type": number;
-  "timezone": string;
+  'date': string;
+  'timezone_type': number;
+  'timezone': string;
 }
 
 export class WooTxOrderDetailMeta {
-  "id": number;
-  "key": string;
-  "value": string;
+  'id': number;
+  'key': string;
+  'value': string;
 }

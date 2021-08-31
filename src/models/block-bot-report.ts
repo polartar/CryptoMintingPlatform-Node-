@@ -32,7 +32,9 @@ export interface IBlockbotReport {
   All: IBlockbotMemory;
 }
 
-export interface IBlockbotReportDocument extends IBlockbotReport, mongoose.Document {}
+export interface IBlockbotReportDocument
+  extends IBlockbotReport,
+    mongoose.Document {}
 
 export const activationSchema = new mongoose.Schema({
   Name: String,
@@ -50,8 +52,8 @@ export const memorySchema = new mongoose.Schema({
   AverageUsdPerBlockbot: Number,
   AveragePercentDifference: Number,
   Memory: String,
-  FriendActivations: activationSchema,
-  BlockchainActivations: activationSchema,
+  FriendActivations: [activationSchema],
+  BlockchainActivations: [activationSchema],
 });
 
 export const winReportBlockbot = new mongoose.Schema({
@@ -66,7 +68,7 @@ export const winReportBlockbot = new mongoose.Schema({
   All: memorySchema,
 });
 
-const BlockbotReportResult = mongoose.model<IBlockbotReportDocument> (
+const BlockbotReportResult = mongoose.model<IBlockbotReportDocument>(
   'win-report-blockbot',
   winReportBlockbot,
 );

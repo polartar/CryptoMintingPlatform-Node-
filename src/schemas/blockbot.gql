@@ -18,8 +18,8 @@ type BlockbotMemory {
   AverageUsdPerBlockbot: Float!
   AveragePercentDifference: Float!
   Memory: String!
-  FriendActivations: BlockbotActivation!
-  BlockchainActivations: BlockbotActivation!
+  FriendActivations: [BlockbotActivation]
+  BlockchainActivations: [BlockbotActivation]
 }
 
 type BlockbotActivation {
@@ -31,5 +31,5 @@ type BlockbotActivation {
 }
 
 type Query {
-  getBlockbotReport: BlockbotReport!
+  getBlockbotReport: BlockbotReport
 }
