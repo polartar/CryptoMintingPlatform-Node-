@@ -72,8 +72,7 @@ class Resolvers extends ResolverBase {
           parentCoin.createWallet(user, walletPassword, recoveryPhrase),
         ),
       );
-      console.log(walletsCreated);
-
+      
       if (walletsCreated.some(createdWallet => !createdWallet))
         throw new Error('Error creating wallet');
       if (config.clientSecretKeyRequired) {
