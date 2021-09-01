@@ -1,6 +1,6 @@
 type Balance {
-  confirmed: String
-  unconfirmed: String
+  confirmed: String!
+  unconfirmed: String!
 }
 
 type FeeEstimate {
@@ -17,20 +17,18 @@ type Tokens {
   receiveAddress: String!
   feeEstimate: FeeEstimate!
   contractAddress: String
-  chainId: Int
-  decimalPlaces: Int
-}
-
-type Token {
-  decimals: Int
-  symbol: String
-  name: String
-  chainId: Int
-  address: String
+  chainId: Int!
+  decimalPlaces: Int!
 }
 
 type Receipt {
   message: String!
+  midPrice: String!
+  midPriceInverted: String!
+}
+
+type Confirmation {
+  message: String
 }
 
 input InputToken {
@@ -51,22 +49,15 @@ input OutputToken {
   address: String!
 }
 
-input SendOutput {
-  to: String!
-  amount: String
-  tokenId: String
-}
-
 type Query {
   swapParams(coinSymbol: String): [Tokens!]!
 }
 
 type Mutation {
   startSwap(
-    coinSymbol: String!
-    outputs: [SendOutput!]!
+    amount: String!
     inputToken: [InputToken!]!
     outputToken: [OutputToken!]!
-    walletPassword: String
   ): Receipt
+  confirmSwap(coinSymbol: String!): Confirmation
 }
