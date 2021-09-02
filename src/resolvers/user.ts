@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import { auth, config, logger, ResolverBase } from 'src/common';
 import { Context } from 'src/types/context';
 import { UserApi } from 'src/data-sources';
-import { User, Template, IUserIds } from 'src/models';
+import { User, Template, IUserIds, IUpdateUserIds } from 'src/models';
 import { IOrderContext, IKyc } from 'src/types';
 import { careclix, s3Service } from 'src/services';
 //import { emailService } from '../data-sources/send-email';
@@ -330,7 +330,7 @@ class Resolvers extends ResolverBase {
         communicationConsent?: boolean;
         secondaryEmail?: string;
         language?: string;
-        userIds?: IUserIds;
+        updateUserIds?: IUpdateUserIds;
         activationTermsAndConditions?: {}[];
         gender?: string;
         dateOfBirth?: Date;
@@ -365,7 +365,7 @@ class Resolvers extends ResolverBase {
       secondaryEmail,
       language,
       updateUserNumber,
-      userIds,
+      updateUserIds,
       activationTermsAndConditions,
       kyc,
     } = args.userInfo;
@@ -428,12 +428,27 @@ class Resolvers extends ResolverBase {
         userDoc.set('number', number);
       }
 
-      if (config.brand.toLowerCase() === 'connect' && userIds) {
-        if (Object.keys(userIds).length >= 1)
-          //isn't the empty object {}.
+      if (config.brand.toLowerCase() === 'connect' && updateUserIds) {
+        const { userIds } = updateUserIds;
+        if (!updateUserIds.unsetMissingUserIds) {
+          //just overwrite the userdIds in userIds object.
+          let UserIdKey: keyof typeof userIds;
+          for (UserIdKey in userIds) {
+            const userIdValue = userIds[UserIdKey];
+            if (userIdValue) userDoc.set(`userIds.${[UserIdKey]}`, userIdValue);
+            //if userIdValue is falsy unset the specific userId from the subdocument userIds
+            else
+              userDoc.set(`userIds.${[UserIdKey]}`, undefined, {
+                strict: false,
+              });
+          }
+        } else if (userIds && Object.keys(userIds).length === 0) {
+          // Make userIds object equal  {} to unset de database sub-document.
+          userDoc.set('userIds', undefined, { strict: false });
+        } else {
+          // Replace the entire userIds database sub-document.
           userDoc.set('userIds', userIds);
-        // Make userIds object equal to {} to unset de database sub-document.
-        else userDoc.set('userIds', undefined, { strict: false });
+        }
       }
 
       if (activationTermsAndConditions?.length) {

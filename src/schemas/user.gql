@@ -129,6 +129,11 @@ input UserIdsInput {
   libertyUserId: String
 }
 
+input UpdateUserIdsInput {
+  unsetMissingUserIds: Boolean = false
+  userIds: UserIdsInput!
+}
+
 input UpdateUserInput {
   firstName: String
   lastName: String
@@ -141,7 +146,7 @@ input UpdateUserInput {
   secondaryEmail: String
   language: String
   updateUserNumber: Boolean
-  userIds: UserIdsInput
+  updateUserIds: UpdateUserIdsInput
   activationTermsAndConditions: [ActivationTermsAndConditionsInput]
   gender: String
   dateOfBirth: Date
