@@ -58,6 +58,26 @@ type CommunicationConsent {
   consentGiven: Boolean
 }
 
+input KycInput {
+  StatusCode: Int
+  StatusDescription: String
+  PersonID: String
+  KycID: String
+  RequireMobileNumberCheck: Boolean
+  RequireVideo: Boolean
+  RequireAdditionalDocuments: Boolean
+  AllowAddressEntry: Boolean
+  RequiredAddressFields: String
+  AdditionalDocuments: String
+  VideoDocumentExpiryDate: String
+  VideoDocumentWillExpire: String
+  VideoDocumentExpired: String
+  IbanWillBeCreated: String
+  RequireAddress: Boolean
+  AddressFields: String
+  ReferenceID: String
+}
+
 input CreateUserInput {
   email: String
   password: String
@@ -83,6 +103,7 @@ input CreateUserInput {
   city: String
   state: String
   zipCode: String
+  kyc: KycInput
 }
 
 input ActivationTermsAndConditionsInput {
@@ -133,6 +154,7 @@ input UpdateUserInput {
   city: String
   state: String
   zipCode: String
+  kyc: KycInput
 }
 
 input AcceptAgreementsInput {

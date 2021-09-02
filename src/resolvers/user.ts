@@ -4,7 +4,7 @@ import { auth, config, logger, ResolverBase } from 'src/common';
 import { Context } from 'src/types/context';
 import { UserApi } from 'src/data-sources';
 import { User, Template, IUserIds } from 'src/models';
-import { IOrderContext } from 'src/types';
+import { IOrderContext, IKyc } from 'src/types';
 import { careclix, s3Service } from 'src/services';
 //import { emailService } from '../data-sources/send-email';
 import License from 'src/models/license';
@@ -105,6 +105,7 @@ class Resolvers extends ResolverBase {
         city?: string;
         state?: string;
         zipCode?: string;
+        kyc?: IKyc;
       };
       ipAddress: string;
     },
@@ -138,6 +139,7 @@ class Resolvers extends ResolverBase {
       city,
       state,
       zipCode,
+      kyc,
     } = args.userInfo;
 
     const {
@@ -241,6 +243,7 @@ class Resolvers extends ResolverBase {
         city,
         state,
         zipCode,
+        kyc,
       };
 
       if (typeof communicationConsent === 'boolean') {
@@ -342,6 +345,7 @@ class Resolvers extends ResolverBase {
         zipCode?: string;
         token?: string;
         updateUserNumber?: boolean;
+        kyc?: IKyc;
       };
     },
     context: Context,
@@ -363,6 +367,7 @@ class Resolvers extends ResolverBase {
       updateUserNumber,
       userIds,
       activationTermsAndConditions,
+      kyc,
     } = args.userInfo;
 
     try {
@@ -437,6 +442,11 @@ class Resolvers extends ResolverBase {
           activationTermsAndConditions,
         );
       }
+
+      if (kyc) {
+        userDoc.set('kyc', kyc);
+      }
+
       const savedUser = await userDoc.save();
       if (email && config.brand.toLowerCase() === 'gala') {
         /**

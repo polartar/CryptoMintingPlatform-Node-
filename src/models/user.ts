@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import { IOrderContext } from '../types';
+import { IOrderContext, IKyc } from '../types';
 import { orderContextSchema } from './schemas';
 
 interface IWalletShares {
@@ -143,6 +143,7 @@ export interface IUser extends mongoose.Document {
   lastLogin: Date;
   emailVerified: Date;
   userIds?: IUserIds;
+  kyc?: IKyc;
 }
 
 export async function getNextNumber() {
@@ -393,6 +394,25 @@ export const userSchema = new mongoose.Schema(
     lastLogin: Date,
     emailVerified: Date,
     userIds: { type: userIdsSchema, required: false, default: undefined },
+    kyc: {
+      StatusCode: Number,
+      StatusDescription: String,
+      PersonID: String,
+      KycID: String,
+      RequireMobileNumberCheck: Boolean,
+      RequireVideo: Boolean,
+      RequireAdditionalDocuments: Boolean,
+      AllowAddressEntry: Boolean,
+      RequiredAddressFields: String,
+      AdditionalDocuments: String,
+      VideoDocumentExpiryDate: String,
+      VideoDocumentWillExpire: String,
+      VideoDocumentExpired: String,
+      IbanWillBeCreated: String,
+      RequireAddress: Boolean,
+      AddressFields: String,
+      ReferenceID: String,
+    },
   },
   { id: false },
 );
