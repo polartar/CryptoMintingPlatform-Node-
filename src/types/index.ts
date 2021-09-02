@@ -14,6 +14,7 @@ export { default as IZendeskTicket } from './IZendeskTicket';
 export { default as IShareConfig } from './IShareConfig';
 export { default as ISwapToken } from './ISwapToken';
 export { gameOptions, gameProductCoins, IGameProduct } from './IGameProduct';
+export { default as IKyc } from './IKyc';
 export * from '../models/promotional-rewards';
 export * from '../models/wallet-config';
 export * from './CoinSymbol';
