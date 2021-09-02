@@ -70,6 +70,11 @@ export interface IUserIds {
   libertyUserId?: string;
 }
 
+export interface IUpdateUserIds {
+  unsetMissingUserIds: boolean;
+  userIds: IUserIds;
+}
+
 export interface IUser extends mongoose.Document {
   email: string;
   firebaseUid: string;
@@ -142,7 +147,7 @@ export interface IUser extends mongoose.Document {
   zipCode?: string;
   lastLogin: Date;
   emailVerified: Date;
-  userIds?: IUserIds;
+  updateUserIds?: IUpdateUserIds;
   kyc?: IKyc;
 }
 
@@ -257,22 +262,17 @@ const utmSchema = new mongoose.Schema({
   offer: String,
 });
 
-export const userIdsSchema = new mongoose.Schema(
-  {
-    connectUserId: { type: String, required: false, default: undefined },
-    arcadeUserId: { type: String, required: false, default: undefined },
-    greenUserId: { type: String, required: false, default: undefined },
-    codexUserId: { type: String, required: false, default: undefined },
-    blueUserId: { type: String, required: false, default: undefined },
-    switchUserId: { type: String, required: false, default: undefined },
-    digUserId: { type: String, required: false, default: undefined },
-    giveUserId: { type: String, required: false, default: undefined },
-    libertyUserId: { type: String, required: false, default: undefined },
-  },
-  {
-    minimize: true,
-  },
-);
+export const userIdsSchema = new mongoose.Schema({
+  connectUserId: { type: String, required: false, default: undefined },
+  arcadeUserId: { type: String, required: false, default: undefined },
+  greenUserId: { type: String, required: false, default: undefined },
+  codexUserId: { type: String, required: false, default: undefined },
+  blueUserId: { type: String, required: false, default: undefined },
+  switchUserId: { type: String, required: false, default: undefined },
+  digUserId: { type: String, required: false, default: undefined },
+  giveUserId: { type: String, required: false, default: undefined },
+  libertyUserId: { type: String, required: false, default: undefined },
+});
 
 export const userSchema = new mongoose.Schema(
   {
