@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import { auth, config, logger, ResolverBase } from 'src/common';
 import { Context } from 'src/types/context';
 import { UserApi } from 'src/data-sources';
-import { User, Template } from 'src/models';
+import { User, Template, IUserIds } from 'src/models';
 import { IOrderContext } from 'src/types';
 import { careclix, s3Service } from 'src/services';
 //import { emailService } from '../data-sources/send-email';
@@ -327,6 +327,7 @@ class Resolvers extends ResolverBase {
         communicationConsent?: boolean;
         secondaryEmail?: string;
         language?: string;
+        userIds?: IUserIds;
         activationTermsAndConditions?: {}[];
         gender?: string;
         dateOfBirth?: Date;
@@ -346,6 +347,7 @@ class Resolvers extends ResolverBase {
     context: Context,
   ) => {
     const { user } = context;
+    logger.debug(`resolvers.auth.updateUser.userId:${user && user.userId}`);
     this.requireAuth(user);
     const {
       email,
@@ -359,76 +361,108 @@ class Resolvers extends ResolverBase {
       secondaryEmail,
       language,
       updateUserNumber,
+      userIds,
       activationTermsAndConditions,
     } = args.userInfo;
 
-    const userDoc = await user.findFromDb();
-    const emailPass: { email?: string; password?: string } = {};
+    try {
+      const userDoc = await user.findFromDb();
+      const emailPass: { email?: string; password?: string } = {};
 
-    if (email) {
-      emailPass.email = email;
-      userDoc.set('email', email);
-      userDoc.set('emailVerified', undefined, { strict: false });
-      await auth.updateUserAuth(
-        user.uid,
-        { emailVerified: false },
-        config.hostname,
+      if (email) {
+        emailPass.email = email;
+        userDoc.set('email', email);
+        userDoc.set('emailVerified', undefined, { strict: false });
+        await auth.updateUserAuth(
+          user.uid,
+          { emailVerified: false },
+          config.hostname,
+        );
+      }
+      if (secondaryEmail) {
+        userDoc.set('secondaryEmail', secondaryEmail);
+      }
+      if (password) {
+        emailPass.password = password;
+      }
+      if (emailPass.email || emailPass.password) {
+        await auth.updateUserAuth(user.uid, emailPass, config.hostname);
+      }
+      if (firstName) {
+        userDoc.set('firstName', firstName);
+      }
+      if (lastName) {
+        userDoc.set('lastName', lastName);
+      }
+      if (displayName) {
+        await auth.updateDisplayName(user.uid, config.hostname, displayName);
+        userDoc.set('displayName', displayName);
+      }
+      if (profilePhotoFilename) {
+        const profilePhotoUrl = s3Service.getUrlFromFilename(
+          profilePhotoFilename,
+        );
+        userDoc.set('profilePhotoUrl', profilePhotoUrl);
+      }
+      if (phone) {
+        userDoc.set('phone', phone);
+      }
+      if (language) {
+        userDoc.set('language', language);
+      }
+      if (typeof communicationConsent === 'boolean') {
+        userDoc.set('communicationConsent', [
+          {
+            consentGiven: communicationConsent,
+            timestamp: new Date(),
+          },
+        ]);
+      }
+      if (updateUserNumber && !userDoc.number) {
+        const number = await getNextNumber();
+        userDoc.set('number', number);
+      }
+
+      if (config.brand.toLowerCase() === 'connect' && userIds) {
+        if (Object.keys(userIds).length >= 1)
+          //isn't the empty object {}.
+          userDoc.set('userIds', userIds);
+        // Make userIds object equal to {} to unset de database sub-document.
+        else userDoc.set('userIds', undefined, { strict: false });
+      }
+
+      if (activationTermsAndConditions?.length) {
+        userDoc.set(
+          'activationTermsAndConditions',
+          activationTermsAndConditions,
+        );
+      }
+      const savedUser = await userDoc.save();
+      if (email && config.brand.toLowerCase() === 'gala') {
+        /**
+         * Wheter the next sentence fails or not, it is still needed to return a value,
+         * because at this point the user had been updated.
+         */
+        try {
+          await this.sendVerifyEmail('_', { newAccount: false }, context);
+        } catch (error) {
+          //Todo: consider to add a sendVerifyEmailError field to the graphql type: UpdateUserResponse!,
+          //and set this field here.
+        }
+      }
+      logger.debug(
+        `resolvers.auth.updateUser.updatedProfile.id:${savedUser &&
+          savedUser.id}`,
       );
+      return {
+        success: true,
+        user: savedUser,
+      };
+    } catch (error) {
+      return {
+        success: false,
+      };
     }
-    if (secondaryEmail) {
-      userDoc.set('secondaryEmail', secondaryEmail);
-    }
-    if (password) {
-      emailPass.password = password;
-    }
-    if (emailPass.email || emailPass.password) {
-      await auth.updateUserAuth(user.uid, emailPass, config.hostname);
-    }
-    if (firstName) {
-      userDoc.set('firstName', firstName);
-    }
-    if (lastName) {
-      userDoc.set('lastName', lastName);
-    }
-    if (displayName) {
-      await auth.updateDisplayName(user.uid, config.hostname, displayName);
-      userDoc.set('displayName', displayName);
-    }
-    if (profilePhotoFilename) {
-      const profilePhotoUrl = s3Service.getUrlFromFilename(
-        profilePhotoFilename,
-      );
-      userDoc.set('profilePhotoUrl', profilePhotoUrl);
-    }
-    if (phone) {
-      userDoc.set('phone', phone);
-    }
-    if (language) {
-      userDoc.set('language', language);
-    }
-    if (typeof communicationConsent === 'boolean') {
-      userDoc.set('communicationConsent', [
-        {
-          consentGiven: communicationConsent,
-          timestamp: new Date(),
-        },
-      ]);
-    }
-    if (updateUserNumber && !userDoc.number) {
-      const number = await getNextNumber();
-      userDoc.set('number', number);
-    }
-    if (activationTermsAndConditions?.length) {
-      userDoc.set('activationTermsAndConditions', activationTermsAndConditions);
-    }
-    const savedUser = await userDoc.save();
-    if (email && config.brand.toLowerCase() === 'gala') {
-      await this.sendVerifyEmail('_', { newAccount: false }, context);
-    }
-    return {
-      success: true,
-      user: savedUser,
-    };
   };
 
   public getUserProfile = async (

@@ -58,6 +58,18 @@ interface ISoftNodeLicenses {
   [key: string]: number;
 }
 
+export interface IUserIds {
+  connectUserId?: string;
+  arcadeUserId?: string;
+  greenUserId?: string;
+  codexUserId?: string;
+  blueUserId?: string;
+  switchUserId?: string;
+  digUserId?: string;
+  giveUserId?: string;
+  libertyUserId?: string;
+}
+
 export interface IUser extends mongoose.Document {
   email: string;
   firebaseUid: string;
@@ -130,13 +142,7 @@ export interface IUser extends mongoose.Document {
   zipCode?: string;
   lastLogin: Date;
   emailVerified: Date;
-  userIds?: {
-    codexUserId?: string;
-    greenUserId?: string;
-    connectUserId?: string;
-    arcadeUserId?: string;
-    blueUserId?: string;
-  };
+  userIds?: IUserIds;
 }
 
 export async function getNextNumber() {
@@ -249,6 +255,23 @@ const utmSchema = new mongoose.Schema({
   utmTerm: String,
   offer: String,
 });
+
+export const userIdsSchema = new mongoose.Schema(
+  {
+    connectUserId: { type: String, required: false, default: undefined },
+    arcadeUserId: { type: String, required: false, default: undefined },
+    greenUserId: { type: String, required: false, default: undefined },
+    codexUserId: { type: String, required: false, default: undefined },
+    blueUserId: { type: String, required: false, default: undefined },
+    switchUserId: { type: String, required: false, default: undefined },
+    digUserId: { type: String, required: false, default: undefined },
+    giveUserId: { type: String, required: false, default: undefined },
+    libertyUserId: { type: String, required: false, default: undefined },
+  },
+  {
+    minimize: true,
+  },
+);
 
 export const userSchema = new mongoose.Schema(
   {
@@ -369,6 +392,7 @@ export const userSchema = new mongoose.Schema(
     zipCode: String,
     lastLogin: Date,
     emailVerified: Date,
+    userIds: { type: userIdsSchema, required: false, default: undefined },
   },
   { id: false },
 );
