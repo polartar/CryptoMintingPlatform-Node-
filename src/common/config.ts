@@ -244,6 +244,12 @@ class Config {
     general: 14643,
   };
 
+  public readonly redisInfo = {
+    host: env.REDIS_HOST,
+    port: env.REDIS_PORT,
+    password: env.REDIS_PASSWORD,
+  };
+
   constructor() {
     autoBind(this);
     this.ensureRequiredVariables();
@@ -320,6 +326,9 @@ class Config {
       'FIREBASE_CLIENT_PROJECT_ID',
       'CLAIM_FEE_RECEIVE_ADDRESS',
       'WP_API_URL',
+      'REDIS_HOST',
+      'REDIS_PORT',
+      'REDIS_PASSWORD',
     ].filter(name => !env[name]);
     if (missingEnvVariables.length > 0) {
       throw new Error(
