@@ -100,7 +100,8 @@ class Controller {
 
       const brand = config.brand;
       const hostname = config.hostname;
-      const serviceRecords = keys.serviceAccountKeys;
+      const serviceRecordsKeys = keys.serviceAccountKeys;
+      const serviceRecords = keys.serviceAccounts;
       const apiKeyService = await credentialService.checkHealthStatus(
         '11111111',
       );
@@ -110,6 +111,7 @@ class Controller {
         brand,
         hostname,
         serviceRecords,
+        serviceRecordsKeys,
         apiKeyService,
         mongoDbHost,
       });
