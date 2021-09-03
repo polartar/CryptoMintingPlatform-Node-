@@ -11,13 +11,7 @@ export class CartQueue {
   private cronTask: any;
   private coinsToWatch: string[] = ['BTC', 'ETH'];
   constructor() {
-    //console.log('building queue');
-    const redisInfo = {
-      host: 'redis-13847.c111.us-east-1-mz.ec2.cloud.redislabs.com',
-      port: 13847,
-      password: '5huUbUZpI6CXsf3lCyiOw876aUpwb9F5',
-    };
-
+    const redisInfo = config.redisInfo;
     promisifyAll(redis);
     this.client = redis.createClient(redisInfo);
 
