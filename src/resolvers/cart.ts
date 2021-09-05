@@ -1,10 +1,40 @@
 import { Context } from '../types';
 import ResolverBase from '../common/Resolver-Base';
 import { cartQueue } from '../blockchain-listeners/cart-queue';
-// import { User } from '../models';
 import { addHours } from 'date-fns';
+import { ICartAddress } from '../types/ICartAddress';
+import addressRequestModel, {
+  ICartAddressRequest,
+} from '../models/cart-address-requests';
+import { logger } from '../common';
 
 class Resolvers extends ResolverBase {
+  private auditAddressRequest(
+    request: ICartAddressRequest,
+  ): { success: boolean; message?: string } {
+    const addressRequest = new addressRequestModel();
+    if (request.userId) addressRequest.userId = request.userId;
+    if (request.coinSymbol) addressRequest.coinSymbol = request.coinSymbol;
+    if (request.amount) addressRequest.amount = request.amount;
+    addressRequest.affiliateId = request.affiliateId;
+    addressRequest.affiliateSessionId = request.affiliateSessionId;
+    addressRequest.affiliateSessionId = request.utmVariables;
+    addressRequest.addresses = request.addresses;
+
+    try {
+      const savedRequest = addressRequest.save();
+      if (!savedRequest) throw new Error('AddressRequest not saved in DB');
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+      };
+    }
+    return {
+      success: true,
+    };
+  }
+
   getCartAddress = async (
     parent: any,
     args: {
@@ -18,8 +48,16 @@ class Resolvers extends ResolverBase {
     ctx: Context,
   ) => {
     const { wallet } = ctx;
-    const { coinSymbol, orderId, amount, utmVariables } = args;
-    const result = [];
+    const userId = ctx.user ? ctx.user.userId : undefined;
+    const {
+      coinSymbol,
+      orderId,
+      amount,
+      affiliateId,
+      affiliateSessionId,
+      utmVariables,
+    } = args;
+    const addresses: ICartAddress[] = [];
 
     try {
       const expDate = addHours(new Date(), 1);
@@ -35,7 +73,7 @@ class Resolvers extends ResolverBase {
           address: address.address,
           exp: expDate,
         });
-        result.push(address);
+        addresses.push(address);
       } else {
         //TODO : USE THE utmContent
 
@@ -49,7 +87,7 @@ class Resolvers extends ResolverBase {
           address: btcAddress.address,
           exp: expDate,
         });
-        result.push(btcAddress);
+        addresses.push(btcAddress);
 
         const ethWalletApi = wallet.coin('ETH');
         const ethAddress = await ethWalletApi.getCartAddress(
@@ -61,28 +99,43 @@ class Resolvers extends ResolverBase {
           address: ethAddress.address,
           exp: expDate,
         });
-        result.push(ethAddress);
-
-        // const galaWalletApi = wallet.coin('GALA');
-        // const galaAddress = await galaWalletApi.getCartAddress('GALA', orderId, amount);
-        // cartQueue.setCartWatcher(config.brand, 'GALA', orderId, {address: galaAddress.address, exp: expDate});
-        // result.push(galaAddress);
-
-        // const greenWalletApi = wallet.coin('GREEN');
-        // const greenAddress = await greenWalletApi.getCartAddress('GREEN', orderId, amount);
-        // cartQueue.setCartWatcher(config.brand, 'GREEN', orderId, {address: greenAddress.address, exp: expDate});
-        // result.push(greenAddress);
-
-        // const batWalletApi = wallet.coin('BAT');
-        // const batAddress = await batWalletApi.getCartAddress('BAT', orderId, amount);
-        // result.push(batAddress);
+        addresses.push(ethAddress);
       }
-      return result;
+      // const galaWalletApi = wallet.coin('GALA');
+      // const galaAddress = await galaWalletApi.getCartAddress('GALA', orderId, amount);
+      // cartQueue.setCartWatcher(config.brand, 'GALA', orderId, {address: galaAddress.address, exp: expDate});
+      // result.push(galaAddress);
+
+      // const greenWalletApi = wallet.coin('GREEN');
+      // const greenAddress = await greenWalletApi.getCartAddress('GREEN', orderId, amount);
+      // cartQueue.setCartWatcher(config.brand, 'GREEN', orderId, {address: greenAddress.address, exp: expDate});
+      // result.push(greenAddress);
+
+      // const batWalletApi = wallet.coin('BAT');
+      // const batAddress = await batWalletApi.getCartAddress('BAT', orderId, amount);
+      // result.push(batAddress);
+      const auditAddressResult = this.auditAddressRequest({
+        userId,
+        coinSymbol,
+        orderId,
+        amount,
+        affiliateId,
+        affiliateSessionId,
+        utmVariables,
+        addresses,
+        created: new Date(),
+      });
+
+      //Todo: Maybe add some action besides logger.debug
+      if (!auditAddressResult.success) logger.debug(auditAddressResult.message);
+
+      return addresses;
     } catch (error) {
       // logger.warn(`resolvers.wallet.getTransactions.catch: ${error}`);
       throw error;
     }
   };
+
   sendCartTransaction = async (
     parent: any,
     args: {
