@@ -17,3 +17,8 @@ export interface ICartBalanceTransaction {
   created: string;
   confirmations: number;
 }
+
+export enum CartType {
+  woocommerce,
+  memberpress,
+}

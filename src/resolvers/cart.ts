@@ -72,6 +72,9 @@ class Resolvers extends ResolverBase {
         cartQueue.setCartWatcher(coinSymbol.toUpperCase(), orderId, {
           address: address.address,
           exp: expDate,
+          affiliateId,
+          affiliateSessionId,
+          utmVariables
         });
         addresses.push(address);
       } else {
@@ -86,6 +89,9 @@ class Resolvers extends ResolverBase {
         cartQueue.setCartWatcher('BTC', orderId, {
           address: btcAddress.address,
           exp: expDate,
+          affiliateId,
+          affiliateSessionId,
+          utmVariables
         });
         addresses.push(btcAddress);
 
@@ -98,6 +104,9 @@ class Resolvers extends ResolverBase {
         cartQueue.setCartWatcher('ETH', orderId, {
           address: ethAddress.address,
           exp: expDate,
+          affiliateId,
+          affiliateSessionId,
+          utmVariables
         });
         addresses.push(ethAddress);
       }
