@@ -1,6 +1,6 @@
 {
   "name": "wallet-server",
-  "version": "0.4.105",
+  "version": "0.4.106",
   "main": "lib/index.js",
   "config": {
     "dockerport": 4444

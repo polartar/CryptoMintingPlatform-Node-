@@ -180,7 +180,7 @@ export class CartQueue {
             logger.error(
               `cart-queue.getCartWatcher.updateOrderToWooCart failed to update - ${err} : ${JSON.stringify(
                 valueObj,
-              )} : ${JSON.stringify(balance)} : ${symbol}`,
+              )} : ${JSON.stringify(balance)} : ${symbol} : ${key}`,
             );
           }
         } else {

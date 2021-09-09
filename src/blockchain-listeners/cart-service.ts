@@ -92,7 +92,7 @@ export class CartService extends ServerToServerService {
     balance: number,
     coinSymbol: string,
     orderId: string,
-  ): Promise<WooTxOrders[]> => {
+  ): Promise<MemprTxOrders[]> => {
     const postBody: any = {
       ApiKey: '338a3ba7-69b8-41ac-a920-9727ae939ba3',
       OrderId: orderId,
@@ -106,10 +106,11 @@ export class CartService extends ServerToServerService {
     try {
       const axios = this.getAxios({ role: 'system' });
 
-      const result = await axios.post<WooTxOrders[]>(
+      const result = await axios.post<MemprTxOrders[]>(
         `${config.wpCartApiUrl}/update_wp_tx_order`,
         postBody,
       );
+      https://share.green/wp-json/bb_wallet/v1/update_wp_tx_order
 
       return result.data;
     } catch (err) {
