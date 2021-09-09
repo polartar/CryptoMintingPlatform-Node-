@@ -6,8 +6,9 @@ type CartAddress {
 
 type Mutation {
   getCartAddress(
-    coinSymbol: String
+    coinSymbol: String!
     orderId: String!
+    amount: String!
     affiliateId: String
     affiliateSessionId: String
     utmVariables: String

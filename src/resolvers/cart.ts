@@ -23,12 +23,15 @@ class Resolvers extends ResolverBase {
     addressRequest.addresses = request.addresses;
     addressRequest.orderId = request.orderId;
 
-    try{
+    try {
       const service: CartService = new CartService();
       const txInfo: any = await service.getOrdersFromMeprCart(request.orderId);
       addressRequest.amount = txInfo.total;
-    } catch(error) {
-      logger.info(`Couldn't find the transaction info ${request.orderId} - `, error);
+    } catch (error) {
+      logger.info(
+        `Couldn't find the transaction info ${request.orderId} - `,
+        error,
+      );
     }
 
     try {
@@ -48,9 +51,9 @@ class Resolvers extends ResolverBase {
   getCartAddress = async (
     parent: any,
     args: {
-      coinSymbol?: string;
+      coinSymbol: string;
       orderId: string;
-      amount?: string;
+      amount: string;
       affiliateId: string;
       affiliateSessionId: string;
       utmVariables: string;
@@ -72,54 +75,55 @@ class Resolvers extends ResolverBase {
     try {
       const expDate = addHours(new Date(), 1);
 
-      if (coinSymbol) {
-        const walletApi = wallet.coin(coinSymbol);
-        const address = await walletApi.getCartAddress(
-          coinSymbol,
-          orderId,
-          amount,
-        );
-        cartQueue.setCartWatcher(coinSymbol.toUpperCase(), orderId, {
-          address: address.address,
-          exp: expDate,
-          affiliateId,
-          affiliateSessionId,
-          utmVariables
-        });
-        addresses.push(address);
-      } else {
-        //TODO : USE THE utmContent
+      // if (coinSymbol) {
+      const walletApi = wallet.coin(coinSymbol);
+      const address = await walletApi.getCartAddress(
+        coinSymbol,
+        orderId,
+        amount,
+      );
+      cartQueue.setCartWatcher(coinSymbol.toUpperCase(), orderId, {
+        address: address.address,
+        exp: expDate,
+        affiliateId,
+        affiliateSessionId,
+        utmVariables,
+      });
+      addresses.push(address);
+      //}
+      // else {
+      //   //TODO : USE THE utmContent
 
-        const btcWalletApi = wallet.coin('BTC');
-        const btcAddress = await btcWalletApi.getCartAddress(
-          'BTC',
-          orderId,
-          amount,
-        );
-        cartQueue.setCartWatcher('BTC', orderId, {
-          address: btcAddress.address,
-          exp: expDate,
-          affiliateId,
-          affiliateSessionId,
-          utmVariables
-        });
-        addresses.push(btcAddress);
+      //   const btcWalletApi = wallet.coin('BTC');
+      //   const btcAddress = await btcWalletApi.getCartAddress(
+      //     'BTC',
+      //     orderId,
+      //     amount,
+      //   );
+      //   cartQueue.setCartWatcher('BTC', orderId, {
+      //     address: btcAddress.address,
+      //     exp: expDate,
+      //     affiliateId,
+      //     affiliateSessionId,
+      //     utmVariables
+      //   });
+      //   addresses.push(btcAddress);
 
-        const ethWalletApi = wallet.coin('ETH');
-        const ethAddress = await ethWalletApi.getCartAddress(
-          'ETH',
-          orderId,
-          amount,
-        );
-        cartQueue.setCartWatcher('ETH', orderId, {
-          address: ethAddress.address,
-          exp: expDate,
-          affiliateId,
-          affiliateSessionId,
-          utmVariables
-        });
-        addresses.push(ethAddress);
-      }
+      //   const ethWalletApi = wallet.coin('ETH');
+      //   const ethAddress = await ethWalletApi.getCartAddress(
+      //     'ETH',
+      //     orderId,
+      //     amount,
+      //   );
+      //   cartQueue.setCartWatcher('ETH', orderId, {
+      //     address: ethAddress.address,
+      //     exp: expDate,
+      //     affiliateId,
+      //     affiliateSessionId,
+      //     utmVariables
+      //   });
+      //   addresses.push(ethAddress);
+      // }
       // const galaWalletApi = wallet.coin('GALA');
       // const galaAddress = await galaWalletApi.getCartAddress('GALA', orderId, amount);
       // cartQueue.setCartWatcher(config.brand, 'GALA', orderId, {address: galaAddress.address, exp: expDate});
@@ -183,7 +187,14 @@ class Resolvers extends ResolverBase {
     const walletApi = wallet.coin(parent.symbol);
     const addressArry = await this.getCartAddress(
       parent,
-      { coinSymbol, orderId, affiliateId, affiliateSessionId, utmVariables },
+      {
+        coinSymbol,
+        orderId,
+        amount,
+        affiliateId,
+        affiliateSessionId,
+        utmVariables,
+      },
       ctx,
     );
     const addressToSend = addressArry[0].address;
