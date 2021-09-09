@@ -1,117 +1,210 @@
-import UNISWAP = require('@uniswap/sdk');
-import { ISwapToken } from '../types';
 import { ServerToServerService } from './server-to-server';
 import ethers = require('ethers');
-import { WETH } from '@uniswap/sdk';
+import { UniswapPair, ETH, TradeContext } from 'simple-uniswap-sdk';
+import { config, logger } from '../common';
 
-const ETHEREUM_NODE_URL = '';
-const CONTRACT_ADDRESS = '';
-const chainId = UNISWAP.ChainId.MAINNET;
+const ETHEREUM_NODE_URL = config.ethNodeUrl;
+const chainId = config.chainId;
 
 class StartSwap extends ServerToServerService {
   public confirmSwap = async (
+    decryptedString: string,
+    inputToken: string,
+    outputToken: string,
     amount: string,
-    toAddress: string,
-    decryptedKey: any,
+    receiveAddress: string,
   ) => {
     try {
-      const to = toAddress;
-      return { message: 'Success' };
-      // const provider = new ethers.providers.JsonRpcProvider(ETHEREUM_NODE_URL);
-      // const signer = new ethers.Wallet(decryptedKey, provider);
-      // const account = signer.connect(provider);
-      // const uniswap = new ethers.Contract(
-      //   CONTRACT_ADDRESS,
-      //   [
-      //     'function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) external payable returns (uint[] memory amounts)',
-      //     'function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external returns (uint[] memory amounts)',
-      //     'function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external returns (uint[] memory amounts)',
-      //   ],
-      //   account,
-      // );
-      // let tx;
-      // if (inputToken[0].address === WETH[chainId].address) {
-      //   console.log(`Swap exact ETH for tokens`);
-      //   tx = await uniswap.swapExactETHForTokens(
-      //     amountOutMin,
-      //     path,
-      //     to,
-      //     deadLine,
-      //     { value: amountIn },
-      //   );
-      // } else if (outputToken[0].address === WETH[chainId].address) {
-      //   console.log(`Swap exact tokens for ETH`);
-      //   tx = await uniswap.swapExactTokensForETH(
-      //     amountIn,
-      //     amountOutMin,
-      //     path,
-      //     to,
-      //     deadLine,
-      //   );
-      // } else {
-      //   console.log(`Swap exact tokens for tokens`);
-      //   tx = await uniswap.swapExactTokensForTokens(
-      //     amountIn,
-      //     amountOutMin,
-      //     path,
-      //     to,
-      //     deadLine,
-      //   );
-      // }
-      // console.log(`Transaction hash: ${tx.hash}`);
-      // const receipt = await tx.wait();
-      // console.log(`Transaction has been mint in block ${receipt.blocknumber}`);
-      // return { message: 'Success' };
+      if (
+        inputToken !== ETH.MAINNET().contractAddress &&
+        outputToken !== ETH.MAINNET().contractAddress
+      ) {
+        const { trade, uniswapPairFactory, message } = await this.uniswapSwap(
+          inputToken,
+          outputToken,
+          amount,
+          receiveAddress,
+        );
+
+        if (message !== 'Success') {
+          throw new Error(message);
+        }
+
+        if (!trade.fromBalance.hasEnough) {
+          throw new Error(
+            'You do not have enough from balance to execute this swap',
+          );
+        }
+
+        const provider = new ethers.providers.JsonRpcProvider(
+          uniswapPairFactory.providerUrl,
+        );
+        const wallet = new ethers.Wallet(decryptedString, provider);
+
+        return this.firmAndSendSwap(trade, wallet);
+      }
+
+      if (
+        inputToken === ETH.MAINNET().contractAddress &&
+        outputToken !== ETH.MAINNET().contractAddress
+      ) {
+        const { trade, uniswapPairFactory, message } = await this.uniswapSwap(
+          inputToken,
+          outputToken,
+          amount,
+          receiveAddress,
+        );
+
+        if (message !== 'Success') {
+          throw new Error(message);
+        }
+
+        if (!trade.fromBalance.hasEnough) {
+          throw new Error(
+            'You do not have enough from balance to execute this swap',
+          );
+        }
+
+        const provider = new ethers.providers.JsonRpcProvider(
+          uniswapPairFactory.providerUrl,
+        );
+        const wallet = new ethers.Wallet(decryptedString, provider);
+
+        return this.firmAndSendSwap(trade, wallet);
+      }
+
+      if (
+        outputToken === ETH.MAINNET().contractAddress &&
+        inputToken !== ETH.MAINNET().contractAddress
+      ) {
+        const { trade, uniswapPairFactory, message } = await this.uniswapSwap(
+          inputToken,
+          outputToken,
+          amount,
+          receiveAddress,
+        );
+
+        if (message !== 'Success') {
+          throw new Error(message);
+        }
+
+        if (!trade.fromBalance.hasEnough) {
+          throw new Error(
+            'You do not have enough from balance to execute this swap',
+          );
+        }
+
+        const provider = new ethers.providers.JsonRpcProvider(
+          uniswapPairFactory.providerUrl,
+        );
+        const wallet = new ethers.Wallet(decryptedString, provider);
+
+        return this.firmAndSendSwap(trade, wallet);
+      }
     } catch (error) {
-      throw new Error(error);
+      logger.warn('Failed to get service from swap:' + error);
+      return {
+        message: error,
+      };
+    }
+  };
+
+  private firmAndSendSwap = async (
+    swap: TradeContext,
+    wallet: ethers.ethers.Wallet,
+  ) => {
+    try {
+      if (swap.approvalTransaction) {
+        const approved = await wallet.sendTransaction(swap.approvalTransaction);
+        console.log('approved txHash', approved.hash);
+        const approvedReceipt = await approved.wait();
+        console.log('approved receipt', approvedReceipt);
+      }
+
+      const tradeTransaction = await wallet.sendTransaction(swap.transaction);
+      console.log('trade txHash', tradeTransaction.hash);
+      const tradeReceipt = await tradeTransaction.wait();
+      console.log('trade receipt', tradeReceipt);
+
+      swap.destroy();
+
+      return {
+        message: 'Success',
+      };
+    } catch (error) {
+      return error;
     }
   };
 
   public uniswapSwap = async (
-    inputToken: ISwapToken[],
-    outputToken: ISwapToken[],
+    inputToken: string,
+    outputToken: string,
     amount: string,
+    receiveAddress: string,
   ) => {
     try {
-      const InToken = new UNISWAP.Token(
-        inputToken[0].chainId,
-        inputToken[0].address,
-        inputToken[0].decimals,
-        inputToken[0].symbol,
-        inputToken[0].name,
-      );
+      if (
+        inputToken !== ETH.MAINNET().contractAddress &&
+        outputToken !== ETH.MAINNET().contractAddress
+      ) {
+        const uniswapPair = new UniswapPair({
+          fromTokenContractAddress: inputToken,
+          toTokenContractAddress: outputToken,
+          ethereumAddress: receiveAddress,
+          chainId: chainId,
+        });
+        const uniswapPairFactory = await uniswapPair.createFactory();
+        const trade = await uniswapPairFactory.trade(amount);
 
-      const OutToken = new UNISWAP.Token(
-        outputToken[0].chainId,
-        outputToken[0].address,
-        outputToken[0].decimals,
-        outputToken[0].symbol,
-        outputToken[0].name,
-      );
+        return {
+          message: 'Success',
+          uniswapPair,
+          uniswapPairFactory,
+          trade,
+        };
+      }
 
-      const pair = await UNISWAP.Fetcher.fetchPairData(OutToken, InToken);
-      const route = new UNISWAP.Route([pair], InToken);
-      const midPrice = route.midPrice.toSignificant(6);
-      const midPriceInverted = route.midPrice.invert().toSignificant(6);
-      const trade = new UNISWAP.Trade(
-        route,
-        new UNISWAP.TokenAmount(InToken, amount),
-        UNISWAP.TradeType.EXACT_INPUT,
-      );
+      if (
+        inputToken === ETH.MAINNET().contractAddress &&
+        outputToken !== ETH.MAINNET().contractAddress
+      ) {
+        const uniswapPair = new UniswapPair({
+          fromTokenContractAddress: ETH.MAINNET().contractAddress,
+          toTokenContractAddress: outputToken,
+          ethereumAddress: receiveAddress,
+          chainId: chainId,
+        });
+        const uniswapPairFactory = await uniswapPair.createFactory();
+        const trade = await uniswapPairFactory.trade(amount);
 
-      console.log(trade);
-      return {
-        message: 'succes',
-        midPrice: midPrice,
-        midPriceInverted: midPriceInverted,
-      };
-      const slippageTolerance = new UNISWAP.Percent('50', '10000'); //Bits => 0.050%
-      const amountOutMin = ethers.BigNumber.from(
-        trade.minimumAmountOut(slippageTolerance).raw.toString(),
-      );
-      const amountIn = ethers.BigNumber.from(trade.inputAmount.raw.toString());
-      const path = [InToken.address, OutToken];
-      const deadLine = Math.floor(Date.now() / 1000 / 60) + 60;
+        return {
+          message: 'Success',
+          uniswapPair,
+          uniswapPairFactory,
+          trade,
+        };
+      }
+
+      if (
+        outputToken === ETH.MAINNET().contractAddress &&
+        inputToken !== ETH.MAINNET().contractAddress
+      ) {
+        const uniswapPair = new UniswapPair({
+          fromTokenContractAddress: inputToken,
+          toTokenContractAddress: ETH.MAINNET().contractAddress,
+          ethereumAddress: receiveAddress,
+          chainId: chainId,
+        });
+        const uniswapPairFactory = await uniswapPair.createFactory();
+        const trade = await uniswapPairFactory.trade(amount);
+
+        return {
+          message: 'Success',
+          uniswapPair,
+          uniswapPairFactory,
+          trade,
+        };
+      }
     } catch (error) {
       throw new Error(error);
     }

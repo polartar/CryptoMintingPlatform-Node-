@@ -1,6 +1,6 @@
 {
   "name": "wallet-server",
-  "version": "0.4.103",
+  "version": "0.4.105",
   "main": "lib/index.js",
   "config": {
     "dockerport": 4444
@@ -69,6 +69,7 @@
     "qrcode": "^1.4.4",
     "redis": "^3.1.2",
     "simple-crypto-js": "^2.5.0",
+    "simple-uniswap-sdk": "^3.4.2",
     "speakeasy": "^2.0.0",
     "subscriptions-transport-ws": "^0.9.16",
     "uuid": "^3.4.0",

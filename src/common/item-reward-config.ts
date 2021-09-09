@@ -28,7 +28,6 @@ const betaKey = {
   contractAddress: contractAddresses.gala,
   tokenId: tokenIds[BETA_KEY],
   symbol: '',
-  chainId: config.chainId,
   supplyWarnThreshold: 1000,
   WalletInterface: Erc1155API, // Do not use. This is just to make typescript happy.
 };
@@ -43,7 +42,6 @@ const alfaFountainOk = {
   contractAddress: contractAddresses.gala,
   tokenId: tokenIds[ALFA_FOUNTAIN_OK],
   symbol: '',
-  chainId: config.chainId,
   supplyWarnThreshold: 1000,
   WalletInterface: Erc1155API, // Do not use. This is just to make typescript happy.
 };
@@ -58,7 +56,6 @@ const alfaFountainGood = {
   contractAddress: contractAddresses.gala,
   tokenId: tokenIds[ALFA_FOUNTAIN_GOOD],
   symbol: '',
-  chainId: config.chainId,
   supplyWarnThreshold: 1000,
   WalletInterface: Erc1155API, // Do not use. This is just to make typescript happy.
 };
@@ -74,7 +71,6 @@ const alfaFountainGreat = {
   tokenId: tokenIds[ALFA_FOUNTAIN_GREAT],
   symbol: '',
   supplyWarnThreshold: 1000,
-  chainId: config.chainId,
   WalletInterface: Erc1155API, // Do not use. This is just to make typescript happy.
 };
 const alfaFountainMajestic = {
@@ -88,7 +84,6 @@ const alfaFountainMajestic = {
   contractAddress: contractAddresses.gala,
   tokenId: tokenIds[ALFA_FOUNTAIN_MAJESTIC],
   symbol: '',
-  chainId: config.chainId,
   supplyWarnThreshold: 100,
   WalletInterface: Erc1155API, // Do not use. This is just to make typescript happy.
 };
@@ -104,7 +99,6 @@ const expressDepot = {
   contractAddress: contractAddresses.gala,
   tokenId: tokenIds[EXPRESS_DEPOT],
   symbol: '',
-  chainId: config.chainId,
   supplyWarnThreshold: 1000,
   WalletInterface: Erc1155API, // Do not use. This is just to make typescript happy.
 };

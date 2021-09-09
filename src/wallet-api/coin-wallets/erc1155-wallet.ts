@@ -10,7 +10,6 @@ import { ITokenBalanceTransactions } from '../../pipelines';
 class Erc1155API extends EthWallet {
   contract: ethers.Contract;
   decimalPlaces: number;
-  chainId: number;
   decimalFactor: BigNumber;
   decimalFactorNegative: BigNumber;
   provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
@@ -38,7 +37,6 @@ class Erc1155API extends EthWallet {
     decimalPlaces,
     contractAddress,
     tokenId,
-    chainId,
   }: ICoinMetadata) {
     if (!abi)
       throw new Error(
@@ -135,7 +133,6 @@ class Erc1155API extends EthWallet {
         blockNumAtCreation,
         canSendFunds: true,
         lookupTransactionsBy: ethAddress,
-        chainId: this.chainId,
         decimalPlaces: this.decimalPlaces,
       };
     } catch (error) {

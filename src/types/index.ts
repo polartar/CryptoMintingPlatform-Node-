@@ -12,7 +12,6 @@ export { default as ISendOutput } from './ISendOutput';
 export { default as IZendeskRequest } from './IZendeskRequest';
 export { default as IZendeskTicket } from './IZendeskTicket';
 export { default as IShareConfig } from './IShareConfig';
-export { default as ISwapToken } from './ISwapToken';
 export { gameOptions, gameProductCoins, IGameProduct } from './IGameProduct';
 export { default as IKyc } from './IKyc';
 export * from '../models/promotional-rewards';

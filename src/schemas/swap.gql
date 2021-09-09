@@ -3,50 +3,27 @@ type Balance {
   unconfirmed: String!
 }
 
-type FeeEstimate {
-  estimatedFee: String!
-  feeCurrency: String!
-  feeCurrencyBalance: String!
-}
-
 type Tokens {
   symbol: String!
   name: String!
   balance: Balance!
   icon: String!
   receiveAddress: String!
-  feeEstimate: FeeEstimate!
-  contractAddress: String
-  chainId: Int!
-  decimalPlaces: Int!
+  contractAddress: String!
 }
 
-type Receipt {
+type Trade {
   message: String!
   midPrice: String!
   midPriceInverted: String!
+  path: String!
+  liquidityProviderFee: String!
+  liquidityProviderFeePercent: Float!
+  tradeExpires: Float!
 }
 
 type Confirmation {
   message: String
-}
-
-input InputToken {
-  #INPUT token
-  chainId: Int!
-  decimals: Int!
-  symbol: String
-  name: String
-  address: String!
-}
-
-input OutputToken {
-  #OUTPUT token
-  chainId: Int!
-  decimals: Int!
-  symbol: String
-  name: String
-  address: String!
 }
 
 type Query {
@@ -55,9 +32,16 @@ type Query {
 
 type Mutation {
   startSwap(
+    coinSymbol: String!
     amount: String!
-    inputToken: [InputToken!]!
-    outputToken: [OutputToken!]!
-  ): Receipt
-  confirmSwap(coinSymbol: String!): Confirmation
+    inputToken: String!
+    outputToken: String!
+  ): Trade
+  confirmSwap(
+    coinSymbol: String!
+    amount: String!
+    inputToken: String!
+    outputToken: String!
+    walletPassword: String!
+  ): Confirmation
 }
