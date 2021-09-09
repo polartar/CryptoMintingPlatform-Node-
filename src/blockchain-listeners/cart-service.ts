@@ -15,7 +15,7 @@ export class CartService extends ServerToServerService {
     const result = await axios.post<MemprTxOrders>(
       `${
         config.wpCartApiUrl
-      }/get_mepr_tx_order_status?ApiKey=338a3ba7-69b8-41ac-a920-9727ae939ba3&OrderId=${orderId}`,
+      }/get_mepr_tx_order?ApiKey=338a3ba7-69b8-41ac-a920-9727ae939ba3&OrderId=${orderId}`,
       {},
     );
 
@@ -130,7 +130,7 @@ export class MemprTxOrders {
   'success': number;
   'message': string;
   'status': string;
-  'original_parameters': string;
+  'tx-json': string;
 }
 export class MeprTxOrder {
   'status': string;

@@ -139,7 +139,7 @@ export class CartQueue {
             }
             else{
               const orderResponse = await service.getOrdersFromMeprCart(orderId);
-              const orderInfo: any = JSON.parse(orderResponse.original_parameters);
+              const orderInfo: any = JSON.parse(orderResponse['tx-json']);
 
               if(+balance.amountUnconfirmed >= +orderInfo['total']) {
                 service.updateTransactionToMemberpressCart(

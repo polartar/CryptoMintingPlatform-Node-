@@ -1,6 +1,7 @@
 import { Context } from '../types';
 import ResolverBase from '../common/Resolver-Base';
 import { cartQueue } from '../blockchain-listeners/cart-queue';
+import { CartService } from '../blockchain-listeners/cart-service';
 import { addHours } from 'date-fns';
 import { ICartAddress } from '../types/ICartAddress';
 import addressRequestModel, {
@@ -9,20 +10,29 @@ import addressRequestModel, {
 import { logger } from '../common';
 
 class Resolvers extends ResolverBase {
-  private auditAddressRequest(
+  auditAddressRequest = async (
     request: ICartAddressRequest,
-  ): { success: boolean; message?: string } {
+  ): Promise<{ success: boolean; message?: string }> => {
     const addressRequest = new addressRequestModel();
-    if (request.userId) addressRequest.userId = request.userId;
-    if (request.coinSymbol) addressRequest.coinSymbol = request.coinSymbol;
-    if (request.amount) addressRequest.amount = request.amount;
+    addressRequest.userId = request.userId ?? '';
+    addressRequest.coinSymbol = request.coinSymbol ?? '';
+    addressRequest.amount = request.amount ?? '';
     addressRequest.affiliateId = request.affiliateId;
     addressRequest.affiliateSessionId = request.affiliateSessionId;
     addressRequest.affiliateSessionId = request.utmVariables;
     addressRequest.addresses = request.addresses;
+    addressRequest.orderId = request.orderId;
+
+    try{
+      const service: CartService = new CartService();
+      const txInfo: any = await service.getOrdersFromMeprCart(request.orderId);
+      addressRequest.amount = txInfo.total;
+    } catch(error) {
+      logger.info(`Couldn't find the transaction info ${request.orderId} - `, error);
+    }
 
     try {
-      const savedRequest = addressRequest.save();
+      const savedRequest = await addressRequest.save();
       if (!savedRequest) throw new Error('AddressRequest not saved in DB');
     } catch (error) {
       return {
@@ -33,7 +43,7 @@ class Resolvers extends ResolverBase {
     return {
       success: true,
     };
-  }
+  };
 
   getCartAddress = async (
     parent: any,
@@ -123,7 +133,7 @@ class Resolvers extends ResolverBase {
       // const batWalletApi = wallet.coin('BAT');
       // const batAddress = await batWalletApi.getCartAddress('BAT', orderId, amount);
       // result.push(batAddress);
-      const auditAddressResult = this.auditAddressRequest({
+      const auditAddressResult = await this.auditAddressRequest({
         userId,
         coinSymbol,
         orderId,
