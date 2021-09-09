@@ -50,7 +50,6 @@ type Wallet {
   feeEstimate: FeeEstimate!
   contractAddress: String
   canSendFunds: Boolean!
-  chainId: Int
   decimalPlaces: Int
 }
 

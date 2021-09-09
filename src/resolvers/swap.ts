@@ -1,8 +1,7 @@
 import { startSwap } from '../services/swap';
 import { Context } from '../types/context';
 import ResolverBase from '../common/Resolver-Base';
-import { ISwapToken } from '../types';
-import { logger } from 'src/common';
+import { logger, config } from 'src/common';
 import EthWallet from '../wallet-api/coin-wallets/eth-wallet';
 
 class SwapResolvers extends ResolverBase {
@@ -22,9 +21,9 @@ class SwapResolvers extends ResolverBase {
       const walletData = await Promise.all(
         allCoins.map(walletCoinApi => walletCoinApi.getWalletInfo(user)),
       );
-      return walletData;
+      return [walletData];
     } catch (error) {
-      logger.warn(`resolvers.wallet.getWallet.catch: ${error}`);
+      logger.warn(`resolvers.swap.getSwapParams.catch: ${error}`);
       throw error;
     }
   };
@@ -38,23 +37,7 @@ class SwapResolvers extends ResolverBase {
       );
       return walletResult;
     } catch (error) {
-      logger.debug(`resolvers.wallet.getBalance.catch: ${error}`);
-      throw error;
-    }
-  };
-
-  estimateFee = async (
-    { symbol }: { symbol: string },
-    args: any,
-    { user, wallet }: Context,
-  ) => {
-    try {
-      this.requireAuth(user);
-      const walletApi = wallet.coin(symbol);
-      const feeEstimate = await walletApi.estimateFee(user);
-      return feeEstimate;
-    } catch (error) {
-      logger.warn(`resolvers.wallet.estimateFee.catch: ${error}`);
+      logger.debug(`resolvers.swap.getBalance.catch: ${error}`);
       throw error;
     }
   };
@@ -63,9 +46,10 @@ class SwapResolvers extends ResolverBase {
     parent: any,
     args: {
       coinSymbol: string;
-      to: string;
-      walletPassword: string;
       amount: string;
+      inputToken: string;
+      outputToken: string;
+      walletPassword: string;
     },
     { user, wallet }: Context,
   ) => {
@@ -91,13 +75,16 @@ class SwapResolvers extends ResolverBase {
     const encryptedKey = await walletApi.getEncryptedPrivKey(user.userId);
 
     const decryptedPrivateKey = this.decrypt(encryptedKey, args.walletPassword);
+    const { decryptedString } = decryptedPrivateKey;
+
     try {
       const confirmTrade = await startSwap.confirmSwap(
-        args.coinSymbol,
-        args.walletPassword,
+        decryptedString,
+        args.inputToken,
+        args.outputToken,
         args.amount,
+        receiveAddress,
       );
-
       return confirmTrade;
     } catch (error) {
       logger.warn(`resolvers.Swap.startSwap.catch: ${error}`);
@@ -125,24 +112,52 @@ class SwapResolvers extends ResolverBase {
   startSwap = async (
     parent: any,
     args: {
+      coinSymbol: string;
       amount: string;
-      inputToken: ISwapToken[];
-      outputToken: ISwapToken[];
+      inputToken: string;
+      outputToken: string;
     },
     { user, wallet }: Context,
   ) => {
     this.requireAuth(user);
+    const walletApi = wallet.coin(args.coinSymbol) as EthWallet;
+    const { receiveAddress } = await walletApi.getWalletInfo(user);
 
     try {
-      const Swap = await startSwap.uniswapSwap(
+      const { trade, message } = await startSwap.uniswapSwap(
         args.inputToken,
         args.outputToken,
         args.amount,
+        receiveAddress,
       );
 
-      return Swap;
+      if (message !== 'Success') {
+        throw new Error('Swap is not available');
+      }
+
+      const {
+        minAmountConvertQuote,
+        expectedConvertQuote,
+        routeText,
+        liquidityProviderFee,
+        liquidityProviderFeePercent,
+        tradeExpires,
+      } = trade;
+
+      return {
+        message,
+        midPrice: minAmountConvertQuote,
+        midPriceInverted: expectedConvertQuote,
+        path: routeText,
+        liquidityProviderFee,
+        liquidityProviderFeePercent,
+        tradeExpires,
+      };
     } catch (error) {
       logger.warn(`resolvers.Swap.startSwap.catch: ${error}`);
+      return {
+        message: error,
+      };
     }
   };
 }
@@ -155,7 +170,6 @@ export default {
   },
 
   Tokens: {
-    feeEstimate: swapResolver.estimateFee,
     balance: swapResolver.getBalance,
   },
 

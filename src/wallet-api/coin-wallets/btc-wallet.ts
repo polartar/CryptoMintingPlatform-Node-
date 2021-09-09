@@ -34,7 +34,6 @@ class BtcWallet extends CoinWalletBase {
     abi,
     backgroundColor,
     icon,
-    chainId,
     decimalPlaces,
   }: ICoinMetadata) {
     super(
@@ -44,7 +43,6 @@ class BtcWallet extends CoinWalletBase {
       abi,
       backgroundColor,
       icon,
-      chainId,
       decimalPlaces,
     );
     autoBind(this);
@@ -412,7 +410,6 @@ class BtcWallet extends CoinWalletBase {
         icon: this.icon,
         canSendFunds: true,
         lookupTransactionsBy: userApi.userId,
-        chainId: this.chainId,
         decimalPlaces: this.decimalPlaces,
       };
     } catch (error) {

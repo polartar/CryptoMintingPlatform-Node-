@@ -153,7 +153,15 @@ class Config {
     green: env.GREEN_ADDRESS,
     gala: env.GALA_ADDRESS,
     galaItem: env.GALA_ITEM_CONTRACT_ADDRESS,
+    wrappedBtcMain: env.CONTRACT_ADDRESS_WBTC,
+    wrappedEthMain: env.CONTRACT_ADDRESS_WETH,
+    galaMain: env.CONTRACT_ADDRESS_GALA,
+    greenMain: env.CONTRACT_ADDRESS_GREEN,
+    usdtMain: env.CONTRACT_ADDRESS_USDT,
+    usdcMain: env.CONTRACT_ADDRESS_USDC,
+    busdMain: env.CONTRACT_ADDRESS_BUSD,
   };
+
   public readonly tokenIds: { [key: string]: string } = {
     gala: env.GALA_TOKEN_ID,
   };

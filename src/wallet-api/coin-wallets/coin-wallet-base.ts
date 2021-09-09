@@ -15,7 +15,6 @@ export default abstract class CoinWalletBase {
     protected abi: any,
     protected backgroundColor: string,
     protected icon: string,
-    protected chainId: number,
     protected decimalPlaces: number,
   ) {
     if (!name)
@@ -46,7 +45,6 @@ export default abstract class CoinWalletBase {
     backgroundColor: string;
     canSendFunds: boolean;
     lookupTransactionsBy: string;
-    chainId: number;
     decimalPlaces: number;
   }>;
 

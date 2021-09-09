@@ -32,7 +32,6 @@ class EthWallet extends CoinWalletBase {
     abi,
     backgroundColor,
     icon,
-    chainId,
     decimalPlaces,
   }: ICoinMetadata) {
     super(
@@ -42,7 +41,6 @@ class EthWallet extends CoinWalletBase {
       abi,
       backgroundColor,
       icon,
-      chainId,
       decimalPlaces,
     );
   }
@@ -240,7 +238,6 @@ class EthWallet extends CoinWalletBase {
         icon: this.icon,
         canSendFunds: true,
         lookupTransactionsBy: ethAddress,
-        chainId: this.chainId,
         decimalPlaces: this.decimalPlaces,
       };
     } catch (error) {

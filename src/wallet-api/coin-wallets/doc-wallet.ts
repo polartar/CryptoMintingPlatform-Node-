@@ -22,7 +22,6 @@ class DocWallet extends CoinWalletBase {
     abi,
     backgroundColor,
     icon,
-    chainId,
     decimalPlaces,
   }: ICoinMetadata) {
     super(
@@ -32,7 +31,6 @@ class DocWallet extends CoinWalletBase {
       abi,
       backgroundColor,
       icon,
-      chainId,
       decimalPlaces,
     );
     this.setRewardName();
@@ -78,6 +76,18 @@ class DocWallet extends CoinWalletBase {
       }
       case 'give': {
         this.rewardNames = ['GIVE'];
+        break;
+      }
+      case 'usdt': {
+        this.rewardNames = ['USDT'];
+        break;
+      }
+      case 'usdc': {
+        this.rewardNames = ['USDC'];
+        break;
+      }
+      case 'busd': {
+        this.rewardNames = ['BUSD'];
         break;
       }
       default: {
@@ -149,7 +159,6 @@ class DocWallet extends CoinWalletBase {
         icon: this.icon,
         canSendFunds: false,
         lookupTransactionsBy: userApi.userId,
-        chainId: this.chainId,
         decimalPlaces: this.decimalPlaces,
       };
     } catch (error) {
