@@ -110,7 +110,7 @@ export class CartService extends ServerToServerService {
         `${config.wpCartApiUrl}/update_wp_tx_order`,
         postBody,
       );
-      https://share.green/wp-json/bb_wallet/v1/update_wp_tx_order
+      //https://share.green/wp-json/bb_wallet/v1/update_wp_tx_order
 
       return result.data;
     } catch (err) {
