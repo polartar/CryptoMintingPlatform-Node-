@@ -31,18 +31,31 @@ export class CartQueue {
     try{
       const service: CartService = new CartService();
       const orderResponse: MemprTxOrders = await service.getOrdersFromMeprCart(orderId);
-      data.meprTxData = orderResponse['tx-json'];
-      logger.error(`setWatcher: ${JSON.stringify(data)}`);    ///
+      data.meprTxData = JSON.stringify(orderResponse['tx-json']);
     }
     catch(err) {
-      console.log(`Can't get transaction from WP error: ${err}`);
+      logger.error(`Can't get transaction from WP error: ${err}`);
     }
 
     const keyToAdd: string = this.formatKey(symbol, orderId);
     const valueToAdd: string = JSON.stringify(data);
 
     this.client.set(keyToAdd, valueToAdd, function(err: any, res: any) {
-      console.log(`set error: ${err}`);
+      if(err){
+        logger.error(`queue set error: ${err} / ${keyToAdd} / ${valueToAdd}`);
+      }
+    });
+  }
+
+  async replaceCartWatcher(symbol: string, orderId: string, data: ICartWatcherData) {
+    const keyToAdd: string = this.formatKey(symbol, orderId);
+    const valueToAdd: string = JSON.stringify(data);
+
+    await this.deleteCartWatcher(keyToAdd);
+    await this.client.set(keyToAdd, valueToAdd, function(err: any, res: any) {
+      if(err) {
+        logger.error(`queue replace error: ${err} / ${keyToAdd} / ${valueToAdd}`);
+      }
     });
   }
 
@@ -62,7 +75,6 @@ export class CartQueue {
 
         //TODO : wooCommerce needs to be notified of 'expired' transaction.
       } else {
-        logger.error(`a:${JSON.stringify(valueObj)} / b:${JSON.stringify(keyObj)}`);
         const coin = walletApi.coin(symbol);
         const balance = await coin
           .getCartBalance(symbol, keyObj.orderId, valueObj.address)
@@ -76,7 +88,7 @@ export class CartQueue {
             },
           );
 
-        if (balance && balance.amountUnconfirmed > 0) {
+        if (balance && balance.amountUnconfirmed > 0 && (valueObj.status === 'pending' || valueObj.status === 'found' || valueObj.status === 'insufficient')) {
           const service: CartService = new CartService();
           try {
             // if(keyObj.orderType === CartType.woocommerce){
@@ -160,9 +172,11 @@ export class CartQueue {
                     name: orderInfo['membership']['title'],
                     email: orderInfo['membership']['email'],
                     data: JSON.stringify(orderInfo)
-                  }
+                  };
 
                   CartTransaction.create(dbItem);
+
+                  //TODO : add license(s)
                 }
                 catch(err) {
                   logger.error(`PAID, but not saved to MongoDb : ${keyObj.orderId} : ${valueObj.address} : ${balance.amountUnconfirmed}`);
@@ -178,8 +192,14 @@ export class CartQueue {
                 catch(err) {
                   logger.error(`PAID, but not sent to Google Pixel Fire : ${keyObj.orderId} : ${valueObj.address} : ${balance.amountUnconfirmed}`);
                 }
+
+                valueObj.status = 'complete';
+                await this.replaceCartWatcher(keyObj.symbol, keyObj.orderId, valueObj);
                 
                 //await this.deleteCartWatcherOthercoins(brand, keyObj.orderId);
+              } else if (balance.amountUnconfirmed > 0) {
+                valueObj.status = 'insufficient';
+                await this.replaceCartWatcher(keyObj.symbol, keyObj.orderId, valueObj);
               }
               
             //}
@@ -191,9 +211,10 @@ export class CartQueue {
               )} : ${JSON.stringify(balance)} : ${symbol} : ${key}`,
             );
           }
-        } else {
-          //Do we need some error handling if balance not found??
-        }
+        }//else if (balance && balance.amountConfirmed) 
+        // else (balance && balance.amountUnconfirmed > 0 && (valueObj.status === 'pending' || valueObj.status === 'found' || valueObj.status === 'insufficient')) {
+        //   //Do we need some error handling if balance not found??
+        // }
       }
     }
   }
