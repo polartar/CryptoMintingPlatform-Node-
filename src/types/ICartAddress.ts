@@ -22,3 +22,22 @@ export enum CartType {
   woocommerce,
   memberpress,
 }
+
+export interface CartRedisKey {
+  symbol: string,
+  brand: string,
+  orderId: string,
+  orderType: CartType
+}
+
+export interface ICartWatcherData {
+  address: string,
+  exp: Date,
+  affiliateId: string,
+  affiliateSessionId: string,
+  utmVariables: string,
+  status: string,
+  crytoAmount: number,
+  meprTxData?: string,
+  wooTxData?: string,
+}

@@ -1,7 +1,7 @@
 import { walletApi } from '../wallet-api';
 import { logger, config } from '../common';
-import { CartService } from './cart-service';
-import { CartType } from '../types';
+import { CartService, MemprTxOrders } from './cart-service';
+import { CartType, ICartWatcherData, CartRedisKey } from '../types';
 import { CartTransaction, ICartTransaction } from '../models';
 const cron = require('node-cron');
 const redis = require('redis');
@@ -25,24 +25,25 @@ export class CartQueue {
       Promise.all(promiseArray);
     });
     this.cronTask.start();
-  }
+  }  
 
-  async setCartWatcher(symbol: string, orderId: string, data: any) {
-    const brand = config.brand;
-    const keyToAdd: string = `${symbol}.${brand}.${orderId}`;   //orderId will be mepr.${transactionId} OR ${orderId} (woo)
+  async setCartWatcher(symbol: string, orderId: string, data: ICartWatcherData) {
+    try{
+      const service: CartService = new CartService();
+      const orderResponse: MemprTxOrders = await service.getOrdersFromMeprCart(orderId);
+      data.meprTxData = orderResponse['tx-json'];
+    }
+    catch(err) {
+      console.log(`Can't get transaction from WP error: ${err}`);
+    }
+
+    const keyToAdd: string = this.formatKey(symbol, orderId);
     const valueToAdd: string = JSON.stringify(data);
 
     this.client.set(keyToAdd, valueToAdd, function(err: any, res: any) {
       console.log(`set error: ${err}`);
     });
   }
-
-  // async dangerNeverUse(){
-  //     const allKeys = await this.client.keysAsync(`*`);
-  //     for (const key of allKeys) {
-  //         await this.deleteCartWatcher(key);
-  //     }
-  // }
 
   async getCartWatcher(symbol: string) {
     const brand = config.brand;
@@ -51,36 +52,23 @@ export class CartQueue {
     let counter: number = 0;
     for (const key of allKeys) {
       counter = counter + 1;
-      //`${symbol}.${brand}.${orderId}`;   //orderId will be mepr.${transactionId} OR ${orderId} (woo)
-      const keyParts: string[] = key.split('.'); 
-      const value = await this.client.getAsync(key);
-      const valueObj = JSON.parse(value);
-
-      let cartType: CartType = CartType.woocommerce;
-
-      if(keyParts[2] === 'mepr') {
-        cartType = CartType.memberpress;
-      }
+      
+      const valueObj: ICartWatcherData = await this.getTransactionFromKey(key);
+      const keyObj: CartRedisKey = this.parseKey(key);
 
       if (!valueObj.exp || new Date(valueObj.exp) < new Date()) {
         await this.deleteCartWatcher(key);
 
         //TODO : wooCommerce needs to be notified of 'expired' transaction.
       } else {
-        
-        let orderId: string = keyParts[2]; //woocommerce
-        if(cartType === CartType.memberpress){
-          orderId = keyParts[3];
-        }
-
         const coin = walletApi.coin(symbol);
         const balance = await coin
-          .getCartBalance(symbol, orderId, valueObj.address)
+          .getCartBalance(symbol, keyObj.orderId, valueObj.address)
           .then(
             a => a,
             er2 => {
               logger.error(
-                `FAILED WHEN TRYING TO UPDATE ${cartType} CART : ${symbol}/${orderId}/${value}`,
+                `FAILED WHEN TRYING TO UPDATE ${keyObj.orderType} CART : ${symbol}/${key.orderId}/${JSON.stringify(valueObj)}`,
               );
               return undefined;
             },
@@ -89,11 +77,11 @@ export class CartQueue {
         if (balance && balance.amountUnconfirmed > 0) {
           const service: CartService = new CartService();
           try {
-            if(cartType === CartType.woocommerce){
+            if(keyObj.orderType === CartType.woocommerce){
               const orderResponse = await service.getOrdersFromWooCart();
 
               for (const order of orderResponse.orders) {
-                if (order.id === orderId) {
+                if (order.id === keyObj.orderId) {
                   for (const meta of order.meta_data) {
                     if (meta.key === 'currency_amount_to_process') {
                       const orderExpectedAmount = +meta.value;
@@ -105,11 +93,11 @@ export class CartQueue {
                         arryOfItems = arryOfItems.replace(/\s+/g, '');
 
                         service.updateOrderToWooCart(
-                          orderId,
+                          keyObj.orderId,
                           valueObj.address,
                           balance.amountUnconfirmed,
                           symbol,
-                          orderId,
+                          keyObj.orderId,
                         );
 
 
@@ -119,7 +107,7 @@ export class CartQueue {
                           +order.total,
                         );
                         
-                        await this.deleteCartWatcherOthercoins(brand, orderId);
+                        await this.deleteCartWatcherOthercoins(brand, keyObj.orderId);
                       } else {
                         //TODO : email the user saying that they didn't send enough
                         // service.updateOrderToWooCart(    //Partial Payment
@@ -138,40 +126,58 @@ export class CartQueue {
               
             }
             else{
-              const orderResponse = await service.getOrdersFromMeprCart(orderId);
-              const orderInfo: any = JSON.parse(orderResponse['tx-json']);
+              // const orderResponse = await service.getOrdersFromMeprCart(keyObj.orderId);
+              let orderInfo: any = {total: "-1", membership: {title: '', email: '', first_name: ''}};
+              if(valueObj.meprTxData){
+                orderInfo = JSON.parse(valueObj.meprTxData);
+              }
+                
 
-              if(+balance.amountUnconfirmed >= +orderInfo['total']) {
-                service.updateTransactionToMemberpressCart(
-                  orderId,
-                  valueObj.address,
-                  balance.amountUnconfirmed,
-                  symbol,
-                  `mepr.${orderId}`,
-                );
-
-                const dbItem: ICartTransaction = {
-                  wp_id: orderId,
-                  status: 'complete',
-                  currency: symbol,
-                  discount_total: '',
-                  discount_tax: '',
-                  total: orderInfo['total'],
-                  name: orderInfo['membership']['title'],
-                  email: orderInfo['membership']['email'],
-                  data: JSON.stringify(orderInfo)
+              if(+balance.amountUnconfirmed >= valueObj.crytoAmount) {
+                try{
+                  service.updateTransactionToMemberpressCart(
+                    keyObj.orderId,
+                    valueObj.address,
+                    balance.amountUnconfirmed,
+                    symbol,
+                    `mepr.${keyObj.orderId}`,
+                  );
+                }
+                catch(err) {
+                  logger.crit(`PAID, but not updated in WP : ${keyObj.orderId} : ${valueObj.address} : ${balance.amountUnconfirmed}`);
                 }
 
-                CartTransaction.create(dbItem);
+                try{
+                  const dbItem: ICartTransaction = {
+                    wp_id: keyObj.orderId,
+                    status: 'complete',
+                    currency: symbol,
+                    discount_total: '',
+                    discount_tax: '',
+                    total: orderInfo['total'],
+                    name: orderInfo['membership']['title'],
+                    email: orderInfo['membership']['email'],
+                    data: JSON.stringify(orderInfo)
+                  }
 
+                  CartTransaction.create(dbItem);
+                }
+                catch(err) {
+                  logger.crit(`PAID, but not saved to MongoDb : ${keyObj.orderId} : ${valueObj.address} : ${balance.amountUnconfirmed}`);
+                }
 
-                await this.sendGooglePixelFire(
-                  orderInfo['member']['first_name'],
-                  orderInfo['membership']['title'],
-                  +orderInfo['total'],
-                );
+                try{
+                  await this.sendGooglePixelFire(
+                    orderInfo['member']['first_name'],
+                    orderInfo['membership']['title'],
+                    +orderInfo['total'],
+                  );
+                }
+                catch(err) {
+                  logger.crit(`PAID, but not sent to Google Pixel Fire : ${keyObj.orderId} : ${valueObj.address} : ${balance.amountUnconfirmed}`);
+                }
                 
-                await this.deleteCartWatcherOthercoins(brand, orderId);
+                //await this.deleteCartWatcherOthercoins(brand, keyObj.orderId);
               }
               
             }
@@ -190,7 +196,48 @@ export class CartQueue {
     }
   }
 
+  
+  async getRawCartWatcher(key: string) {
+    const value = await this.client.getAsync(key);
+    return value;
+  }
 
+  formatKey(symbol: string, orderId: string): string {
+    const brand = config.brand;
+    const keyToAdd: string = `${symbol}.${brand}.${orderId}`;   //orderId will be mepr.${transactionId} OR ${orderId} (woo)
+    return keyToAdd;
+  }
+
+  formatCartKey(keyObject: CartRedisKey): string {
+    const keyToAdd: string = `${keyObject.symbol}.${keyObject.brand}.${keyObject.orderId}`;   //orderId will be mepr.${transactionId} OR ${orderId} (woo)
+    return keyToAdd
+  }
+
+  parseKey(cartKey: string): CartRedisKey {
+    const keyParts: string[] = cartKey.split('.'); 
+
+    const result: CartRedisKey = {
+      symbol: keyParts[0],
+      brand: keyParts[1],
+      orderId: keyParts[2],
+      orderType: CartType.woocommerce
+    };
+    if(keyParts[2].toUpperCase() === "MEPR"){
+      result.orderId = keyParts[3];
+      result.orderType = CartType.memberpress
+    }
+    return result;
+  }
+
+  async getTransaction(symbol: string, orderId: string): Promise<ICartWatcherData> {
+    const key: string = this.formatKey(symbol, orderId);
+    return await this.getTransactionFromKey(key);
+  }
+
+  async getTransactionFromKey(key: string): Promise<ICartWatcherData> {
+    const value: string = await this.getRawCartWatcher(key);
+    return JSON.parse(value) as ICartWatcherData;
+  }
 
   async sendGooglePixelFire(
     customerNumber: string,
@@ -233,6 +280,13 @@ export class CartQueue {
     const deleteResult = await this.client.delAsync(key);
     return deleteResult;
   }
+
+  // async dangerNeverUse(){
+  //     const allKeys = await this.client.keysAsync(`*`);
+  //     for (const key of allKeys) {
+  //         await this.deleteCartWatcher(key);
+  //     }
+  // }
 
   async deleteCartWatcherOthercoins(brand: string, orderId: string) {
     //If we are done with 1 coin of the order, delete all the other coin watchers

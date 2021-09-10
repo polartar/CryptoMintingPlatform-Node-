@@ -1,4 +1,4 @@
-import { Context } from '../types';
+import { Context, ICartWatcherData } from '../types';
 import ResolverBase from '../common/Resolver-Base';
 import { cartQueue } from '../blockchain-listeners/cart-queue';
 import { CartService } from '../blockchain-listeners/cart-service';
@@ -82,61 +82,19 @@ class Resolvers extends ResolverBase {
         orderId,
         amount,
       );
-      cartQueue.setCartWatcher(coinSymbol.toUpperCase(), orderId, {
+      const data : ICartWatcherData = {
         address: address.address,
         exp: expDate,
         affiliateId,
         affiliateSessionId,
         utmVariables,
-      });
+        status: 'pending',
+        crytoAmount: +amount,
+      };
+      
+      cartQueue.setCartWatcher(coinSymbol.toUpperCase(), orderId, data);
       addresses.push(address);
-      //}
-      // else {
-      //   //TODO : USE THE utmContent
-
-      //   const btcWalletApi = wallet.coin('BTC');
-      //   const btcAddress = await btcWalletApi.getCartAddress(
-      //     'BTC',
-      //     orderId,
-      //     amount,
-      //   );
-      //   cartQueue.setCartWatcher('BTC', orderId, {
-      //     address: btcAddress.address,
-      //     exp: expDate,
-      //     affiliateId,
-      //     affiliateSessionId,
-      //     utmVariables
-      //   });
-      //   addresses.push(btcAddress);
-
-      //   const ethWalletApi = wallet.coin('ETH');
-      //   const ethAddress = await ethWalletApi.getCartAddress(
-      //     'ETH',
-      //     orderId,
-      //     amount,
-      //   );
-      //   cartQueue.setCartWatcher('ETH', orderId, {
-      //     address: ethAddress.address,
-      //     exp: expDate,
-      //     affiliateId,
-      //     affiliateSessionId,
-      //     utmVariables
-      //   });
-      //   addresses.push(ethAddress);
-      // }
-      // const galaWalletApi = wallet.coin('GALA');
-      // const galaAddress = await galaWalletApi.getCartAddress('GALA', orderId, amount);
-      // cartQueue.setCartWatcher(config.brand, 'GALA', orderId, {address: galaAddress.address, exp: expDate});
-      // result.push(galaAddress);
-
-      // const greenWalletApi = wallet.coin('GREEN');
-      // const greenAddress = await greenWalletApi.getCartAddress('GREEN', orderId, amount);
-      // cartQueue.setCartWatcher(config.brand, 'GREEN', orderId, {address: greenAddress.address, exp: expDate});
-      // result.push(greenAddress);
-
-      // const batWalletApi = wallet.coin('BAT');
-      // const batAddress = await batWalletApi.getCartAddress('BAT', orderId, amount);
-      // result.push(batAddress);
+      
       const auditAddressResult = await this.auditAddressRequest({
         userId,
         coinSymbol,
@@ -158,6 +116,42 @@ class Resolvers extends ResolverBase {
       throw error;
     }
   };
+
+  getCartOrderStatus = async (
+    parent: any,
+    args: {
+      orderId: string;
+      orderType: string;
+      coinSymbol: string;
+    },
+    ctx: Context,
+  ) => {
+    const {
+      orderId,
+      orderType,
+      coinSymbol,
+    } = args;
+
+    let modifiedOrderId: string = orderId;    //TODO : remove this when wordpress stops adding 'mepr.38' as it's id.
+    if(orderType.toUpperCase() === "MEPR") {
+      modifiedOrderId = `mepr.${orderId}`;
+    }
+
+    try{
+      const transaction: ICartWatcherData = await cartQueue.getTransaction(coinSymbol.toUpperCase(), modifiedOrderId);
+
+      return {
+        success: 1,
+        message: 'Found Transaction',
+        status: transaction.status,
+        exp: transaction.exp,
+      }
+    }
+    catch(err) {
+      logger.error(`getCartOrderStatus : failed resolver : ${JSON.stringify(err)}`);
+    }
+  };
+
 
   sendCartTransaction = async (
     parent: any,
@@ -211,6 +205,9 @@ class Resolvers extends ResolverBase {
 const resolvers = new Resolvers();
 
 export default {
+  Query: {
+    getCartOrderStatus: resolvers.getCartOrderStatus
+  },
   Mutation: {
     getCartAddress: resolvers.getCartAddress,
     sendCartTransaction: resolvers.sendCartTransaction,
