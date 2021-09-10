@@ -39,6 +39,7 @@ export class CartQueue {
 
     const keyToAdd: string = this.formatKey(symbol, orderId);
     const valueToAdd: string = JSON.stringify(data);
+    //logger.error(`setCart // ${keyToAdd} / ${valueToAdd}`);
 
     this.client.set(keyToAdd, valueToAdd, function(err: any, res: any) {
       if(err){
@@ -47,14 +48,14 @@ export class CartQueue {
     });
   }
 
-  async replaceCartWatcher(symbol: string, orderId: string, data: ICartWatcherData) {
-    const keyToAdd: string = this.formatKey(symbol, orderId);
+  async replaceCartWatcher(key: string, data: ICartWatcherData) {
+    
     const valueToAdd: string = JSON.stringify(data);
-
-    await this.deleteCartWatcher(keyToAdd);
-    await this.client.set(keyToAdd, valueToAdd, function(err: any, res: any) {
+    //logger.error(`setCart // ${key} / ${data}`);
+    await this.deleteCartWatcher(key);
+    await this.client.set(key, valueToAdd, function(err: any, res: any) {
       if(err) {
-        logger.error(`queue replace error: ${err} / ${keyToAdd} / ${valueToAdd}`);
+        logger.error(`queue replace error: ${err} / ${key} / ${valueToAdd}`);
       }
     });
   }
@@ -194,12 +195,12 @@ export class CartQueue {
                 }
 
                 valueObj.status = 'complete';
-                await this.replaceCartWatcher(keyObj.symbol, keyObj.orderId, valueObj);
+                await this.replaceCartWatcher(key, valueObj);
                 
                 //await this.deleteCartWatcherOthercoins(brand, keyObj.orderId);
               } else if (balance.amountUnconfirmed > 0) {
                 valueObj.status = 'insufficient';
-                await this.replaceCartWatcher(keyObj.symbol, keyObj.orderId, valueObj);
+                await this.replaceCartWatcher(key, valueObj);
               }
               
             //}
