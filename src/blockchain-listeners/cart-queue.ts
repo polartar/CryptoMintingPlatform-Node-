@@ -155,7 +155,7 @@ export class CartQueue {
                     valueObj.address,
                     balance.amountUnconfirmed,
                     symbol,
-                    `mepr.${keyObj.orderId}`,
+                    `${keyObj.orderId}`,
                   );
                 }
                 catch(err) {
@@ -163,15 +163,18 @@ export class CartQueue {
                 }
 
                 try{
+                  const total = orderInfo ? orderInfo['total'] : '';
+                  const name = orderInfo && orderInfo['membership'] ? orderInfo['membership']['title'] : '';
+                  const email = orderInfo && orderInfo['membership'] ? orderInfo['membership']['email'] : '';
                   const dbItem: ICartTransaction = {
                     wp_id: keyObj.orderId,
                     status: 'complete',
                     currency: symbol,
                     discount_total: '',
                     discount_tax: '',
-                    total: orderInfo['total'],
-                    name: orderInfo['membership']['title'],
-                    email: orderInfo['membership']['email'],
+                    total,
+                    name,
+                    email,
                     data: JSON.stringify(orderInfo)
                   };
 
@@ -184,9 +187,11 @@ export class CartQueue {
                 }
 
                 try{
+                  const fname = orderInfo && orderInfo['membership']  ? orderInfo['membership']['first_name'] : '';
+                  const title = orderInfo && orderInfo['membership']  ? orderInfo['membership']['title'] : '';
                   await this.sendGooglePixelFire(
-                    orderInfo['member']['first_name'],
-                    orderInfo['membership']['title'],
+                    fname,
+                    title,
                     +orderInfo['total'],
                   );
                 }
