@@ -206,7 +206,7 @@ class BtcWallet extends CoinWalletBase {
       logger.error(
         `coin-wallets.btc-wallet-getCartBalance : ${symbol}/${orderId}/${address}/${JSON.stringify(
           toReturn,
-        )}`,
+        )}/${err}`,
       );
     }
 

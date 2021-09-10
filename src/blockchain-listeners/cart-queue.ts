@@ -32,6 +32,7 @@ export class CartQueue {
       const service: CartService = new CartService();
       const orderResponse: MemprTxOrders = await service.getOrdersFromMeprCart(orderId);
       data.meprTxData = orderResponse['tx-json'];
+      logger.error(`setWatcher: ${JSON.stringify(data)}`);    ///
     }
     catch(err) {
       console.log(`Can't get transaction from WP error: ${err}`);
@@ -61,6 +62,7 @@ export class CartQueue {
 
         //TODO : wooCommerce needs to be notified of 'expired' transaction.
       } else {
+        logger.error(`a:${JSON.stringify(valueObj)} / b:${JSON.stringify(keyObj)}`);
         const coin = walletApi.coin(symbol);
         const balance = await coin
           .getCartBalance(symbol, keyObj.orderId, valueObj.address)
@@ -77,55 +79,55 @@ export class CartQueue {
         if (balance && balance.amountUnconfirmed > 0) {
           const service: CartService = new CartService();
           try {
-            if(keyObj.orderType === CartType.woocommerce){
-              const orderResponse = await service.getOrdersFromWooCart();
+            // if(keyObj.orderType === CartType.woocommerce){
+            //   const orderResponse = await service.getOrdersFromWooCart();
 
-              for (const order of orderResponse.orders) {
-                if (order.id === keyObj.orderId) {
-                  for (const meta of order.meta_data) {
-                    if (meta.key === 'currency_amount_to_process') {
-                      const orderExpectedAmount = +meta.value;
-                      if (+balance.amountUnconfirmed >= orderExpectedAmount) {
-                        //Checking the order from WOO. Is our amount > expected amount??
-                        let arryOfItems: string = JSON.stringify(
-                          Object.keys(order.line_items),
-                        );
-                        arryOfItems = arryOfItems.replace(/\s+/g, '');
+            //   for (const order of orderResponse.orders) {
+            //     if (order.id === keyObj.orderId) {
+            //       for (const meta of order.meta_data) {
+            //         if (meta.key === 'currency_amount_to_process') {
+            //           const orderExpectedAmount = +meta.value;
+            //           if (+balance.amountUnconfirmed >= orderExpectedAmount) {
+            //             //Checking the order from WOO. Is our amount > expected amount??
+            //             let arryOfItems: string = JSON.stringify(
+            //               Object.keys(order.line_items),
+            //             );
+            //             arryOfItems = arryOfItems.replace(/\s+/g, '');
 
-                        service.updateOrderToWooCart(
-                          keyObj.orderId,
-                          valueObj.address,
-                          balance.amountUnconfirmed,
-                          symbol,
-                          keyObj.orderId,
-                        );
+            //             service.updateOrderToWooCart(
+            //               keyObj.orderId,
+            //               valueObj.address,
+            //               balance.amountUnconfirmed,
+            //               symbol,
+            //               keyObj.orderId,
+            //             );
 
 
-                        await this.sendGooglePixelFire(
-                          order.billing.first_name,
-                          arryOfItems,
-                          +order.total,
-                        );
+            //             await this.sendGooglePixelFire(
+            //               order.billing.first_name,
+            //               arryOfItems,
+            //               +order.total,
+            //             );
                         
-                        await this.deleteCartWatcherOthercoins(brand, keyObj.orderId);
-                      } else {
-                        //TODO : email the user saying that they didn't send enough
-                        // service.updateOrderToWooCart(    //Partial Payment
-                        //   orderId,
-                        //   valueObj.address,
-                        //   balance.amountUnconfirmed,
-                        //   symbol,
-                        //   orderId,
-                        // );
-                      }
-                    }
-                  }
-                }
-              }
+            //             await this.deleteCartWatcherOthercoins(brand, keyObj.orderId);
+            //           } else {
+            //             //TODO : email the user saying that they didn't send enough
+            //             // service.updateOrderToWooCart(    //Partial Payment
+            //             //   orderId,
+            //             //   valueObj.address,
+            //             //   balance.amountUnconfirmed,
+            //             //   symbol,
+            //             //   orderId,
+            //             // );
+            //           }
+            //         }
+            //       }
+            //     }
+            //   }
 
               
-            }
-            else{
+            // }
+            // else{
               // const orderResponse = await service.getOrdersFromMeprCart(keyObj.orderId);
               let orderInfo: any = {total: "-1", membership: {title: '', email: '', first_name: ''}};
               if(valueObj.meprTxData){
@@ -144,7 +146,7 @@ export class CartQueue {
                   );
                 }
                 catch(err) {
-                  logger.crit(`PAID, but not updated in WP : ${keyObj.orderId} : ${valueObj.address} : ${balance.amountUnconfirmed}`);
+                  logger.error(`PAID, but not updated in WP : ${keyObj.orderId} : ${valueObj.address} : ${balance.amountUnconfirmed}`);
                 }
 
                 try{
@@ -163,7 +165,7 @@ export class CartQueue {
                   CartTransaction.create(dbItem);
                 }
                 catch(err) {
-                  logger.crit(`PAID, but not saved to MongoDb : ${keyObj.orderId} : ${valueObj.address} : ${balance.amountUnconfirmed}`);
+                  logger.error(`PAID, but not saved to MongoDb : ${keyObj.orderId} : ${valueObj.address} : ${balance.amountUnconfirmed}`);
                 }
 
                 try{
@@ -174,13 +176,13 @@ export class CartQueue {
                   );
                 }
                 catch(err) {
-                  logger.crit(`PAID, but not sent to Google Pixel Fire : ${keyObj.orderId} : ${valueObj.address} : ${balance.amountUnconfirmed}`);
+                  logger.error(`PAID, but not sent to Google Pixel Fire : ${keyObj.orderId} : ${valueObj.address} : ${balance.amountUnconfirmed}`);
                 }
                 
                 //await this.deleteCartWatcherOthercoins(brand, keyObj.orderId);
               }
               
-            }
+            //}
             
           } catch (err) {
             logger.error(
