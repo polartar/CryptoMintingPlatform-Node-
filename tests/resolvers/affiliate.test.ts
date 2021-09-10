@@ -99,6 +99,8 @@ describe('Affiliate Resolver', () => {
       args,
       context,
     );
+    console.log(response);
+    console.log(args);
 
     expect(response).not.toBeNull();
     expect(response.pageUrl).toBe(affiliateLink.pageUrl);
