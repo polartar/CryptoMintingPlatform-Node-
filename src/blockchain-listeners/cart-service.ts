@@ -84,8 +84,6 @@ export class CartService extends ServerToServerService {
     }
   };
 
-  
-
   public updateTransactionToMemberpressCart = async (
     mepr_tx_id: string,
     address: string,

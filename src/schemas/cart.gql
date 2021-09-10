@@ -4,6 +4,20 @@ type CartAddress {
   qrCode: String!
 }
 
+type CartOrderStatusResponse {
+  success: Int!
+  message: String!
+  status: String
+}
+
+type Query {
+  getCartOrderStatus(
+    orderId: String!
+    orderType: String!
+    coinSymbol: String!
+  ): CartOrderStatusResponse
+}
+
 type Mutation {
   getCartAddress(
     coinSymbol: String!
