@@ -113,7 +113,10 @@ class Resolvers extends ResolverBase {
       });
 
       //Todo: Maybe add some action besides logger.warn
-      if (!auditAddressResult.success) logger.warn(auditAddressResult.message);
+      if (!auditAddressResult.success)
+        logger.warn(
+          `cart.auditAddressRequest, Error:${auditAddressResult.message}`,
+        );
 
       return addresses;
     } catch (error) {
