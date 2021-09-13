@@ -1,0 +1,38 @@
+type PoolInfo {
+  poolAddress: String!
+  priceToken1: Float!
+  priceToken2: Float!
+}
+
+type txResponse {
+  message: String!
+}
+
+type TokenId {
+  message: String
+}
+
+input Token {
+  contractAddress: String!
+  decimalPlaces: Int!
+  symbol: String
+  name: String
+}
+
+input CollectOptions {
+  tokenId: Int!
+  expectdCurrencyOwed0: Int!
+}
+
+type Mutation {
+  createPosition(token0: Token!, token1: Token!, fee: Int!): PoolInfo
+  addLiquidity(
+    startingPrice: String!
+    minPrice: String!
+    maxPrice: String!
+    amountToken1: String!
+    amountToken2: String!
+    walletPassword: String!
+  ): txResponse
+  collectLPTokens(tokenId: Int!): TokenId
+}
