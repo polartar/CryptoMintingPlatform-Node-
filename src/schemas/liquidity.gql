@@ -1,7 +1,7 @@
 type PoolInfo {
   poolAddress: String!
-  priceToken1: Float!
-  priceToken2: Float!
+  price0: String!
+  price1: String!
 }
 
 type txResponse {

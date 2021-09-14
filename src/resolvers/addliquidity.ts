@@ -4,16 +4,17 @@ import { Context } from '../types/context';
 import { ethers } from 'ethers';
 import {
   nearestUsableTick,
-  // NonfungiblePositionManager,
+  NonfungiblePositionManager,
   Pool,
   Position,
 } from '@uniswap/v3-sdk';
 import {
-  // Percent,
+  Percent,
   Token,
   //CurrencyAmount
 } from '@uniswap/sdk-core';
 import { abi as IUniswapV3PoolABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json';
+import { EthWallet } from 'src/wallet-api/coin-wallets';
 const { chainId, ethNodeUrl } = config;
 
 class LiquidityResolver extends ResolverBase {
@@ -71,7 +72,6 @@ class LiquidityResolver extends ResolverBase {
       };
 
       const block = await provider.getBlock(provider.getBlockNumber());
-      const deadline = block.timestamp + 200;
 
       const NEW_POOL = new Pool(
         token0,
@@ -85,18 +85,16 @@ class LiquidityResolver extends ResolverBase {
       const liquidityNumber = Number(PoolState.liquidity);
       const portionLiqudity = liquidityNumber * 0.0002;
 
-      const liquidityPosition = ethers.BigNumber.from(
-        portionLiqudity.toString(),
-      );
-
-      const numberOfToken1 = Number(NEW_POOL.priceOf(token0).numerator);
-      const numberOfToken2 = Number(NEW_POOL.priceOf(token1).numerator);
-      const priceToken1 = numberOfToken1 / numberOfToken2;
-      const priceToken2 = numberOfToken2 / numberOfToken1;
+      const price0 = NEW_POOL.priceOf(token0)
+        .toFixed(token0.decimals, NEW_POOL.priceOf(token0).scalar)
+        .toString();
+      const price1 = NEW_POOL.priceOf(token1)
+        .toFixed(token1.decimals, NEW_POOL.priceOf(token1).scalar)
+        .toString();
 
       const position = new Position({
         pool: NEW_POOL,
-        liquidity: liquidityPosition.toString(),
+        liquidity: liquidityNumber.toString(),
         tickLower:
           nearestUsableTick(PoolState.tick, immutables.tickSpacing) -
           immutables.tickSpacing * 2,
@@ -105,10 +103,21 @@ class LiquidityResolver extends ResolverBase {
           immutables.tickSpacing * 2,
       });
 
+      const deadline = block.timestamp + 200;
+
+      const walletApi = wallet.coin('ETH') as EthWallet;
+      // const { receiveAddress } = await walletApi.getWalletInfo(user);
+
+      // const { calldata, value } = NonfungiblePositionManager.addCallParameters(position, {
+      //   slippageTolerance: new Percent(50, 10_000),
+      //   recipient: receiveAddress,
+      //   deadline: deadline
+      // });
+
       return {
         poolAddress: poolAddress,
-        priceToken1,
-        priceToken2,
+        price0,
+        price1,
       };
     } catch (error) {
       throw new Error('Resolver.LiquidityResolver.poolAddress ' + error);

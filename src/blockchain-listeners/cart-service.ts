@@ -8,14 +8,12 @@ export class CartService extends ServerToServerService {
   }
 
   public getOrdersFromMeprCart = async (
-    orderId: string
+    orderId: string,
   ): Promise<MemprTxOrders> => {
     const axios = this.getAxios({ role: 'system' });
 
     const result = await axios.post<MemprTxOrders>(
-      `${
-        config.wpCartApiUrl
-      }/get_mepr_tx_order?ApiKey=338a3ba7-69b8-41ac-a920-9727ae939ba3&OrderId=${orderId}`,
+      `${config.wpCartApiUrl}/get_mepr_tx_order?ApiKey=338a3ba7-69b8-41ac-a920-9727ae939ba3&OrderId=${orderId}`,
       {},
     );
 
