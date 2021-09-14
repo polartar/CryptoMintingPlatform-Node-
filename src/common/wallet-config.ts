@@ -35,7 +35,10 @@ export const walletConfigurations: ICoinMetadata[] = [
       'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHZpZXdCb3g9IjAgMCA1NiA1NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyNy42NDYiIGN5PSIyNy42NDYiIHI9IjI3LjIzOSIgdHJhbnNmb3JtPSJyb3RhdGUoLS44NjMgMjcuNjQ2IDI3LjY0NikiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNMjcuNDk2IDRsLS4zMTcgMS4wN3YzMS4wNzFsLjMxNy4zMTVMNDEuOTkgMjcuOTMgMjcuNDk2IDR6IiBmaWxsPSIjN0I4OEM3Ii8+PHBhdGggZD0iTTI3LjQ5NiA0TDEzIDI3LjkzbDE0LjQ5NiA4LjUyNlY0eiIgZmlsbD0iI0EyQUFEOCIvPjxwYXRoIGQ9Ik0yNy40OTYgMzkuMTg3bC0uMTc5LjIxNlY1MC40N2wuMTc5LjUxOUw0MiAzMC42NjVsLTE0LjUwNCA4LjUyeiIgZmlsbD0iIzdCODhDNyIvPjxwYXRoIGQ9Ik0yNy40OTYgNTAuOTlWMzkuMTg1TDEzIDMwLjY2NmwxNC40OTYgMjAuMzIzeiIgZmlsbD0iI0EyQUFEOCIvPjxwYXRoIGQ9Ik0yNy40OTYgMzYuNDU2TDQxLjk5IDI3LjkzbC0xNC40OTUtNi41NTZ2MTUuMDh6IiBmaWxsPSIjNUQ2REJDIi8+PHBhdGggZD0iTTEzIDI3LjkzbDE0LjQ5NiA4LjUyNnYtMTUuMDhMMTMgMjcuOTN6IiBmaWxsPSIjN0I4OEM3Ii8+PC9zdmc+',
     abi: null,
     walletApi: eSupportedInterfaces.eth,
-    contractAddress: chainId === 1 ? contractAddresses.wrappedEthMain : null,
+    contractAddress:
+      chainId === 1
+        ? contractAddresses.wrappedEthMain
+        : '0xc778417e063141139fce010982780140aa0cd5ab',
     decimalPlaces: 18,
     WalletInterface: EthWallet,
   },
@@ -194,6 +197,28 @@ export const walletConfigurations: ICoinMetadata[] = [
     abi: erc20Abi,
     decimalPlaces: 18,
     contractAddress: chainId === 1 ? contractAddresses.busdMain : null,
+    WalletInterface: Erc20Wallet,
+  },
+  {
+    walletApi: eSupportedInterfaces.doc,
+    name: 'Basic Attention Token',
+    symbol: 'BAT',
+    backgroundColor: '#0066FF',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1697.png',
+    abi: erc20Abi,
+    decimalPlaces: 18,
+    contractAddress: chainId === 1 ? contractAddresses.busdMain : null,
+    WalletInterface: Erc20Wallet,
+  },
+  {
+    walletApi: eSupportedInterfaces.doc,
+    name: 'Dai Stable Coin',
+    symbol: 'DAI',
+    backgroundColor: '#0066FF',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/4943.png',
+    abi: erc20Abi,
+    decimalPlaces: 18,
+    contractAddress: '0xad6d458402f60fd3bd25163575031acdce07538d',
     WalletInterface: Erc20Wallet,
   },
 ];

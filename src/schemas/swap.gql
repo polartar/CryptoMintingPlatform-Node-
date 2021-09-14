@@ -9,7 +9,7 @@ type Tokens {
   balance: Balance!
   icon: String!
   receiveAddress: String!
-  contractAddress: String!
+  contractAddress: String
 }
 
 type Trade {
