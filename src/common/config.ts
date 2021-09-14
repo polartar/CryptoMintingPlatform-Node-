@@ -160,6 +160,7 @@ class Config {
     usdtMain: env.CONTRACT_ADDRESS_USDT,
     usdcMain: env.CONTRACT_ADDRESS_USDC,
     busdMain: env.CONTRACT_ADDRESS_BUSD,
+    batMain: env.CONTRACT_ADDRESS_BAT,
   };
 
   public readonly tokenIds: { [key: string]: string } = {

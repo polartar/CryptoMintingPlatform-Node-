@@ -90,6 +90,14 @@ class DocWallet extends CoinWalletBase {
         this.rewardNames = ['BUSD'];
         break;
       }
+      case 'dai': {
+        this.rewardNames = ['DAI'];
+        break;
+      }
+      case 'bat': {
+        this.rewardNames = ['BAT'];
+        break;
+      }
       default: {
         throw new Error('Symbol not supported for DocWallet');
       }
