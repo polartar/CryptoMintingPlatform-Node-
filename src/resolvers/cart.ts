@@ -4,7 +4,7 @@ import { cartQueue } from '../blockchain-listeners/cart-queue';
 import { CartService } from '../blockchain-listeners/cart-service';
 import { addHours } from 'date-fns';
 import { ICartAddress } from '../types/ICartAddress';
-const { decycle } = require('../utils/cycle.js');
+//const { decycle } = require('../utils/cycle.js');
 
 import addressRequestModel, {
   ICartAddressRequest,
@@ -74,7 +74,7 @@ class Resolvers extends ResolverBase {
     } = args;
 
     logger.debug(
-      JSON.stringify({ notes: { parent, args, ctx: decycle(ctx) } }, null, 2),
+      JSON.stringify({ notes: { parent, args } }, null, 2),
     );
 
     const addresses: ICartAddress[] = [];
