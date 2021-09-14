@@ -4,6 +4,8 @@ import { cartQueue } from '../blockchain-listeners/cart-queue';
 import { CartService } from '../blockchain-listeners/cart-service';
 import { addHours } from 'date-fns';
 import { ICartAddress } from '../types/ICartAddress';
+const { decycle } = require('../utils/cycle.js');
+
 import addressRequestModel, {
   ICartAddressRequest,
 } from '../models/cart-address-requests';
@@ -70,19 +72,22 @@ class Resolvers extends ResolverBase {
       affiliateSessionId,
       utmVariables,
     } = args;
-    const addresses: ICartAddress[] = [];
 
+    logger.debug(
+      JSON.stringify({ notes: { parent, args, ctx: decycle(ctx) } }, null, 2),
+    );
+
+    const addresses: ICartAddress[] = [];
     try {
       const expDate = addHours(new Date(), 1);
 
-      // if (coinSymbol) {
       const walletApi = wallet.coin(coinSymbol);
       const address = await walletApi.getCartAddress(
         coinSymbol,
         orderId,
         amount,
       );
-      const data : ICartWatcherData = {
+      const data: ICartWatcherData = {
         address: address.address,
         exp: expDate,
         affiliateId,
@@ -91,10 +96,10 @@ class Resolvers extends ResolverBase {
         status: 'pending',
         crytoAmount: +amount,
       };
-      
+
       cartQueue.setCartWatcher(coinSymbol.toUpperCase(), orderId, data);
       addresses.push(address);
-      
+
       const auditAddressResult = await this.auditAddressRequest({
         userId,
         coinSymbol,
@@ -107,8 +112,11 @@ class Resolvers extends ResolverBase {
         created: new Date(),
       });
 
-      //Todo: Maybe add some action besides logger.debug
-      if (!auditAddressResult.success) logger.debug(auditAddressResult.message);
+      //Todo: Maybe add some action besides logger.warn
+      if (!auditAddressResult.success)
+        logger.warn(
+          `cart.auditAddressRequest, Error:${auditAddressResult.message}`,
+        );
 
       return addresses;
     } catch (error) {
@@ -126,32 +134,31 @@ class Resolvers extends ResolverBase {
     },
     ctx: Context,
   ) => {
-    const {
-      orderId,
-      orderType,
-      coinSymbol,
-    } = args;
+    const { orderId, orderType, coinSymbol } = args;
 
-    let modifiedOrderId: string = orderId;    //TODO : remove this when wordpress stops adding 'mepr.38' as it's id.
-    if(orderType.toUpperCase() === "MEPR") {
+    let modifiedOrderId: string = orderId; //TODO : remove this when wordpress stops adding 'mepr.38' as it's id.
+    if (orderType.toUpperCase() === 'MEPR') {
       modifiedOrderId = `mepr.${orderId}`;
     }
 
-    try{
-      const transaction: ICartWatcherData = await cartQueue.getTransaction(coinSymbol.toUpperCase(), modifiedOrderId);
+    try {
+      const transaction: ICartWatcherData = await cartQueue.getTransaction(
+        coinSymbol.toUpperCase(),
+        modifiedOrderId,
+      );
 
       return {
         success: 1,
         message: 'Found Transaction',
         status: transaction.status,
         exp: transaction.exp,
-      }
-    }
-    catch(err) {
-      logger.error(`getCartOrderStatus : failed resolver : ${JSON.stringify(err)}`);
+      };
+    } catch (err) {
+      logger.error(
+        `getCartOrderStatus : failed resolver : ${JSON.stringify(err)}`,
+      );
     }
   };
-
 
   sendCartTransaction = async (
     parent: any,
@@ -206,7 +213,7 @@ const resolvers = new Resolvers();
 
 export default {
   Query: {
-    getCartOrderStatus: resolvers.getCartOrderStatus
+    getCartOrderStatus: resolvers.getCartOrderStatus,
   },
   Mutation: {
     getCartAddress: resolvers.getCartAddress,
