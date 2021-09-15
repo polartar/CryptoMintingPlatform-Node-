@@ -73,9 +73,7 @@ class Resolvers extends ResolverBase {
       utmVariables,
     } = args;
 
-    logger.debug(
-      JSON.stringify({ notes: { parent, args } }, null, 2),
-    );
+    logger.debug(JSON.stringify({ notes: { parent, args } }, null, 2));
 
     const addresses: ICartAddress[] = [];
     try {
@@ -95,6 +93,8 @@ class Resolvers extends ResolverBase {
         utmVariables,
         status: 'pending',
         crytoAmount: +amount,
+        crytoAmountRemaining: +amount,
+        usdAmount: +amount, //TODO : get the usd amount from the cart.
       };
 
       cartQueue.setCartWatcher(coinSymbol.toUpperCase(), orderId, data);
@@ -151,7 +151,10 @@ class Resolvers extends ResolverBase {
         success: 1,
         message: 'Found Transaction',
         status: transaction.status,
-        exp: transaction.exp,
+        expires: transaction.exp.valueOf(),
+        amtToPayUSD: transaction.usdAmount,
+        amtToPayCrypto: transaction.crytoAmount,
+        amtToPayRemaining: transaction.crytoAmountRemaining,
       };
     } catch (err) {
       logger.error(

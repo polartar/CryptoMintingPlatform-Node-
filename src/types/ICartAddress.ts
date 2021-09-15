@@ -24,20 +24,22 @@ export enum CartType {
 }
 
 export interface CartRedisKey {
-  symbol: string,
-  brand: string,
-  orderId: string,
-  orderType: CartType
+  symbol: string;
+  brand: string;
+  orderId: string;
+  orderType: CartType;
 }
 
 export interface ICartWatcherData {
-  address: string,
-  exp: Date,
-  affiliateId: string,
-  affiliateSessionId: string,
-  utmVariables: string,
-  status: string,
-  crytoAmount: number,
-  meprTxData?: string,
-  wooTxData?: string,
+  address: string;
+  exp: Date;
+  affiliateId: string;
+  affiliateSessionId: string;
+  utmVariables: string;
+  status: string;
+  crytoAmount: number;
+  crytoAmountRemaining: number;
+  usdAmount: number;
+  meprTxData?: string;
+  wooTxData?: string;
 }

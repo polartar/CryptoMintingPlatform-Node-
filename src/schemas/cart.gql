@@ -6,8 +6,12 @@ type CartAddress {
 
 type CartOrderStatusResponse {
   success: Int!
+  expires: Int!
+  amtToPayUSD: Float
+  amtToPayCrypto: Float
+  amtToPayRemaining: Float
   message: String!
-  status: String
+  status: String!
 }
 
 type Query {
