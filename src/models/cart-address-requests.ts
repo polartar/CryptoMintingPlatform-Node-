@@ -4,7 +4,8 @@ import { ICartAddress } from 'src/types/ICartAddress';
 export interface ICartAddressRequest {
   userId?: string;
   coinSymbol?: string;
-  amount?: string;
+  amountUsd?: string;
+  amountCrypto?: string;
   orderId: string;
   affiliateId: string;
   affiliateSessionId: string;

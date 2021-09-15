@@ -5,11 +5,11 @@ type CartAddress {
 }
 
 type CartOrderStatusResponse {
-  success: Int!
-  expires: Int!
-  amtToPayUSD: Float
-  amtToPayCrypto: Float
-  amtToPayRemaining: Float
+  success: String!
+  expires: String!
+  amtToPayUSD: String
+  amtToPayCrypto: String
+  amtToPayRemaining: String
   message: String!
   status: String!
 }

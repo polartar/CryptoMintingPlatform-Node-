@@ -130,6 +130,7 @@ export class MemprTxOrders {
   'message': string;
   'status': string;
   'tx-json': string;
+  'total': number;
 }
 export class MeprTxOrder {
   'status': string;

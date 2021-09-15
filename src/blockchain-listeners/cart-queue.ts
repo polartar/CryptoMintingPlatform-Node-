@@ -53,6 +53,7 @@ export class CartQueue {
         logger.error(`queue set error: ${err} / ${keyToAdd} / ${valueToAdd}`);
       }
     });
+    return {keyToAdd, valueToAdd: data};
   }
 
   async replaceCartWatcher(key: string, data: ICartWatcherData) {

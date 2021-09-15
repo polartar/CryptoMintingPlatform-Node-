@@ -18,23 +18,13 @@ class Resolvers extends ResolverBase {
     const addressRequest = new addressRequestModel();
     addressRequest.userId = request.userId ?? '';
     addressRequest.coinSymbol = request.coinSymbol ?? '';
-    addressRequest.amount = request.amount ?? '';
+    addressRequest.amountUsd = request.amountUsd ?? '';
+    addressRequest.amountCrypto = request.amountCrypto ?? '';
     addressRequest.affiliateId = request.affiliateId;
     addressRequest.affiliateSessionId = request.affiliateSessionId;
     addressRequest.affiliateSessionId = request.utmVariables;
     addressRequest.addresses = request.addresses;
     addressRequest.orderId = request.orderId;
-
-    try {
-      const service: CartService = new CartService();
-      const txInfo: any = await service.getOrdersFromMeprCart(request.orderId);
-      addressRequest.amount = txInfo.total;
-    } catch (error) {
-      logger.info(
-        `Couldn't find the transaction info ${request.orderId} - `,
-        error,
-      );
-    }
 
     try {
       const savedRequest = await addressRequest.save();
@@ -94,17 +84,18 @@ class Resolvers extends ResolverBase {
         status: 'pending',
         crytoAmount: +amount,
         crytoAmountRemaining: +amount,
-        usdAmount: +amount, //TODO : get the usd amount from the cart.
+        usdAmount: 0, //TODO : get the usd amount from the cart.
       };
 
-      cartQueue.setCartWatcher(coinSymbol.toUpperCase(), orderId, data);
+      const {keyToAdd, valueToAdd} = await cartQueue.setCartWatcher(coinSymbol.toUpperCase(), orderId, data);
       addresses.push(address);
 
       const auditAddressResult = await this.auditAddressRequest({
         userId,
         coinSymbol,
         orderId,
-        amount,
+        amountUsd: `${valueToAdd.usdAmount}`,
+        amountCrypto: `${valueToAdd.crytoAmount}`,
         affiliateId,
         affiliateSessionId,
         utmVariables,
@@ -147,14 +138,15 @@ class Resolvers extends ResolverBase {
         modifiedOrderId,
       );
 
+      const transactionExpiresDate = new Date(transaction.exp);
       return {
-        success: 1,
+        success: "1",
         message: 'Found Transaction',
         status: transaction.status,
-        expires: transaction.exp.valueOf(),
-        amtToPayUSD: transaction.usdAmount,
-        amtToPayCrypto: transaction.crytoAmount,
-        amtToPayRemaining: transaction.crytoAmountRemaining,
+        expires: `${transactionExpiresDate.getTime()}`,
+        amtToPayUSD: `${transaction.usdAmount}`,
+        amtToPayCrypto: `${transaction.crytoAmount}`,
+        amtToPayRemaining: `${transaction.crytoAmountRemaining}`,
       };
     } catch (err) {
       logger.error(
