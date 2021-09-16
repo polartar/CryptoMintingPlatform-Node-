@@ -192,10 +192,10 @@ class BtcWallet extends CoinWalletBase {
       lastTransactions: [],
     };
     try {
-      const { btcWalletName, btcWalletToken } = config.cartKeys;
+      const { btcWalletName, btcWalletPass } = config.cartKeys;
       const cartWallet = this.walletClient.wallet(
         btcWalletName,
-        btcWalletToken,
+        btcWalletPass,
       );
       const scrubbedOrderId = orderId.replace(/^\s+|\s+$/g, '');
       const accountReturn = await cartWallet.getAccount(scrubbedOrderId);

@@ -7,7 +7,7 @@ const cron = require('node-cron');
 const redis = require('redis');
 const { promisifyAll } = require('bluebird');
 import axios from 'axios';
-import { addHours } from 'date-fns';
+import { subHours } from 'date-fns';
 
 export class CartQueue {
   private client: any;
@@ -68,9 +68,6 @@ export class CartQueue {
 
   async getCartWatcher(symbol: string) {
 
-    
-    // await this.dangerNeverUse();
-    // return;
     const brand = config.brand;
     const currTime = new Date();
     const currTimeNative = (currTime).valueOf();
@@ -78,64 +75,41 @@ export class CartQueue {
     //const allKeys = await this.client.keysAsync(`${symbol}.${brand}.*`);
     const allKeys = await this.client.keysAsync(`*`);
 
-    console.log('------------------ HOW MANY KEYS?? ---------------')
-    console.log(allKeys);
-    console.log('-/end----------------- HOW MANY KEYS?? ---------------')
+    // console.log('------------------ HOW MANY KEYS?? ---------------')
+    // console.log(allKeys);
+    // console.log('-/end----------------- HOW MANY KEYS?? ---------------')
 
-    let counter: number = 0;
+    const fourHoursAgo = (subHours(currTime, 4)).valueOf();
     for (const key of allKeys) {
-      
+
       const valueObj: ICartWatcherData = await this.getTransactionFromKey(key);
       const keyObj: CartRedisKey = this.parseKey(key);
 
-      // console.log(JSON.stringify(keyObj));
-      // console.log(JSON.stringify(valueObj));
-
-      // if(keyObj.orderId == "347"){
-      //   this.setCartWatcher(keyObj.symbol, `mepr.${keyObj.orderId}`, valueObj);
-      // }
-
-      // console.log('memberpress info');
-      // const service: CartService = new CartService();
-      // const orderResponse: MemprTxOrders = await service.getOrdersFromMeprCart(
-      //   keyObj.orderId,
-      // );
-      // console.log(orderResponse);
-      // //console.log(orderResponse['tx-json']);
-      // const txObj = JSON.parse(orderResponse['tx-json']);
-      // console.log(txObj);
-      // //console.log(txObj.membership);
-      // console.log(txObj.total);
-      // // valueObj.usdAmount = valueObj.usdAmount +
-      // // await this.replaceCartWatcher(key, valueObj);
-
       //Skipping other brands
-      if (key.brand != brand) {
+      if (keyObj.brand != brand) {
         continue;
       }
 
       //Purging from REDIS if it has been more than 5 hrs
-      const expireFiveHoursLater = addHours(valueObj.exp, 5);
-      if (expireFiveHoursLater.valueOf() < currTimeNative) {
+      if (valueObj.exp.valueOf() < fourHoursAgo) {
         await this.deleteCartWatcher(key);
         continue;
       }
 
       //Skipping values 
-      if (valueObj.status === CartStatus.complete.toString() ||
-        valueObj.status === CartStatus.expired.toString()) {
+      if (valueObj.status === CartStatus[CartStatus.complete] ||
+        valueObj.status === CartStatus[CartStatus.expired]) {
         continue;
       }
 
       //Check if the object is expired
       if (valueObj.exp.valueOf() < currTimeNative) {
-        valueObj.status = CartStatus.expired.toString();
+        valueObj.status = CartStatus[CartStatus.expired];
 
         const dbCreateRecord = await this.saveToDb(valueObj, keyObj);
         valueObj.dbId = dbCreateRecord.id;
 
         await this.replaceCartWatcher(key, valueObj);
-
         continue;
       }
 
@@ -153,18 +127,13 @@ export class CartQueue {
           },
         );
 
-      // console.log(balance);
-      // if (keyObj.orderId === "342") {
-      //   balance.amountUnconfirmed = 0.5663;
-      // }
-
-      if (!balance) {
+        if (!balance) {
         continue;
       }
-      if (valueObj.status === CartStatus.found.toString()) {
+      if (valueObj.status === CartStatus[CartStatus.confirming]) {
         if (+balance.amountConfirmed >= valueObj.crytoAmount) {
           //Update the DB
-          valueObj.status = CartStatus.complete.toString();
+          valueObj.status = CartStatus[CartStatus.complete];
           valueObj.crytoAmountRemaining = 0;
 
           await this.saveToDb(valueObj, keyObj);
@@ -182,6 +151,7 @@ export class CartQueue {
             logger.error(
               `PAID, but not updated in WP : ${keyObj.orderId} : ${valueObj.address} : ${balance.amountUnconfirmed}`,
             );
+            console.log(`PAID, but not updated in WP : ${keyObj.orderId} : ${valueObj.address} : ${balance.amountUnconfirmed}`);
           }
 
           const orderInfo = JSON.parse(valueObj.meprTxData);
@@ -199,10 +169,10 @@ export class CartQueue {
       }
 
       //Check in on insufficient transaction
-      if (valueObj.status === CartStatus.insufficient.toString()) {
+      if (valueObj.status === CartStatus[CartStatus.insufficient]) {
         if (+balance.amountUnconfirmed >= valueObj.crytoAmount) {
           //Update the DB
-          valueObj.status = CartStatus.found.toString();
+          valueObj.status = CartStatus[CartStatus.confirming];
           valueObj.crytoAmountRemaining = 0;
 
           await this.saveToDb(valueObj, keyObj);
@@ -214,7 +184,7 @@ export class CartQueue {
 
       if (+balance.amountUnconfirmed >= valueObj.crytoAmount) {
         //Update the DB
-        valueObj.status = CartStatus.found.toString();
+        valueObj.status = CartStatus[CartStatus.confirming];
         valueObj.crytoAmountRemaining = 0;
 
         const newDbRecord = await this.saveToDb(valueObj, keyObj);
@@ -222,19 +192,20 @@ export class CartQueue {
 
         await this.replaceCartWatcher(key, valueObj);
 
+        this.deleteCartWatcherSibling(keyObj);
         continue;
       }
 
       if (+balance.amountUnconfirmed > 0) {
         //Update the DB
-        valueObj.status = CartStatus.insufficient.toString();
+        valueObj.status = CartStatus[CartStatus.insufficient];
         valueObj.crytoAmountRemaining = valueObj.crytoAmount - +balance.amountUnconfirmed;
 
         const newDbRecord = await this.saveToDb(valueObj, keyObj);
         valueObj.dbId = newDbRecord.id;
 
         await this.replaceCartWatcher(key, valueObj);
-
+        this.deleteCartWatcherSibling(keyObj);
         continue;
       }
 
@@ -290,7 +261,6 @@ export class CartQueue {
           //   }
 
           // }
-
     }
   }
 
@@ -431,6 +401,19 @@ export class CartQueue {
   async deleteCartWatcher(key: string) {
     const deleteResult = await this.client.delAsync(key);
     return deleteResult;
+  }
+
+  async deleteCartWatcherSibling(myKey: CartRedisKey) {
+    const otherCryptoSymbol: string = myKey.symbol === "ETH" ? "BTC" : "ETH";
+    const otherCryptoKey: CartRedisKey = {
+      brand: myKey.brand,
+      orderId: myKey.orderId,
+      orderType: myKey.orderType,
+      symbol: otherCryptoSymbol
+    };
+
+    await this.deleteCartWatcher(
+      this.formatCartKey(otherCryptoKey));
   }
 
   async dangerNeverUse() {

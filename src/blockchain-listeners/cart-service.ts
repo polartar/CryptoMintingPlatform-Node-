@@ -106,12 +106,12 @@ export class CartService extends ServerToServerService {
     
     const postBody: any = {
       ApiKey: '338a3ba7-69b8-41ac-a920-9727ae939ba3',
-      OrderId: orderId,
+      OrderId: `mepr.${orderId}`,
       Address: address,
       CoinSymbol: coinSymbol,
       AmtTotal: balance,
-      BlockchainTxIds: '',
-      OrderStatus: status.toString(),
+      BlockchainTxIds: undefined,
+      Status: CartStatus[status],
     };
     if(status === CartStatus.expired) {
       postBody.OrderStatus = 'failed';
@@ -124,8 +124,7 @@ export class CartService extends ServerToServerService {
         `${config.wpCartApiUrl}/update_wp_tx_order`,
         postBody,
       );
-      //https://share.green/wp-json/bb_wallet/v1/update_wp_tx_order
-
+      
       return result.data;
     } catch (err) {
       console.log(

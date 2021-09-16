@@ -155,7 +155,7 @@ class Resolvers extends ResolverBase {
     return {
       success: "0",
       message: 'Could not find transaction',
-      status: CartStatus.expired.toString(),      //TODO : if someone loses internet for 5 hrs, they will come here and it will send expired even if their payment went through
+      status: CartStatus[CartStatus.expired],      //TODO : if someone loses internet for 5 hrs, they will come here and it will send expired even if their payment went through
       expires: `1`,
       amtToPayUSD: `0`,
       amtToPayCrypto: `0`,
