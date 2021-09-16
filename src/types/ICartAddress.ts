@@ -18,6 +18,14 @@ export interface ICartBalanceTransaction {
   confirmations: number;
 }
 
+export enum CartStatus {
+  complete,
+  insufficient,
+  pending,
+  expired,
+  found,  
+}
+
 export enum CartType {
   woocommerce,
   memberpress,
@@ -42,4 +50,5 @@ export interface ICartWatcherData {
   usdAmount: number;
   meprTxData?: string;
   wooTxData?: string;
+  dbId?: string;
 }

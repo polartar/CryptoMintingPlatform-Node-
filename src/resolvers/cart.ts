@@ -3,7 +3,7 @@ import ResolverBase from '../common/Resolver-Base';
 import { cartQueue } from '../blockchain-listeners/cart-queue';
 import { CartService } from '../blockchain-listeners/cart-service';
 import { addHours } from 'date-fns';
-import { ICartAddress } from '../types/ICartAddress';
+import { CartStatus, ICartAddress } from '../types/ICartAddress';
 //const { decycle } = require('../utils/cycle.js');
 
 import addressRequestModel, {
@@ -20,9 +20,9 @@ class Resolvers extends ResolverBase {
     addressRequest.coinSymbol = request.coinSymbol ?? '';
     addressRequest.amountUsd = request.amountUsd ?? '';
     addressRequest.amountCrypto = request.amountCrypto ?? '';
-    addressRequest.affiliateId = request.affiliateId;
-    addressRequest.affiliateSessionId = request.affiliateSessionId;
-    addressRequest.affiliateSessionId = request.utmVariables;
+    addressRequest.affiliateId = request.affiliateId ?? '';
+    addressRequest.affiliateSessionId = request.affiliateSessionId ?? '';
+    addressRequest.affiliateSessionId = request.utmVariables ?? '';
     addressRequest.addresses = request.addresses;
     addressRequest.orderId = request.orderId;
 
@@ -63,11 +63,10 @@ class Resolvers extends ResolverBase {
       utmVariables,
     } = args;
 
-    logger.debug(JSON.stringify({ notes: { parent, args } }, null, 2));
-
     const addresses: ICartAddress[] = [];
     try {
-      const expDate = addHours(new Date(), 1);
+      const currTime = new Date();
+      const expDate = addHours(currTime, 1);
 
       const walletApi = wallet.coin(coinSymbol);
       const address = await walletApi.getCartAddress(
@@ -84,7 +83,7 @@ class Resolvers extends ResolverBase {
         status: 'pending',
         crytoAmount: +amount,
         crytoAmountRemaining: +amount,
-        usdAmount: 0, //TODO : get the usd amount from the cart.
+        usdAmount: 0, 
       };
 
       const {keyToAdd, valueToAdd} = await cartQueue.setCartWatcher(coinSymbol.toUpperCase(), orderId, data);
@@ -153,6 +152,15 @@ class Resolvers extends ResolverBase {
         `getCartOrderStatus : failed resolver : ${JSON.stringify(err)}`,
       );
     }
+    return {
+      success: "0",
+      message: 'Could not find transaction',
+      status: CartStatus.expired.toString(),      //TODO : if someone loses internet for 5 hrs, they will come here and it will send expired even if their payment went through
+      expires: `1`,
+      amtToPayUSD: `0`,
+      amtToPayCrypto: `0`,
+      amtToPayRemaining: `0`,
+    };
   };
 
   sendCartTransaction = async (
