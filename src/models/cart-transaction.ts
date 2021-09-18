@@ -12,7 +12,8 @@ export interface ICartTransaction {
   "address": string,
   "name": string,
   "email": string,
-  "data": any;
+  "data": string,
+  "created": Date,
 };
 
 export interface ICartTransactionDoc extends ICartTransaction, Document {};
@@ -30,6 +31,7 @@ export const cartTransactionSchema = new Schema({
   "name": String,
   "email": String,
   "data": String,
+  "created": Date,
 });
 
 
