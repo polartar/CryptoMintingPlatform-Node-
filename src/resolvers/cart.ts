@@ -9,6 +9,7 @@ import { CartStatus, ICartAddress } from '../types/ICartAddress';
 import addressRequestModel, {
   ICartAddressRequest,
 } from '../models/cart-address-requests';
+import CartTransaction, { ICartTransaction } from '../models/cart-transaction';
 import { logger } from '../common';
 
 class Resolvers extends ResolverBase {
@@ -22,9 +23,10 @@ class Resolvers extends ResolverBase {
     addressRequest.amountCrypto = request.amountCrypto ?? '';
     addressRequest.affiliateId = request.affiliateId ?? '';
     addressRequest.affiliateSessionId = request.affiliateSessionId ?? '';
-    addressRequest.affiliateSessionId = request.utmVariables ?? '';
+    addressRequest.utmVariables = request.utmVariables ?? '';
     addressRequest.addresses = request.addresses;
     addressRequest.orderId = request.orderId;
+    addressRequest.created = new Date();
 
     try {
       const savedRequest = await addressRequest.save();
@@ -210,6 +212,41 @@ class Resolvers extends ResolverBase {
 
     return result;
   };
+
+  getAllCartAddressRequests = async (
+    parent: any,
+    args: {},
+    ctx: Context,
+  ): Promise<ICartAddressRequest[]> => {
+    const { user } = ctx;
+    this.requireAuth(user);
+    let allAddresses: ICartAddressRequest[];
+    try {
+      allAddresses = await addressRequestModel.find({}).exec();
+    } catch (error) {
+      logger.warn(`cart.getAllCartAddressRequests ${error}`);
+      throw error;
+    }
+    return allAddresses;
+  };
+
+  getAllCartTransactions = async (
+    parent: any,
+    args: {},
+    ctx: Context,
+  ): Promise<ICartTransaction[]> => {
+    const { user } = ctx;
+    this.requireAuth(user);
+    let allTransactions: ICartTransaction[];
+    try {
+      allTransactions = await CartTransaction.find({}).exec();
+    } catch (error) {
+      logger.warn(`cart.getAllCartTransactions ${error}`);
+      throw error;
+    }
+    return allTransactions;
+  };
+
 }
 
 const resolvers = new Resolvers();
@@ -217,6 +254,8 @@ const resolvers = new Resolvers();
 export default {
   Query: {
     getCartOrderStatus: resolvers.getCartOrderStatus,
+    getAllCartAddressRequests: resolvers.getAllCartAddressRequests,
+    getAllCartTransactions: resolvers.getAllCartTransactions,
   },
   Mutation: {
     getCartAddress: resolvers.getCartAddress,

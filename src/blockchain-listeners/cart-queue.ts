@@ -315,6 +315,7 @@ export class CartQueue {
       name: orderInfo.member.display_name,
       email: orderInfo.member.email,
       data: JSON.stringify(orderInfo),
+      created: new Date(),
     };
 
     if (valueObj.dbId) {
