@@ -130,8 +130,11 @@ export class CartQueue {
         if (!balance) {
         continue;
       }
+      const cryptoPrice = (valueObj.usdAmount / valueObj.crytoAmount);
+      const acceptableBuffer = 1.5 * cryptoPrice;
+      const acceptableBalance = +balance.amountConfirmed + acceptableBuffer;
       if (valueObj.status === CartStatus[CartStatus.confirming]) {
-        if (+balance.amountConfirmed >= valueObj.crytoAmount) {
+        if (acceptableBalance >= valueObj.crytoAmount) {
           //Update the DB
           valueObj.status = CartStatus[CartStatus.complete];
           valueObj.crytoAmountRemaining = 0;
@@ -168,9 +171,11 @@ export class CartQueue {
         continue;
       }
 
+      const acceptableUnconfirmed = +balance.amountUnconfirmed + acceptableBuffer;
+
       //Check in on insufficient transaction
       if (valueObj.status === CartStatus[CartStatus.insufficient]) {
-        if (+balance.amountUnconfirmed >= valueObj.crytoAmount) {
+        if (acceptableUnconfirmed >= valueObj.crytoAmount) {
           //Update the DB
           valueObj.status = CartStatus[CartStatus.confirming];
           valueObj.crytoAmountRemaining = 0;
@@ -182,7 +187,7 @@ export class CartQueue {
         continue;
       }
 
-      if (+balance.amountUnconfirmed >= valueObj.crytoAmount) {
+      if (acceptableUnconfirmed >= valueObj.crytoAmount) {
         //Update the DB
         valueObj.status = CartStatus[CartStatus.confirming];
         valueObj.crytoAmountRemaining = 0;
