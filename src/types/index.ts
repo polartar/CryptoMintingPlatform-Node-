@@ -14,12 +14,9 @@ export { default as IZendeskTicket } from './IZendeskTicket';
 export { default as IShareConfig } from './IShareConfig';
 export { gameOptions, gameProductCoins, IGameProduct } from './IGameProduct';
 export { default as IKyc } from './IKyc';
-<<<<<<< HEAD
 export { default as ILicenseType } from './ILicenseType';
 export { default as ILicenseTypeMapping } from './ILicenseTypeMapping';
-=======
 export { default as IDependent } from './IDependent';
->>>>>>> 90f84ae (Graphql structure added for handle user dependents)
 
 export * from '../models/promotional-rewards';
 export * from '../models/wallet-config';
@@ -67,9 +64,6 @@ export * from './ICartAddress';
 export * from './IGreenCoinResult';
 export * from './ICareclixUser';
 export * from './IPaywiser';
-<<<<<<< HEAD
 export * from './ILicenseTypeMapping';
 export * from './ILicenseType';
-=======
 export * from './IDependent';
->>>>>>> 90f84ae (Graphql structure added for handle user dependents)

@@ -15,12 +15,9 @@ export { default as Environment } from './environment';
 export { default as License } from './license';
 export { default as linkedDevice } from './linked-devices';
 export { default as CartTransaction } from './cart-transaction';
-<<<<<<< HEAD
 export { default as LicenseTypeMappingModel } from './licenseTypeMapping';
 export { default as LicenseTypeModel } from './license-types';
-=======
 export { default as Dependent } from './dependents';
->>>>>>> 90f84ae (Graphql structure added for handle user dependents)
 
 export * from './offers';
 export * from './clicks';
@@ -44,9 +41,6 @@ export * from './notifications';
 export * from './environment';
 export * from './linked-devices';
 export * from './cart-transaction';
-<<<<<<< HEAD
 export * from './licenseTypeMapping';
 export * from './license-types';
-=======
 export * from './dependents';
->>>>>>> 90f84ae (Graphql structure added for handle user dependents)
