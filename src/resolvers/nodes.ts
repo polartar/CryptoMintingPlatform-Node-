@@ -2,13 +2,43 @@ import { Context } from '../types/context';
 import ResolverBase from '../common/Resolver-Base';
 import { IOrderContext } from '../types';
 import { logger } from '../common';
-import { Product, PurchaseAttempt, MiningRecord } from '../models';
+import {
+  Product,
+  IProductDocument,
+  PurchaseAttempt,
+  MiningRecord,
+} from '../models';
 import License from '../models/license';
 
 class Resolvers extends ResolverBase {
   getProductById = async (parent: any, { id }: { id: string }) => {
     const product = await Product.findById(id).exec();
     return product;
+  };
+
+  getAllProducts = async () => {
+    let products: IProductDocument[];
+    try {
+      products = await Product.find({})
+        .select('id name shownPrice description -_id')
+        .exec();
+      // throw new Error("Injected Error for test");
+    } catch (error) {
+      logger.warn(`resolvers.nodes.getAllProducts.catch: ${error}`);
+      /**
+       * The next doesn't work because the resolver
+       * getAllproducts must return [Product]!
+       * Insted graphql returns
+       * "message": "Expected Iterable, but did not find one for field 
+       return {
+        success: false,
+        message: error
+      }
+      };*/
+      //consider to throw new ApolloError in the next line
+      throw error;
+    }
+    return products;
   };
 
   getNodesInfo = async (parent: any, args: {}, ctx: Context) => {
@@ -133,6 +163,7 @@ const resolvers = new Resolvers();
 export default {
   Query: {
     productById: resolvers.getProductById,
+    getAllproducts: resolvers.getAllProducts,
     nodesInfo: resolvers.getNodesInfo,
   },
   NodesInfo: {
