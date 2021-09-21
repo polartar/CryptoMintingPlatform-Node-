@@ -270,7 +270,7 @@ class EthWallet extends CoinWalletBase {
     const ethBalance = ethers.utils.formatEther(balance);
 
     return {
-      unconfirmed: ethBalance,
+      unconfirmed: ethBalance, //same value, no sense. Pending?
       confirmed: ethBalance,
     };
   }

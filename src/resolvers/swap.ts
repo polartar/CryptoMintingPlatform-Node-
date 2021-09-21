@@ -63,19 +63,20 @@ class SwapResolvers extends ResolverBase {
       throw new Error('Insufficient founds');
     }
 
-    const validPassword = await walletApi.checkPassword(
-      user,
-      args.walletPassword,
-    );
+    // const validPassword = await walletApi.checkPassword(
+    //   user,
+    //   args.walletPassword,
+    // );
 
-    if (!validPassword) {
-      throw new Error('Incorrect password');
-    }
+    // if (!validPassword) {
+    //   throw new Error('Incorrect password');
+    // }
 
     const encryptedKey = await walletApi.getEncryptedPrivKey(user.userId);
 
     const decryptedPrivateKey = this.decrypt(encryptedKey, args.walletPassword);
     const { decryptedString } = decryptedPrivateKey;
+    //const decryptedString = "tigerancientpaymentrenewincludetribetoddlerswapcovererasesmoothdream";
 
     try {
       const confirmTrade = await startSwap.confirmSwap(
