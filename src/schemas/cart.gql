@@ -4,13 +4,47 @@ type CartAddress {
   qrCode: String!
 }
 
+type CartAddressRequest {
+  userId: String!
+  coinSymbol: String!
+  amountUsd: String!
+  amountCrypto: String!
+  orderId: String!
+  affiliateId: String!
+  affiliateSessionId: String!
+  utmVariables: String!
+  created: Date!
+  addresses: [CartAddress!]!
+}
+type CartTransaction {
+  wp_id: String!
+  status: String!
+  currency: String!
+  discountAmtUsd: String!
+  totalUsd: String!
+  totalCrypto: String!
+  conversionRate: String!
+  remainingCrypto: String!
+  address: String!
+  name: String!
+  email: String!
+  data: String!
+  created: Date!
+}
+
 type CartOrderStatusResponse {
-  success: Int!
+  success: String!
+  expires: String!
+  amtToPayUSD: String
+  amtToPayCrypto: String
+  amtToPayRemaining: String
   message: String!
-  status: String
+  status: String!
 }
 
 type Query {
+  getAllCartAddressRequests: [CartAddressRequest!]!
+  getAllCartTransactions: [CartTransaction!]!
   getCartOrderStatus(
     orderId: String!
     orderType: String!

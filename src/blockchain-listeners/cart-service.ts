@@ -1,6 +1,7 @@
-import { config } from '../common';
+import { config, logger } from '../common';
 import { ServerToServerService } from '../services/server-to-server';
 import { addDays, subDays } from 'date-fns';
+import { CartStatus } from 'src/types';
 
 export class CartService extends ServerToServerService {
   constructor() {
@@ -11,17 +12,32 @@ export class CartService extends ServerToServerService {
     orderId: string,
   ): Promise<MemprTxOrders> => {
     const axios = this.getAxios({ role: 'system' });
+    let realOrderId = orderId;
+    if (orderId.toUpperCase().indexOf('.') > 0) {
+      realOrderId = orderId.split('.')[1];
+    }
 
-    const result = await axios.post<MemprTxOrders>(
-      `${config.wpCartApiUrl}/get_mepr_tx_order?ApiKey=338a3ba7-69b8-41ac-a920-9727ae939ba3&OrderId=${orderId}`,
-      {},
-    );
+    const requestUrl = `${config.wpCartApiUrl}/get_mepr_tx_order?ApiKey=338a3ba7-69b8-41ac-a920-9727ae939ba3&OrderId=${realOrderId}`;
+
+    try {
+      const result = await axios.post<MemprTxOrders>(requestUrl);
+      return result.data;
+    } catch (err) {
+      logger.error(
+        `Failed to getOrderFromMeprCart : ${
+          config.wpCartApiUrl
+        } | ${orderId} | ${JSON.stringify(err)} | ${err}`,
+      );
+      console.log(`Failed to getOrderFromMeprCart`);
+      console.log(err);
+      console.log(JSON.stringify(err));
+    }
 
     //** NOTE orderId that is in result will prepend with the following code: */
     // Woocommerce - wooc-<ID>
     // Memberpress - mepr-<ID>
 
-    return result.data;
+    return null;
   };
 
   public getOrdersFromWooCart = async (): Promise<WooTxOrders> => {
@@ -83,21 +99,24 @@ export class CartService extends ServerToServerService {
   };
 
   public updateTransactionToMemberpressCart = async (
-    mepr_tx_id: string,
     address: string,
     balance: number,
     coinSymbol: string,
     orderId: string,
+    status: CartStatus,
   ): Promise<MemprTxOrders[]> => {
     const postBody: any = {
       ApiKey: '338a3ba7-69b8-41ac-a920-9727ae939ba3',
-      OrderId: orderId,
+      OrderId: `mepr.${orderId}`,
       Address: address,
       CoinSymbol: coinSymbol,
       AmtTotal: balance,
-      BlockchainTxIds: mepr_tx_id,
-      OrderStatus: 'complete', // | 'failed'
+      BlockchainTxIds: undefined,
+      Status: CartStatus[status],
     };
+    if (status === CartStatus.expired) {
+      postBody.OrderStatus = 'failed';
+    }
 
     try {
       const axios = this.getAxios({ role: 'system' });
@@ -106,12 +125,11 @@ export class CartService extends ServerToServerService {
         `${config.wpCartApiUrl}/update_wp_tx_order`,
         postBody,
       );
-      //https://share.green/wp-json/bb_wallet/v1/update_wp_tx_order
 
       return result.data;
     } catch (err) {
       console.log(
-        `cart-service.CartService.updateOrderToWooCart : ${JSON.stringify(
+        `cart-service.CartService.updateToWordpressCart : ${JSON.stringify(
           postBody,
         )}`,
       );
@@ -128,6 +146,7 @@ export class MemprTxOrders {
   'message': string;
   'status': string;
   'tx-json': string;
+  'total': number;
 }
 export class MeprTxOrder {
   'status': string;

@@ -269,9 +269,9 @@ class Resolvers extends ResolverBase {
       newUser.set('wallet.userCreatedInWallet', true);
       logger.debug(`resolvers.auth.createUser.newUser._id:${newUser._id}`);
 
-      if (config.brand === 'blue') {
+      /*if (config.brand === 'blue') {
         await careclix.signUp(newUser, password);
-      }
+      }*/
 
       await newUser.save();
 
