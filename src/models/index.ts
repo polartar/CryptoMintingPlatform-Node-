@@ -17,6 +17,7 @@ export { default as linkedDevice } from './linked-devices';
 export { default as CartTransaction } from './cart-transaction';
 export { default as LicenseTypeMappingModel } from './licenseTypeMapping';
 export { default as LicenseTypeModel } from './license-types';
+export { default as Dependent } from './dependents';
 
 export * from './offers';
 export * from './clicks';
@@ -42,3 +43,4 @@ export * from './linked-devices';
 export * from './cart-transaction';
 export * from './licenseTypeMapping';
 export * from './license-types';
+export * from './dependents';

@@ -16,6 +16,7 @@ export { gameOptions, gameProductCoins, IGameProduct } from './IGameProduct';
 export { default as IKyc } from './IKyc';
 export { default as ILicenseType } from './ILicenseType';
 export { default as ILicenseTypeMapping } from './ILicenseTypeMapping';
+export { default as IDependent } from './IDependent';
 
 export * from '../models/promotional-rewards';
 export * from '../models/wallet-config';
@@ -65,3 +66,4 @@ export * from './ICareclixUser';
 export * from './IPaywiser';
 export * from './ILicenseTypeMapping';
 export * from './ILicenseType';
+export * from './IDependent';
