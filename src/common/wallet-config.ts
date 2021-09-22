@@ -174,7 +174,10 @@ export const walletConfigurations: ICoinMetadata[] = [
     icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/825.png',
     abi: erc20Abi,
     decimalPlaces: 6,
-    contractAddress: chainId === 1 ? contractAddresses.usdtMain : null,
+    contractAddress:
+      chainId === 1
+        ? contractAddresses.usdtMain
+        : '0x110a13fc3efe6a245b50102d2d79b3e76125ae83',
     WalletInterface: Erc20Wallet,
   },
   {
@@ -185,7 +188,7 @@ export const walletConfigurations: ICoinMetadata[] = [
     icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png',
     abi: erc20Abi,
     decimalPlaces: 6,
-    contractAddress: chainId === 1 ? contractAddresses.usdcMain : null,
+    contractAddress: contractAddresses.usdcMain,
     WalletInterface: Erc20Wallet,
   },
   {
@@ -196,7 +199,7 @@ export const walletConfigurations: ICoinMetadata[] = [
     icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/4687.png',
     abi: erc20Abi,
     decimalPlaces: 18,
-    contractAddress: chainId === 1 ? contractAddresses.busdMain : null,
+    contractAddress: contractAddresses.busdMain,
     WalletInterface: Erc20Wallet,
   },
   {
@@ -207,7 +210,7 @@ export const walletConfigurations: ICoinMetadata[] = [
     icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1697.png',
     abi: erc20Abi,
     decimalPlaces: 18,
-    contractAddress: chainId === 1 ? contractAddresses.busdMain : null,
+    contractAddress: contractAddresses.busdMain,
     WalletInterface: Erc20Wallet,
   },
   {
