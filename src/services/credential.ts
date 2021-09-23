@@ -1,5 +1,5 @@
 import { config, logger } from '../common';
-import { AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { ServerToServerService } from './server-to-server';
 
 class CredentialService extends ServerToServerService {
@@ -46,6 +46,7 @@ class CredentialService extends ServerToServerService {
         userId,
         accountId: resourceKey,
       });
+      console.log('jwtAxios', jwtAxios);
       const response = await jwtAxios.get(apiKeyUrl, {
         params: {
           userId: userId,

@@ -39,7 +39,10 @@ class StartSwap extends ServerToServerService {
         const provider = new ethers.providers.JsonRpcProvider(
           uniswapPairFactory.providerUrl,
         );
-        const wallet = new ethers.Wallet(decryptedString, provider);
+
+        const privateKey = ethers.Wallet.fromMnemonic(decryptedString)
+          .privateKey;
+        const wallet = new ethers.Wallet(privateKey, provider);
 
         return this.firmAndSendSwap(trade, wallet);
       }
@@ -68,7 +71,10 @@ class StartSwap extends ServerToServerService {
         const provider = new ethers.providers.JsonRpcProvider(
           uniswapPairFactory.providerUrl,
         );
-        const wallet = new ethers.Wallet(decryptedString, provider);
+
+        const privateKey = ethers.Wallet.fromMnemonic(decryptedString)
+          .privateKey;
+        const wallet = new ethers.Wallet(privateKey, provider);
 
         return this.firmAndSendSwap(trade, wallet);
       }
@@ -97,7 +103,10 @@ class StartSwap extends ServerToServerService {
         const provider = new ethers.providers.JsonRpcProvider(
           uniswapPairFactory.providerUrl,
         );
-        const wallet = new ethers.Wallet(decryptedString, provider);
+
+        const privateKey = ethers.Wallet.fromMnemonic(decryptedString)
+          .privateKey;
+        const wallet = new ethers.Wallet(privateKey, provider);
 
         return this.firmAndSendSwap(trade, wallet);
       }

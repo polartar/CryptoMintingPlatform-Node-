@@ -188,7 +188,10 @@ export const walletConfigurations: ICoinMetadata[] = [
     icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png',
     abi: erc20Abi,
     decimalPlaces: 6,
-    contractAddress: contractAddresses.usdcMain,
+    contractAddress:
+      chainId === 1
+        ? contractAddresses.usdcMain
+        : '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
     WalletInterface: Erc20Wallet,
   },
   {
@@ -211,17 +214,6 @@ export const walletConfigurations: ICoinMetadata[] = [
     abi: erc20Abi,
     decimalPlaces: 18,
     contractAddress: contractAddresses.busdMain,
-    WalletInterface: Erc20Wallet,
-  },
-  {
-    walletApi: eSupportedInterfaces.doc,
-    name: 'Dai Stable Coin',
-    symbol: 'DAI',
-    backgroundColor: '#0066FF',
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/4943.png',
-    abi: erc20Abi,
-    decimalPlaces: 18,
-    contractAddress: '0xad6d458402f60fd3bd25163575031acdce07538d',
     WalletInterface: Erc20Wallet,
   },
 ];
