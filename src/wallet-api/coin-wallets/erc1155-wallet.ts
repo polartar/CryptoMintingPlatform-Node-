@@ -7,12 +7,15 @@ import { UserApi } from '../../data-sources';
 import { transactionService } from '../../services';
 import { ITokenBalanceTransactions } from '../../pipelines';
 
+const provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
+let s_ChainId: number;
+
 class Erc1155API extends EthWallet {
   contract: ethers.Contract;
   decimalPlaces: number;
   decimalFactor: BigNumber;
   decimalFactorNegative: BigNumber;
-  provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
+  //  provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
   abi: any;
   WEB3_GAS_ERROR = 'Returned error: insufficient funds for gas * price + value';
   NEW_GAS_ERROR = 'Insufficient credits';
@@ -23,7 +26,7 @@ class Erc1155API extends EthWallet {
     super(tokenMetadata);
     this.validateArguments(tokenMetadata);
     const { abi, contractAddress, decimalPlaces } = tokenMetadata;
-    this.contract = new ethers.Contract(contractAddress, abi, this.provider);
+    this.contract = new ethers.Contract(contractAddress, abi, provider);
     this.decimalPlaces = decimalPlaces;
     this.decimalFactor = this.bigNumberify(10).pow(decimalPlaces);
     this.decimalFactorNegative = this.bigNumberify(10).pow(
@@ -57,7 +60,7 @@ class Erc1155API extends EthWallet {
   }
 
   async estimateFee(userApi: UserApi) {
-    const gasPrice = await this.provider.getGasPrice();
+    const gasPrice = await provider.getGasPrice();
     const ethBalance = await this.getEthBalance(userApi);
     try {
       const feeEstimate = this.toEther(this.FALLBACK_GAS_VALUE.mul(gasPrice));
@@ -177,7 +180,7 @@ class Erc1155API extends EthWallet {
         this.tokenId,
         address,
       );
-      const currentBlock = await this.provider.getBlockNumber();
+      const currentBlock = await provider.getBlockNumber();
       const transactions = await this.formatWalletTransactions(
         result.transactions,
         currentBlock,
@@ -262,7 +265,7 @@ class Erc1155API extends EthWallet {
       const { parseEther } = utils;
       const [feeEstimate, etherBalance, ownsTokens] = await Promise.all([
         this.estimateFee(userApi),
-        this.provider.getBalance(address),
+        provider.getBalance(address),
         Promise.all(
           tokenIds.map((tokenId, i) =>
             this.ownsToken(address, tokenId, amounts[i]),
@@ -326,19 +329,20 @@ class Erc1155API extends EthWallet {
       ] = await Promise.all([
         this.getEthAddress(userApi),
         this.getDecryptedPrivateKey(userApi.userId, walletPassword),
-        this.provider.getGasPrice(),
+        provider.getGasPrice(),
       ]);
       this.checkIfSendingToSelf(ethAddress, to);
       const nonce = await this.getNonce(userApi, ethAddress, ethNonceFromDb);
 
-      const wallet = new ethers.Wallet(privateKey, this.provider);
+      const wallet = new ethers.Wallet(privateKey, provider);
       await this.requireItemsAndEtherToSend(
         userApi,
         ethAddress,
         tokenIds,
         amounts,
       );
-      const { chainId } = await this.provider.getNetwork();
+      if (s_ChainId === undefined)
+        s_ChainId = (await provider.getNetwork()).chainId;
 
       const contractMethod = this.contract.interface.encodeFunctionData(
         'safeBatchTransferFrom',
@@ -351,7 +355,7 @@ class Erc1155API extends EthWallet {
         gasLimit: 150000,
         value: '0x0',
         nonce,
-        chainId,
+        chainId: s_ChainId,
         gasPrice,
       });
 
@@ -359,7 +363,7 @@ class Erc1155API extends EthWallet {
 
       //await nodeSelector.assignNodeToMineTransaction(hash);
 
-      const transaction = await this.provider.sendTransaction(rawTransaction);
+      const transaction = await provider.sendTransaction(rawTransaction);
 
       await userApi.incrementTxCount();
       this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
@@ -421,17 +425,17 @@ class Erc1155API extends EthWallet {
       ] = await Promise.all([
         this.getEthAddress(userApi),
         this.getDecryptedPrivateKey(userApi.userId, walletPassword),
-        this.provider.getGasPrice(),
+        provider.getGasPrice(),
       ]);
 
       const amount = this.integerize(value);
-      const wallet = new ethers.Wallet(privateKey, this.provider);
+      const wallet = new ethers.Wallet(privateKey, provider);
       await this.requireEnoughTokensAndEtherToSend(
         userApi,
         wallet.address,
         amount.toString(),
       );
-      const { chainId } = this.provider.network;
+      const { chainId } = provider.network;
 
       const contractMethod = this.contract.interface.encodeFunctionData(
         'safeTransferFrom',
@@ -453,7 +457,7 @@ class Erc1155API extends EthWallet {
 
       //await nodeSelector.assignNodeToMineTransaction(hash);
 
-      const transaction = await this.provider.sendTransaction(rawTransaction);
+      const transaction = await provider.sendTransaction(rawTransaction);
 
       await userApi.incrementTxCount();
       this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
