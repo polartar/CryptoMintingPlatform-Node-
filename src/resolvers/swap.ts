@@ -57,30 +57,35 @@ class SwapResolvers extends ResolverBase {
     const walletApi = wallet.coin(args.coinSymbol) as EthWallet;
     const { receiveAddress } = await walletApi.getWalletInfo(user);
 
-    const { confirmed } = await walletApi.getBalance(receiveAddress);
+    const validPassword = await walletApi.checkPassword(
+      user,
+      args.walletPassword,
+    ); //This return false always
 
-    if (parseFloat(confirmed) < parseFloat(args.amount)) {
-      throw new Error('Insufficient founds');
+    logger.warn('swap.confirmSwap.returns false' + validPassword);
+
+    //if (!validPassword) throw new Error("Invalid Password")
+
+    let passwordDecripted;
+    try {
+      const encryptedKey = await walletApi.getEncryptedPrivKey(user.userId);
+      const decryptedPrivateKey = this.decrypt(
+        encryptedKey,
+        args.walletPassword,
+      );
+      const { decryptedString } = decryptedPrivateKey;
+      passwordDecripted = decryptedString;
+    } catch (e) {
+      logger.warn('EncryptedKey no return instead we reach a 401 status' + e);
+      //I have reach out that when it goe to the https://stage0.key.connectblockchain.net/api/v1/api-keys/614a5a55a6725e037b2a7775/ETH-privatekey
+      //we do not find any header authorization even if we find it on server-to-server line:34
     }
 
-    // const validPassword = await walletApi.checkPassword(
-    //   user,
-    //   args.walletPassword,
-    // );
-
-    // if (!validPassword) {
-    //   throw new Error('Incorrect password');
-    // }
-
-    const encryptedKey = await walletApi.getEncryptedPrivKey(user.userId);
-
-    const decryptedPrivateKey = this.decrypt(encryptedKey, args.walletPassword);
-    const { decryptedString } = decryptedPrivateKey;
-    //const decryptedString = "tigerancientpaymentrenewincludetribetoddlerswapcovererasesmoothdream";
+    // passwordDecripted = "wait size angle field door focus mansion shove flame concert pool can";
 
     try {
       const confirmTrade = await startSwap.confirmSwap(
-        decryptedString,
+        passwordDecripted,
         args.inputToken,
         args.outputToken,
         args.amount,
@@ -89,24 +94,6 @@ class SwapResolvers extends ResolverBase {
       return confirmTrade;
     } catch (error) {
       logger.warn(`resolvers.Swap.startSwap.catch: ${error}`);
-      let message;
-      switch (error.message) {
-        case 'Weak Password': {
-          message = 'Incorrect Password';
-          break;
-        }
-        case 'Invalid two factor auth token': {
-          message = 'Invalid one-time password';
-          break;
-        }
-        default: {
-          throw error;
-        }
-      }
-      return {
-        success: false,
-        message,
-      };
     }
   };
 

@@ -1,0 +1,29 @@
+input DependentInput {
+  firstName: String!
+  lastName: String!
+  dateOfBirth: Date!
+  phoneNumber: String!
+  country: String!
+  clinic: String!
+  careclixId: String!
+}
+
+type Dependent {
+  _id: String!
+  firstName: String!
+  lastName: String!
+  dateOfBirth: Date!
+  phoneNumber: String!
+  country: String!
+  clinic: String!
+  careclixId: String!
+  created: Date!
+}
+
+type Mutation {
+  addDependent(dependent: DependentInput): Dependent!
+  remDependent(_id: String): MutationResponse!
+}
+type Query {
+  getMyDependents: [Dependent]!
+}
