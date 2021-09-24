@@ -165,7 +165,7 @@ class Server {
   };
 
   private async connectToMongodb() {
-    return new Promise(resolve => {
+    return new Promise<void>(resolve => {
       set('useCreateIndex', true);
       set('useNewUrlParser', true);
 
@@ -175,6 +175,7 @@ class Server {
         systemLogger.info(`Connected to mongoDb`);
         resolve();
       });
+
       mongooseConnection.on('error', error => {
         console.warn(error);
       });
