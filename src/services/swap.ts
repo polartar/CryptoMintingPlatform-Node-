@@ -204,7 +204,7 @@ class StartSwap extends ServerToServerService {
         const approvedReceipt = await approved.wait();
         console.log('approved receipt', approvedReceipt);
       } catch (error) {
-        throw new Error('Servide.Swap.SartSwap.FirmAndSend.error' + error);
+        throw new Error('Service.Swap.SartSwap.FirmAndSend.error' + error);
       }
     }
 
@@ -227,7 +227,7 @@ class StartSwap extends ServerToServerService {
         to,
       };
     } catch (error) {
-      throw new Error('Servide.Swap.SartSwap.FirmAndSend.error' + error);
+      throw new Error('Service.Swap.SartSwap.FirmAndSend.error' + error);
     }
   };
 
