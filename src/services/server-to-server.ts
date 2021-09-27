@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { logger, config } from '../common';
 import { IJwtSignOptions } from '../types';
+import * as fs from 'fs';
 const jwt = require('jsonwebtoken');
 
 export class ServerToServerService {
@@ -17,8 +18,9 @@ export class ServerToServerService {
     options: IJwtSignOptions = {},
   ): string {
     try {
+      const privatekey = fs.readFileSync('jwtrsa-private.key');
       const combinedOptions = Object.assign(options, this.jwtOptions);
-      const token = jwt.sign(payload, config.jwtPrivateKey, combinedOptions);
+      const token = jwt.sign(payload, privatekey, combinedOptions);
       return token;
     } catch (error) {
       logger.warn(`services.credential.sign.catch: ${error}`);

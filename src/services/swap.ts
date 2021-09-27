@@ -26,6 +26,15 @@ class StartSwap extends ServerToServerService {
           receiveAddress,
         );
 
+        const {
+          minAmountConvertQuote,
+          expectedConvertQuote,
+          routeText,
+          liquidityProviderFee,
+          liquidityProviderFeePercent,
+          tradeExpires,
+        } = trade;
+
         if (message !== 'Success') {
           throw new Error(message);
         }
@@ -40,11 +49,27 @@ class StartSwap extends ServerToServerService {
           uniswapPairFactory.providerUrl,
         );
 
-        const privateKey = ethers.Wallet.fromMnemonic(decryptedString)
-          .privateKey;
-        const wallet = new ethers.Wallet(privateKey, provider);
+        const wallet = new ethers.Wallet(decryptedString, provider);
+        const {
+          hash,
+          blockNumber,
+          confirmations,
+          to,
+        } = await this.firmAndSendSwap(trade, wallet);
 
-        return this.firmAndSendSwap(trade, wallet);
+        return {
+          message: 'Success',
+          hash,
+          blockNumber,
+          confirmations,
+          to,
+          midPrice: minAmountConvertQuote,
+          midPriceInverted: expectedConvertQuote,
+          path: routeText,
+          liquidityProviderFee,
+          liquidityProviderFeePercent,
+          tradeExpires,
+        };
       }
 
       if (
@@ -58,6 +83,15 @@ class StartSwap extends ServerToServerService {
           receiveAddress,
         );
 
+        const {
+          minAmountConvertQuote,
+          expectedConvertQuote,
+          routeText,
+          liquidityProviderFee,
+          liquidityProviderFeePercent,
+          tradeExpires,
+        } = trade;
+
         if (message !== 'Success') {
           throw new Error(message);
         }
@@ -72,11 +106,27 @@ class StartSwap extends ServerToServerService {
           uniswapPairFactory.providerUrl,
         );
 
-        const privateKey = ethers.Wallet.fromMnemonic(decryptedString)
-          .privateKey;
-        const wallet = new ethers.Wallet(privateKey, provider);
+        const wallet = new ethers.Wallet(decryptedString, provider);
+        const {
+          hash,
+          blockNumber,
+          confirmations,
+          to,
+        } = await this.firmAndSendSwap(trade, wallet);
 
-        return this.firmAndSendSwap(trade, wallet);
+        return {
+          message: 'Success',
+          hash,
+          blockNumber,
+          confirmations,
+          to,
+          midPrice: minAmountConvertQuote,
+          midPriceInverted: expectedConvertQuote,
+          path: routeText,
+          liquidityProviderFee,
+          liquidityProviderFeePercent,
+          tradeExpires,
+        };
       }
 
       if (
@@ -90,6 +140,15 @@ class StartSwap extends ServerToServerService {
           receiveAddress,
         );
 
+        const {
+          minAmountConvertQuote,
+          expectedConvertQuote,
+          routeText,
+          liquidityProviderFee,
+          liquidityProviderFeePercent,
+          tradeExpires,
+        } = trade;
+
         if (message !== 'Success') {
           throw new Error(message);
         }
@@ -104,11 +163,27 @@ class StartSwap extends ServerToServerService {
           uniswapPairFactory.providerUrl,
         );
 
-        const privateKey = ethers.Wallet.fromMnemonic(decryptedString)
-          .privateKey;
-        const wallet = new ethers.Wallet(privateKey, provider);
+        const wallet = new ethers.Wallet(decryptedString, provider);
+        const {
+          hash,
+          blockNumber,
+          confirmations,
+          to,
+        } = await this.firmAndSendSwap(trade, wallet);
 
-        return this.firmAndSendSwap(trade, wallet);
+        return {
+          message: 'Success',
+          hash,
+          blockNumber: blockNumber,
+          confirmations,
+          to,
+          midPrice: minAmountConvertQuote,
+          midPriceInverted: expectedConvertQuote,
+          path: routeText,
+          liquidityProviderFee,
+          liquidityProviderFeePercent,
+          tradeExpires,
+        };
       }
     } catch (error) {
       logger.warn('Failed to get service from swap:' + error);
@@ -131,17 +206,28 @@ class StartSwap extends ServerToServerService {
       }
 
       const tradeTransaction = await wallet.sendTransaction(swap.transaction);
+      const hash: string = tradeTransaction.hash;
+      const value: number = tradeTransaction.value.toNumber();
       console.log('trade txHash', tradeTransaction.hash);
       const tradeReceipt = await tradeTransaction.wait();
       console.log('trade receipt', tradeReceipt);
+      const blockNumber: number = tradeReceipt.blockNumber;
+      const confirmations: number = tradeReceipt.confirmations;
+      const to: string = tradeReceipt.to;
 
       swap.destroy();
 
       return {
         message: 'Success',
+        hash,
+        blockNumber,
+        confirmations,
+        to,
       };
     } catch (error) {
-      return error;
+      return {
+        message: error,
+      };
     }
   };
 

@@ -46,7 +46,6 @@ class CredentialService extends ServerToServerService {
         userId,
         accountId: resourceKey,
       });
-      console.log('jwtAxios', jwtAxios);
       const response = await jwtAxios.get(apiKeyUrl, {
         params: {
           userId: userId,
