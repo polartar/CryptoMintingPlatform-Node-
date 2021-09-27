@@ -1,5 +1,5 @@
 import { config, logger } from '../common';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 import { ServerToServerService } from './server-to-server';
 
 class CredentialService extends ServerToServerService {
