@@ -197,14 +197,18 @@ class StartSwap extends ServerToServerService {
     swap: TradeContext,
     wallet: ethers.ethers.Wallet,
   ) => {
-    try {
-      if (swap.approvalTransaction) {
+    if (swap.approvalTransaction) {
+      try {
         const approved = await wallet.sendTransaction(swap.approvalTransaction);
         console.log('approved txHash', approved.hash);
         const approvedReceipt = await approved.wait();
         console.log('approved receipt', approvedReceipt);
+      } catch (error) {
+        throw new Error('Servide.Swap.SartSwap.FirmAndSend.error' + error);
       }
+    }
 
+    try {
       const tradeTransaction = await wallet.sendTransaction(swap.transaction);
       const hash: string = tradeTransaction.hash;
       const value: number = tradeTransaction.value.toNumber();
@@ -214,9 +218,7 @@ class StartSwap extends ServerToServerService {
       const blockNumber: number = tradeReceipt.blockNumber;
       const confirmations: number = tradeReceipt.confirmations;
       const to: string = tradeReceipt.to;
-
       swap.destroy();
-
       return {
         message: 'Success',
         hash,
@@ -225,9 +227,7 @@ class StartSwap extends ServerToServerService {
         to,
       };
     } catch (error) {
-      return {
-        message: error,
-      };
+      throw new Error('Servide.Swap.SartSwap.FirmAndSend.error' + error);
     }
   };
 
