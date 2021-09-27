@@ -1,0 +1,10 @@
+type LicenseType {
+  _id: String!
+  name: String!
+  rewardType: String!
+  environmentType: String!
+  topPerformingMinerRewardPerDollarMined: Int!
+  remainingMinerRewardPerDollarMined: Int!
+  concurrentDevices: Int!
+  promoPointsPerDay: Int!
+}
