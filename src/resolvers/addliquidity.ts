@@ -1,5 +1,5 @@
 import { ResolverBase, config } from 'src/common';
-import { IToken, Immutables, State } from 'src/types/ILiquidity';
+import { Immutables, State } from 'src/types/ILiquidity';
 import { Context } from '../types/context';
 import { ethers } from 'ethers';
 import {
@@ -14,32 +14,50 @@ import {
   //CurrencyAmount
 } from '@uniswap/sdk-core';
 import { abi as IUniswapV3PoolABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json';
-import { EthWallet } from 'src/wallet-api/coin-wallets';
+import { UniswapPair } from 'simple-uniswap-sdk';
+import EthWallet from '../wallet-api/coin-wallets/eth-wallet';
+
 const { chainId, ethNodeUrl } = config;
 
 class LiquidityResolver extends ResolverBase {
   poolAddress = async (
     parent: any,
     args: {
-      token0: IToken;
-      token1: IToken;
+      token0: string;
+      token1: string;
       fee: number;
     },
     { user, wallet }: Context,
   ) => {
+    this.requireAuth(user);
+    const walletApi = wallet.coin('ETH') as EthWallet;
+    const { receiveAddress } = await walletApi.getWalletInfo(user);
     try {
+      const uniswapPair = new UniswapPair({
+        fromTokenContractAddress: args.token0,
+        toTokenContractAddress: args.token1,
+        ethereumAddress: receiveAddress,
+        chainId: chainId,
+      });
+
+      const uniswapPairFactory = await uniswapPair.createFactory();
+      const trade = await uniswapPairFactory.trade('1');
+
       const provider = new ethers.providers.JsonRpcProvider(ethNodeUrl);
+
+      const tokenFrom = trade.fromToken;
+      const tokenTo = trade.toToken;
 
       const token0 = new Token(
         chainId,
-        args.token0.contractAddress,
-        args.token0.decimalPlaces,
+        tokenFrom.contractAddress,
+        tokenFrom.decimals,
       );
 
       const token1 = new Token(
         chainId,
-        args.token1.contractAddress,
-        args.token1.decimalPlaces,
+        tokenTo.contractAddress,
+        tokenTo.decimals,
       );
 
       const poolAddress = Pool.getAddress(token0, token1, args.fee);
@@ -105,7 +123,6 @@ class LiquidityResolver extends ResolverBase {
 
       const deadline = block.timestamp + 200;
 
-      const walletApi = wallet.coin('ETH') as EthWallet;
       // const { receiveAddress } = await walletApi.getWalletInfo(user);
 
       // const { calldata, value } = NonfungiblePositionManager.addCallParameters(position, {
