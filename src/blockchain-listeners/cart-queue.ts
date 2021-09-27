@@ -86,7 +86,7 @@ export class CartQueue {
       const keyObj: CartRedisKey = this.parseKey(key);
 
       //Skipping other brands
-      if (keyObj.brand != brand) {
+      if (keyObj.brand !== brand) {
         continue;
       }
 
@@ -96,7 +96,7 @@ export class CartQueue {
         continue;
       }
 
-      //Skipping values 
+      //Skipping values
       if (valueObj.status === CartStatus[CartStatus.complete] ||
         valueObj.status === CartStatus[CartStatus.expired]) {
         continue;

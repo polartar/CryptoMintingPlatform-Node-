@@ -12,7 +12,7 @@ class Resolvers extends ResolverBase {
     const { user } = ctx;
     this.requireAuth(user);
 
-    if (config.brand.toLowerCase() != 'blue')
+    if (config.brand.toLowerCase() !== 'blue')
       throw new Error('Dependents are only allowed for blue users');
 
     const { userId } = user;
@@ -56,7 +56,7 @@ class Resolvers extends ResolverBase {
     const { user } = ctx;
     this.requireAuth(user);
 
-    if (config.brand.toLowerCase() != 'blue')
+    if (config.brand.toLowerCase() !== 'blue')
       throw new Error('Dependents are only allowed for blue users');
 
     const { userId } = user;
@@ -74,15 +74,15 @@ class Resolvers extends ResolverBase {
     const { user } = ctx;
     this.requireAuth(user);
 
-    if (config.brand.toLowerCase() != 'blue')
+    if (config.brand.toLowerCase() !== 'blue')
       throw new Error('Dependents are only allowed for blue users');
 
     const { userId } = user;
     const { _id } = args;
-    let toReturn = { success: false, message: 'Nothing done' };
+    const toReturn = { success: false, message: 'Nothing done' };
     try {
       const ret = await Dependent.deleteOne({ userId: userId, _id: _id });
-      if (ret.deletedCount == 1) {
+      if (ret.deletedCount === 1) {
         toReturn.success = true;
         toReturn.message = 'dependent removed';
       } else {
