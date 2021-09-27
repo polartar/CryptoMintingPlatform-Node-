@@ -79,7 +79,7 @@ class Resolvers extends ResolverBase {
 
     const { userId } = user;
     const { _id } = args;
-    let toReturn = { success: false, message: 'Nothing done' };
+    const toReturn = { success: false, message: 'Nothing done' };
     try {
       const ret = await Dependent.deleteOne({ userId: userId, _id: _id });
       if (ret.deletedCount == 1) {
