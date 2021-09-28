@@ -43,14 +43,14 @@ describe('License Resolver', () => {
   );
 
   const license = {
-    _id: Types.ObjectId(licenseId),
+    _id: new Types.ObjectId(licenseId),
     licenseTypeId: '',
     userId: '',
     created: new Date(),
     inUse: false,
     ownershipHistory: [
       {
-        _id: Types.ObjectId('5e87914b7bc3ef58c6782408'),
+        _id: new Types.ObjectId('5e87914b7bc3ef58c6782408'),
         receivedReason:
           'connect-stage::OrderId::5ce70f00b2ea3f09e352ab3a::license migration sc...',
         received: new Date(),

@@ -14,6 +14,9 @@ export async function getNextWalletNumber(symbol: string) {
           maxTimeMS: 5000,
         },
       );
+    if(!result){
+      return undefined;
+    }
     const id = +result.sequence + 1;
     await mongoose.connection.db
       .collection<{ sequence: number }>('sequences')

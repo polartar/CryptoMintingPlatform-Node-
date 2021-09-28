@@ -166,6 +166,10 @@ export async function getNextNumber() {
       },
     );
 
+  if(!result){
+    return undefined;
+  }
+
   const id = +result.sequence + 1;
   
   await mongoose.connection.db
