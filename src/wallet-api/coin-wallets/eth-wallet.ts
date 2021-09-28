@@ -1,7 +1,6 @@
 import { credentialService, transactionService } from '../../services';
 import CoinWalletBase from './coin-wallet-base';
 import { ethers, providers, utils, BigNumber } from 'ethers';
-
 import { config, logger } from '../../common';
 import {
   ITransaction,
@@ -15,11 +14,12 @@ import { IEthBalanceTransactions } from '../../pipelines';
 import { getNextWalletNumber } from '../../models';
 import * as QRCode from 'qrcode';
 import { build } from 'eth-url-parser';
-
 const PRIVATEKEY = 'privatekey';
 
+const provider = new providers.JsonRpcProvider(config.ethNodeUrl);
+let s_ChainId: number;
+
 class EthWallet extends CoinWalletBase {
-  provider = new providers.JsonRpcProvider(config.ethNodeUrl);
   etherscan = new providers.EtherscanProvider(
     config.etherscanNetwork,
     config.etherScanApiKey,
@@ -161,7 +161,7 @@ class EthWallet extends CoinWalletBase {
 
   private async saveAddress(userApi: UserApi, ethAddress: string) {
     try {
-      const ethBlockNumAtCreation = await this.provider.getBlockNumber();
+      const ethBlockNumAtCreation = await provider.getBlockNumber();
       const updateResult = await userApi.setWalletAccountToUser(
         ethAddress,
         ethBlockNumAtCreation,
@@ -207,7 +207,7 @@ class EthWallet extends CoinWalletBase {
 
   public async estimateFee(userApi: UserApi) {
     try {
-      const gasPrice = await this.provider.getGasPrice();
+      const gasPrice = await provider.getGasPrice();
       const feeEstimate = gasPrice.mul(21001);
       const feeInEther = this.toEther(feeEstimate);
 
@@ -266,7 +266,7 @@ class EthWallet extends CoinWalletBase {
   }
 
   private async getBalanceNonIndexed(address: string) {
-    const balance = await this.provider.getBalance(address);
+    const balance = await provider.getBalance(address);
     const ethBalance = ethers.utils.formatEther(balance);
 
     return {
@@ -313,7 +313,7 @@ class EthWallet extends CoinWalletBase {
         nonce = wallet.ethNonce;
         userEthAddress = wallet.ethAddress;
       }
-      const txCount = await this.provider.getTransactionCount(userEthAddress);
+      const txCount = await provider.getTransactionCount(userEthAddress);
       if (txCount > nonce) {
         await userApi.update({ $set: { 'wallet.ethNonce': txCount } });
         return txCount;
@@ -364,7 +364,7 @@ class EthWallet extends CoinWalletBase {
     blockNumAtCreation: number,
   ): Promise<ITransaction[]> {
     try {
-      const currentBlockNumber = await this.provider.getBlockNumber();
+      const currentBlockNumber = await provider.getBlockNumber();
       const result = await transactionService.getEthBalanceAndTransactions(
         address,
       );
@@ -490,7 +490,7 @@ class EthWallet extends CoinWalletBase {
   }
   protected async requireValidAddress(maybeAddress: string) {
     try {
-      const isAddress = !!(await this.provider.resolveName(maybeAddress));
+      const isAddress = !!(await provider.resolveName(maybeAddress));
       if (!isAddress) throw new Error(`Invalid address ${maybeAddress}`);
     } catch (error) {
       throw error;
@@ -511,7 +511,7 @@ class EthWallet extends CoinWalletBase {
         userApi.userId,
         walletPassword,
       );
-      const wallet = new ethers.Wallet(privateKey, this.provider);
+      const wallet = new ethers.Wallet(privateKey, provider);
       const transaction = await wallet.sendTransaction({
         nonce,
         to,
@@ -680,15 +680,17 @@ class EthWallet extends CoinWalletBase {
     const nonce = await this.getNonce(userApi, ethAddress, ethNonceFromDb);
     await this.requireEnoughBalanceToSendEther(ethAddress, value);
 
-    const gasPrice = await this.provider.getGasPrice();
-    const { chainId } = await this.provider.getNetwork();
+    const gasPrice = await provider.getGasPrice();
+
+    if (s_ChainId === undefined)
+      s_ChainId = (await provider.getNetwork()).chainId;
 
     const privateKey = await this.getDecryptedPrivateKey(
       userApi.userId,
       walletPassword,
     );
 
-    const wallet = new ethers.Wallet(privateKey, this.provider);
+    const wallet = new ethers.Wallet(privateKey, provider);
 
     const transaction = await wallet.signTransaction({
       to,
@@ -696,7 +698,7 @@ class EthWallet extends CoinWalletBase {
       value,
       gasPrice,
       nonce,
-      chainId,
+      chainId: s_ChainId,
     });
 
     await userApi.incrementTxCount();
@@ -708,7 +710,7 @@ class EthWallet extends CoinWalletBase {
   };
 
   public sendSignedTransaction = async (transaction: string) => {
-    const response = await this.provider.sendTransaction(transaction);
+    const response = await provider.sendTransaction(transaction);
 
     return response;
   };
