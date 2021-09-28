@@ -1,4 +1,4 @@
-import { Document, HookNextFunction, model, Schema } from 'mongoose';
+import { Document, model, Schema } from 'mongoose';
 
 export interface IAffiliateAction extends Document {
   affiliateId: string,
