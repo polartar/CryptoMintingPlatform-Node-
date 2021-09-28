@@ -29,7 +29,7 @@ const IamAuthenticateResponse = {
 
     let user;
     try {
-      user = (await auth.getUser(metadata.uid, AUTH_APP_DOMAIN)) as IUser;
+      user = await auth.getUser(metadata.uid, AUTH_APP_DOMAIN);
       if (!user) {
         throw new Error('No user profile could be found.');
       }

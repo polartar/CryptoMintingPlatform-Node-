@@ -383,11 +383,7 @@ class Config {
       !['gala', 'connect'].includes(this.brand) &&
       connectMongoUrl !== undefined
     ) {
-      this.connectMongoConnection = await createConnection(connectMongoUrl, {
-        useNewUrlParser: true,
-        useFindAndModify: false,
-        useCreateIndex: true,
-      });
+      this.connectMongoConnection = await createConnection(connectMongoUrl);
     }
   }
 

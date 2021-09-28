@@ -1,8 +1,8 @@
-import { Document, HookNextFunction, model, Schema } from 'mongoose';
+import { Document, model, Schema } from 'mongoose';
 
 export interface IAffiliateAction extends Document {
-  affiliateId: string,
-  sessionId: string,
+  affiliateId: string;
+  sessionId: string;
   url: string;
 }
 
@@ -15,6 +15,9 @@ export const affiliateActionSchema = new Schema(
   { id: false },
 );
 
-const AffiliateAction = model<IAffiliateAction>('affiliate-action', affiliateActionSchema);
+const AffiliateAction = model<IAffiliateAction>(
+  'affiliate-action',
+  affiliateActionSchema,
+);
 
 export default AffiliateAction;

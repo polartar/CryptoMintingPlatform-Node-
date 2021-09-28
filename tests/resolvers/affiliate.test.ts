@@ -51,7 +51,7 @@ describe('Affiliate Resolver', () => {
   );
 
   const affiliateLink = {
-    _id: Types.ObjectId(affiliateId),
+    _id: new Types.ObjectId(affiliateId),
     pageUrl: pageUrl,
     name: name,
     brand: brand,
