@@ -62,6 +62,8 @@ jest.mock('src/common', () => ({
   ResolverBase: resolverBase,
 }));
 
+jest.setTimeout(30000);
+
 import { DataSources, Context } from 'src/types';
 import userResolver from 'src/resolvers/user';
 import { dbHandler } from 'tests/db';
