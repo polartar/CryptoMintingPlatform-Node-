@@ -1,6 +1,6 @@
 {
   "name": "wallet-server",
-  "version": "0.4.136",
+  "version": "0.4.137",
   "main": "lib/index.js",
   "config": {
     "dockerport": 4444
@@ -11,7 +11,7 @@
     "start": "npm run build && node ./lib/index.js",
     "dev": "run-s watch",
     "watch": "npx nodemon --watch 'src/**/*' -e ts,graphql,gql --exec ts-node --files -r tsconfig-paths/register ./src/index.ts",
-    "test": "npx jest --coverage --testTimeout=30000",
+    "test": "jest --coverage",
     "docker:build": "docker build -t $npm_package_name:$npm_package_version --target dev .",
     "docker:build_prod": "docker build --target prod -t $npm_package_name:$npm_package_version .",
     "docker:run": "docker run -p 127.0.0.1:$npm_package_config_dockerport:4444 --name $npm_package_name -d $npm_package_name:$npm_package_version",
