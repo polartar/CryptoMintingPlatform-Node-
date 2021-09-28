@@ -90,7 +90,7 @@ export class CartQueue {
       const keyObj: CartRedisKey = this.parseKey(key);
 
       //Skipping other brands
-      if (keyObj.brand != brand) {
+      if (keyObj.brand !== brand) {
         continue;
       }
 
@@ -335,9 +335,9 @@ export class CartQueue {
     };
 
     if (valueObj.dbId) {
-      return CartTransaction.update({ id: valueObj.dbId }, dbItem);
+      //return await CartTransaction.updateOne({ id: valueObj.dbId }, dbItem);
     } else {
-      return CartTransaction.create(dbItem);
+      return await CartTransaction.create(dbItem);
     }
   }
 

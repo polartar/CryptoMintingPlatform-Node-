@@ -80,13 +80,13 @@ describe('User Resolver', () => {
 
   beforeEach(async () => {
     dbHandler.collection('templates').insertOne({
-      _id: new Types.ObjectId().toHexString(),
+      _id: new Types.ObjectId(),
       id: 'terms-of-service',
       name: 'terms-of-service',
     });
 
     dbHandler.collection('templates').insertOne({
-      _id: new Types.ObjectId().toHexString(),
+      _id: new Types.ObjectId(),
       id: 'privacy-policy',
       name: 'privacy-policy',
     });
