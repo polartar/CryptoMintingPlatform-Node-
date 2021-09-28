@@ -120,8 +120,20 @@ class LiquidityResolver extends ResolverBase {
           nearestUsableTick(PoolState.tick, immutables.tickSpacing) +
           immutables.tickSpacing * 2,
       });
-
       const deadline = block.timestamp + 200;
+      const { calldata, value } = NonfungiblePositionManager.addCallParameters(
+        position,
+        {
+          slippageTolerance: new Percent(50, 10_000),
+          recipient: receiveAddress,
+          deadline: deadline,
+        },
+      );
+
+      const addLiquidity = new ethers.Contract(
+        '0xe592427a0aece92de3edee1f18e0157c05861564',
+        [],
+      );
 
       // const { receiveAddress } = await walletApi.getWalletInfo(user);
 
