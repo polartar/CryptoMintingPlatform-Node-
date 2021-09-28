@@ -15,9 +15,7 @@ class DbHandler {
       useUnifiedTopology: true,
     };
 
-    mongoose.set('useCreateIndex', true);
-
-    await mongoose.connect(uri, mongooseOpts);
+    await mongoose.connect(uri);
   }
 
   public collection(name: string) {
