@@ -75,6 +75,7 @@ describe('User Resolver', () => {
   const dataSources = createDataSources(bitly);
 
   beforeAll(async () => {
+    jest.setTimeout(30 * 1000);
     await dbHandler.connect();
   });
 
