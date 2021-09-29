@@ -96,7 +96,7 @@ export class CartQueue {
         continue;
       }
 
-      //Skipping values 
+      //Skipping values
       if (valueObj.status === CartStatus[CartStatus.complete] ||
         valueObj.status === CartStatus[CartStatus.expired]) {
         continue;
