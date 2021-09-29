@@ -75,11 +75,12 @@ describe('User Resolver', () => {
   const dataSources = createDataSources(bitly);
 
   beforeAll(async () => {
-    jest.setTimeout(30 * 1000);
     await dbHandler.connect();
   });
 
   beforeEach(async () => {
+    jest.setTimeout(30 * 1000);
+
     dbHandler.collection('templates').insertOne({
       _id: new Types.ObjectId(),
       id: 'terms-of-service',
