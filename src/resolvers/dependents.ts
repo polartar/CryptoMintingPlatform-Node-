@@ -18,13 +18,12 @@ class Resolvers extends ResolverBase {
     const { userId } = user;
 
     try {
-      const maxNumberOfDependents = 4; //consider to put this in the env
       const numberOfDependents = await Dependent.find({
         userId,
       }).countDocuments();
-      if (numberOfDependents >= maxNumberOfDependents)
+      if (numberOfDependents >= config.careClixMaxDependents)
         throw new Error(
-          `This user already has ${maxNumberOfDependents} dependents`,
+          `This user already has ${config.careClixMaxDependents} dependents`,
         );
     } catch (error) {
       throw error;
@@ -40,6 +39,8 @@ class Resolvers extends ResolverBase {
     dependentModel.country = dependent.country;
     dependentModel.clinic = dependent.clinic;
     dependentModel.careclixId = dependent.careclixId;
+    if (dependent.relationship)
+      dependentModel.relationship = dependent.relationship;
     dependentModel.created = new Date();
 
     let retDependent: IDependentDocument;

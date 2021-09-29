@@ -259,6 +259,8 @@ class Config {
     password: env.REDIS_PASSWORD,
   };
 
+  public readonly careClixMaxDependents = Number(env.CARECLIX_MAX_DEPENDENTS);
+
   constructor() {
     autoBind(this);
     this.ensureRequiredVariables();
@@ -363,7 +365,10 @@ class Config {
     }
     //--------- BLUE ONLY -------------
     if (this.brand === 'blue') {
-      const missingBlueVariables = ['CARECLIX_URL'].filter(name => !env[name]);
+      const missingBlueVariables = [
+        'CARECLIX_URL',
+        'CARECLIX_MAX_DEPENDENTS',
+      ].filter(name => !env[name]);
       if (missingBlueVariables.length > 0) {
         throw new Error(
           `Required BLUE environment variable(s) ${missingEnvVariables.join(

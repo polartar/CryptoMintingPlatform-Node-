@@ -12,6 +12,7 @@ export const DependentsSchema = new Schema({
   country: String,
   clinic: String,
   careclixId: String,
+  relationship: { type: String, required: false, default: undefined },
   created: Date,
 });
 

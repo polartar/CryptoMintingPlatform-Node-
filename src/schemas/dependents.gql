@@ -6,6 +6,7 @@ input DependentInput {
   country: String!
   clinic: String!
   careclixId: String!
+  relationship: String
 }
 
 type Dependent {
@@ -18,6 +19,7 @@ type Dependent {
   clinic: String!
   careclixId: String!
   created: Date!
+  relationship: String
 }
 
 type Mutation {
