@@ -18,7 +18,7 @@ export class ServerToServerService {
   ): string {
     try {
       const combinedOptions = Object.assign(options, this.jwtOptions);
-      const token = jwt.sign(payload, config.jwtPrivateKey, combinedOptions);
+      const token = jwt.sign(payload, config.jwtAPIPrivateKey, combinedOptions);
       return token;
     } catch (error) {
       logger.warn(`services.credential.sign.catch: ${error}`);

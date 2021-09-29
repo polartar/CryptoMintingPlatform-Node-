@@ -89,6 +89,8 @@ class Config {
   public connectMongoConnection: Connection;
   public readonly jwtPrivateKey = keys.privateKey;
   public readonly jwtPublicKey = keys.publicKey;
+  public readonly jwtAPIPrivateKey = keys.privateAPIKey;
+  public readonly jwtAPIPublicKey = keys.publicAPIKey;
   public readonly bitlyToken = env.BITLY_API_KEY;
   public readonly bitlyGuid = env.BITLY_GUID;
   public readonly serviceAccounts = keys.serviceAccounts;

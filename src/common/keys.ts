@@ -7,6 +7,8 @@ import { env } from './env';
 class Keys {
   public readonly privateKey = fs.readFileSync('jwtrsa-private.key');
   public readonly publicKey = fs.readFileSync('jwtrsa-public.pem');
+  public readonly privateAPIKey = fs.readFileSync('jwtrsaAPI_private.key');
+  public readonly publicAPIKey = fs.readFileSync('jwtrsaAPI_public.pem');
   public serviceAccounts: any;
   public serviceAccountKeys: any;
 

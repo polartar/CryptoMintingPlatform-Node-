@@ -1,4 +1,4 @@
-import { ResolverBase, config } from 'src/common';
+import { ResolverBase, config, logger } from 'src/common';
 import { Immutables, State } from 'src/types/ILiquidity';
 import { Context } from '../types/context';
 import { ethers } from 'ethers';
@@ -26,6 +26,10 @@ class LiquidityResolver extends ResolverBase {
       token0: string;
       token1: string;
       fee: number;
+      amountToken1: string;
+      amountToken2: string;
+      walletPassword: string;
+      initialPrice: string;
     },
     { user, wallet }: Context,
   ) => {
@@ -68,85 +72,117 @@ class LiquidityResolver extends ResolverBase {
         provider,
       );
 
-      const immutables: Immutables = {
-        factory: await poolContract.factory(),
-        token0: await poolContract.token0(),
-        token1: await poolContract.token1(),
-        fee: await poolContract.fee(),
-        tickSpacing: await poolContract.tickSpacing(),
-        maxLiquidityPerTick: await poolContract.maxLiquidityPerTick(),
-      };
+      // const immutables: Immutables = {
+      //   factory: await poolContract.factory(),
+      //   token0: await poolContract.token0(),
+      //   token1: await poolContract.token1(),
+      //   fee: await poolContract.fee(),
+      //   tickSpacing: await poolContract.tickSpacing(),
+      //   maxLiquidityPerTick: await poolContract.maxLiquidityPerTick(),
+      // };
 
-      const slot = await poolContract.slot0();
-      const PoolState: State = {
-        liquidity: await poolContract.liquidity(),
-        sqrtPriceX96: slot[0],
-        tick: slot[1],
-        observationIndex: slot[2],
-        observationCardinality: slot[3],
-        observationCardinalityNext: slot[4],
-        feeProtocol: slot[5],
-        unlocked: slot[6],
-      };
+      // const slot = await poolContract.slot0();
+      // const PoolState: State = {
+      //   liquidity: await poolContract.liquidity(),
+      //   sqrtPriceX96: slot[0],
+      //   tick: slot[1],
+      //   observationIndex: slot[2],
+      //   observationCardinality: slot[3],
+      //   observationCardinalityNext: slot[4],
+      //   feeProtocol: slot[5],
+      //   unlocked: slot[6],
+      // };
 
       const block = await provider.getBlock(provider.getBlockNumber());
 
-      const NEW_POOL = new Pool(
-        token0,
-        token1,
-        immutables.fee,
-        PoolState.sqrtPriceX96.toString(),
-        PoolState.liquidity.toString(),
-        PoolState.tick,
-      );
+      // const NEW_POOL = new Pool(
+      //   token0,
+      //   token1,
+      //   immutables.fee,
+      //   PoolState.sqrtPriceX96.toString(),
+      //   PoolState.liquidity.toString(),
+      //   PoolState.tick,
+      // );
 
-      const liquidityNumber = Number(PoolState.liquidity);
-      const portionLiqudity = liquidityNumber * 0.0002;
+      // const liquidityNumber = Number(PoolState.liquidity);
+      // const portionLiqudity = liquidityNumber * 0.0002;
 
-      const price0 = NEW_POOL.priceOf(token0)
-        .toFixed(token0.decimals, NEW_POOL.priceOf(token0).scalar)
-        .toString();
-      const price1 = NEW_POOL.priceOf(token1)
-        .toFixed(token1.decimals, NEW_POOL.priceOf(token1).scalar)
-        .toString();
+      // const price0 = NEW_POOL.priceOf(token0)
+      //   .toFixed(token0.decimals, NEW_POOL.priceOf(token0).scalar)
+      //   .toString();
+      // const price1 = NEW_POOL.priceOf(token1)
+      //   .toFixed(token1.decimals, NEW_POOL.priceOf(token1).scalar)
+      //   .toString();
 
-      const position = new Position({
-        pool: NEW_POOL,
-        liquidity: liquidityNumber.toString(),
-        tickLower:
-          nearestUsableTick(PoolState.tick, immutables.tickSpacing) -
-          immutables.tickSpacing * 2,
-        tickUpper:
-          nearestUsableTick(PoolState.tick, immutables.tickSpacing) +
-          immutables.tickSpacing * 2,
-      });
+      // const position = new Position({
+      //   pool: NEW_POOL,
+      //   liquidity: liquidityNumber.toString(),
+      //   tickLower:
+      //     nearestUsableTick(PoolState.tick, immutables.tickSpacing) -
+      //     immutables.tickSpacing * 2,
+      //   tickUpper:
+      //     nearestUsableTick(PoolState.tick, immutables.tickSpacing) +
+      //     immutables.tickSpacing * 2,
+      // });
       const deadline = block.timestamp + 200;
-      const { calldata, value } = NonfungiblePositionManager.addCallParameters(
-        position,
-        {
-          slippageTolerance: new Percent(50, 10_000),
-          recipient: receiveAddress,
-          deadline: deadline,
-        },
-      );
+
+      let passwordDecripted;
+      try {
+        const encryptedKey = await walletApi.getEncryptedPrivKey(user.userId);
+        const decryptedPrivateKey = this.decrypt(
+          encryptedKey,
+          args.walletPassword,
+        );
+        const { decryptedString } = decryptedPrivateKey;
+        passwordDecripted = decryptedString;
+      } catch (e) {
+        logger.warn('EncryptedKey no return instead we reach a 401 status' + e);
+      }
+
+      const ethersWallet = new ethers.Wallet(passwordDecripted);
+      const account = ethersWallet.connect(provider);
+
+      const tokenA = token0.address;
+      // let abi = ["function approve(address _spender, uint256 _value) public returns (bool success)"]
+      // let contract = new ethers.Contract(tokenAddress, abi, provider)
+      // await contract.approve(accountAddress, amount)
+
+      const tokenB = token1.address;
+      // let abi = ["function approve(address _spender, uint256 _value) public returns (bool success)"]
+      // let contract = new ethers.Contract(tokenAddress, abi, provider)
+      // await contract.approve(accountAddress, amount)
+
+      const amountADesired = args.amountToken1;
+      const amountBDesired = args.amountToken2;
+      const amountAMin = 0;
+      const amountBMin = 0;
+      const to = receiveAddress;
 
       const addLiquidity = new ethers.Contract(
-        '0xe592427a0aece92de3edee1f18e0157c05861564',
-        [],
+        '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
+        [
+          'function addLiquidity(  address tokenA,  address tokenB,  uint amountADesired,  uint amountBDesired,  uint amountAMin,  uint amountBMin,  address to,  uint deadline) external returns (uint amountA, uint amountB, uint liquidity)',
+        ],
+        account,
       );
 
-      // const { receiveAddress } = await walletApi.getWalletInfo(user);
+      const tx = await addLiquidity.addLiquidity(
+        tokenA,
+        tokenB,
+        amountADesired,
+        amountBDesired,
+        amountAMin,
+        amountBMin,
+        to,
+        deadline,
+      );
 
-      // const { calldata, value } = NonfungiblePositionManager.addCallParameters(position, {
-      //   slippageTolerance: new Percent(50, 10_000),
-      //   recipient: receiveAddress,
-      //   deadline: deadline
-      // });
+      const receipt = await tx.wait();
 
       return {
         poolAddress: poolAddress,
-        price0,
-        price1,
+        // price0,
+        // price1,
       };
     } catch (error) {
       throw new Error('Resolver.LiquidityResolver.poolAddress ' + error);

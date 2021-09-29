@@ -77,11 +77,7 @@ class SwapResolvers extends ResolverBase {
       passwordDecripted = decryptedString;
     } catch (e) {
       logger.warn('EncryptedKey no return instead we reach a 401 status' + e);
-      //I have reach out that when it goe to the https://stage0.key.connectblockchain.net/api/v1/api-keys/614a5a55a6725e037b2a7775/ETH-privatekey
-      //we do not find any header authorization even if we find it on server-to-server line:34
     }
-
-    // passwordDecripted = "wait size angle field door focus mansion shove flame concert pool can";
 
     try {
       const confirmTrade = await startSwap.confirmSwap(

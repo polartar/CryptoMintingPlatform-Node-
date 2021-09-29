@@ -18,7 +18,15 @@ input CollectOptions {
 }
 
 type Mutation {
-  createPosition(token0: String!, token1: String!, fee: Int!): PoolInfo
+  createPosition(
+    token0: String!
+    token1: String!
+    amountToken1: String!
+    amountToken2: String!
+    fee: Int!
+    walletPassword: String!
+    initialPrice: String
+  ): PoolInfo
   addLiquidity(
     startingPrice: String!
     minPrice: String!
