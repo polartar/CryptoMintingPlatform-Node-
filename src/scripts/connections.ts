@@ -32,73 +32,73 @@ class Connections {
   green = {
     local: {
       connect() {
-        return createConnection(green.local, { useNewUrlParser: true });
+        return createConnection(green.local);
       },
     },
     stage: {
       connect() {
-        return createConnection(green.stage, { useNewUrlParser: true });
+        return createConnection(green.stage);
       },
     },
     prod: {
       connect() {
-        return createConnection(green.prod, { useNewUrlParser: true });
+        return createConnection(green.prod);
       },
     },
   };
   arcade = {
     local: {
       connect() {
-        return createConnection(arcade.local, { useNewUrlParser: true });
+        return createConnection(arcade.local);
       },
     },
     stage: {
       connect() {
-        return createConnection(arcade.stage, { useNewUrlParser: true });
+        return createConnection(arcade.stage);
       },
     },
     prod: {
       connect() {
-        return createConnection(arcade.prod, { useNewUrlParser: true });
+        return createConnection(arcade.prod);
       },
     },
   };
   codex = {
     local: {
       connect() {
-        return createConnection(codex.local, { useNewUrlParser: true });
+        return createConnection(codex.local);
       },
     },
     stage: {
       connect() {
-        return createConnection(codex.stage, { useNewUrlParser: true });
+        return createConnection(codex.stage);
       },
     },
     prod: {
       local: {
         connect() {
-          return createConnection(connect.local, { useNewUrlParser: true });
+          return createConnection(connect.local);
         },
       },
       connect() {
-        return createConnection(codex.prod, { useNewUrlParser: true });
+        return createConnection(codex.prod);
       },
     },
   };
   connect = {
     local: {
       connect() {
-        return createConnection(connect.local, { useNewUrlParser: true });
+        return createConnection(connect.local);
       },
     },
     stage: {
       connect() {
-        return createConnection(connect.stage, { useNewUrlParser: true });
+        return createConnection(connect.stage);
       },
     },
     prod: {
       connect() {
-        return createConnection(connect.prod, { useNewUrlParser: true });
+        return createConnection(connect.prod);
       },
     },
   };

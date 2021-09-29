@@ -1,4 +1,5 @@
-import { Document, HookNextFunction, model, Schema } from 'mongoose';
+import { Document, model, Schema } from 'mongoose';
+import { logger } from '../common';
 
 export interface IAffiliateLink extends Document {
   affiliateId: string;
@@ -25,19 +26,19 @@ export const affiliateLinkSchema = new Schema(
 
 affiliateLinkSchema.post('save', async function(
   affiliateLink: IAffiliateLink,
-  next: HookNextFunction,
+  next: any,
 ) {
   setAffiliateId(affiliateLink, next);
 });
 
 affiliateLinkSchema.post('insertMany', async function(
   affiliateLink: IAffiliateLink,
-  next: HookNextFunction,
+  next: any,
 ) {
   setAffiliateId(affiliateLink, next);
 });
 
-function setAffiliateId(affiliateLink: IAffiliateLink, next: HookNextFunction) {
+function setAffiliateId(affiliateLink: IAffiliateLink, next: any) {
   if (!affiliateLink._id) {
     return;
   }

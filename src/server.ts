@@ -166,10 +166,7 @@ class Server {
 
   private async connectToMongodb() {
     return new Promise<void>(resolve => {
-      set('useCreateIndex', true);
-      set('useNewUrlParser', true);
-
-      connect(config.mongodbUri, { useNewUrlParser: true, useUnifiedTopology: true });
+      connect(config.mongodbUri);
 
       mongooseConnection.once('open', () => {
         systemLogger.info(`Connected to mongoDb`);

@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { ClientAuth } from '@blockbrothers/firebasebb';
+import { ClientAuth, } from '@blockbrothers/firebasebb';
 import { auth, config } from '../common';
 import { IUser } from '../models';
 import { IFirebaseClient } from '../types';
@@ -29,7 +29,7 @@ const IamAuthenticateResponse = {
 
     let user;
     try {
-      user = (await auth.getUser(metadata.uid, AUTH_APP_DOMAIN)) as IUser;
+      user = await auth.getUser(metadata.uid, AUTH_APP_DOMAIN) ;
       if (!user) {
         throw new Error('No user profile could be found.');
       }

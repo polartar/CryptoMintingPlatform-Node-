@@ -324,9 +324,9 @@ export class CartQueue {
     };
 
     if (valueObj.dbId) {
-      return CartTransaction.update({ id: valueObj.dbId }, dbItem);
+      //return await CartTransaction.updateOne({ id: valueObj.dbId }, dbItem);
     } else {
-      return CartTransaction.create(dbItem);
+      return await CartTransaction.create(dbItem);
     }
   }
 

@@ -16,14 +16,15 @@ class Notify {
       read: undefined,
       status: status.toString(),
     };
-    Notification.insertMany([toInsert], err => {
-      if (err) {
-        logger.error(
-          'Tried to insert Notification to user, but failed. :: ' +
-            JSON.stringify(toInsert),
-        );
-      }
-    });
+    try{
+      Notification.insertMany([toInsert]);
+    }
+    catch(err) {
+      logger.error(
+        'Tried to insert Notification to user, but failed. :: ' +
+          JSON.stringify(toInsert),
+      );
+    }
   };
 }
 
