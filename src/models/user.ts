@@ -162,25 +162,23 @@ export async function getNextNumber() {
         projection: {
           sequence: 1,
         },
-        maxTimeMS: 5000,        
+        maxTimeMS: 5000,
       },
     );
 
-  if(!result){
+  if (!result) {
     return undefined;
   }
 
   const id = +result.sequence + 1;
-  
+
   await mongoose.connection.db
     .collection<{ sequence: number }>('sequences')
     .updateOne(
       {
         name: 'users',
       },
-      {
-        sequence: id 
-      },
+      { $set: { sequence: id } },
     );
 
   if (id) {
@@ -440,10 +438,7 @@ userSchema.pre('save', async function(this: IUser, next) {
   next();
 });
 
-userSchema.post('save', async function(
-  doc: IUser,
-  next: any,
-) {
+userSchema.post('save', async function(doc: IUser, next: any) {
   if (!doc._id) {
     return;
   }
@@ -458,10 +453,7 @@ userSchema.post('save', async function(
   }
 });
 
-userSchema.post('insertMany', async function(
-  doc: IUser,
-  next: any,
-) {
+userSchema.post('insertMany', async function(doc: IUser, next: any) {
   if (!doc._id) {
     return;
   }
