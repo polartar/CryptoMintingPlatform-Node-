@@ -10,10 +10,10 @@ type CartAddressRequest {
   amountUsd: String!
   amountCrypto: String!
   orderId: String!
-  affiliateId: String!
-  affiliateSessionId: String!
-  utmVariables: String!
-  created: Date!
+  affiliateId: String
+  affiliateSessionId: String
+  utmVariables: String
+  created: Date
   addresses: [CartAddress!]!
 }
 type CartTransaction {
