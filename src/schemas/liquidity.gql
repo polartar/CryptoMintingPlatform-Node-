@@ -20,9 +20,11 @@ input CollectOptions {
 type Mutation {
   createPosition(
     token0: String!
+    decimalPlaces0: Int!
     token1: String!
+    decimalPlaces1: Int!
+    amountToken0: String!
     amountToken1: String!
-    amountToken2: String!
     fee: Int!
     walletPassword: String!
     initialPrice: String
@@ -31,8 +33,8 @@ type Mutation {
     startingPrice: String!
     minPrice: String!
     maxPrice: String!
+    amountToken0: String!
     amountToken1: String!
-    amountToken2: String!
     walletPassword: String!
   ): txResponse
   collectLPTokens(tokenId: Int!): TokenId
