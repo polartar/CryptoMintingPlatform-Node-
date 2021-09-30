@@ -35,30 +35,37 @@ export default class UserApi extends DataSource {
   }
 
   static fromCustomToken(token: string) {
-    const { claims, uid } = auth.verifyAndDecodeToken(token, config.hostname);
-
-    return new UserApi(claims, uid, token);
+    try {
+      const { claims, uid } = auth.verifyAndDecodeToken(token, config.hostname);
+      return new UserApi(claims, uid, token);
+    } catch (error) {
+      logger.warn(`Unable to verify custom token: ${token}`, error);
+    }
   }
 
   static async fromIdToken(token: string) {
-    if (config.brand !== 'gala') {
-      return this.fromCustomToken(token);
+    try {
+      if (config.brand !== 'gala') {
+        return this.fromCustomToken(token);
+      }
+
+      const {
+        userId,
+        role,
+        permissions,
+        authorized,
+        twoFaEnabled,
+        uid,
+      } = (await auth.verifyIdToken(token, config.hostname)) as any;
+
+      return new this(
+        { userId, role, permissions, authorized, twoFaEnabled },
+        uid,
+        token,
+      );
+    } catch (error) {
+      logger.warn(`Unable to verify: ${token}`, error);
     }
-
-    const {
-      userId,
-      role,
-      permissions,
-      authorized,
-      twoFaEnabled,
-      uid,
-    } = (await auth.verifyIdToken(token, config.hostname)) as any;
-
-    return new this(
-      { userId, role, permissions, authorized, twoFaEnabled },
-      uid,
-      token,
-    );
   }
 
   public findFromDb = async () => {
@@ -160,7 +167,7 @@ export default class UserApi extends DataSource {
   public async setDisplayNameToUser(displayName: string) {
     const result = await this.Model.findByIdAndUpdate(
       this.userId,
-      { 'displayName': displayName },
+      { displayName: displayName },
       { new: true },
     );
     return result;
