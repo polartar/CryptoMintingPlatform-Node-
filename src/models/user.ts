@@ -178,9 +178,7 @@ export async function getNextNumber() {
       {
         name: 'users',
       },
-      {
-        sequence: id,
-      },
+      { $set: { sequence: id } },
     );
 
   if (id) {
