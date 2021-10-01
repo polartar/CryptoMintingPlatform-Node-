@@ -139,8 +139,10 @@ export class CartQueue {
       if (!balance) {
         continue;
       }
+
       const cryptoPrice = valueObj.usdAmount / valueObj.crytoAmount;
-      const acceptableBuffer = 1.5 * cryptoPrice;
+      const acceptableBuffer = 1.5 / cryptoPrice;
+
       const acceptableBalance = +balance.amountConfirmed + acceptableBuffer;
       if (valueObj.status === CartStatus[CartStatus.confirming]) {
         if (acceptableBalance >= valueObj.crytoAmount) {
