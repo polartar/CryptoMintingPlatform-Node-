@@ -56,6 +56,9 @@ function setAffiliateId(affiliateLink: IAffiliateLink, next: any) {
   }
 }
 
-const AffiliateLink = model<IAffiliateLink>('affiliate-link', affiliateLinkSchema);
+const AffiliateLink = model<IAffiliateLink>(
+  'affiliate-link',
+  affiliateLinkSchema,
+);
 
 export default AffiliateLink;

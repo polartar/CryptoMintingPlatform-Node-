@@ -108,7 +108,6 @@ class StartSwap extends ServerToServerService {
       };
     }
   };
-
   private firmAndSendSwap = async (
     swap: TradeContext,
     wallet: ethers.ethers.Wallet,

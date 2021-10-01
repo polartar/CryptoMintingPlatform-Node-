@@ -10,26 +10,26 @@ type CartAddressRequest {
   amountUsd: String!
   amountCrypto: String!
   orderId: String!
-  affiliateId: String!
-  affiliateSessionId: String!
-  utmVariables: String!
-  created: Date!
+  affiliateId: String
+  affiliateSessionId: String
+  utmVariables: String
+  created: Date
   addresses: [CartAddress!]!
 }
 type CartTransaction {
   wp_id: String!
   status: String!
   currency: String!
-  discountAmtUsd: String!
-  totalUsd: String!
-  totalCrypto: String!
-  conversionRate: String!
-  remainingCrypto: String!
-  address: String!
+  discountAmtUsd: String
+  totalUsd: String
+  totalCrypto: String
+  conversionRate: String
+  remainingCrypto: String
+  address: String
   name: String!
   email: String!
   data: String!
-  created: Date!
+  created: Date
 }
 
 type CartOrderStatusResponse {

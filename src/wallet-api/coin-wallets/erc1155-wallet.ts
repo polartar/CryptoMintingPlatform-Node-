@@ -199,7 +199,7 @@ class Erc1155API extends EthWallet {
       const balance = await this.getBalanceFromContract(address);
       return {
         confirmed: balance.toString(),
-        unconfirmed: balance.toString(),
+        unconfirmed: balance.toString(), //same value, no sense. Pending?
       };
     } catch (error) {
       logger.warn(

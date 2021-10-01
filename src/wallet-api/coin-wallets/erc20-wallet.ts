@@ -183,6 +183,7 @@ class Erc20API extends EthWallet {
   private async getBalanceFromContract(ethAddress: string) {
     try {
       const balance = await this.contract.balanceOf(ethAddress);
+      const pending = await this.contract;
       const decimalizedBalance = this.decimalize(balance);
       return decimalizedBalance;
     } catch (error) {
@@ -364,7 +365,7 @@ class Erc20API extends EthWallet {
       const balance = await this.getBalanceFromContract(address);
       return {
         confirmed: balance.toString(),
-        unconfirmed: balance.toString(),
+        unconfirmed: balance.toString(), //same value, no sense
       };
     } catch (error) {
       logger.warn(
