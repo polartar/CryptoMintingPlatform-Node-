@@ -88,7 +88,7 @@ export const walletConfigurations: ICoinMetadata[] = [
       'data:image/svg+xml;base64,PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MjYuNjggMzU0LjEyIj48cGF0aCBkPSJNMCwyNmExMy40OSwxMy40OSwwLDAsMCwuOS0yLjQxQzMuMiwxMS41NSwxNS41OC0uMTgsMjkuNzksMCw1MCwuMjcsNzAuMjUuMTksOTAuNDguMTlxMTQ0LjIsMCwyODguMzgsMGM2LjA3LDAsMTIuMTUsMCwxOC4yMywwQzQwOS4xMiwwLDQxNy41MSw2LDQyMy4zNiwxNmEyNSwyNSwwLDAsMSwzLjI1LDEyLjg2cTAsMzguMTEtLjA1LDc2LjI1LDAsNjguOTQtLjA1LDEzNy44OGMwLDI3LjI1LS4xMiw1NC41MS4xNyw4MS43Ni4xNSwxMy44NC0xMS4zMiwyNi42OS0yNC4xMiwyOC45M2E5LjYxLDkuNjEsMCwwLDAtMS4zNS40M0gyNS40NGE0Ljg5LDQuODksMCwwLDAtLjg0LS4zOUMxMS44MywzNTAuNzksNCwzNDIuOTIuODYsMzMwLjIxYy0uMjEtLjg0LS41Ny0xLjY1LS44Ni0yLjQ3VjIxMS4xOGExMy4xNSwxMy4xNSwwLDAsMCwuNDItMi4yOXEwLTMxLDAtNjIuMUExMy4zMiwxMy4zMiwwLDAsMCwwLDE0NC41Wk0xMzcsMjQ5LjE1aDIuNjRjMTIsMCwyNCwuMDcsMzYsLjA2LDE4LDAsMzYtLjA3LDU0LS4wOGEyMS4yNCwyMS4yNCwwLDAsMSwzLjU2LjMzLDIuODUsMi44NSwwLDAsMSwyLjM3LDIuNjcsMTMuNjQsMTMuNjQsMCwwLDEsLjA2LDEuOTJjMCw3LjkxLS4wNSwxNS44Mi0uMDUsMjMuNzNhMTEuMjgsMTEuMjgsMCwwLDAsLjMsMS42OUwzMTEuNzUsMjIzYTguODEsOC44MSwwLDAsMS0xLjI2LS41OUwyMzUuNzQsMTY3YS4zNy4zNywwLDAsMC0uMjMsMCwzLjM3LDMuMzcsMCwwLDAtLjQ2LjE3djMwSDE2OS42Yy01LjQ0LDAtMTAuODcsMC0xNi4zMSwwcy0xMC44LS4xNy0xNi4yNi4xMlpNMTkyLjU0LDY0LjYyLDExNS44MSwxMTksMTkzLDE3My41OFYxNDMuOTJoOTguOTNjLjUzLTIuNzEuNDUtNDguNDItLjA1LTUwLjE1bC0uMjItLjA3LS4yNCwwLS4yNCwwSDE5My41M2MtLjE2LDAtLjMyLDAtLjQ3LS4wOWEuNTkuNTksMCwwLDEtLjItLjEyLDQuNDIsNC40MiwwLDAsMS0uMzItLjM0WiIvPjwvc3ZnPg==',
     abi: null,
     decimalPlaces: 8,
-    contractAddress: '',
+    contractAddress: undefined,
     WalletInterface: DocWallet,
   },
   {
@@ -100,7 +100,7 @@ export const walletConfigurations: ICoinMetadata[] = [
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAJJSURBVHgB7ZoxaxRBFMd/e5ecpx6aQiUqJBZKAmIhFhY2h42FjVjaaOXXCPpFJBb6BSSghRtQbCOooIhKUIJIMFGTS7y923FeJoqXbJIJzBy7m/nBY/dmhp377+7Mm/d2YB2lVFNbrG1BFYNY203+RxdMqGKSapsQDZE+uaWP9yguSttlERLrkybFJhYhiuKzUBYhqkJJKI2QATyRdKDT3dBZFQY99ej8sqkecc9m4OET+PKtt+7CONy4AmOjOMe5kCSBt7Pw6gO0k96617rs05wfIe7HSGReoWrGlatVYz4Is1beCELyRhCSN4KQrRjUfqKm3WwUba6TskqEF6w9+/efMPsVfi1v307WWO8/Q7e7uW55Bd58tFtvHRmC0WE4uB8rrOKRpRbcn4IHj+F3Ql84cRRuX4Orl6ya28Ujq234sdQ/EUJrxTxBW6yErL3blbVlVN+Q/iq7GMF7a9aSUZSmJu/SL7qp6dMWKyH1fWYWaVjOIC4YasDhhn176yxKaxXmF81xO9p6+p16AY+e68mh3VsnM9H1Jlw8y44capibV7NzEMrajxyow8jwzu3Ef8y8yw6s6jU4eQzGT+Ec54O9k5qkQ9ZzljJfWbSw1sobQUjeCELyRhCyJcr4kU5GYCVlWQGXC5znfiX6GxuB82dgbr53oXnutI76juMFb1+ssu6+5H0H/OR+Vfj0ljeCkLxRKiGLlAAR8pLiMy1C7lBsxH1MVqIomsaIKao/uas1TP77JdudtD1d3wPlynwhm+Nibc2///8P+iXIMzL+1hcAAAAASUVORK5CYII=',
     abi: null,
     decimalPlaces: 8,
-    contractAddress: '',
+    contractAddress: undefined,
     WalletInterface: DocWallet,
   },
   {
@@ -112,7 +112,7 @@ export const walletConfigurations: ICoinMetadata[] = [
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAJJSURBVHgB7ZoxaxRBFMd/e5ecpx6aQiUqJBZKAmIhFhY2h42FjVjaaOXXCPpFJBb6BSSghRtQbCOooIhKUIJIMFGTS7y923FeJoqXbJIJzBy7m/nBY/dmhp377+7Mm/d2YB2lVFNbrG1BFYNY203+RxdMqGKSapsQDZE+uaWP9yguSttlERLrkybFJhYhiuKzUBYhqkJJKI2QATyRdKDT3dBZFQY99ej8sqkecc9m4OET+PKtt+7CONy4AmOjOMe5kCSBt7Pw6gO0k96617rs05wfIe7HSGReoWrGlatVYz4Is1beCELyRhCSN4KQrRjUfqKm3WwUba6TskqEF6w9+/efMPsVfi1v307WWO8/Q7e7uW55Bd58tFtvHRmC0WE4uB8rrOKRpRbcn4IHj+F3Ql84cRRuX4Orl6ya28Ujq234sdQ/EUJrxTxBW6yErL3blbVlVN+Q/iq7GMF7a9aSUZSmJu/SL7qp6dMWKyH1fWYWaVjOIC4YasDhhn176yxKaxXmF81xO9p6+p16AY+e68mh3VsnM9H1Jlw8y44capibV7NzEMrajxyow8jwzu3Ef8y8yw6s6jU4eQzGT+Ec54O9k5qkQ9ZzljJfWbSw1sobQUjeCELyRhCyJcr4kU5GYCVlWQGXC5znfiX6GxuB82dgbr53oXnutI76juMFb1+ssu6+5H0H/OR+Vfj0ljeCkLxRKiGLlAAR8pLiMy1C7lBsxH1MVqIomsaIKao/uas1TP77JdudtD1d3wPlynwhm+Nibc2///8P+iXIMzL+1hcAAAAASUVORK5CYII=',
     abi: null,
     decimalPlaces: 8,
-    contractAddress: '',
+    contractAddress: undefined,
     WalletInterface: DocWallet,
   },
   {
@@ -142,7 +142,7 @@ export const walletConfigurations: ICoinMetadata[] = [
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAJJSURBVHgB7ZoxaxRBFMd/e5ecpx6aQiUqJBZKAmIhFhY2h42FjVjaaOXXCPpFJBb6BSSghRtQbCOooIhKUIJIMFGTS7y923FeJoqXbJIJzBy7m/nBY/dmhp377+7Mm/d2YB2lVFNbrG1BFYNY203+RxdMqGKSapsQDZE+uaWP9yguSttlERLrkybFJhYhiuKzUBYhqkJJKI2QATyRdKDT3dBZFQY99ej8sqkecc9m4OET+PKtt+7CONy4AmOjOMe5kCSBt7Pw6gO0k96617rs05wfIe7HSGReoWrGlatVYz4Is1beCELyRhCSN4KQrRjUfqKm3WwUba6TskqEF6w9+/efMPsVfi1v307WWO8/Q7e7uW55Bd58tFtvHRmC0WE4uB8rrOKRpRbcn4IHj+F3Ql84cRRuX4Orl6ya28Ujq234sdQ/EUJrxTxBW6yErL3blbVlVN+Q/iq7GMF7a9aSUZSmJu/SL7qp6dMWKyH1fWYWaVjOIC4YasDhhn176yxKaxXmF81xO9p6+p16AY+e68mh3VsnM9H1Jlw8y44capibV7NzEMrajxyow8jwzu3Ef8y8yw6s6jU4eQzGT+Ec54O9k5qkQ9ZzljJfWbSw1sobQUjeCELyRhCyJcr4kU5GYCVlWQGXC5znfiX6GxuB82dgbr53oXnutI76juMFb1+ssu6+5H0H/OR+Vfj0ljeCkLxRKiGLlAAR8pLiMy1C7lBsxH1MVqIomsaIKao/uas1TP77JdudtD1d3wPlynwhm+Nibc2///8P+iXIMzL+1hcAAAAASUVORK5CYII=',
     abi: null,
     decimalPlaces: 8,
-    contractAddress: '',
+    contractAddress: undefined,
     WalletInterface: DocWallet,
   },
   {
@@ -154,7 +154,7 @@ export const walletConfigurations: ICoinMetadata[] = [
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAJJSURBVHgB7ZoxaxRBFMd/e5ecpx6aQiUqJBZKAmIhFhY2h42FjVjaaOXXCPpFJBb6BSSghRtQbCOooIhKUIJIMFGTS7y923FeJoqXbJIJzBy7m/nBY/dmhp377+7Mm/d2YB2lVFNbrG1BFYNY203+RxdMqGKSapsQDZE+uaWP9yguSttlERLrkybFJhYhiuKzUBYhqkJJKI2QATyRdKDT3dBZFQY99ej8sqkecc9m4OET+PKtt+7CONy4AmOjOMe5kCSBt7Pw6gO0k96617rs05wfIe7HSGReoWrGlatVYz4Is1beCELyRhCSN4KQrRjUfqKm3WwUba6TskqEF6w9+/efMPsVfi1v307WWO8/Q7e7uW55Bd58tFtvHRmC0WE4uB8rrOKRpRbcn4IHj+F3Ql84cRRuX4Orl6ya28Ujq234sdQ/EUJrxTxBW6yErL3blbVlVN+Q/iq7GMF7a9aSUZSmJu/SL7qp6dMWKyH1fWYWaVjOIC4YasDhhn176yxKaxXmF81xO9p6+p16AY+e68mh3VsnM9H1Jlw8y44capibV7NzEMrajxyow8jwzu3Ef8y8yw6s6jU4eQzGT+Ec54O9k5qkQ9ZzljJfWbSw1sobQUjeCELyRhCyJcr4kU5GYCVlWQGXC5znfiX6GxuB82dgbr53oXnutI76juMFb1+ssu6+5H0H/OR+Vfj0ljeCkLxRKiGLlAAR8pLiMy1C7lBsxH1MVqIomsaIKao/uas1TP77JdudtD1d3wPlynwhm+Nibc2///8P+iXIMzL+1hcAAAAASUVORK5CYII=',
     abi: null,
     decimalPlaces: 8,
-    contractAddress: '',
+    contractAddress: undefined,
     WalletInterface: DocWallet,
   },
   {
@@ -166,7 +166,7 @@ export const walletConfigurations: ICoinMetadata[] = [
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAJJSURBVHgB7ZoxaxRBFMd/e5ecpx6aQiUqJBZKAmIhFhY2h42FjVjaaOXXCPpFJBb6BSSghRtQbCOooIhKUIJIMFGTS7y923FeJoqXbJIJzBy7m/nBY/dmhp377+7Mm/d2YB2lVFNbrG1BFYNY203+RxdMqGKSapsQDZE+uaWP9yguSttlERLrkybFJhYhiuKzUBYhqkJJKI2QATyRdKDT3dBZFQY99ej8sqkecc9m4OET+PKtt+7CONy4AmOjOMe5kCSBt7Pw6gO0k96617rs05wfIe7HSGReoWrGlatVYz4Is1beCELyRhCSN4KQrRjUfqKm3WwUba6TskqEF6w9+/efMPsVfi1v307WWO8/Q7e7uW55Bd58tFtvHRmC0WE4uB8rrOKRpRbcn4IHj+F3Ql84cRRuX4Orl6ya28Ujq234sdQ/EUJrxTxBW6yErL3blbVlVN+Q/iq7GMF7a9aSUZSmJu/SL7qp6dMWKyH1fWYWaVjOIC4YasDhhn176yxKaxXmF81xO9p6+p16AY+e68mh3VsnM9H1Jlw8y44capibV7NzEMrajxyow8jwzu3Ef8y8yw6s6jU4eQzGT+Ec54O9k5qkQ9ZzljJfWbSw1sobQUjeCELyRhCyJcr4kU5GYCVlWQGXC5znfiX6GxuB82dgbr53oXnutI76juMFb1+ssu6+5H0H/OR+Vfj0ljeCkLxRKiGLlAAR8pLiMy1C7lBsxH1MVqIomsaIKao/uas1TP77JdudtD1d3wPlynwhm+Nibc2///8P+iXIMzL+1hcAAAAASUVORK5CYII=',
     abi: null,
     decimalPlaces: 8,
-    contractAddress: '',
+    contractAddress: undefined,
     WalletInterface: DocWallet,
   },
   {
@@ -178,7 +178,7 @@ export const walletConfigurations: ICoinMetadata[] = [
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAJJSURBVHgB7ZoxaxRBFMd/e5ecpx6aQiUqJBZKAmIhFhY2h42FjVjaaOXXCPpFJBb6BSSghRtQbCOooIhKUIJIMFGTS7y923FeJoqXbJIJzBy7m/nBY/dmhp377+7Mm/d2YB2lVFNbrG1BFYNY203+RxdMqGKSapsQDZE+uaWP9yguSttlERLrkybFJhYhiuKzUBYhqkJJKI2QATyRdKDT3dBZFQY99ej8sqkecc9m4OET+PKtt+7CONy4AmOjOMe5kCSBt7Pw6gO0k96617rs05wfIe7HSGReoWrGlatVYz4Is1beCELyRhCSN4KQrRjUfqKm3WwUba6TskqEF6w9+/efMPsVfi1v307WWO8/Q7e7uW55Bd58tFtvHRmC0WE4uB8rrOKRpRbcn4IHj+F3Ql84cRRuX4Orl6ya28Ujq234sdQ/EUJrxTxBW6yErL3blbVlVN+Q/iq7GMF7a9aSUZSmJu/SL7qp6dMWKyH1fWYWaVjOIC4YasDhhn176yxKaxXmF81xO9p6+p16AY+e68mh3VsnM9H1Jlw8y44capibV7NzEMrajxyow8jwzu3Ef8y8yw6s6jU4eQzGT+Ec54O9k5qkQ9ZzljJfWbSw1sobQUjeCELyRhCyJcr4kU5GYCVlWQGXC5znfiX6GxuB82dgbr53oXnutI76juMFb1+ssu6+5H0H/OR+Vfj0ljeCkLxRKiGLlAAR8pLiMy1C7lBsxH1MVqIomsaIKao/uas1TP77JdudtD1d3wPlynwhm+Nibc2///8P+iXIMzL+1hcAAAAASUVORK5CYII=',
     abi: null,
     decimalPlaces: 8,
-    contractAddress: '',
+    contractAddress: undefined,
     WalletInterface: DocWallet,
   },
   {
@@ -248,7 +248,7 @@ export const erc1155ContractConfig: ICoinMetadata = {
   backgroundColor: '#FFF',
   contractAddress:
     chainId === 1
-      ? ''
+      ? config.contractAddresses.galaItem
       : chainId === 3
       ? config.contractAddresses.galaItem
       : null,

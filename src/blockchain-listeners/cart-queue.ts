@@ -113,7 +113,13 @@ export class CartQueue {
         valueObj.status = CartStatus[CartStatus.expired];
 
         const dbCreateRecord = await this.saveToDb(valueObj, keyObj);
-        valueObj.dbId = dbCreateRecord.id;
+        if(dbCreateRecord) {
+          valueObj.dbId = dbCreateRecord.id;
+        }
+        else {
+          valueObj.dbId = "undefined";
+        }
+        
 
         await this.replaceCartWatcher(key, valueObj);
         continue;
@@ -208,7 +214,13 @@ export class CartQueue {
         valueObj.crytoAmountRemaining = 0;
 
         const newDbRecord = await this.saveToDb(valueObj, keyObj);
-        valueObj.dbId = newDbRecord.id;
+        if(newDbRecord) {
+          valueObj.dbId = newDbRecord.id;
+        }
+        else {
+          valueObj.dbId = "undefined";
+        }
+        
 
         await this.replaceCartWatcher(key, valueObj);
 
@@ -223,7 +235,13 @@ export class CartQueue {
           valueObj.crytoAmount - +balance.amountUnconfirmed;
 
         const newDbRecord = await this.saveToDb(valueObj, keyObj);
-        valueObj.dbId = newDbRecord.id;
+        if(newDbRecord) {
+          valueObj.dbId = newDbRecord.id;
+        }
+        else {
+          valueObj.dbId = "undefined";
+        }
+        
 
         await this.replaceCartWatcher(key, valueObj);
         this.deleteCartWatcherSibling(keyObj);
@@ -315,32 +333,38 @@ export class CartQueue {
     valueObj: ICartWatcherData,
     keyObj: CartRedisKey,
   ): Promise<ICartTransactionDoc> {
-    let orderInfo: any = {};
-    if (valueObj.meprTxData) {
-      orderInfo = JSON.parse(valueObj.meprTxData);
-    }
+    try{
+      let orderInfo: any = {};
+      if (valueObj.meprTxData) {
+        orderInfo = JSON.parse(valueObj.meprTxData);
+      }
 
-    const dbItem: ICartTransaction = {
-      wp_id: keyObj.orderId,
-      status: valueObj.status,
-      currency: keyObj.symbol,
-      discountAmtUsd: '0',
-      totalUsd: valueObj.usdAmount.toString(),
-      totalCrypto: valueObj.crytoAmount.toString(),
-      conversionRate: (valueObj.usdAmount / valueObj.crytoAmount).toString(),
-      remainingCrypto: valueObj.crytoAmountRemaining.toString(),
-      address: valueObj.address,
-      name: orderInfo.member.display_name,
-      email: orderInfo.member.email,
-      data: JSON.stringify(orderInfo),
-      created: new Date(),
-    };
+      const dbItem: ICartTransaction = {
+        wp_id: keyObj.orderId,
+        status: valueObj.status,
+        currency: keyObj.symbol,
+        discountAmtUsd: '0',
+        totalUsd: valueObj.usdAmount.toString(),
+        totalCrypto: valueObj.crytoAmount.toString(),
+        conversionRate: (valueObj.usdAmount / valueObj.crytoAmount).toString(),
+        remainingCrypto: valueObj.crytoAmountRemaining.toString(),
+        address: valueObj.address,
+        name: orderInfo.member.display_name,
+        email: orderInfo.member.email,
+        data: JSON.stringify(orderInfo),
+        created: new Date(),
+      };
 
-    if (valueObj.dbId) {
-      //return await CartTransaction.updateOne({ id: valueObj.dbId }, dbItem);
-    } else {
-      return await CartTransaction.create(dbItem);
+      if (valueObj.dbId) {
+        //return await CartTransaction.updateOne({ id: valueObj.dbId }, dbItem);
+      } else {
+        return await CartTransaction.create(dbItem);
+      }
     }
+    catch(ex) {
+      logger.error(`!!!Cart-Queue is trying to save update order to the DB.`, valueObj, keyObj);
+    }
+    return undefined;
   }
 
   async sendGooglePixelConvert(orderInfo: any): Promise<void> {
