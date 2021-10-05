@@ -30,6 +30,9 @@ variables:
   # 1000m (1 cpu core) and doesn't need to be declared. 200m is 1/5 of 1 cpu core.
   CPU_REQUESTED: 100m
 
+  # ENV that will be used for tests
+  TEST_ENV: $CONNECT_ENV
+
   #######################
   # DON'T EDIT BELOW HERE
   DEFAULT_DEPLOY: 'true'
