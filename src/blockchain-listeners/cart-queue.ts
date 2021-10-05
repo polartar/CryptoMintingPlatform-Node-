@@ -2,6 +2,7 @@ import { walletApi } from '../wallet-api';
 import { logger, config } from '../common';
 import { CartService, MemprTxOrders } from './cart-service';
 import { CartType, ICartWatcherData, CartRedisKey, CartStatus } from '../types';
+import { userService } from '../services/user';
 import {
   CartTransaction,
   ICartTransaction,
@@ -113,13 +114,11 @@ export class CartQueue {
         valueObj.status = CartStatus[CartStatus.expired];
 
         const dbCreateRecord = await this.saveToDb(valueObj, keyObj);
-        if(dbCreateRecord) {
+        if (dbCreateRecord) {
           valueObj.dbId = dbCreateRecord.id;
+        } else {
+          valueObj.dbId = 'undefined';
         }
-        else {
-          valueObj.dbId = "undefined";
-        }
-        
 
         await this.replaceCartWatcher(key, valueObj);
         continue;
@@ -176,18 +175,32 @@ export class CartQueue {
             );
           }
 
-          const orderInfo = JSON.parse(valueObj.meprTxData);
           try {
-            await this.sendGooglePixelConvert(orderInfo);
-          } catch (err) {
+            const orderInfo = JSON.parse(valueObj.meprTxData);
+            try {
+              await userService.assignUserLicense(
+                orderInfo.membership.id,
+                orderInfo.member.email,
+              );
+            } catch (error) {
+              logger.error(
+                `failed to assign user licenses ${valueObj} | ${keyObj}`,
+              );
+            }
+            try {
+              await this.sendGooglePixelConvert(orderInfo);
+            } catch (err) {
+              logger.error(
+                `failed to get google pixel to fire ${valueObj} | ${keyObj}`,
+              );
+            }
+          } catch (error) {
             logger.error(
-              `failed to get google pixel to fire ${valueObj} | ${keyObj}`,
+              `failed to JSON.parse valueObj.meprTxData ${valueObj} | ${keyObj}`,
             );
           }
-
           await this.replaceCartWatcher(key, valueObj);
         }
-
         continue;
       }
 
@@ -214,13 +227,11 @@ export class CartQueue {
         valueObj.crytoAmountRemaining = 0;
 
         const newDbRecord = await this.saveToDb(valueObj, keyObj);
-        if(newDbRecord) {
+        if (newDbRecord) {
           valueObj.dbId = newDbRecord.id;
+        } else {
+          valueObj.dbId = 'undefined';
         }
-        else {
-          valueObj.dbId = "undefined";
-        }
-        
 
         await this.replaceCartWatcher(key, valueObj);
 
@@ -235,13 +246,11 @@ export class CartQueue {
           valueObj.crytoAmount - +balance.amountUnconfirmed;
 
         const newDbRecord = await this.saveToDb(valueObj, keyObj);
-        if(newDbRecord) {
+        if (newDbRecord) {
           valueObj.dbId = newDbRecord.id;
+        } else {
+          valueObj.dbId = 'undefined';
         }
-        else {
-          valueObj.dbId = "undefined";
-        }
-        
 
         await this.replaceCartWatcher(key, valueObj);
         this.deleteCartWatcherSibling(keyObj);
@@ -333,7 +342,7 @@ export class CartQueue {
     valueObj: ICartWatcherData,
     keyObj: CartRedisKey,
   ): Promise<ICartTransactionDoc> {
-    try{
+    try {
       let orderInfo: any = {};
       if (valueObj.meprTxData) {
         orderInfo = JSON.parse(valueObj.meprTxData);
@@ -360,9 +369,12 @@ export class CartQueue {
       } else {
         return await CartTransaction.create(dbItem);
       }
-    }
-    catch(ex) {
-      logger.error(`!!!Cart-Queue is trying to save update order to the DB.`, valueObj, keyObj);
+    } catch (ex) {
+      logger.error(
+        `!!!Cart-Queue is trying to save update order to the DB.`,
+        valueObj,
+        keyObj,
+      );
     }
     return undefined;
   }
