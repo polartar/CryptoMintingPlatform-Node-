@@ -181,12 +181,11 @@ class Server {
 
   private async connectToMongodb() {
     return new Promise<void>(resolve => {
-      connect(config.mongodbUri);
-
       mongooseConnection.once('open', () => {
         systemLogger.info(`Connected to mongoDb`);
         resolve();
       });
+
       mongooseConnection.on('error', error => {
         console.warn(error);
       });
