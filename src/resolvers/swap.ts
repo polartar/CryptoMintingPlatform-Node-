@@ -77,8 +77,6 @@ class SwapResolvers extends ResolverBase {
       logger.warn('EncryptedKey no return instead we reach a 401 status' + e);
     }
 
-    // passwordDecripted = "wait size angle field door focus mansion shove flame concert pool can";
-
     try {
       const confirmTrade = await startSwap.confirmSwap(
         passwordDecripted,
