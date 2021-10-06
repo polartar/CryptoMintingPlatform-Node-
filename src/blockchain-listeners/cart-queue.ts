@@ -2,6 +2,7 @@ import { walletApi } from '../wallet-api';
 import { logger, config } from '../common';
 import { CartService, MemprTxOrders } from './cart-service';
 import { CartType, ICartWatcherData, CartRedisKey, CartStatus } from '../types';
+import { userService } from '../services/user';
 import {
   CartTransaction,
   ICartTransaction,
@@ -174,18 +175,32 @@ export class CartQueue {
             );
           }
 
-          const orderInfo = JSON.parse(valueObj.meprTxData);
           try {
-            await this.sendGooglePixelConvert(orderInfo);
-          } catch (err) {
+            const orderInfo = JSON.parse(valueObj.meprTxData);
+            try {
+              await userService.assignUserLicense(
+                orderInfo.membership.id,
+                orderInfo.member.email,
+              );
+            } catch (error) {
+              logger.error(
+                `failed to assign user licenses ${valueObj} | ${keyObj}`,
+              );
+            }
+            try {
+              await this.sendGooglePixelConvert(orderInfo);
+            } catch (err) {
+              logger.error(
+                `failed to get google pixel to fire ${valueObj} | ${keyObj}`,
+              );
+            }
+          } catch (error) {
             logger.error(
-              `failed to get google pixel to fire ${valueObj} | ${keyObj}`,
+              `failed to JSON.parse valueObj.meprTxData ${valueObj} | ${keyObj}`,
             );
           }
-
           await this.replaceCartWatcher(key, valueObj);
         }
-
         continue;
       }
 
