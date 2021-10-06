@@ -1,8 +1,10 @@
-# Perfect Wallet Backend Handoff Notes
+# Wallet-Server
 
-Current state of my code with notes https://git.netzilla.co/bb/wallet-server/tree/WIP-MSTR-1493
+Service as gateway for the blockchain space.
 
-## Requirements
+
+
+## Optional Install Of Outside Systems
 
 ### bcoin running locally (It may take a very long time to sync up the blockchain, so this should probably be the first order of business.
 
