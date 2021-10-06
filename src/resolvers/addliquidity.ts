@@ -17,7 +17,6 @@ import { abi as IUniswapV3PoolABI } from '@uniswap/v3-core/artifacts/contracts/i
 import { abi as IUniswapV3FactoryABI } from '@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json';
 import { UniswapPair } from 'simple-uniswap-sdk';
 import EthWallet from '../wallet-api/coin-wallets/eth-wallet';
-import e from 'express';
 
 const { chainId, ethNodeUrl } = config;
 

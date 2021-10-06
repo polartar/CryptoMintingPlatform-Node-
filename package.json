@@ -1,6 +1,6 @@
 {
   "name": "wallet-server",
-  "version": "0.4.141",
+  "version": "0.4.142",
   "main": "lib/index.js",
   "config": {
     "dockerport": 4444
@@ -25,7 +25,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "@blockbrothers/firebasebb": "^0.11.1",
+    "@blockbrothers/firebasebb": "^0.11.4",
     "@blockbrothers/legacy-simple-crypto": "^1.0.0",
     "@blockbrothers/nodemailer-sendgrid-transport": "^0.3.0",
     "@sendgrid/client": "^7.4.2",
