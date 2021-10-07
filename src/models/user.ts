@@ -154,25 +154,33 @@ export interface IUser extends mongoose.Document {
 export async function getNextNumber() {
   const result = await mongoose.connection.db
     .collection<{ sequence: number }>('sequences')
-    .findOneAndUpdate(
+    .findOne(
       {
         name: 'users',
-      },
-      {
-        $inc: {
-          sequence: 1,
-        },
       },
       {
         projection: {
           sequence: 1,
         },
         maxTimeMS: 5000,
-        upsert: true,
-        returnOriginal: false,
       },
     );
-  const id = result.value.sequence;
+
+  if (!result) {
+    return undefined;
+  }
+
+  const id = +result.sequence + 1;
+
+  await mongoose.connection.db
+    .collection<{ sequence: number }>('sequences')
+    .updateOne(
+      {
+        name: 'users',
+      },
+      { $set: { sequence: id } },
+    );
+
   if (id) {
     const padded = id.toString().padStart(6, '0');
     const number = padded;
@@ -430,10 +438,7 @@ userSchema.pre('save', async function(this: IUser, next) {
   next();
 });
 
-userSchema.post('save', async function(
-  doc: IUser,
-  next: mongoose.HookNextFunction,
-) {
+userSchema.post('save', async function(doc: IUser, next: any) {
   if (!doc._id) {
     return;
   }
@@ -448,10 +453,7 @@ userSchema.post('save', async function(
   }
 });
 
-userSchema.post('insertMany', async function(
-  doc: IUser,
-  next: mongoose.HookNextFunction,
-) {
+userSchema.post('insertMany', async function(doc: IUser, next: any) {
   if (!doc._id) {
     return;
   }

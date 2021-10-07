@@ -80,13 +80,13 @@ describe('User Resolver', () => {
 
   beforeEach(async () => {
     dbHandler.collection('templates').insertOne({
-      _id: new Types.ObjectId().toHexString(),
+      _id: new Types.ObjectId(),
       id: 'terms-of-service',
       name: 'terms-of-service',
     });
 
     dbHandler.collection('templates').insertOne({
-      _id: new Types.ObjectId().toHexString(),
+      _id: new Types.ObjectId(),
       id: 'privacy-policy',
       name: 'privacy-policy',
     });
@@ -119,27 +119,27 @@ describe('User Resolver', () => {
     expect(response.token).toBe(token);
   });
 
-  // it('should update a blue user', async () => {
-  //   dbHandler.collection('users').insertOne(blueUser);
+  it('should update a blue user', async () => {
+    dbHandler.collection('users').insertOne(blueUser);
 
-  //   config.brand = blueBrand;
+    config.brand = blueBrand;
 
-  //   const args = {
-  //     userInfo: blueUser,
-  //     ipAddress: ip,
-  //   };
+    const args = {
+      userInfo: blueUser,
+      ipAddress: ip,
+    };
 
-  //   const context = createContext(request, dataSources, userApi);
-  //   const response = await userResolver.Mutation.updateUser(
-  //     null,
-  //     args,
-  //     context,
-  //   );
+    const context = createContext(request, dataSources, userApi);
+    const response = await userResolver.Mutation.updateUser(
+      null,
+      args,
+      context,
+    );
 
-  //   expect(response).not.toBeNull();
-  //   expect(response.success).toBeTruthy();
-  //   expect(response.user).not.toBeNull();
-  // });
+    expect(response).not.toBeNull();
+    expect(response.success).toBeTruthy();
+    expect(response.user).not.toBeNull();
+  });
 
   it('should create a connect user', async () => {
     config.brand = connectBrand;

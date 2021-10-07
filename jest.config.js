@@ -13,4 +13,5 @@ module.exports = {
     '^tests/(.*)$': '<rootDir>/tests/$1',
   },
   testEnvironment: 'node',
+  testTimeout: 30000,
 };

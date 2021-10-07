@@ -12,19 +12,18 @@ class Resolvers extends ResolverBase {
     const { user } = ctx;
     this.requireAuth(user);
 
-    if (config.brand.toLowerCase() != 'blue')
+    if (config.brand.toLowerCase() !== 'blue')
       throw new Error('Dependents are only allowed for blue users');
 
     const { userId } = user;
 
     try {
-      const maxNumberOfDependents = 4; //consider to put this in the env
       const numberOfDependents = await Dependent.find({
         userId,
       }).countDocuments();
-      if (numberOfDependents >= maxNumberOfDependents)
+      if (numberOfDependents >= config.careClixMaxDependents)
         throw new Error(
-          `This user already has ${maxNumberOfDependents} dependents`,
+          `This user already has ${config.careClixMaxDependents} dependents`,
         );
     } catch (error) {
       throw error;
@@ -40,6 +39,8 @@ class Resolvers extends ResolverBase {
     dependentModel.country = dependent.country;
     dependentModel.clinic = dependent.clinic;
     dependentModel.careclixId = dependent.careclixId;
+    if (dependent.relationship)
+      dependentModel.relationship = dependent.relationship;
     dependentModel.created = new Date();
 
     let retDependent: IDependentDocument;
@@ -56,7 +57,7 @@ class Resolvers extends ResolverBase {
     const { user } = ctx;
     this.requireAuth(user);
 
-    if (config.brand.toLowerCase() != 'blue')
+    if (config.brand.toLowerCase() !== 'blue')
       throw new Error('Dependents are only allowed for blue users');
 
     const { userId } = user;
@@ -74,15 +75,15 @@ class Resolvers extends ResolverBase {
     const { user } = ctx;
     this.requireAuth(user);
 
-    if (config.brand.toLowerCase() != 'blue')
+    if (config.brand.toLowerCase() !== 'blue')
       throw new Error('Dependents are only allowed for blue users');
 
     const { userId } = user;
     const { _id } = args;
-    let toReturn = { success: false, message: 'Nothing done' };
+    const toReturn = { success: false, message: 'Nothing done' };
     try {
       const ret = await Dependent.deleteOne({ userId: userId, _id: _id });
-      if (ret.deletedCount == 1) {
+      if (ret.deletedCount === 1) {
         toReturn.success = true;
         toReturn.message = 'dependent removed';
       } else {

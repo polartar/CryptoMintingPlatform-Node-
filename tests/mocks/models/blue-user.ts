@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 
 export default {
-  _id: Types.ObjectId('60fd24fce7d789ae04cee939'),
+  _id: new Types.ObjectId('60fd24fce7d789ae04cee939'),
   userId: '60fd24fce7d789ae04cee939',
   email: 'blueuser@test.com',
   password: 'Bluetest0!',
