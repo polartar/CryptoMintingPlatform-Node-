@@ -85,10 +85,14 @@ class Resolvers extends ResolverBase {
         status: 'pending',
         crytoAmount: +amount,
         crytoAmountRemaining: +amount,
-        usdAmount: 0, 
+        usdAmount: 0,
       };
 
-      const {keyToAdd, valueToAdd} = await cartQueue.setCartWatcher(coinSymbol.toUpperCase(), orderId, data);
+      const { keyToAdd, valueToAdd } = await cartQueue.setCartWatcher(
+        coinSymbol.toUpperCase(),
+        orderId,
+        data,
+      );
       addresses.push(address);
 
       const auditAddressResult = await this.auditAddressRequest({
@@ -141,7 +145,7 @@ class Resolvers extends ResolverBase {
 
       const transactionExpiresDate = new Date(transaction.exp);
       return {
-        success: "1",
+        success: '1',
         message: 'Found Transaction',
         status: transaction.status,
         expires: `${transactionExpiresDate.getTime()}`,
@@ -155,9 +159,9 @@ class Resolvers extends ResolverBase {
       );
     }
     return {
-      success: "0",
+      success: '0',
       message: 'Could not find transaction',
-      status: CartStatus[CartStatus.expired],      //TODO : if someone loses internet for 5 hrs, they will come here and it will send expired even if their payment went through
+      status: CartStatus[CartStatus.expired], //TODO : if someone loses internet for 5 hrs, they will come here and it will send expired even if their payment went through
       expires: `1`,
       amtToPayUSD: `0`,
       amtToPayCrypto: `0`,
@@ -246,7 +250,6 @@ class Resolvers extends ResolverBase {
     }
     return allTransactions;
   };
-
 }
 
 const resolvers = new Resolvers();

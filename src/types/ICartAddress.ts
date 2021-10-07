@@ -23,7 +23,7 @@ export enum CartStatus {
   insufficient,
   pending,
   expired,
-  confirming,  
+  confirming,
 }
 
 export enum CartType {

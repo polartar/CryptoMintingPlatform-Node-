@@ -1,0 +1,54 @@
+type pairParams {
+  pairAddress: String!
+  # feeTo: String!
+  # feeToSetter: String!
+  message: String!
+}
+
+type pairInfo {
+  message: String
+}
+
+type tokenApprove {
+  message: String!
+  created: Boolean!
+}
+
+type liquidityAdd {
+  message: String!
+}
+
+type liquidityRem {
+  message: String!
+  amountA: String
+  amountB: String
+}
+
+type Mutation {
+  createPair(
+    walletPassword: String!
+    tokenA: String!
+    tokenB: String!
+  ): pairParams
+  approveTokens(walletPassword: String!, token: String!): tokenApprove
+  addLiquidityV2(
+    tokenA: String!
+    tokenB: String!
+    amountADesired: Int!
+    amountBDesired: Int!
+    walletPassword: String!
+    decimalsA: Int!
+    decimalsB: Int!
+  ): liquidityAdd
+  remLiquidityV2(
+    tokenA: String!
+    tokenB: String!
+    walletPassword: String!
+    percentage: Int!
+  ): liquidityRem
+  getPairInfo(
+    tokenA: String!
+    tokenB: String!
+    walletPassword: String!
+  ): pairInfo
+}

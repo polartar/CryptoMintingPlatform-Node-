@@ -230,6 +230,11 @@ class Config {
 
   public readonly careclixSignUpUrl = `https://${env.CARECLIX_URL}/auth/signup`;
 
+  public readonly recordsMicroservice = {
+    host: env.RECORDS_MICROSERVICE_HOST,
+    port: this.normalizeNumber(env.RECORDS_MICROSERVICE_PORT),
+  };
+
   public readonly paywiserHost = env.PAYWISER_KYC_HOST;
   public readonly paywiserUsername = env.PAYWISER_KYC_USERNAME;
   public readonly paywiserPassword = env.PAYWISER_KYC_PASSWORD;
@@ -258,6 +263,8 @@ class Config {
     port: env.REDIS_PORT,
     password: env.REDIS_PASSWORD,
   };
+
+  public readonly careClixMaxDependents = Number(env.CARECLIX_MAX_DEPENDENTS);
 
   constructor() {
     autoBind(this);
@@ -363,7 +370,10 @@ class Config {
     }
     //--------- BLUE ONLY -------------
     if (this.brand === 'blue') {
-      const missingBlueVariables = ['CARECLIX_URL'].filter(name => !env[name]);
+      const missingBlueVariables = [
+        'CARECLIX_URL',
+        'CARECLIX_MAX_DEPENDENTS',
+      ].filter(name => !env[name]);
       if (missingBlueVariables.length > 0) {
         throw new Error(
           `Required BLUE environment variable(s) ${missingEnvVariables.join(

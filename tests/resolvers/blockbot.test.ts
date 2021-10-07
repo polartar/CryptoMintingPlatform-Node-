@@ -68,18 +68,7 @@ describe('Check the the getBlockbotReport query', () => {
       mockedContext,
     );
     expect(result).not.toBeNull();
-
-    /**
-     * This statement uses JSON.parse(JSON.stringify())
-     * to effectively parse all _id's from mongoose ObjectId type to string type.
-     * and to avoid include mongoose.model stuff.
-     * others ways to achieve this seem complex.
-     */
-    // expect(JSON.parse(JSON.stringify(result))).toEqual(
-    //   JSON.parse(JSON.stringify(blockBotReport)),
-    // );
-
-    expect(1).toEqual(1);
+    expect(JSON.stringify(result)).toBe(JSON.stringify(blockBotReport));
   });
 
   it('Should return nothing for a user without BlockbotReport', async () => {

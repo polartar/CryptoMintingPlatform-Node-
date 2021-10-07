@@ -1,3 +1,4 @@
+import admin from 'firebase-admin';
 import { ServerAuth } from '@blockbrothers/firebasebb';
 
 interface IArgsUser {
@@ -16,7 +17,7 @@ interface IOptions {
   ignoreExpiration?: boolean;
 }
 
-const firebaseUser = {
+const firebaseUser: Partial<admin.auth.UserRecord> = {
   email: 'user@test.com',
   uid: 'uid',
 };
@@ -50,10 +51,11 @@ export default function create(token: string, userId: string): ServerAuth {
 
   const auth: Partial<ServerAuth> = {
     createFirebaseUser: (user: IArgsUser, domain: string) =>
-      Promise.resolve(firebaseUser),
+      Promise.resolve(firebaseUser as admin.auth.UserRecord),
     getFirebaseUid: (firebaseToken: string, domain: string) =>
       Promise.resolve('testid'),
-    getUser: async (uid: string, domain: string) => firebaseUser,
+    getUser: async (uid: string, domain: string) =>
+      firebaseUser as admin.auth.UserRecord,
     signIn: async (firebaseToken: string, domain: string) => token,
     signInAfterRegister: async (firebaseUid: string, domain: string) => token,
     updateDisplayName: async (
@@ -65,7 +67,7 @@ export default function create(token: string, userId: string): ServerAuth {
       firebaseUid: string,
       userInfo: IUserInfo,
       domain: string,
-    ) => true,
+    ) => firebaseUser as admin.auth.UserRecord,
     verifyAndDecodeToken: (token: string, domain: string, options?: IOptions) =>
       decodedToken,
   };
