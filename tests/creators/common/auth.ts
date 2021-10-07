@@ -1,4 +1,4 @@
-import admin from 'firebase-admin'
+import admin from 'firebase-admin';
 import { ServerAuth } from '@blockbrothers/firebasebb';
 
 interface IArgsUser {
@@ -54,7 +54,8 @@ export default function create(token: string, userId: string): ServerAuth {
       Promise.resolve(firebaseUser as admin.auth.UserRecord),
     getFirebaseUid: (firebaseToken: string, domain: string) =>
       Promise.resolve('testid'),
-    getUser: async (uid: string, domain: string) => firebaseUser as admin.auth.UserRecord,
+    getUser: async (uid: string, domain: string) =>
+      firebaseUser as admin.auth.UserRecord,
     signIn: async (firebaseToken: string, domain: string) => token,
     signInAfterRegister: async (firebaseUid: string, domain: string) => token,
     updateDisplayName: async (

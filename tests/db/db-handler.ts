@@ -9,7 +9,7 @@ class DbHandler {
 
     this.mongo = await MongoMemoryServer.create();
     const uri = await this.mongo.getUri();
-    
+
     await mongoose.connect(uri);
   }
 

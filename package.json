@@ -1,6 +1,6 @@
 {
   "name": "wallet-server",
-  "version": "0.4.144",
+  "version": "0.4.147",
   "main": "lib/index.js",
   "config": {
     "dockerport": 4444
@@ -32,6 +32,10 @@
     "@sendgrid/mail": "^7.4.2",
     "@sentry/node": "^5.20.0",
     "@uniswap/sdk": "^3.0.3",
+    "@uniswap/sdk-core": "^3.0.1",
+    "@uniswap/v2-core": "^1.0.1",
+    "@uniswap/v3-core": "^1.0.0",
+    "@uniswap/v3-sdk": "^3.4.1",
     "apollo-datasource": "^0.3.1",
     "apollo-datasource-rest": "^0.5.0",
     "apollo-server-caching": "^0.4.0",
