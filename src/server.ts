@@ -22,7 +22,12 @@ import {
 import { walletApi } from './wallet-api';
 import { cartQueue } from './blockchain-listeners/cart-queue';
 import { removeListeners } from './blockchain-listeners';
-import { Logger, winstonLogger, systemLogger, logMessage } from './common/logger';
+import {
+  Logger,
+  winstonLogger,
+  systemLogger,
+  logMessage,
+} from './common/logger';
 import { Wallet } from 'ethers';
 import restApi from './rest/routes';
 import * as cors from 'cors';
@@ -84,7 +89,10 @@ class Server {
     server.installSubscriptionHandlers(this.httpServer);
   }
 
-  private getToken(connection: ExecutionParams, req: express.Request): string | null {
+  private getToken(
+    connection: ExecutionParams,
+    req: express.Request,
+  ): string | null {
     if (connection?.context.token) {
       return connection.context.token;
     } else if (req?.headers.authorization) {
@@ -118,7 +126,14 @@ class Server {
       }
     }
 
-    return { req, res, user, wallet: this.walletApi, logger, cart: this.cartQueue };
+    return {
+      req,
+      res,
+      user,
+      wallet: this.walletApi,
+      logger,
+      cart: this.cartQueue,
+    };
   }
 
   private buildDataSources() {
@@ -166,12 +181,11 @@ class Server {
 
   private async connectToMongodb() {
     return new Promise<void>(resolve => {
-      connect(config.mongodbUri);
-
       mongooseConnection.once('open', () => {
         systemLogger.info(`Connected to mongoDb`);
         resolve();
       });
+
       mongooseConnection.on('error', error => {
         console.warn(error);
       });

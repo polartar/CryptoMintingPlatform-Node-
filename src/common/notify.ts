@@ -16,10 +16,9 @@ class Notify {
       read: undefined,
       status: status.toString(),
     };
-    try{
+    try {
       Notification.insertMany([toInsert]);
-    }
-    catch(err) {
+    } catch (err) {
       logger.error(
         'Tried to insert Notification to user, but failed. :: ' +
           JSON.stringify(toInsert),

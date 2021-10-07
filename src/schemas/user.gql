@@ -33,6 +33,7 @@ type UserProfile {
   city: String
   state: String
   zipCode: String
+  kyc: Kyc
 }
 
 type UserIds {
@@ -56,6 +57,26 @@ type ActivationTermsAndConditions {
 type CommunicationConsent {
   timestamp: Date
   consentGiven: Boolean
+}
+
+type Kyc {
+  StatusCode: Int
+  StatusDescription: String
+  PersonID: String
+  KycID: String
+  RequireMobileNumberCheck: Boolean
+  RequireVideo: Boolean
+  RequireAdditionalDocuments: Boolean
+  AllowAddressEntry: Boolean
+  RequiredAddressFields: String
+  AdditionalDocuments: String
+  VideoDocumentExpiryDate: String
+  VideoDocumentWillExpire: String
+  VideoDocumentExpired: String
+  IbanWillBeCreated: String
+  RequireAddress: Boolean
+  AddressFields: String
+  ReferenceID: String
 }
 
 input KycInput {

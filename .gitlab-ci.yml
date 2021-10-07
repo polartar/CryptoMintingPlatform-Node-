@@ -30,12 +30,15 @@ variables:
   # 1000m (1 cpu core) and doesn't need to be declared. 200m is 1/5 of 1 cpu core.
   CPU_REQUESTED: 100m
 
+  # ENV that will be used for tests
+  TEST_ENV: $CONNECT_ENV
+
   #######################
   # DON'T EDIT BELOW HERE
   DEFAULT_DEPLOY: 'true'
   LEGACY_K8S_APP: 'true'
   NPM_AUDIT: 'false'
-  JEST_TEST: 'false'
+  JEST_TESTS: 'false'
 
 include:
   - project: 'netzilla/ci-templates'
