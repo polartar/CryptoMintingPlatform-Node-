@@ -60,13 +60,11 @@ class SwapResolvers extends ResolverBase {
     const validPassword = await walletApi.checkPassword(
       user,
       args.walletPassword,
-    ); //This return false always
+    );
 
-    logger.warn('swap.confirmSwap.returns false' + validPassword);
+    if (!validPassword) throw new Error('Invalid Password');
 
-    //if (!validPassword) throw new Error("Invalid Password")
-
-    let passwordDecripted;
+    let passwordDecripted: string;
     try {
       const encryptedKey = await walletApi.getEncryptedPrivKey(user.userId);
       const decryptedPrivateKey = this.decrypt(

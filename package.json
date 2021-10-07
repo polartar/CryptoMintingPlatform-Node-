@@ -1,6 +1,6 @@
 {
   "name": "wallet-server",
-  "version": "0.4.144",
+  "version": "0.4.145",
   "main": "lib/index.js",
   "config": {
     "dockerport": 4444
@@ -108,6 +108,7 @@
     "ts-jest": "^27.0.4",
     "ts-node": "^7.0.1",
     "tsconfig-paths": "^3.10.1",
+    "tslib": "^2.3.1",
     "tslint": "^6.1.3",
     "typescript": "^4.2.3"
   },

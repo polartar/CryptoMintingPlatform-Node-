@@ -10,11 +10,6 @@ class DbHandler {
     this.mongo = await MongoMemoryServer.create();
     const uri = await this.mongo.getUri();
 
-    const mongooseOpts = {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    };
-
     await mongoose.connect(uri);
   }
 
