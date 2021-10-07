@@ -8,10 +8,10 @@ import {
   //CurrencyAmount
 } from '@uniswap/sdk-core';
 
-import { abi as IUniswapV2FactoryABI } from '/@uniswap/v2-core/build/IUniswapV2Factory.json';
-import { abi as IUniswapV2ERC20ABI } from '/@uniswap/v2-core/build/UniswapV2ERC20.json';
+import { abi as IUniswapV2FactoryABI } from '@uniswap/v2-core/build/IUniswapV2Factory.json';
+import { abi as IUniswapV2ERC20ABI } from '@uniswap/v2-core/build/UniswapV2ERC20.json';
 import * as IUniswapV2Router from 'simple-uniswap-sdk/dist/esm/ABI/uniswap-router-v2.json';
-import { abi as IUniswapV2Pair } from '/@uniswap/v2-core/build/UniswapV2Pair.json';
+import { abi as IUniswapV2Pair } from '@uniswap/v2-core/build/UniswapV2Pair.json';
 
 const { chainId, ethNodeUrl } = config;
 const provider = new ethers.providers.JsonRpcProvider(ethNodeUrl);
