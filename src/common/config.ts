@@ -230,6 +230,11 @@ class Config {
 
   public readonly careclixSignUpUrl = `https://${env.CARECLIX_URL}/auth/signup`;
 
+  public readonly recordsMicroservice = {
+    host: env.RECORDS_MICROSERVICE_HOST,
+    port: this.normalizeNumber(env.RECORDS_MICROSERVICE_PORT),
+  };
+
   public readonly paywiserHost = env.PAYWISER_KYC_HOST;
   public readonly paywiserUsername = env.PAYWISER_KYC_USERNAME;
   public readonly paywiserPassword = env.PAYWISER_KYC_PASSWORD;
