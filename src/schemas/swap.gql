@@ -23,7 +23,17 @@ type Trade {
 }
 
 type Confirmation {
-  message: String
+  message: String!
+  hash: String!
+  blockNumber: Int!
+  confirmations: Int!
+  to: String!
+  midPrice: String!
+  midPriceInverted: String!
+  path: String!
+  liquidityProviderFee: String!
+  liquidityProviderFeePercent: Float!
+  tradeExpires: Float!
 }
 
 type Query {
@@ -36,12 +46,12 @@ type Mutation {
     amount: String!
     inputToken: String!
     outputToken: String!
-  ): Trade
+  ): Trade!
   confirmSwap(
     coinSymbol: String!
     amount: String!
     inputToken: String!
     outputToken: String!
     walletPassword: String!
-  ): Confirmation
+  ): Confirmation!
 }

@@ -9,28 +9,30 @@ export class CartService extends ServerToServerService {
   }
 
   public getOrdersFromMeprCart = async (
-    orderId: string
+    orderId: string,
   ): Promise<MemprTxOrders> => {
     const axios = this.getAxios({ role: 'system' });
     let realOrderId = orderId;
-    if(orderId.toUpperCase().indexOf('.') > 0){
+    if (orderId.toUpperCase().indexOf('.') > 0) {
       realOrderId = orderId.split('.')[1];
     }
-    
+
     const requestUrl = `${config.wpCartApiUrl}/get_mepr_tx_order?ApiKey=338a3ba7-69b8-41ac-a920-9727ae939ba3&OrderId=${realOrderId}`;
 
-    try{
+    try {
       const result = await axios.post<MemprTxOrders>(requestUrl);
       return result.data;
-    }
-    catch(err){
-      logger.error(`Failed to getOrderFromMeprCart : ${config.wpCartApiUrl} | ${orderId} | ${JSON.stringify(err)} | ${err}`);
+    } catch (err) {
+      logger.error(
+        `Failed to getOrderFromMeprCart : ${
+          config.wpCartApiUrl
+        } | ${orderId} | ${JSON.stringify(err)} | ${err}`,
+      );
       console.log(`Failed to getOrderFromMeprCart`);
       console.log(err);
       console.log(JSON.stringify(err));
     }
 
-    
     //** NOTE orderId that is in result will prepend with the following code: */
     // Woocommerce - wooc-<ID>
     // Memberpress - mepr-<ID>
@@ -103,7 +105,6 @@ export class CartService extends ServerToServerService {
     orderId: string,
     status: CartStatus,
   ): Promise<MemprTxOrders[]> => {
-    
     const postBody: any = {
       ApiKey: '338a3ba7-69b8-41ac-a920-9727ae939ba3',
       OrderId: `mepr.${orderId}`,
@@ -113,7 +114,7 @@ export class CartService extends ServerToServerService {
       BlockchainTxIds: undefined,
       Status: CartStatus[status],
     };
-    if(status === CartStatus.expired) {
+    if (status === CartStatus.expired) {
       postBody.OrderStatus = 'failed';
     }
 
@@ -124,7 +125,7 @@ export class CartService extends ServerToServerService {
         `${config.wpCartApiUrl}/update_wp_tx_order`,
         postBody,
       );
-      
+
       return result.data;
     } catch (err) {
       console.log(
