@@ -2,8 +2,6 @@
 
 Service as gateway for the blockchain space.
 
-
-
 ## Optional Install Of Outside Systems
 
 ### bcoin running locally (It may take a very long time to sync up the blockchain, so this should probably be the first order of business.

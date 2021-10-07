@@ -1,12 +1,12 @@
 import { Types } from 'mongoose';
 
 export default {
-  _id: Types.ObjectId('61099d7b57c5bc14980867b3'),
+  _id: new Types.ObjectId('61099d7b57c5bc14980867b3'),
   UserId: '60fd24fce7d789ae04cee939',
   DatePrepared: 1629137933511,
   TotalBlockbots: 3,
   Day: {
-    _id: Types.ObjectId('61099d7b57c5bc14980867b4'),
+    _id: new Types.ObjectId('61099d7b57c5bc14980867b4'),
     TotalBlockbotsNow: 3,
     TotalBlockbotsPrevious: 3,
     TotalRewardsCoin: 338,
@@ -16,6 +16,7 @@ export default {
     Memory: 'Day',
     FriendActivations: [
       {
+        _id: new Types.ObjectId('615364b0ce3de5150c2ab443'),
         Name: 'Blockbot',
         ActiveCount: 0,
         ActivationsCount: 0,
@@ -23,6 +24,7 @@ export default {
         RewardsAllTime: 350,
       },
       {
+        _id: new Types.ObjectId('615364b0ce3de5150c2ab444'),
         Name: 'Droid',
         ActiveCount: 2,
         ActivationsCount: 1,
@@ -32,6 +34,7 @@ export default {
     ],
     BlockchainActivations: [
       {
+        _id: new Types.ObjectId('615364b0ce3de5150c2ab445'),
         Name: 'Blockbot',
         ActiveCount: 0,
         ActivationsCount: 0,
@@ -39,6 +42,7 @@ export default {
         RewardsAllTime: 12,
       },
       {
+        _id: new Types.ObjectId('615364b0ce3de5150c2ab446'),
         Name: 'Droid',
         ActiveCount: 2,
         ActivationsCount: 1,
@@ -48,7 +52,7 @@ export default {
     ],
   },
   Week: {
-    _id: Types.ObjectId('61099d7b57c5bc14980867b5'),
+    _id: new Types.ObjectId('61099d7b57c5bc14980867b5'),
     TotalBlockbotsNow: 3,
     TotalBlockbotsPrevious: 2,
     TotalRewardsCoin: 1588,
@@ -58,6 +62,7 @@ export default {
     Memory: 'Week',
     FriendActivations: [
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee54'),
         Name: 'Blockbot',
         ActiveCount: 1,
         ActivationsCount: 1,
@@ -65,6 +70,7 @@ export default {
         RewardsAllTime: 250,
       },
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee55'),
         Name: 'Droid',
         ActiveCount: 2,
         ActivationsCount: 1,
@@ -74,6 +80,7 @@ export default {
     ],
     BlockchainActivations: [
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee56'),
         Name: 'Blockbot',
         ActiveCount: 0,
         ActivationsCount: 0,
@@ -81,6 +88,7 @@ export default {
         RewardsAllTime: 12,
       },
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee57'),
         Name: 'Droid',
         ActiveCount: 2,
         ActivationsCount: 1,
@@ -90,7 +98,7 @@ export default {
     ],
   },
   Month: {
-    _id: Types.ObjectId('61099d7b57c5bc14980867b6'),
+    _id: new Types.ObjectId('61099d7b57c5bc14980867b6'),
     TotalBlockbotsNow: 3,
     TotalBlockbotsPrevious: 3,
     TotalRewardsCoin: 338,
@@ -100,6 +108,7 @@ export default {
     Memory: 'Month',
     FriendActivations: [
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee59'),
         Name: 'Blockbot',
         ActiveCount: 2,
         ActivationsCount: 10,
@@ -107,6 +116,7 @@ export default {
         RewardsAllTime: 350,
       },
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee5a'),
         Name: 'Droid',
         ActiveCount: 2,
         ActivationsCount: 10,
@@ -116,6 +126,7 @@ export default {
     ],
     BlockchainActivations: [
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee5b'),
         Name: 'Blockbot',
         ActiveCount: 0,
         ActivationsCount: 0,
@@ -123,6 +134,7 @@ export default {
         RewardsAllTime: 12,
       },
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee5c'),
         Name: 'Droid',
         ActiveCount: 150,
         ActivationsCount: 120,
@@ -132,7 +144,7 @@ export default {
     ],
   },
   Year: {
-    _id: Types.ObjectId('61099d7b57c5bc14980867b7'),
+    _id: new Types.ObjectId('61099d7b57c5bc14980867b7'),
     TotalBlockbotsNow: 3,
     TotalBlockbotsPrevious: 3,
     TotalRewardsCoin: 338,
@@ -142,6 +154,7 @@ export default {
     Memory: 'Year',
     FriendActivations: [
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee5c'),
         Name: 'Blockbot',
         ActiveCount: 3,
         ActivationsCount: 30,
@@ -149,6 +162,7 @@ export default {
         RewardsAllTime: 350,
       },
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee5c'),
         Name: 'Droid',
         ActiveCount: 5,
         ActivationsCount: 5,
@@ -158,6 +172,7 @@ export default {
     ],
     BlockchainActivations: [
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee5c'),
         Name: 'Blockbot',
         ActiveCount: 50,
         ActivationsCount: 50,
@@ -165,6 +180,7 @@ export default {
         RewardsAllTime: 12,
       },
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee5c'),
         Name: 'Droid',
         ActiveCount: 250,
         ActivationsCount: 250,
@@ -174,7 +190,7 @@ export default {
     ],
   },
   Quarter: {
-    _id: Types.ObjectId('61099d7b57c5bc14980867b8'),
+    _id: new Types.ObjectId('61099d7b57c5bc14980867b8'),
     TotalBlockbotsNow: 3,
     TotalBlockbotsPrevious: 3,
     TotalRewardsCoin: 338,
@@ -184,6 +200,7 @@ export default {
     Memory: 'Quarter',
     FriendActivations: [
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee63'),
         Name: 'Blockbot',
         ActiveCount: 3,
         ActivationsCount: 30,
@@ -191,6 +208,7 @@ export default {
         RewardsAllTime: 350,
       },
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee64'),
         Name: 'Droid',
         ActiveCount: 5,
         ActivationsCount: 5,
@@ -200,6 +218,7 @@ export default {
     ],
     BlockchainActivations: [
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee65'),
         Name: 'Blockbot',
         ActiveCount: 50,
         ActivationsCount: 50,
@@ -207,6 +226,7 @@ export default {
         RewardsAllTime: 12,
       },
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee66'),
         Name: 'Droid',
         ActiveCount: 250,
         ActivationsCount: 250,
@@ -216,7 +236,7 @@ export default {
     ],
   },
   All: {
-    _id: Types.ObjectId('61099d7b57c5bc14980867b9'),
+    _id: new Types.ObjectId('61099d7b57c5bc14980867b9'),
     TotalBlockbotsNow: 3,
     TotalBlockbotsPrevious: 3,
     TotalRewardsCoin: 338,
@@ -226,6 +246,7 @@ export default {
     Memory: 'All',
     FriendActivations: [
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee68'),
         Name: 'Blockbot',
         ActiveCount: 3,
         ActivationsCount: 30,
@@ -233,6 +254,7 @@ export default {
         RewardsAllTime: 350,
       },
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee69'),
         Name: 'Droid',
         ActiveCount: 5,
         ActivationsCount: 5,
@@ -242,6 +264,7 @@ export default {
     ],
     BlockchainActivations: [
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee6a'),
         Name: 'Blockbot',
         ActiveCount: 50,
         ActivationsCount: 50,
@@ -249,6 +272,7 @@ export default {
         RewardsAllTime: 12,
       },
       {
+        _id: new Types.ObjectId('615365b0a6f2264f421fee6b'),
         Name: 'Droid',
         ActiveCount: 250,
         ActivationsCount: 250,
