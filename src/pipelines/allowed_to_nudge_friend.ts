@@ -45,6 +45,7 @@ export const getPipeline = (
             id: 1,
             referredBy: 1,
             email: 1,
+            emailVerified: 1,
             firstName: 1,
             referralLink: '$wallet.shareLink',
             communicationConsent: 1,
