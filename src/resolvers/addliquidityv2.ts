@@ -233,6 +233,8 @@ class LiquidityResolverV2 extends ResolverBase {
     args: {
       tokenA: string;
       tokenB: string;
+      decimalsA: number;
+      decimalsB: number;
       walletPassword: string;
     },
     { user, wallet }: Context,
@@ -275,12 +277,24 @@ class LiquidityResolverV2 extends ResolverBase {
 
     const { _reserve0, _reserve1 } = await pairContract.getReserves();
 
-    const [gasPrice] = await Promise.all([provider.getGasPrice()]);
+    const numbReserve0 = _reserve0.div(Math.pow(10, args.decimalsA)).toString();
+    const remindReserve0 = _reserve0
+      .mod(Math.pow(10, args.decimalsA))
+      .toString();
+    const reserve0 = numbReserve0 + '.' + remindReserve0;
+    const numbReserve1 = _reserve1.div(Math.pow(10, args.decimalsA)).toString();
+    const remindReserve1 = _reserve1
+      .mod(Math.pow(10, args.decimalsA))
+      .toString();
+    const reserve1 = numbReserve1 + '.' + remindReserve1;
 
-    const liquidity = await pairContract.balanceOf(receiveAddress);
+    const liquidityBigNumber = await pairContract.balanceOf(receiveAddress);
+    const liquididty = liquidityBigNumber.toString();
 
     return {
-      message: 'hey',
+      reserve0,
+      reserve1,
+      liquididty,
     };
   };
 
@@ -289,7 +303,6 @@ class LiquidityResolverV2 extends ResolverBase {
     args: {
       tokenA: string;
       tokenB: string;
-      liquidity: number;
       walletPassword: string;
       percentage: number;
     },
