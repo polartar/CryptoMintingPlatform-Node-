@@ -6,7 +6,9 @@ type pairParams {
 }
 
 type pairInfo {
-  message: String
+  reserve0: String
+  reserve1: String
+  liquidity: String
 }
 
 type tokenApprove {
@@ -49,6 +51,8 @@ type Mutation {
   getPairInfo(
     tokenA: String!
     tokenB: String!
+    decimalsA: Int!
+    decimalsB: Int!
     walletPassword: String!
   ): pairInfo
 }
