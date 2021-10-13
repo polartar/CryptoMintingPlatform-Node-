@@ -12,7 +12,7 @@ class LinkShortener extends RESTDataSource {
     subject: 'connectTrader:subject',
   };
   baseURL = `${config.linkShortenerUrl}/api`;
-
+  // baseURL = 'https://api-ssl.bitly.com/v4';
   public getSignedToken(payload: string | Buffer | object): string {
     try {
       const token = jwt.sign(payload, config.jwtPrivateKey, this.jwtOptions);
@@ -50,7 +50,9 @@ class LinkShortener extends RESTDataSource {
       logger.debug(
         `data-sources.link-shortener.getLink.encodedAffiliateId: ${encodedAffiliateId}`,
       );
-      const longUrl = `${config.referralLinkDomain}?r=${encodedAffiliateId}&utm_source=galaappshare&utm_medium=${user.id}&utm_campaign=5e79504ffd8a5636a2c86ed2&utm_term=gala_own_your_game`;
+      // const longUrl = `${config.referralLinkDomain}?r=${encodedAffiliateId}&utm_source=galaappshare&utm_medium=${user.id}&utm_campaign=5e79504ffd8a5636a2c86ed2&utm_term=gala_own_your_game`;
+
+      const longUrl = `${config.referralLinkDomain}?r=${encodedAffiliateId}&utm_medium=${user.id}&utm_campaign=5e79504ffd8a5636a2c86ed2`;
 
       const shortUrl = await this.shortenLongUrl(longUrl, user.id);
 
