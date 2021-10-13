@@ -1,33 +1,33 @@
 type CartAddress {
   coinSymbol: String
-  address: String!
-  qrCode: String!
+  address: String
+  qrCode: String
 }
 
 type CartAddressRequest {
-  userId: String!
-  coinSymbol: String!
-  amountUsd: String!
-  amountCrypto: String!
-  orderId: String!
+  userId: String
+  coinSymbol: String
+  amountUsd: String
+  amountCrypto: String
+  orderId: String
   affiliateId: String
   affiliateSessionId: String
   utmVariables: String
   created: Date
-  addresses: [CartAddress!]!
+  addresses: [CartAddress!]
 }
 type CartTransaction {
-  wp_id: String!
-  status: String!
-  currency: String!
+  wp_id: String
+  status: String
+  currency: String
   discountAmtUsd: String
   totalUsd: String
   totalCrypto: String
   conversionRate: String
   remainingCrypto: String
   address: String
-  name: String!
-  email: String!
+  name: String
+  email: String
   data: String!
   created: Date
 }
