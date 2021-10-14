@@ -17,7 +17,7 @@ export async function getNextWalletNumber(symbol: string) {
       },
       (err: any, doc: any) => {
         if (err) {
-          reject('error');
+          reject('undefined');
         }
 
         resolve(doc.value.sequence);
