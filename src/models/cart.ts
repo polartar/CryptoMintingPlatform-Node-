@@ -1,32 +1,27 @@
 import * as mongoose from 'mongoose';
 
 export async function getNextWalletNumber(symbol: string) {
-  const result = await mongoose.connection.db
-    .collection<{ sequence: number }>('sequences')
-    .findOne(
+  return new Promise((resolve, reject) => {
+    mongoose.connection.db.collection('sequences').findOneAndUpdate(
       {
         name: symbol,
       },
       {
-        projection: {
+        $inc: {
           sequence: 1,
         },
+      },
+      {
+        returnDocument: 'after',
         maxTimeMS: 5000,
       },
-    );
-  if (!result) {
-    return undefined;
-  }
-  const id = +result.sequence + 1;
-  await mongoose.connection.db
-    .collection<{ sequence: number }>('sequences')
-    .updateOne(
-      {
-        name: symbol,
-      },
-      {
-        sequence: id,
+      (err: any, doc: any) => {
+        if (err) {
+          reject('undefined');
+        }
+
+        resolve(doc.value.sequence);
       },
     );
-  return id;
+  });
 }

@@ -152,41 +152,31 @@ export interface IUser extends mongoose.Document {
 }
 
 export async function getNextNumber() {
-  const result = await mongoose.connection.db
-    .collection<{ sequence: number }>('sequences')
-    .findOne(
+  return new Promise((resolve, reject) => {
+    mongoose.connection.db.collection('sequences').findOneAndUpdate(
       {
         name: 'users',
       },
       {
-        projection: {
+        $inc: {
           sequence: 1,
         },
+      },
+      {
+        returnDocument: 'after',
         maxTimeMS: 5000,
       },
-    );
+      (err: any, doc: any) => {
+        if (err) {
+          reject('undefined');
+        }
+        const id = doc.value.sequence;
+        const padded = id.toString().padStart(6, '0');
 
-  if (!result) {
-    return undefined;
-  }
-
-  const id = +result.sequence + 1;
-
-  await mongoose.connection.db
-    .collection<{ sequence: number }>('sequences')
-    .updateOne(
-      {
-        name: 'users',
+        resolve(padded);
       },
-      { $set: { sequence: id } },
     );
-
-  if (id) {
-    const padded = id.toString().padStart(6, '0');
-    const number = padded;
-    return number;
-  }
-  return undefined;
+  });
 }
 
 const referrerRewardSchema = new mongoose.Schema(
