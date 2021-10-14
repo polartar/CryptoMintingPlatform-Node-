@@ -14,7 +14,6 @@ export async function getNextWalletNumber(symbol: string) {
       {
         returnDocument: 'after',
         maxTimeMS: 5000,
-        fullResponse: true,
       },
       (err: any, doc: any) => {
         if (err) {
