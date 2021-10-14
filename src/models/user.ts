@@ -177,41 +177,6 @@ export async function getNextNumber() {
       },
     );
   });
-  // const result = await mongoose.connection.db
-  //   .collection<{ sequence: number }>('sequences')
-  //   .findOne(
-  //     {
-  //       name: 'users',
-  //     },
-  //     {
-  //       projection: {
-  //         sequence: 1,
-  //       },
-  //       maxTimeMS: 5000,
-  //     },
-  //   );
-
-  // if (!result) {
-  //   return undefined;
-  // }
-
-  // const id = +result.sequence + 1;
-
-  // await mongoose.connection.db
-  //   .collection<{ sequence: number }>('sequences')
-  //   .updateOne(
-  //     {
-  //       name: 'users',
-  //     },
-  //     { $set: { sequence: id } },
-  //   );
-
-  // if (id) {
-  //   const padded = id.toString().padStart(6, '0');
-  //   const number = padded;
-  //   return number;
-  // }
-  // return undefined;
 }
 
 const referrerRewardSchema = new mongoose.Schema(
