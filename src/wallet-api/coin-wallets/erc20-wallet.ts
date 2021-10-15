@@ -1,5 +1,5 @@
 import EthWallet from './eth-wallet';
-import { config, logger } from '../../common';
+import { config, logger } from 'src/common';
 import { ethers, utils, BigNumber, Overrides } from 'ethers';
 import {
   ITransaction,
@@ -7,11 +7,11 @@ import {
   ISendOutput,
   ICartAddress,
   ICartBalance,
-} from '../../types';
-import { UserApi } from '../../data-sources';
-import { transactionService } from '../../services';
-import { ITokenBalanceTransactions } from '../../pipelines';
-import { getNextWalletNumber } from '../../models';
+} from 'src/types';
+import { UserApi } from 'src/data-sources';
+import { transactionService } from 'src/services';
+import { ITokenBalanceTransactions } from 'src/pipelines';
+import { getNextWalletNumber } from 'src/models';
 import { build } from 'eth-url-parser';
 import * as QRCode from 'qrcode';
 
@@ -467,10 +467,17 @@ class Erc20API extends EthWallet {
       };
       return response;
     } catch (error) {
-      logger.warn(
-        `walletApi.coin-wallets.Erc20Wallet.send.catch: ${error.stack}`,
-        { meta: { userId: userApi.userId, to, value, ...overrides } },
+      logger.exceptionContext(
+        error,
+        `walletApi.coin-wallets.Erc20Wallet.send.catch`,
+        {
+          userId: userApi.userId,
+          to: to,
+          value: value,
+          overrides: JSON.stringify(overrides),
+        },
       );
+
       let message;
       switch (error.message) {
         case 'Insufficient ETH balance': {

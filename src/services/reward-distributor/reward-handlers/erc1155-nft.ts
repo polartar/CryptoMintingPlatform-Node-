@@ -3,14 +3,12 @@ import {
   eSupportedInterfaces,
   ItemTokenName,
   IRewardTriggerConfig,
-} from '../../../types';
+} from 'src/types';
 import { ItemReward } from '.';
-import { WalletTransaction, IRewardAudit } from '../../../models';
-import {
-  availableRewardTokenSupplyPipeline,
-} from '../../../pipelines';
-import { gameItemService } from '../../../services';
-import { logDebug } from '../../../common';
+import { WalletTransaction, IRewardAudit } from 'src/models';
+import { availableRewardTokenSupplyPipeline } from 'src/pipelines';
+import { gameItemService } from 'src/services';
+import { logger } from 'src/common';
 
 export class Erc1155NFTReward extends ItemReward {
   logPath = 'services.rewardDistributer.rewardHandlers.erc1155-nft';
@@ -33,11 +31,12 @@ export class Erc1155NFTReward extends ItemReward {
     amount: BigNumber,
     valueSent: number,
   ) => {
-    logDebug('sendRewardToAccount', 'name', this.rewardConfig.name);
-    logDebug('sendRewardToAccount', 'ethAddress', ethAddress);
-    logDebug('sendRewardToAccount', 'userId', userId);
-    logDebug('sendRewardToAccount', 'amount', amount.toString());
-    logDebug('sendRewardToAccount', 'valueSent', valueSent);
+    logger.debug(`sendRewardToAccount - name: ${this.rewardConfig.name}`);
+    logger.debug(`sendRewardToAccount - ethAddress: ${ethAddress}`);
+    logger.debug(`sendRewardToAccount - userId: ${userId}`);
+    logger.debug(`sendRewardToAccount - amount: ${amount.toString()}`);
+    logger.debug(`sendRewardToAccount - valueSent: ${valueSent}`);
+
     const audit: IRewardAudit = {
       amountSent: amount.toString(),
       rewardType: 'ERC1155-NFT',
@@ -53,7 +52,8 @@ export class Erc1155NFTReward extends ItemReward {
           `User ethAddress required to send ${this.rewardConfig.name}`,
         );
 
-      logDebug('sendRewardToAccount', 'gameItemService', 'before');
+      logger.debug(`sendRewardToAccount - gameItemService: before`);
+
       try {
         const [
           result,
@@ -62,30 +62,26 @@ export class Erc1155NFTReward extends ItemReward {
           ethAddress,
           [this.tokenId.toHexString()],
         );
-        logDebug('sendRewardToAccount', 'gameItemService', 'after');
-        logDebug('sendRewardToAccount', 'txHash', audit.txHash);
+        logger.debug('sendRewardToAccount - gameItemService: after');
+        logger.debug(`sendRewardToAccount - txHash: ${audit.txHash}`);
         audit.txHash = result;
         this.saveRewardAudit(audit);
       } catch (error) {
-        logDebug('sendRewardToAccount', 'error', error.stack);
-        this.logger.warn('sendRewardToAccount.catch', error.stack);
+        logger.exceptionContext(error, 'sendRewardToAccount');
       }
     } catch (error) {
-      this.logger.warn('sendRewardToAccount.catch', error.toString());
-      this.saveRewardAudit({ ...audit, error: error.stack });
+      logger.exceptionContext(error, 'sendRewardToAccount');
       throw error;
     }
   };
 
   checkRewardThresholdAndAlert = async () => {
-    const [
-      result = { supplyRemaining: 0 },
-    ] = (await WalletTransaction.aggregate(
+    const [result = { supplyRemaining: 0 }] = await WalletTransaction.aggregate(
       availableRewardTokenSupplyPipeline(
         this.rewardDistributerWallet.address,
         this.rewardConfig.tokenId,
       ),
-    ));
+    );
     if (result.supplyRemaining <= this.supplyWarnThreshold) {
       this.sendBalanceAlert(
         result.supplyRemaining.toString(),

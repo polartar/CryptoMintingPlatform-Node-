@@ -199,7 +199,9 @@ class Resolvers extends ResolverBase {
         return errorReturn;
       }
     } catch (err) {
-      logger.error('checking password failed', { err, user });
+      logger.exceptionContext(err, 'checking password failed', {
+        user: JSON.stringify(user),
+      });
       const errorReturn: IVaultRetrieveResponse = {
         data: undefined,
         error: {

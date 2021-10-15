@@ -73,16 +73,23 @@ class LiquidityResolverV2 extends ResolverBase {
         'Resolvers.LiquidityResolverV2.createPair.errorMessage ' +
           error.message,
       );
-      const pairAddress = await factoryContract.getPair(
-        args.tokenA,
-        args.tokenB,
-      );
-      return {
-        message: 'Pair is already created',
-        pairAddress: pairAddress,
-        // feeTo: "",
-        // feeToSetter: ""
-      };
+      try {
+        const pairAddress = await factoryContract.getPair(
+          args.tokenA,
+          args.tokenB,
+        );
+        return {
+          message: error.message, // 'Pair is already created',
+          pairAddress: pairAddress,
+          // feeTo: "",
+          // feeToSetter: ""
+        };
+      } catch (error) {
+        return {
+          message: error.message,
+          pairAddress: "Pair couldn't be created.",
+        };
+      }
     }
   };
 

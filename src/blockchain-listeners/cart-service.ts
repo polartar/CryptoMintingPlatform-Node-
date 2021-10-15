@@ -23,14 +23,11 @@ export class CartService extends ServerToServerService {
       const result = await axios.post<MemprTxOrders>(requestUrl);
       return result.data;
     } catch (err) {
-      logger.error(
-        `Failed to getOrderFromMeprCart : ${
-          config.wpCartApiUrl
-        } | ${orderId} | ${JSON.stringify(err)} | ${err}`,
+      logger.exceptionContext(
+        err,
+        `Failed to getOrderFromMeprCart : ${config.wpCartApiUrl} | ${orderId}`,
+        {},
       );
-      console.log(`Failed to getOrderFromMeprCart`);
-      console.log(err);
-      console.log(JSON.stringify(err));
     }
 
     //** NOTE orderId that is in result will prepend with the following code: */
@@ -90,10 +87,12 @@ export class CartService extends ServerToServerService {
 
       return result.data;
     } catch (err) {
-      console.log(
-        `cart-service.CartService.updateOrderToWooCart : ${JSON.stringify(
+      logger.exceptionContext(
+        err,
+        `cart-service.CartService.updateOrderToWooCart :`,
+        {
           postBody,
-        )}`,
+        },
       );
     }
   };
@@ -128,10 +127,10 @@ export class CartService extends ServerToServerService {
 
       return result.data;
     } catch (err) {
-      console.log(
-        `cart-service.CartService.updateToWordpressCart : ${JSON.stringify(
-          postBody,
-        )}`,
+      logger.exceptionContext(
+        err,
+        'cart-service.CartService.updateToWordpressCart',
+        { postBody },
       );
     }
   };

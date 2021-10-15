@@ -1,6 +1,5 @@
-import { config } from '../../../common';
-import { Logger } from '../../../common/logger';
-import { PromotionalReward } from '../../../models';
+import { config, logger } from 'src/common';
+import { PromotionalReward } from 'src/models';
 
 class DocReward {
   rewardNameFromCurrency = new Map([
@@ -26,7 +25,6 @@ class DocReward {
     rewardCurrency: string,
     rewardAmount: number,
     userId: string,
-    logger: Logger,
   ): Promise<string> => {
     const rewardName = this.getRewardName(rewardCurrency);
     logger.obj.debug({ rewardName });

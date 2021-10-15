@@ -20,7 +20,7 @@ import {
 import { transactionService } from '../..';
 //import { nodeSelector } from '../..';
 import { UserHelper } from '../../../utils';
-import { config, logger, AlertService, logDebug } from '../../../common';
+import { config, logger, AlertService } from '../../../common';
 import { IWalletReferralCountAggregate } from '../../../pipelines';
 
 export abstract class BaseReward {
@@ -149,19 +149,18 @@ export abstract class BaseReward {
   };
 
   protected checkIfUserValueRequirementMet = (value: number) => {
-    logger.debug('checkIfUserValuerequirementsMet.value', value.toString());
-    logger.debug(
-      'checkIfUserValuerequirementsMet.requiredValues.user',
-      this.requiredValues.user,
-    );
+    logger.debugContext('checkIfUserValuerequirementsMet.value', { value });
+    logger.debugContext('checkIfUserValuerequirementsMet.requiredValues.user', {
+      user: this.requiredValues.user,
+    });
     return value >= this.requiredValues.user;
   };
 
   protected checkIfReferrerValueRequirementMet = (value: number) => {
-    logger.debug('checkIfReferrerValuerequirementsMet.value', value.toString());
-    logger.debug(
+    logger.debugContext('checkIfReferrerValuerequirementsMet.value', { value });
+    logger.debugContext(
       'checkIfReferrerValuerequirementsMet.requiredValues.user',
-      this.requiredValues.user,
+      { user: this.requiredValues.user },
     );
     return value >= this.requiredValues.referrer;
   };
@@ -206,30 +205,38 @@ export abstract class BaseReward {
     user: UserHelper,
     triggerValues: IRewardTriggerValues = {},
   ) => {
-    logDebug('triggerReward', 'userId', user.self.id);
-    logDebug('triggerReward', 'triggerValues.user', triggerValues.user);
-    logDebug('triggerReward', 'triggerValues.referrer', triggerValues.referrer);
-    logDebug('triggerReward', 'amountToUser', this.amountToUser.toString());
-    logDebug(
-      'triggerReward',
-      'amountToReferrer',
-      this.amountToReferrer.toString(),
-    );
+    logger.debugContext('triggerReward', { userId: user.self.id });
+    logger.debugContext('triggerReward', {
+      'triggerValues.user': triggerValues.user,
+    });
+    logger.debugContext('triggerReward', {
+      'triggerValues.referrer': triggerValues.referrer,
+    });
+    logger.debugContext('triggerReward', {
+      amountToUser: this.amountToUser.toString(),
+    });
+    logger.debugContext('triggerReward', {
+      amountToReferrer: this.amountToReferrer.toString(),
+    });
 
     if (
       this.amountToUser.gt(0) &&
       this.checkIfUserValueRequirementMet(triggerValues.user || 0)
     ) {
-      logDebug('triggerReward', 'sendToUser.name', this.rewardConfig.name);
+      logger.debugContext('triggerReward', {
+        'sendToUser.name': this.rewardConfig.name,
+      });
       this.sendRewardToUser(user.self, this.amountToUser, triggerValues.user);
     }
     if (
       this.amountToReferrer.gt(0) &&
       this.checkIfReferrerValueRequirementMet(triggerValues.referrer || 0)
     ) {
-      logDebug('triggerReward', 'sendToReferrer.name', this.rewardConfig.name);
+      logger.debugContext('triggerReward', {
+        'sendToReferrer.name': this.rewardConfig.name,
+      });
       const referrer = await user.getReferrer();
-      logDebug('triggerReward', 'referrer', !!referrer);
+      logger.debugContext('triggerReward', { referrer: !!referrer });
       if (referrer) {
         this.sendRewardToReferrer(
           referrer,
@@ -252,10 +259,14 @@ export abstract class BaseReward {
     amount: BigNumber,
     valueSent?: number,
   ) => {
-    logDebug('sendRewardToReferrer', 'this.name', this.rewardConfig.name);
-    logDebug('sendRewardToReferrer', 'user.id', user.id);
-    logDebug('sendRewardToReferrer', 'user.ethAddress', user.ethAddress);
-    logDebug('sendRewardToReferrer', 'amount', amount.toString());
+    logger.debugContext('sendRewardToReferrer', {
+      'this.name': this.rewardConfig.name,
+    });
+    logger.debugContext('sendRewardToReferrer', { 'user.id': user.id });
+    logger.debugContext('sendRewardToReferrer', {
+      'user.ethAddress': user.ethAddress,
+    });
+    logger.debugContext('sendRewardToReferrer', { amount: amount.toString() });
     return this.sendRewardToAccount(
       user.id,
       user.ethAddress,
@@ -269,10 +280,14 @@ export abstract class BaseReward {
     amount: BigNumber,
     valueSent: number,
   ) => {
-    logDebug('sendRewardToUser', 'this.name', this.rewardConfig.name);
-    logDebug('sendRewardToUser', 'user.id', user.id);
-    logDebug('sendRewardToUser', 'user.ethAddress', user?.wallet?.ethAddress);
-    logDebug('sendRewardToUser', 'amount', amount.toString());
+    logger.debugContext('sendRewardToUser', {
+      'this.name': this.rewardConfig.name,
+    });
+    logger.debugContext('sendRewardToUser', { 'user.id': user.id });
+    logger.debugContext('sendRewardToUser', {
+      'user.ethAddress': user?.wallet?.ethAddress,
+    });
+    logger.debugContext('sendRewardToUser', { amount: amount.toString() });
     return this.sendRewardToAccount(
       user.id,
       user?.wallet?.ethAddress,

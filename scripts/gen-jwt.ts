@@ -1,7 +1,6 @@
 import { ClientAuth } from '@blockbrothers/firebasebb';
 import authResolver from '../src/resolvers/auth';
 import { walletApi } from '../src/wallet-api';
-import { Logger, winstonLogger } from '../src/common/logger';
 import { Context } from '../src/types/context';
 
 export const auth = new ClientAuth({
@@ -30,7 +29,7 @@ void (async () => {
       dataSources: null,
       user: null,
       wallet: walletApi,
-      logger: new Logger(winstonLogger),
+      logger: null,
     };
 
     await sleep(2000);

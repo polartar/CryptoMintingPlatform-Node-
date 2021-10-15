@@ -42,12 +42,18 @@ class TemplateBuilder {
     const cid = 'logo';
     logger.debug(
       `templates.templateBuilder.buildSendSoftNodeDiscountHtml.upgradeAccountName: ${upgradeAccountName}`,
+    );
+
+    logger.debug(
       `templates.templateBuilder.buildSendSoftNodeDiscountHtml.photo: ${photo}`,
+    );
+    logger.debug(
       `templates.templateBuilder.buildSendSoftNodeDiscountHtml.softnodeType: ${softnodeType}`,
     );
     logger.debug(
       `templates.templateBuilder.buildSendSoftNodeDiscountHtml.filepath: ${filepath}`,
     );
+
     return {
       html: Handlebars.compile(sendSoftNodeDiscount.html)({
         user,
