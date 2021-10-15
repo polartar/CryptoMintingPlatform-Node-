@@ -1,13 +1,13 @@
-import { config } from '../common';
+import { config, logger } from 'src/common';
 import { ShareResolver } from './share';
-import { Context, IUserWallet } from '../types';
+import { Context, IUserWallet } from 'src/types';
 import {
   referralRewardsPipeline,
   alfaFountainSharesPipeline,
-} from '../pipelines';
-import { default as User } from '../models/user';
-import { Erc1155Token } from '../models';
-import { logResolver } from '../common/logger';
+} from 'src/pipelines';
+import { default as User } from 'src/models/user';
+import { Erc1155Token } from 'src/models';
+import { logResolver } from 'src/common/logger';
 
 export class GalaShareResolver extends ShareResolver {
   private getRewardTotals = async (userId: string) => {
@@ -27,7 +27,7 @@ export class GalaShareResolver extends ShareResolver {
   public galaShareConfig = async (
     parent: any,
     args: {},
-    { user, wallet, logger, dataSources: { cryptoFavorites } }: Context,
+    { user, wallet, dataSources: { cryptoFavorites } }: Context,
   ) => {
     this.requireAuth(user);
     // this.requireBrand().toBeIn(['arcade', 'gala']);

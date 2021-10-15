@@ -28,7 +28,7 @@ class CredentialService extends ServerToServerService {
 
       return createResponse;
     } catch (error) {
-      logger.warn(`services.credential.create.catch`, error);
+      logger.exceptionContext(error, 'services.credential.create.catch');
       throw error;
     }
   };

@@ -1,9 +1,9 @@
 import { utils, BigNumber } from 'ethers';
-import { eSupportedInterfaces, IRewardTriggerConfig } from '../../../types';
+import { eSupportedInterfaces, IRewardTriggerConfig } from 'src/types';
 import { WalletReward } from '.';
-import { IRewardAudit } from '../../../models';
-import { gameItemService } from '../../../services';
-import { logDebug } from '../../../common';
+import { IRewardAudit } from 'src/models';
+import { gameItemService } from 'src/services';
+import { logger } from 'src/common';
 
 export class Erc1155FungibleReward extends WalletReward {
   logPath = 'services.rewardDistributer.rewardHandlers.erc1155Fungible';
@@ -61,16 +61,15 @@ export class Erc1155FungibleReward extends WalletReward {
           this.tokenId.toHexString(),
           amount.toNumber(),
         );
-        logDebug('sendRewardToAccount', 'gameItemService', 'after');
-        logDebug('sendRewardToAccount', 'txHash', audit.txHash);
+        logger.debug('sendRewardToAccount - gameItemService: after');
+        logger.debug(`sendRewardToAccount - txHash: ${audit.txHash}`);
         audit.txHash = result;
         this.saveRewardAudit(audit);
       } catch (error) {
-        logDebug('sendRewardToAccount', 'error', error.stack);
-        this.logger.warn('sendRewardToAccount.catch', error.stack);
+        logger.exceptionContext(error, 'sendRewardToAccount');
       }
     } catch (error) {
-      this.logger.warn('sendRewardToAccount.catch', error.toString());
+      logger.exceptionContext(error, 'sendRewardToAccount');
       this.saveRewardAudit({ ...audit, error: error.stack });
       throw error;
     }
