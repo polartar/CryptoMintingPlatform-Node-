@@ -1,7 +1,6 @@
 import { ethers, utils } from 'ethers';
-import { config, walletConfigurations } from '../../../common';
-import { Logger } from '../../../common/logger';
-import { RewardDistributerConfig } from '../../../models';
+import { config, walletConfigurations, logger } from 'src/common';
+import { RewardDistributerConfig } from 'src/models';
 
 class Erc20Reward {
   rewardDistributerWallet: ethers.Wallet;
@@ -45,7 +44,6 @@ class Erc20Reward {
     rewardCurrency: string,
     rewardAmount: number,
     ethAddress: string,
-    logger: Logger,
   ) => {
     try {
       logger.JSON.debug({ rewardCurrency, rewardAmount, ethAddress });

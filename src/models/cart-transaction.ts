@@ -7,6 +7,7 @@ export interface ICartTransaction {
   discountAmtUsd: string;
   totalUsd: string;
   totalCrypto: string;
+  totalCryptoReceived: number;
   conversionRate: string;
   remainingCrypto: string;
   address: string;

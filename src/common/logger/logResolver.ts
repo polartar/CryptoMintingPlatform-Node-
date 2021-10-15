@@ -1,4 +1,4 @@
-import Logger from './Logger';
+import { SentryLogger } from './logger';
 
 interface IResolver {
   [key: string]: (
@@ -23,7 +23,7 @@ export default function logResolver(resolverConfig: IResolverConfig) {
           finalResolvers[resolverName] = (
             parent: any,
             args: any,
-            context: { logger: Logger },
+            context: { logger: SentryLogger },
             info: any,
           ) => {
             context.logger.setResolverType(queryType);

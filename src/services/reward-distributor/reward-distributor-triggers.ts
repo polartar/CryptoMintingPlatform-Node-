@@ -3,14 +3,14 @@ import {
   ItemTokenName,
   RewardActions,
   IRewardTriggerValues,
-} from '../../types';
+} from 'src/types';
 import {
   BaseReward,
   Erc1155FungibleReward,
   Erc1155NFTReward,
 } from './reward-handlers';
-import { UserHelper } from '../../utils';
-import { logDebug, config } from '../../common';
+import { UserHelper } from 'src/utils';
+import { logger, config } from 'src/common';
 
 const {
   ALFA_FOUNTAIN_OK,
@@ -98,17 +98,15 @@ class RewardTrigger {
     triggerValues?: IRewardTriggerValues,
   ) => {
     const rewards = this.actionRewards.get(action);
-    logDebug('triggerAction', 'rewards.length', rewards.length);
-    logDebug('triggerAction', 'action', action);
-    logDebug('triggerAction', 'userHelper.self.id', userHelper.self.id);
-    logDebug('triggerAction', 'triggerValues', !!triggerValues);
+    logger.debug(`triggerAction - rewards.length: ${rewards.length}`);
+    logger.debug(`triggerAction - action: ${JSON.stringify(action)}`);
+    logger.debug(`triggerAction - userHelper.self.id: ${userHelper.self.id}`);
+    logger.debug(`triggerAction - triggerValues: ${!!triggerValues}`);
 
     return Promise.all(
       rewards.map(reward => {
-        logDebug(
-          'triggerAction',
-          'reward',
-          `@@${action}@@${reward.rewardConfig.name}`,
+        logger.debug(
+          `triggerAction - reward: @@${action}@@${reward.rewardConfig.name}`,
         );
         return reward.triggerReward(userHelper, triggerValues);
       }),

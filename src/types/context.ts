@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Logger } from '../common/logger';
+import { SentryLogger } from '../common/logger/logger';
 import {
   UserApi,
   CryptoFavorites,
@@ -40,5 +40,5 @@ export interface Context {
   wallet: WalletApi;
   dataSources: DataSources;
   user: UserApi | null;
-  logger: Logger;
+  logger: SentryLogger;
 }

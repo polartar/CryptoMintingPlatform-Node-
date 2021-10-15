@@ -1,5 +1,6 @@
-import ResolverBase from '../common/Resolver-Base';
-import { config, logger as globalLogger } from '../common';
+import ResolverBase from 'src/common/Resolver-Base';
+import { config, logger } from 'src/common';
+import { logResolver } from 'src/common/logger';
 import {
   ISendOutput,
   Context,
@@ -7,12 +8,11 @@ import {
   IUser,
   IOrderContext,
   ITransaction,
-} from '../types';
-import { rewardDistributer } from '../services';
-import { UnclaimedReward, WalletConfig, PurchaseAttempt } from '../models';
-import { logResolver, Logger } from '../common/logger';
-import { WalletApi } from '../wallet-api';
-import { UserApi, SendEmail } from '../data-sources';
+} from 'src/types';
+import { rewardDistributer } from 'src/services';
+import { UnclaimedReward, WalletConfig, PurchaseAttempt } from 'src/models';
+import { WalletApi } from 'src/wallet-api';
+import { UserApi, SendEmail } from 'src/data-sources';
 //import { actionRewardService } from '../services/action-rewards';
 
 interface IActivationPayment {
@@ -182,7 +182,7 @@ export class ShareActivateResolvers extends ResolverBase {
         });
       }
     } catch (error) {
-      globalLogger.warn(error);
+      logger.warn(error);
     }
   };
 
@@ -329,7 +329,6 @@ export class ShareActivateResolvers extends ResolverBase {
     user: IUser,
     rewardConfig: IRewardConfig,
     sendEmail: SendEmail,
-    logger: Logger,
   ) => {
     const userEthAddress = user?.wallet?.ethAddress || '';
     const [rewardResult] = await Promise.all([
@@ -338,7 +337,6 @@ export class ShareActivateResolvers extends ResolverBase {
         rewardConfig.rewardCurrency,
         user.id,
         userEthAddress,
-        logger,
       ),
       sendEmail.sendSoftNodeDiscount(
         user,
@@ -389,7 +387,6 @@ export class ShareActivateResolvers extends ResolverBase {
     const {
       wallet,
       user,
-      logger,
       dataSources: { cryptoFavorites, sendEmail },
     } = ctx;
     const rewardType = args.rewardType.toLowerCase();
@@ -457,7 +454,6 @@ export class ShareActivateResolvers extends ResolverBase {
         userFromDb,
         rewardConfig,
         sendEmail,
-        logger,
       );
       purchaseLog.lastCompletedOperation = 'Sent rewards';
 

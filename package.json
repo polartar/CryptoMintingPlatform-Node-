@@ -1,6 +1,6 @@
 {
   "name": "wallet-server",
-  "version": "0.4.154",
+  "version": "0.4.161",
   "main": "lib/index.js",
   "config": {
     "dockerport": 4444
@@ -33,7 +33,9 @@
     "@nestjs/microservices": "^8.0.6",
     "@sendgrid/client": "^7.4.2",
     "@sendgrid/mail": "^7.4.2",
-    "@sentry/node": "^5.20.0",
+    "@sentry/node": "^6.13.3",
+    "@sentry/tracing": "^6.13.3",
+    "@sentry/types": "^6.13.3",
     "@uniswap/sdk": "^3.0.3",
     "@uniswap/sdk-core": "^3.0.1",
     "@uniswap/v2-core": "^1.0.1",
