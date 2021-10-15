@@ -78,8 +78,8 @@ export class CartQueue {
     const currTime = new Date();
     const currTimeNative = currTime.valueOf();
 
-    //const allKeys = await this.client.keysAsync(`${symbol}.${brand}.*`);
-    const allKeys = await this.client.keysAsync(`*`);
+    const allKeys = await this.client.keysAsync(`${symbol}.${brand}.*`);
+    //const allKeys = await this.client.keysAsync(`*`);
 
     // console.log('------------------ HOW MANY KEYS?? ---------------')
     // console.log(allKeys);
@@ -124,17 +124,19 @@ export class CartQueue {
         continue;
       }
 
+      const thisSymbol = keyObj.symbol;
+
       // Query Blockchain for balance
-      const coin = walletApi.coin(symbol);
+      const coin = walletApi.coin(thisSymbol);
       const balance = await coin
-        .getCartBalance(symbol, keyObj.orderId, valueObj.address)
+        .getCartBalance(thisSymbol, keyObj.orderId, valueObj.address)
         .then(
           a => a,
           er2 => {
             logger.error(
               `FAILED WHEN TRYING TO FIND ${
                 keyObj.orderType
-              } CART : ${symbol}/${key.orderId}/${JSON.stringify(
+              } CART : ${thisSymbol}/${key.orderId}/${JSON.stringify(
                 valueObj,
               )} | error: ${er2}`,
             );
