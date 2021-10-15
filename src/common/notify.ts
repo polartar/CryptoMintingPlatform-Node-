@@ -1,5 +1,5 @@
 import { Notification, NotificationStatus } from '../models';
-import logger from './logger/winston-logger';
+import { logger } from './';
 
 class Notify {
   public notifyUser = async (
@@ -19,9 +19,10 @@ class Notify {
     try {
       Notification.insertMany([toInsert]);
     } catch (err) {
-      logger.error(
-        'Tried to insert Notification to user, but failed. :: ' +
-          JSON.stringify(toInsert),
+      logger.exceptionContext(
+        err,
+        'Tried to insert Notification to user, but failed. :: ',
+        toInsert,
       );
     }
   };

@@ -1,15 +1,15 @@
-import ResolverBase from '../common/Resolver-Base';
-import { config } from '../common';
-import { IUserWallet, Context, IWalletConfig } from '../types';
-import { userSchema, default as User, IUser } from '../models/user';
+import ResolverBase from 'src/common/Resolver-Base';
+import { config, logger } from 'src/common';
+import { IUserWallet, Context, IWalletConfig } from 'src/types';
+import { userSchema, default as User, IUser } from 'src/models/user';
 import {
   offersSchema,
   clicksSchema,
   Click,
   Offer,
   WalletConfig,
-} from '../models';
-import { logResolver } from '../common/logger';
+} from 'src/models';
+import { logResolver } from 'src/common/logger';
 
 export class ShareResolver extends ResolverBase {
   protected saveClick = async (
@@ -151,7 +151,7 @@ export class ShareResolver extends ResolverBase {
   public shareConfig = async (
     parent: any,
     args: {},
-    { user, wallet, logger }: Context,
+    { user, wallet }: Context,
   ) => {
     this.requireAuth(user);
     // this.requireBrand().toNotBeIn(['arcade', 'gala']);
@@ -204,7 +204,7 @@ export class ShareResolver extends ResolverBase {
       numberOfActivations: string;
     },
     args: {},
-    { dataSources: { linkShortener, bitly }, user, logger }: Context,
+    { dataSources: { linkShortener, bitly }, user }: Context,
   ) => {
     try {
       const { userWallet } = parent;
@@ -232,11 +232,7 @@ export class ShareResolver extends ResolverBase {
     }
   };
 
-  public logClick = async (
-    parent: any,
-    args: { referredBy: string },
-    { logger }: Context,
-  ) => {
+  public logClick = async (parent: any, args: { referredBy: string }) => {
     const { referredBy } = args;
     try {
       const { referrer, brand } = await this.findReferrer(referredBy);

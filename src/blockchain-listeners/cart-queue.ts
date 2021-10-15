@@ -113,7 +113,7 @@ export class CartQueue {
       if (valueObj.exp.valueOf() < currTimeNative) {
         valueObj.status = CartStatus[CartStatus.expired];
 
-        const dbCreateRecord = await this.saveToDb(valueObj, keyObj);
+        const dbCreateRecord = await this.saveToDb(valueObj, keyObj, 0);
         if (dbCreateRecord) {
           valueObj.dbId = dbCreateRecord.id;
         } else {
@@ -155,7 +155,7 @@ export class CartQueue {
           valueObj.status = CartStatus[CartStatus.complete];
           valueObj.crytoAmountRemaining = 0;
 
-          await this.saveToDb(valueObj, keyObj);
+          await this.saveToDb(valueObj, keyObj, +balance.amountConfirmed);
 
           try {
             const service: CartService = new CartService();
@@ -167,11 +167,10 @@ export class CartQueue {
               CartStatus.complete,
             );
           } catch (err) {
-            logger.error(
+            logger.exceptionContext(
+              err,
               `PAID, but not updated in WP : ${keyObj.orderId} : ${valueObj.address} : ${balance.amountUnconfirmed}`,
-            );
-            console.log(
-              `PAID, but not updated in WP : ${keyObj.orderId} : ${valueObj.address} : ${balance.amountUnconfirmed}`,
+              {},
             );
           }
 
@@ -183,20 +182,26 @@ export class CartQueue {
                 orderInfo.member.email,
               );
             } catch (error) {
-              logger.error(
+              logger.exceptionContext(
+                error,
                 `failed to assign user licenses ${valueObj} | ${keyObj}`,
+                {},
               );
             }
             try {
               await this.sendGooglePixelConvert(orderInfo);
             } catch (err) {
-              logger.error(
+              logger.exceptionContext(
+                err,
                 `failed to get google pixel to fire ${valueObj} | ${keyObj}`,
+                {},
               );
             }
           } catch (error) {
-            logger.error(
+            logger.exceptionContext(
+              error,
               `failed to JSON.parse valueObj.meprTxData ${valueObj} | ${keyObj}`,
+              {},
             );
           }
           await this.replaceCartWatcher(key, valueObj);
@@ -214,7 +219,7 @@ export class CartQueue {
           valueObj.status = CartStatus[CartStatus.confirming];
           valueObj.crytoAmountRemaining = 0;
 
-          await this.saveToDb(valueObj, keyObj);
+          await this.saveToDb(valueObj, keyObj, +balance.amountUnconfirmed);
           await this.replaceCartWatcher(key, valueObj);
         }
 
@@ -226,7 +231,11 @@ export class CartQueue {
         valueObj.status = CartStatus[CartStatus.confirming];
         valueObj.crytoAmountRemaining = 0;
 
-        const newDbRecord = await this.saveToDb(valueObj, keyObj);
+        const newDbRecord = await this.saveToDb(
+          valueObj,
+          keyObj,
+          +balance.amountUnconfirmed,
+        );
         if (newDbRecord) {
           valueObj.dbId = newDbRecord.id;
         } else {
@@ -245,7 +254,11 @@ export class CartQueue {
         valueObj.crytoAmountRemaining =
           valueObj.crytoAmount - +balance.amountUnconfirmed;
 
-        const newDbRecord = await this.saveToDb(valueObj, keyObj);
+        const newDbRecord = await this.saveToDb(
+          valueObj,
+          keyObj,
+          +balance.amountUnconfirmed,
+        );
         if (newDbRecord) {
           valueObj.dbId = newDbRecord.id;
         } else {
@@ -341,6 +354,7 @@ export class CartQueue {
   async saveToDb(
     valueObj: ICartWatcherData,
     keyObj: CartRedisKey,
+    amountCryptoReceived: number,
   ): Promise<ICartTransactionDoc> {
     try {
       let orderInfo: any = {};
@@ -355,6 +369,7 @@ export class CartQueue {
         discountAmtUsd: '0',
         totalUsd: valueObj.usdAmount.toString(),
         totalCrypto: valueObj.crytoAmount.toString(),
+        totalCryptoReceived: amountCryptoReceived,
         conversionRate: (valueObj.usdAmount / valueObj.crytoAmount).toString(),
         remainingCrypto: valueObj.crytoAmountRemaining.toString(),
         address: valueObj.address,
@@ -365,15 +380,33 @@ export class CartQueue {
       };
 
       if (valueObj.dbId) {
-        //return await CartTransaction.updateOne({ id: valueObj.dbId }, dbItem);
+        const previousValue = await CartTransaction.findOne({
+          id: valueObj.dbId,
+        });
+        if (previousValue) {
+          previousValue.status = valueObj.status;
+          previousValue.totalUsd = valueObj.usdAmount.toString();
+          previousValue.totalCrypto = valueObj.crytoAmount.toString();
+          previousValue.totalCryptoReceived = amountCryptoReceived;
+          previousValue.conversionRate = (
+            valueObj.usdAmount / valueObj.crytoAmount
+          ).toString();
+          previousValue.remainingCrypto = valueObj.crytoAmountRemaining.toString();
+          previousValue.data = JSON.stringify(orderInfo);
+
+          previousValue.save();
+        }
       } else {
         return await CartTransaction.create(dbItem);
       }
     } catch (ex) {
-      logger.error(
+      logger.exceptionContext(
+        ex,
         `!!!Cart-Queue is trying to save update order to the DB.`,
-        valueObj,
-        keyObj,
+        {
+          orderData: JSON.stringify(valueObj),
+          key: JSON.stringify(keyObj),
+        },
       );
     }
     return undefined;
@@ -392,8 +425,7 @@ export class CartQueue {
       await this.sendGooglePixelFire(fname, title, +orderInfo['total']);
     } catch (err) {
       const errorMessage = `sendGooglePixelConvert failed: ${orderInfo} | ${err}`;
-      logger.error(errorMessage);
-      throw Error(errorMessage);
+      logger.exceptionContext(err, errorMessage, { orderInfo });
     }
   }
 
@@ -439,7 +471,11 @@ export class CartQueue {
         parameters,
       );
     } catch (err) {
-      logger.error(`cart-queue.sendGooglePixelFire.failedToSendToGoogle`);
+      logger.exceptionContext(
+        err,
+        `cart-queue.sendGooglePixelFire.failedToSendToGoogle`,
+        {},
+      );
     }
   }
 

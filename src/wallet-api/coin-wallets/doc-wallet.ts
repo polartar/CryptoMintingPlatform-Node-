@@ -265,7 +265,7 @@ class DocWallet extends CoinWalletBase {
           amount: amount.toString(),
           total: amount.toString(),
         };
-        logger.silly(
+        logger.debug(
           `walletApi.coin-wallets.DocWallet.formatTransactions.returnTx:${JSON.stringify(
             returnTx,
           )}`,
