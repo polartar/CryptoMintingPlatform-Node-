@@ -1,4 +1,4 @@
-import { Logger } from '../../common/logger';
+import { logger } from 'src/common';
 import { erc20Reward, docReward } from './reward-handlers';
 
 class RewardDistributer {
@@ -7,10 +7,8 @@ class RewardDistributer {
     rewardCurrency: string,
     userId: string,
     ethAddress: string,
-    logger: Logger,
   ) => {
-    const methodLogger = logger.setMethod('sendReward');
-    methodLogger.JSON.debug({ rewardAmount, rewardCurrency });
+    logger.JSON.debugContext({ rewardAmount, rewardCurrency }, 'sendReward');
     const rewardCurrencyLowered = rewardCurrency.toLowerCase();
     let rewardId: string;
     const itemsRewarded: string[] = [];
@@ -19,27 +17,21 @@ class RewardDistributer {
         rewardCurrency,
         rewardAmount,
         ethAddress,
-        logger,
       );
     } else if (rewardCurrencyLowered === 'gala') {
       const [resultRewardId] = await Promise.all([
-        docReward.send(rewardCurrency, rewardAmount, userId, logger),
+        docReward.send(rewardCurrency, rewardAmount, userId),
       ]);
       rewardId = resultRewardId;
     } else {
-      rewardId = await docReward.send(
-        rewardCurrency,
-        rewardAmount,
-        userId,
-        logger,
-      );
+      rewardId = await docReward.send(rewardCurrency, rewardAmount, userId);
     }
     const rewardResult = {
       rewardId,
       amountRewarded: rewardAmount,
       itemsRewarded,
     };
-    methodLogger.JSON.debug(rewardResult);
+    logger.JSON.debug(rewardResult);
     return rewardResult;
   };
 }

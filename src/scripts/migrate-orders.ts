@@ -1,7 +1,7 @@
 import connections from './connections';
 import { Types } from 'mongoose';
 import { cryptoCompareService } from './cryptoCompare';
-import { logger } from '../common';
+import { logger } from 'src/common';
 
 interface ILootBoxOrder {
   isUpgradeOrder: boolean;
@@ -56,5 +56,5 @@ void (async () => {
     lootBoxOrders.map((order, i) => fetchPrice(i, order)),
   );
   const insertResult = await GameOrder.insertMany(gameOrders);
-  logger.info(insertResult);
+  logger.JSON.info(insertResult);
 })();

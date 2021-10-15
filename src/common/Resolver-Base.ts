@@ -3,7 +3,7 @@ import { UserApi } from 'src/data-sources';
 import { config } from 'src/common';
 import { crypto } from 'src/utils';
 import { Context } from 'src/types/context';
-import logger from 'src/common/logger/winston-logger';
+import { logger } from './';
 
 export default abstract class ResolverBase {
   // Common method to throw an graphQL auth error if the user is null

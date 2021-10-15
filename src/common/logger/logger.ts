@@ -1,23 +1,26 @@
-import { Logger as WinstonLogger } from 'winston';
+import * as Sentry from '@sentry/node';
 import { v4 as randomString } from 'uuid';
 import autoBind = require('auto-bind');
+import { CaptureContext } from '@sentry/types';
 
-interface IKeyValues {
+export interface IKeyValues {
   [key: string]: string | number | boolean;
 }
-
-export default class Logger {
-  logger: WinstonLogger;
+export class SentryLogger {
   meta: IKeyValues;
 
-  constructor(logger: WinstonLogger, initialMetadata: IKeyValues = {}) {
+  constructor(initialMetadata: IKeyValues = {}) {
     autoBind(this);
-    this.logger = logger;
     this.meta = initialMetadata;
   }
 
   startSession(userId?: string) {
     if (userId) {
+      Sentry.addBreadcrumb({
+        category: 'auth',
+        message: 'Authenticated user ' + userId,
+        level: Sentry.Severity.Info,
+      });
       this.meta.userId = userId;
     }
     this.meta.session = randomString();
@@ -25,35 +28,60 @@ export default class Logger {
   setModule(moduleName: string) {
     this.meta.module = moduleName;
   }
-  setMethod(methodName: string) {
-    return new Logger(this.logger, { ...this.meta, method: methodName });
-  }
+
   setResolverType(resolverType: string) {
     this.meta.resolverType = resolverType;
   }
+
   setResolverName(resolverName: string) {
     this.meta.resolverName = resolverName;
   }
-  error(message: string) {
-    this.logger.error(message, { meta: this.meta });
-  }
-  warn(message: string) {
-    this.logger.warn(message, { meta: this.meta });
-  }
-  info(message: string) {
-    this.logger.info(message, { meta: this.meta });
-  }
-  debug(message: string) {
-    this.logger.debug(message, { meta: this.meta });
-  }
-  verbose(message: string) {
-    this.logger.verbose(message, { meta: this.meta });
-  }
-  silly(message: string) {
-    this.logger.silly(message, { meta: this.meta });
+
+  fatal(message: string) {
+    Sentry.captureMessage(message, Sentry.Severity.Fatal);
   }
 
-  private logKeyValues(
+  critical(message: string) {
+    Sentry.captureMessage(message, Sentry.Severity.Critical);
+  }
+
+  error(message: string) {
+    Sentry.captureMessage(message, Sentry.Severity.Error);
+  }
+
+  warn(message: string) {
+    Sentry.captureMessage(message, Sentry.Severity.Warning);
+  }
+
+  info(message: string) {
+    Sentry.captureMessage(message, Sentry.Severity.Info);
+  }
+
+  debugContext(message: string, vals: IKeyValues) {
+    Sentry.captureMessage(message, {
+      level: Sentry.Severity.Debug,
+      tags: vals,
+    });
+  }
+
+  debug(message: string) {
+    Sentry.captureMessage(message, Sentry.Severity.Debug);
+  }
+
+  exceptionContext(err: any, message: string, vals: IKeyValues = {}) {
+    vals['message'] = message;
+    const ctx: CaptureContext = {
+      tags: vals,
+    };
+
+    Sentry.captureException(err, ctx);
+  }
+
+  exception(err: any, context?: CaptureContext) {
+    Sentry.captureException(err, context);
+  }
+
+  logKeyValues(
     keyValues: IKeyValues,
     loggingFunction: (message: string) => void,
   ) {
@@ -79,11 +107,11 @@ export default class Logger {
       debug: (keyValPair: IKeyValues) => {
         this.logKeyValues(keyValPair, this.debug);
       },
-      verbose: (keyValPair: IKeyValues) => {
-        this.logKeyValues(keyValPair, this.verbose);
+      critical: (keyValPair: IKeyValues) => {
+        this.logKeyValues(keyValPair, this.critical);
       },
-      silly: (keyValPair: IKeyValues) => {
-        this.logKeyValues(keyValPair, this.silly);
+      fatal: (keyValPair: IKeyValues) => {
+        this.logKeyValues(keyValPair, this.fatal);
       },
     };
   }
@@ -102,12 +130,23 @@ export default class Logger {
       debug: (keyValPair: Object) => {
         this.debug(JSON.stringify(keyValPair));
       },
-      verbose: (keyValPair: Object) => {
-        this.verbose(JSON.stringify(keyValPair));
+      debugContext: (
+        keyValPair: Object,
+        message: string,
+        vals: IKeyValues = {},
+      ) => {
+        vals['message'] = message;
+        this.debugContext(JSON.stringify(keyValPair), vals);
       },
-      silly: (keyValPair: Object) => {
-        this.silly(JSON.stringify(keyValPair));
+      critical: (keyValPair: Object) => {
+        this.critical(JSON.stringify(keyValPair));
+      },
+      fatal: (keyValPair: Object) => {
+        this.fatal(JSON.stringify(keyValPair));
       },
     };
   }
 }
+
+const log: SentryLogger = new SentryLogger();
+export default log;

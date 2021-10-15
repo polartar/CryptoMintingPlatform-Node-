@@ -39,7 +39,9 @@ export default class UserApi extends DataSource {
       const { claims, uid } = auth.verifyAndDecodeToken(token, config.hostname);
       return new UserApi(claims, uid, token);
     } catch (error) {
-      logger.warn(`Unable to verify custom token: ${token}`, error);
+      logger.exceptionContext(error, `Unable to verify custom token: `, {
+        token,
+      });
     }
   }
 
@@ -64,7 +66,7 @@ export default class UserApi extends DataSource {
         token,
       );
     } catch (error) {
-      logger.warn(`Unable to verify: ${token}`, error);
+      logger.exceptionContext(error, `Unable to verify: `, { token });
     }
   }
 

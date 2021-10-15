@@ -23,10 +23,10 @@ import { walletApi } from './wallet-api';
 import { cartQueue } from './blockchain-listeners/cart-queue';
 import { removeListeners } from './blockchain-listeners';
 import {
-  Logger,
-  winstonLogger,
+  logger,
   systemLogger,
   logMessage,
+  SentryLogger,
 } from './common/logger';
 import { Wallet } from 'ethers';
 import restApi from './rest/routes';
@@ -52,7 +52,11 @@ class Server {
         } else if (isDev || isStage) {
           callback(null, true);
         } else {
-          callback(systemLogger.warn(`Bad CORS origin: ${origin}`));
+          callback((a: any) => {
+            systemLogger.warn(
+              `Bad CORS origin: ${origin} | err: ${a.toString()}`,
+            );
+          });
         }
       },
     };
@@ -111,7 +115,6 @@ class Server {
     res: express.Response;
     connection: ExecutionParams;
   }) {
-    const logger = new Logger(winstonLogger);
     let user = null;
     const token = this.getToken(connection, req);
 
