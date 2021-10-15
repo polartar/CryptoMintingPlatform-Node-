@@ -168,12 +168,15 @@ export async function getNextNumber() {
       },
       (err: any, doc: any) => {
         if (err) {
-          reject('undefined');
-        }
-        const id = doc.value.sequence;
-        const padded = id.toString().padStart(6, '0');
+          reject('collection connection error');
+        } else if (!doc || !doc.value) {
+          resolve('undefined');
+        } else {
+          const id = doc.value.sequence;
+          const padded = id.toString().padStart(6, '0');
 
-        resolve(padded);
+          resolve(padded);
+        }
       },
     );
   });

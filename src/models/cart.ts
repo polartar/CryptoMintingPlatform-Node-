@@ -17,10 +17,12 @@ export async function getNextWalletNumber(symbol: string) {
       },
       (err: any, doc: any) => {
         if (err) {
-          reject('undefined');
+          reject('collection conection error');
+        } else if (!doc || !doc.value) {
+          resolve('undefined');
+        } else {
+          resolve(doc.value.sequence);
         }
-
-        resolve(doc.value.sequence);
       },
     );
   });
