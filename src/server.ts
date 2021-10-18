@@ -74,12 +74,24 @@ class Server {
         ? { settings: { 'request.credentials': 'include' } }
         : false,
       subscriptions: {
+        onConnect: async (connectionParams: any) => {
+          const { token } = connectionParams;
+
+          return { token: token || null };
+        },
         onDisconnect: async (socket, context) => {
           const { token } = await context.initPromise;
-          logger.warn(`token: ${token}`);
+
           if (token) {
-            const user = await UserApi.fromIdToken(token);
-            await removeListeners(user.userId);
+            try {
+              const user = await UserApi.fromIdToken(token);
+
+              if (user) {
+                await removeListeners(user.userId);
+              }
+            } catch (err) {
+              logger.error(`Can't validate this token: '${token}'`);
+            }
           }
         },
       },
