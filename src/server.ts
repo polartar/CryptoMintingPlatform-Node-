@@ -76,6 +76,7 @@ class Server {
       subscriptions: {
         onDisconnect: async (socket, context) => {
           const { token } = await context.initPromise;
+          logger.warn(`token: ${token}`);
           if (token) {
             const user = await UserApi.fromIdToken(token);
             await removeListeners(user.userId);
