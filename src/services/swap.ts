@@ -8,9 +8,9 @@ const chainId = config.chainId;
 
 let network: string;
 if (chainId === 1) {
-  network = ETH.MAINNET().contractAddress;
+  network = ETH.MAINNET().contractAddress.toLowerCase();
 } else if (chainId === 3) {
-  network = ETH.ROPSTEN().contractAddress;
+  network = ETH.ROPSTEN().contractAddress.toLowerCase();
 }
 
 class StartSwap extends ServerToServerService {
@@ -22,7 +22,7 @@ class StartSwap extends ServerToServerService {
     receiveAddress: string,
   ) => {
     try {
-      if (inputToken !== network && outputToken !== network) {
+      if (!network.includes(inputToken) && !network.includes(outputToken)) {
         const { trade, uniswapPairFactory, message } = await this.uniswapSwap(
           inputToken,
           outputToken,
@@ -76,7 +76,7 @@ class StartSwap extends ServerToServerService {
         };
       }
 
-      if (inputToken === network && outputToken !== network) {
+      if (network.includes(inputToken) && !network.includes(outputToken)) {
         const { trade, uniswapPairFactory, message } = await this.uniswapSwap(
           inputToken,
           outputToken,
@@ -130,7 +130,7 @@ class StartSwap extends ServerToServerService {
         };
       }
 
-      if (outputToken === network && inputToken !== network) {
+      if (network.includes(outputToken) && !network.includes(inputToken)) {
         const { trade, uniswapPairFactory, message } = await this.uniswapSwap(
           inputToken,
           outputToken,
@@ -235,7 +235,7 @@ class StartSwap extends ServerToServerService {
     receiveAddress: string,
   ) => {
     try {
-      if (inputToken !== network && outputToken !== network) {
+      if (!network.includes(outputToken) && !network.includes(inputToken)) {
         const uniswapPair = new UniswapPair({
           fromTokenContractAddress: inputToken,
           toTokenContractAddress: outputToken,
@@ -253,7 +253,7 @@ class StartSwap extends ServerToServerService {
         };
       }
 
-      if (inputToken === network && outputToken !== network) {
+      if (!network.includes(outputToken) && network.includes(inputToken)) {
         const uniswapPair = new UniswapPair({
           fromTokenContractAddress: network,
           toTokenContractAddress: outputToken,
@@ -271,7 +271,7 @@ class StartSwap extends ServerToServerService {
         };
       }
 
-      if (outputToken === network && inputToken !== network) {
+      if (network.includes(outputToken) && !network.includes(inputToken)) {
         const uniswapPair = new UniswapPair({
           fromTokenContractAddress: inputToken,
           toTokenContractAddress: network,
