@@ -74,13 +74,13 @@ class Resolvers extends ResolverBase {
       created: new Date(),
       updated: null,
     });
-    await dataSources.galaEmailer.sendNudgeFriendEmail(
-      email,
-      !!emailVerified,
-      firstName,
-      referrer.firstName,
-      referralLink,
-    );
+    // await dataSources.galaEmailer.sendNudgeFriendEmail(
+    //   email,
+    //   !!emailVerified,
+    //   firstName,
+    //   referrer.firstName,
+    //   referralLink,
+    // );
 
     return { success: true };
   };
@@ -108,13 +108,13 @@ class Resolvers extends ResolverBase {
 
     const nudges = await Promise.all(
       nudgableFriends.map(async ({ referrer, ...friend }) => {
-        await dataSources.galaEmailer.sendNudgeFriendEmail(
-          friend.email,
-          !!friend.emailVerified,
-          friend.firstName,
-          referrer,
-          friend.referralLink,
-        );
+        // await dataSources.galaEmailer.sendNudgeFriendEmail(
+        //   friend.email,
+        //   !!friend.emailVerified,
+        //   friend.firstName,
+        //   referrer,
+        //   friend.referralLink,
+        // );
 
         return new FriendNudge({
           code: config.nudgeCode,

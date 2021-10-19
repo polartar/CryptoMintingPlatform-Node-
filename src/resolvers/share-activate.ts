@@ -338,12 +338,12 @@ export class ShareActivateResolvers extends ResolverBase {
         user.id,
         userEthAddress,
       ),
-      sendEmail.sendSoftNodeDiscount(
-        user,
-        rewardConfig.upgradeAccountName,
-        rewardConfig.softnodePhoto,
-        rewardConfig.softnodeType,
-      ),
+      // sendEmail.sendSoftNodeDiscount(
+      //   user,
+      //   rewardConfig.upgradeAccountName,
+      //   rewardConfig.softnodePhoto,
+      //   rewardConfig.softnodeType,
+      // ),
     ]);
 
     return rewardResult;
@@ -360,7 +360,7 @@ export class ShareActivateResolvers extends ResolverBase {
       const existingShares = referrer?.wallet?.shares?.[brand] || 0;
       referrer.set(`wallet.shares.${brand}`, existingShares + 1);
       await Promise.all([
-        sendEmail.referrerActivated(referrer, userReferred),
+        // sendEmail.referrerActivated(referrer, userReferred),
         referrer.save(),
       ]);
     }
