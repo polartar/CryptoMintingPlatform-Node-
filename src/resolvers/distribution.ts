@@ -124,7 +124,8 @@ class Resolvers extends ResolverBase {
       return {
         runTime: res.runTime,
         address: res.address,
-        amount: res.greenDecimal,
+        coinAmount: res.greenDecimal,
+        pointAmount: 0,
       };
     });
   };
