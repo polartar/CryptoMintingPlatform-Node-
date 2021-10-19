@@ -4,7 +4,6 @@ type PollOption {
   numVotes: Int
 }
 
-
 type PollData {
   pollId: String
   questionText: String
@@ -34,5 +33,10 @@ type TimeStats {
 }
 
 type Query {
-  checkIn(domain: String, hardwareId: String, minerIsActive: Boolean, userId: String): TimeStats!
+  checkIn(
+    domain: String
+    hardwareId: String
+    minerIsActive: Boolean
+    userId: String
+  ): TimeStats!
 }

@@ -2,7 +2,7 @@ import { startSwap } from '../services/swap';
 import { Context } from '../types/context';
 import ResolverBase from '../common/Resolver-Base';
 import { logger, config } from 'src/common';
-import EthWallet from '../wallet-api/coin-wallets/eth-wallet';
+import Erc20API from 'src/wallet-api/coin-wallets/erc20-wallet';
 
 class SwapResolvers extends ResolverBase {
   getSwapParams = async (
@@ -45,19 +45,21 @@ class SwapResolvers extends ResolverBase {
   confirmSwap = async (
     parent: any,
     args: {
-      coinSymbol: string;
+      coinSymbol0: string;
+      coinSymbol1: string;
       amount: string;
-      inputToken: string;
-      outputToken: string;
       walletPassword: string;
     },
     { user, wallet }: Context,
   ) => {
     this.maybeRequireStrongWalletPassword(args.walletPassword);
-    const walletApi = wallet.coin(args.coinSymbol) as EthWallet;
-    const { receiveAddress } = await walletApi.getWalletInfo(user);
+    const inputToken = wallet.coin(args.coinSymbol0) as Erc20API;
+    const token0 = inputToken.contractAddress;
+    const outputToken = wallet.coin(args.coinSymbol1) as Erc20API;
+    const token1 = outputToken.contractAddress;
+    const { receiveAddress } = await inputToken.getWalletInfo(user);
 
-    const validPassword = await walletApi.checkPassword(
+    const validPassword = await inputToken.checkPassword(
       user,
       args.walletPassword,
     );
@@ -66,7 +68,7 @@ class SwapResolvers extends ResolverBase {
 
     let passwordDecripted: string;
     try {
-      const encryptedKey = await walletApi.getEncryptedPrivKey(user.userId);
+      const encryptedKey = await inputToken.getEncryptedPrivKey(user.userId);
       const decryptedPrivateKey = this.decrypt(
         encryptedKey,
         args.walletPassword,
@@ -80,8 +82,8 @@ class SwapResolvers extends ResolverBase {
     try {
       const confirmTrade = await startSwap.confirmSwap(
         passwordDecripted,
-        args.inputToken,
-        args.outputToken,
+        token0,
+        token1,
         args.amount,
         receiveAddress,
       );
@@ -94,21 +96,23 @@ class SwapResolvers extends ResolverBase {
   startSwap = async (
     parent: any,
     args: {
-      coinSymbol: string;
+      coinSymbol0: string;
+      coinSymbol1: string;
       amount: string;
-      inputToken: string;
-      outputToken: string;
     },
     { user, wallet }: Context,
   ) => {
     this.requireAuth(user);
-    const walletApi = wallet.coin(args.coinSymbol) as EthWallet;
-    const { receiveAddress } = await walletApi.getWalletInfo(user);
+    const inputToken = wallet.coin(args.coinSymbol0) as Erc20API;
+    const token0 = inputToken.contractAddress;
+    const outputToken = wallet.coin(args.coinSymbol1) as Erc20API;
+    const token1 = outputToken.contractAddress;
+    const { receiveAddress } = await inputToken.getWalletInfo(user);
 
     try {
       const { trade, message } = await startSwap.uniswapSwap(
-        args.inputToken,
-        args.outputToken,
+        token0,
+        token1,
         args.amount,
         receiveAddress,
       );

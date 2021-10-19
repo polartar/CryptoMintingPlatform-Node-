@@ -6,6 +6,13 @@ import { config, logger } from '../common';
 const ETHEREUM_NODE_URL = config.ethNodeUrl;
 const chainId = config.chainId;
 
+let network: string;
+if (chainId === 1) {
+  network = ETH.MAINNET().contractAddress.toLowerCase();
+} else if (chainId === 3) {
+  network = ETH.ROPSTEN().contractAddress.toLowerCase();
+}
+
 class StartSwap extends ServerToServerService {
   public confirmSwap = async (
     decryptedString: string,
@@ -15,10 +22,7 @@ class StartSwap extends ServerToServerService {
     receiveAddress: string,
   ) => {
     try {
-      if (
-        inputToken !== ETH.MAINNET().contractAddress &&
-        outputToken !== ETH.MAINNET().contractAddress
-      ) {
+      if (!network.includes(inputToken) && !network.includes(outputToken)) {
         const { trade, uniswapPairFactory, message } = await this.uniswapSwap(
           inputToken,
           outputToken,
@@ -72,10 +76,7 @@ class StartSwap extends ServerToServerService {
         };
       }
 
-      if (
-        inputToken === ETH.MAINNET().contractAddress &&
-        outputToken !== ETH.MAINNET().contractAddress
-      ) {
+      if (network.includes(inputToken) && !network.includes(outputToken)) {
         const { trade, uniswapPairFactory, message } = await this.uniswapSwap(
           inputToken,
           outputToken,
@@ -129,10 +130,7 @@ class StartSwap extends ServerToServerService {
         };
       }
 
-      if (
-        outputToken === ETH.MAINNET().contractAddress &&
-        inputToken !== ETH.MAINNET().contractAddress
-      ) {
+      if (network.includes(outputToken) && !network.includes(inputToken)) {
         const { trade, uniswapPairFactory, message } = await this.uniswapSwap(
           inputToken,
           outputToken,
@@ -237,10 +235,7 @@ class StartSwap extends ServerToServerService {
     receiveAddress: string,
   ) => {
     try {
-      if (
-        inputToken !== ETH.MAINNET().contractAddress &&
-        outputToken !== ETH.MAINNET().contractAddress
-      ) {
+      if (!network.includes(outputToken) && !network.includes(inputToken)) {
         const uniswapPair = new UniswapPair({
           fromTokenContractAddress: inputToken,
           toTokenContractAddress: outputToken,
@@ -258,12 +253,9 @@ class StartSwap extends ServerToServerService {
         };
       }
 
-      if (
-        inputToken === ETH.MAINNET().contractAddress &&
-        outputToken !== ETH.MAINNET().contractAddress
-      ) {
+      if (!network.includes(outputToken) && network.includes(inputToken)) {
         const uniswapPair = new UniswapPair({
-          fromTokenContractAddress: ETH.MAINNET().contractAddress,
+          fromTokenContractAddress: network,
           toTokenContractAddress: outputToken,
           ethereumAddress: receiveAddress,
           chainId: chainId,
@@ -279,13 +271,10 @@ class StartSwap extends ServerToServerService {
         };
       }
 
-      if (
-        outputToken === ETH.MAINNET().contractAddress &&
-        inputToken !== ETH.MAINNET().contractAddress
-      ) {
+      if (network.includes(outputToken) && !network.includes(inputToken)) {
         const uniswapPair = new UniswapPair({
           fromTokenContractAddress: inputToken,
-          toTokenContractAddress: ETH.MAINNET().contractAddress,
+          toTokenContractAddress: network,
           ethereumAddress: receiveAddress,
           chainId: chainId,
         });
