@@ -8,8 +8,6 @@ type Tokens {
   name: String!
   balance: Balance!
   icon: String!
-  receiveAddress: String!
-  contractAddress: String
 }
 
 type Trade {
@@ -41,17 +39,11 @@ type Query {
 }
 
 type Mutation {
-  startSwap(
-    coinSymbol: String!
-    amount: String!
-    inputToken: String!
-    outputToken: String!
-  ): Trade!
+  startSwap(coinSymbol0: String!, coinSymbol1: String!, amount: String!): Trade!
   confirmSwap(
-    coinSymbol: String!
+    coinSymbol0: String!
+    coinSymbol1: String!
     amount: String!
-    inputToken: String!
-    outputToken: String!
     walletPassword: String!
   ): Confirmation!
 }

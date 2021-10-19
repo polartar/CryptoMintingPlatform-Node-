@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { ClientProxyFactory, Transport, ClientProxy } from '@nestjs/microservices';
+import {
+  ClientProxyFactory,
+  Transport,
+  ClientProxy,
+} from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { config, logger, ResolverBase } from 'src/common';
 import { Context } from 'src/types/context';
@@ -24,12 +28,12 @@ class Resolvers extends ResolverBase {
   checkIn = async (
     parent: any,
     args: {
-      domain: string,
-      hardwareId: string,
-      minerIsActive: boolean,
-      userId: string
+      domain: string;
+      hardwareId: string;
+      minerIsActive: boolean;
+      userId: string;
     },
-    ctx: Context
+    ctx: Context,
   ) => {
     try {
       const res = await firstValueFrom(
@@ -41,7 +45,7 @@ class Resolvers extends ResolverBase {
       logger.warn(`resolvers.records.checkIn.catch:${error}`);
       return { error: error };
     }
-  }
+  };
 }
 
 const resolvers = new Resolvers();
