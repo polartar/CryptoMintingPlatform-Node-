@@ -300,11 +300,11 @@ class Resolvers extends ResolverBase {
           newUser.firebaseUid,
         );
 
-        await galaEmailer.sendNewUserEmailConfirmation(
-          email,
-          firstName,
-          verifyEmailToken,
-        );
+        // await galaEmailer.sendNewUserEmailConfirmation(
+        //   email,
+        //   firstName,
+        //   verifyEmailToken,
+        // );
 
         response.verificationEmailSent = true;
       }
@@ -648,24 +648,24 @@ class Resolvers extends ResolverBase {
   ) => {
     this.requireAuth(user);
 
-    const userDoc = await user.findFromDb();
-    const { galaEmailer } = dataSources;
+    // const userDoc = await user.findFromDb();
+    // const { galaEmailer } = dataSources;
 
-    const token = this.signVerifyEmailToken(user.userId, userDoc.firebaseUid);
+    // const token = this.signVerifyEmailToken(user.userId, userDoc.firebaseUid);
 
-    if (newAccount) {
-      await galaEmailer.sendNewUserEmailConfirmation(
-        userDoc.email,
-        userDoc.firstName,
-        token,
-      );
-    } else {
-      await galaEmailer.sendExistingUserEmailConfirmation(
-        userDoc.email,
-        userDoc.firstName,
-        token,
-      );
-    }
+    // if (newAccount) {
+    //   await galaEmailer.sendNewUserEmailConfirmation(
+    //     userDoc.email,
+    //     userDoc.firstName,
+    //     token,
+    //   );
+    // } else {
+    //   await galaEmailer.sendExistingUserEmailConfirmation(
+    //     userDoc.email,
+    //     userDoc.firstName,
+    //     token,
+    //   );
+    // }
     return {
       success: true,
     };

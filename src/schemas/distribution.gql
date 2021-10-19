@@ -44,9 +44,10 @@ type ValidDistributionDates {
 }
 
 type DistributionInfo {
-  runTime: Date
+  distributionDate: Date
   address: String
-  greenDecimal: Float
+  coinAmount: Float
+  pointAmount: Int
 }
 
 type Query {
