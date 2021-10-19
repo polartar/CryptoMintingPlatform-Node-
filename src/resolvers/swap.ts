@@ -1,4 +1,3 @@
-import { CoinSymbol } from './../types/CoinSymbol';
 import { startSwap } from '../services/swap';
 import { Context } from '../types/context';
 import ResolverBase from '../common/Resolver-Base';
