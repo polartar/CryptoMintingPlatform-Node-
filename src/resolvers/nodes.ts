@@ -1,14 +1,15 @@
-import { Context } from '../types/context';
-import ResolverBase from '../common/Resolver-Base';
-import { IOrderContext } from '../types';
-import { logger } from '../common';
+import { Context } from 'src/types/context';
+import ResolverBase from 'src/common/Resolver-Base';
+import { IOrderContext } from 'src/types';
+import { logger } from 'src/common';
 import {
   Product,
   IProductDocument,
   PurchaseAttempt,
   MiningRecord,
 } from '../models';
-import License from '../models/license';
+import { simulateNodeDistributionPipeline } from 'src/pipelines';
+import License from 'src/models/license';
 
 class Resolvers extends ResolverBase {
   getProductById = async (parent: any, { id }: { id: string }) => {
@@ -44,6 +45,7 @@ class Resolvers extends ResolverBase {
   getNodesInfo = async (parent: any, args: {}, ctx: Context) => {
     return {};
   };
+
   getNodesOnline = async (parent: any, args: {}, ctx: Context) => {
     logger.debug('GET_NODES_ONLINE');
     try {
@@ -67,6 +69,7 @@ class Resolvers extends ResolverBase {
       };
     }
   };
+
   getNodesOwned = async (parent: any, args: {}, ctx: Context) => {
     logger.debug('GET_NODES_OWNED');
     try {
@@ -147,13 +150,33 @@ class Resolvers extends ResolverBase {
       await purchaseLog.save();
       return result;
     } catch (error) {
-      logger.warn(`resolvers.nodes.buyNode.catch: ${error}`);
+      logger.exceptionContext(error, 'resolvers.nodes.buyNode.catch');
       purchaseLog.error = error;
       purchaseLog.save();
       return {
         success: false,
         message: error,
       };
+    }
+  };
+
+  simulateNodeDistribution = async (
+    parent: any,
+    args: { startDate: Date; endDate: Date },
+    { user }: Context,
+  ) => {
+    try {
+      this.requireAuth(user);
+      const pipeline = simulateNodeDistributionPipeline(
+        args.startDate,
+        args.endDate,
+      );
+      const [data] = await MiningRecord.aggregate(pipeline);
+
+      return data;
+    } catch (error) {
+      logger.exceptionContext(error, 'resolvers.nodes.buyNode.catch');
+      throw error;
     }
   };
 }
@@ -172,5 +195,6 @@ export default {
   },
   Mutation: {
     buyNode: resolvers.buyNode,
+    simulateNodeDistribution: resolvers.simulateNodeDistribution,
   },
 };
