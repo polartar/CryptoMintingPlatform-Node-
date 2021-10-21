@@ -1,6 +1,6 @@
 {
   "name": "wallet-server",
-  "version": "0.4.170",
+  "version": "0.4.171",
   "main": "lib/index.js",
   "config": {
     "dockerport": 4444
@@ -10,7 +10,7 @@
     "build": "run-s format:fix fix lint tsc && ef-tspm && cp ./src/schemas/*.gql ./lib/schemas  && cp ./src/templates/handlebars/*.hbs ./lib/templates/handlebars/ && cp ./src/assets/*.jpg ./lib/assets/",
     "start": "npm run build && node ./lib/index.js",
     "dev": "run-s watch",
-    "watch": "npx nodemon --watch 'src/**/*' -e ts,graphql,gql --exec ts-node --files -r tsconfig-paths/register ./src/index.ts",
+    "watch": "npx nodemon --watch 'src/**/*' -e ts,graphql,gql --exec ts-node --files -r tsconfig-paths/register --transpile-only ./src/index.ts",
     "test": "jest --coverage",
     "docker:build": "docker build -t $npm_package_name:$npm_package_version --target dev .",
     "docker:build_prod": "docker build --target prod -t $npm_package_name:$npm_package_version .",
