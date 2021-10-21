@@ -34,14 +34,31 @@ class Resolvers extends ResolverBase {
     dependentModel.userId = userId;
     dependentModel.firstName = dependent.firstName;
     dependentModel.lastName = dependent.lastName;
+    dependentModel.height = dependent.height;
+    dependentModel.weight = dependent.weight;
+    dependentModel.gender = dependent.gender;
+    dependentModel.title = dependent.title;
     dependentModel.dateOfBirth = dependent.dateOfBirth;
-    dependentModel.phoneNumber = dependent.phoneNumber;
-    dependentModel.country = dependent.country;
-    dependentModel.clinic = dependent.clinic;
-    dependentModel.careclixId = dependent.careclixId;
-    if (dependent.relationship)
-      dependentModel.relationship = dependent.relationship;
+    dependentModel.relationship = dependent.relationship;
+    dependentModel.contactInformation.contactPhoneType =
+      dependent.contactInformation.contactPhoneType;
+    dependentModel.contactInformation.countryCode =
+      dependent.contactInformation.countryCode;
+    dependentModel.contactInformation.phoneNumber =
+      dependent.contactInformation.phoneNumber;
+    dependentModel.contactInformation.email =
+      dependent.contactInformation.email;
+    dependentModel.contactInformation.country =
+      dependent.contactInformation.country;
+    dependentModel.contactInformation.zipCode =
+      dependent.contactInformation.zipCode;
+    dependentModel.contactInformation.state =
+      dependent.contactInformation.state;
+    dependentModel.blueDetails.clinic = dependent.blueDetails.clinic;
+    dependentModel.blueDetails.careclixId = userId;
     dependentModel.created = new Date();
+    dependentModel.smsNotification = dependent.smsNotification;
+    dependentModel.emailNotification = dependent.emailNotification;
 
     let retDependent: IDependentDocument;
     try {
