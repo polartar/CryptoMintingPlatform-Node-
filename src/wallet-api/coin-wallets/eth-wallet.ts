@@ -682,8 +682,7 @@ class EthWallet extends CoinWalletBase {
 
     const gasPrice = await provider.getGasPrice();
 
-    if (s_ChainId === undefined)
-      s_ChainId = (await provider.getNetwork()).chainId;
+    if (s_ChainId === undefined) s_ChainId = config.chainId;
 
     const privateKey = await this.getDecryptedPrivateKey(
       userApi.userId,

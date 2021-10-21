@@ -43,28 +43,12 @@ export default class UserApi extends DataSource {
         token,
       });
     }
+    return undefined;
   }
 
   static async fromIdToken(token: string) {
     try {
-      if (config.brand !== 'gala') {
-        return this.fromCustomToken(token);
-      }
-
-      const {
-        userId,
-        role,
-        permissions,
-        authorized,
-        twoFaEnabled,
-        uid,
-      } = (await auth.verifyIdToken(token, config.hostname)) as any;
-
-      return new this(
-        { userId, role, permissions, authorized, twoFaEnabled },
-        uid,
-        token,
-      );
+      return this.fromCustomToken(token);
     } catch (error) {
       logger.exceptionContext(error, `Unable to verify: `, { token });
     }
