@@ -1,15 +1,3 @@
-type Balance {
-  confirmed: String!
-  unconfirmed: String!
-}
-
-type Tokens {
-  symbol: String!
-  name: String!
-  balance: Balance!
-  icon: String!
-}
-
 type Trade {
   message: String!
   midPrice: String!
@@ -32,10 +20,6 @@ type Confirmation {
   liquidityProviderFee: String!
   liquidityProviderFeePercent: Float!
   tradeExpires: Float!
-}
-
-type Query {
-  swapParams(coinSymbol: String): [Tokens!]!
 }
 
 type Mutation {

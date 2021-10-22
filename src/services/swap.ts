@@ -44,9 +44,7 @@ class StartSwap extends ServerToServerService {
         }
 
         if (!trade.fromBalance.hasEnough) {
-          throw new Error(
-            'You do not have enough from balance to execute this swap',
-          );
+          throw new Error('You do not enough balance to execute this swap');
         }
 
         const provider = new ethers.providers.JsonRpcProvider(
@@ -98,9 +96,7 @@ class StartSwap extends ServerToServerService {
         }
 
         if (!trade.fromBalance.hasEnough) {
-          throw new Error(
-            'You do not have enough from balance to execute this swap',
-          );
+          throw new Error('You do not enough balance to execute this swap');
         }
 
         const provider = new ethers.providers.JsonRpcProvider(
@@ -153,7 +149,7 @@ class StartSwap extends ServerToServerService {
 
         if (!trade.fromBalance.hasEnough) {
           throw new Error(
-            'You do not have enough from balance to execute this swap',
+            'You do not have enough balance to execute this swap',
           );
         }
 
@@ -184,9 +180,18 @@ class StartSwap extends ServerToServerService {
         };
       }
     } catch (error) {
-      logger.warn('Failed to get service from swap:' + error);
       return {
-        message: error,
+        message: error.message,
+        hash: '',
+        blockNumber: 0,
+        confirmations: 0,
+        to: '',
+        midPrice: '',
+        midPriceInverted: '',
+        path: '',
+        liquidityProviderFee: '',
+        liquidityProviderFeePercent: 0,
+        tradeExpires: 0,
       };
     }
   };
