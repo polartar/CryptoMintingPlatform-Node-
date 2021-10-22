@@ -68,3 +68,4 @@ export * from './IPaywiser';
 export * from './ILicenseTypeMapping';
 export * from './ILicenseType';
 export * from './IDependent';
+export * from './IFriend';

@@ -4,7 +4,9 @@ import { cartQueue } from '../blockchain-listeners/cart-queue';
 import { CartService } from '../blockchain-listeners/cart-service';
 import { addHours } from 'date-fns';
 import { CartStatus, ICartAddress } from '../types/ICartAddress';
+import { convertUSDToCryptoAmount, convertCryptoAmountToUSD } from '../utils';
 //const { decycle } = require('../utils/cycle.js');
+// #amount  = amountUsd / (somevalegetFrom the wallet.) keep an eye on precision.
 
 import addressRequestModel, {
   ICartAddressRequest,
@@ -21,12 +23,14 @@ class Resolvers extends ResolverBase {
     addressRequest.coinSymbol = request.coinSymbol ?? '';
     addressRequest.amountUsd = request.amountUsd ?? '';
     addressRequest.amountCrypto = request.amountCrypto ?? '';
+    addressRequest.quantity = request.quantity;
     addressRequest.affiliateId = request.affiliateId ?? '';
     addressRequest.affiliateSessionId = request.affiliateSessionId ?? '';
     addressRequest.utmVariables = request.utmVariables ?? '';
     addressRequest.addresses = request.addresses;
     addressRequest.orderId = request.orderId;
     addressRequest.created = new Date();
+    addressRequest.expires = request.expires;
 
     try {
       const savedRequest = await addressRequest.save();
@@ -47,35 +51,55 @@ class Resolvers extends ResolverBase {
     args: {
       coinSymbol: string;
       orderId: string;
-      amount: string;
+      amount?: string;
+      amountUsd?: string;
       affiliateId: string;
       affiliateSessionId: string;
       utmVariables: string;
+      quantity: number;
     },
     ctx: Context,
   ) => {
+    // We don´t require auth here, it is the expected behavior?
     const { wallet } = ctx;
-    const userId = ctx.user ? ctx.user.userId : undefined;
+    const userId = ctx.user?.userId;
     const {
       coinSymbol,
       orderId,
-      amount,
       affiliateId,
       affiliateSessionId,
       utmVariables,
     } = args;
 
+    let quantity = args.quantity;
+    let amount = Number(args.amount);
+    let amountUsd = Number(args.amountUsd);
+
+    if (quantity <= 0) quantity = 1;
+
+    // handling amounts.
+    if (Number.isNaN(amountUsd)) amountUsd = 0;
+
+    if (Number.isNaN(amount)) amount = 0;
+
+    //amount and amounUsd, are dependents, so if one of them exists the
+    //other one will be calculated in base of it.
+    //in order to avoid any inconsistencies.
+    if (amountUsd) amount = convertUSDToCryptoAmount(amountUsd);
+    else if (amount) amountUsd = convertCryptoAmountToUSD(amount);
+
     const addresses: ICartAddress[] = [];
     try {
       const currTime = new Date();
+      //maybe add an .env in order to replace the 1 below.
       const expDate = addHours(currTime, 1);
-
       const walletApi = wallet.coin(coinSymbol);
       const address = await walletApi.getCartAddress(
         coinSymbol,
         orderId,
-        amount,
+        amount.toString(),
       );
+
       const data: ICartWatcherData = {
         address: address.address,
         exp: expDate,
@@ -83,9 +107,10 @@ class Resolvers extends ResolverBase {
         affiliateSessionId,
         utmVariables,
         status: 'pending',
-        crytoAmount: +amount,
-        crytoAmountRemaining: +amount,
-        usdAmount: 0,
+        crytoAmount: amount,
+        crytoAmountRemaining: amount,
+        usdAmount: amountUsd,
+        quantity,
       };
 
       const { keyToAdd, valueToAdd } = await cartQueue.setCartWatcher(
@@ -106,6 +131,8 @@ class Resolvers extends ResolverBase {
         utmVariables,
         addresses,
         created: new Date(),
+        expires: expDate,
+        quantity,
       });
 
       //Todo: Maybe add some action besides logger.warn
@@ -174,11 +201,13 @@ class Resolvers extends ResolverBase {
     args: {
       coinSymbol: string;
       orderId: string;
-      amount: string;
+      amount?: string;
       walletPassword: string;
       affiliateId: string;
       affiliateSessionId: string;
       utmVariables: string;
+      amountUsd?: string;
+      quantity: number;
     },
     ctx: Context,
   ) => {
@@ -192,6 +221,8 @@ class Resolvers extends ResolverBase {
       affiliateSessionId,
       affiliateId,
       utmVariables,
+      amountUsd,
+      quantity,
     } = args;
 
     const walletApi = wallet.coin(parent.symbol);
@@ -204,6 +235,8 @@ class Resolvers extends ResolverBase {
         affiliateId,
         affiliateSessionId,
         utmVariables,
+        amountUsd,
+        quantity,
       },
       ctx,
     );

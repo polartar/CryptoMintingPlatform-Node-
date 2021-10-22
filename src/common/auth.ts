@@ -8,6 +8,7 @@ export default new ServerAuth(
       connectionString: config.mongodbUri,
       domain: config.hostname,
     },
+    sentryDsn: config.sentryDsn,
   },
   config.brand === 'gala' ? 'id' : 'custom',
 );
