@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/node';
 import { v4 as randomString } from 'uuid';
+import { config } from '../';
 import autoBind = require('auto-bind');
 import { CaptureContext } from '@sentry/types';
 
@@ -49,23 +50,36 @@ export class SentryLogger {
     Sentry.captureMessage(message, Sentry.Severity.Error);
   }
 
+  warnContext(message: string, vals: IKeyValues) {
+    Sentry.captureMessage(message, {
+      level: Sentry.Severity.Warning,
+      tags: vals,
+    });
+  }
+
   warn(message: string) {
     Sentry.captureMessage(message, Sentry.Severity.Warning);
   }
 
   info(message: string) {
-    Sentry.captureMessage(message, Sentry.Severity.Info);
+    if (!config.isProd) {
+      Sentry.captureMessage(message, Sentry.Severity.Info);
+    }
   }
 
   debugContext(message: string, vals: IKeyValues) {
-    Sentry.captureMessage(message, {
-      level: Sentry.Severity.Debug,
-      tags: vals,
-    });
+    if (!config.isProd) {
+      Sentry.captureMessage(message, {
+        level: Sentry.Severity.Debug,
+        tags: vals,
+      });
+    }
   }
 
   debug(message: string) {
-    Sentry.captureMessage(message, Sentry.Severity.Debug);
+    if (!config.isProd) {
+      Sentry.captureMessage(message, Sentry.Severity.Debug);
+    }
   }
 
   exceptionContext(err: any, message: string, vals: IKeyValues = {}) {
@@ -102,10 +116,14 @@ export class SentryLogger {
         this.logKeyValues(keyValPair, this.warn);
       },
       info: (keyValPair: IKeyValues) => {
-        this.logKeyValues(keyValPair, this.info);
+        if (!config.isProd) {
+          this.logKeyValues(keyValPair, this.info);
+        }
       },
       debug: (keyValPair: IKeyValues) => {
-        this.logKeyValues(keyValPair, this.debug);
+        if (!config.isProd) {
+          this.logKeyValues(keyValPair, this.debug);
+        }
       },
       critical: (keyValPair: IKeyValues) => {
         this.logKeyValues(keyValPair, this.critical);

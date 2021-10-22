@@ -1,6 +1,6 @@
 {
   "name": "wallet-server",
-  "version": "0.4.162",
+  "version": "0.4.177",
   "main": "lib/index.js",
   "config": {
     "dockerport": 4444
@@ -10,7 +10,7 @@
     "build": "run-s format:fix fix lint tsc && ef-tspm && cp ./src/schemas/*.gql ./lib/schemas  && cp ./src/templates/handlebars/*.hbs ./lib/templates/handlebars/ && cp ./src/assets/*.jpg ./lib/assets/",
     "start": "npm run build && node ./lib/index.js",
     "dev": "run-s watch",
-    "watch": "npx nodemon --watch 'src/**/*' -e ts,graphql,gql --exec ts-node --files -r tsconfig-paths/register ./src/index.ts",
+    "watch": "npx nodemon --watch 'src/**/*' -e ts,graphql,gql --exec ts-node --files -r tsconfig-paths/register --transpile-only ./src/index.ts",
     "test": "jest --coverage",
     "docker:build": "docker build -t $npm_package_name:$npm_package_version --target dev .",
     "docker:build_prod": "docker build --target prod -t $npm_package_name:$npm_package_version .",
@@ -18,6 +18,7 @@
     "docker:dev": "docker rm --force $npm_package_name ; run-s docker:build docker:run",
     "fix": "node node_modules/tslint/bin/tslint -c tslint.json -p tsconfig.json --fix --force",
     "gen-jwt": "npx ts-node --files -r tsconfig-paths/register ./scripts/gen-jwt.ts",
+    "loginToken": "node --nolazy -r ts-node/register/transpile-only -r tsconfig-paths/register scripts/gen-jwt",
     "tsc": "node node_modules/typescript/bin/tsc",
     "format:fix": "pretty-quick --staged",
     "format:check": "prettier --config ./.prettierrc --list-different \"src/**/*{.ts,.js,.json}\"",
@@ -25,7 +26,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "@blockbrothers/firebasebb": "^0.11.4",
+    "@blockbrothers/firebasebb": "^0.11.5",
     "@blockbrothers/legacy-simple-crypto": "^1.0.0",
     "@blockbrothers/nodemailer-sendgrid-transport": "^0.3.0",
     "@nestjs/common": "^8.0.6",
@@ -84,6 +85,7 @@
     "simple-uniswap-sdk": "^3.4.2",
     "speakeasy": "^2.0.0",
     "subscriptions-transport-ws": "^0.10.0",
+    "tslib": "^2.3.1",
     "uuid": "^3.4.0",
     "winston": "^3.1.0",
     "winston-mongodb": "^5.0.7"

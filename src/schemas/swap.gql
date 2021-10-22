@@ -1,17 +1,3 @@
-type Balance {
-  confirmed: String!
-  unconfirmed: String!
-}
-
-type Tokens {
-  symbol: String!
-  name: String!
-  balance: Balance!
-  icon: String!
-  receiveAddress: String!
-  contractAddress: String
-}
-
 type Trade {
   message: String!
   midPrice: String!
@@ -36,22 +22,12 @@ type Confirmation {
   tradeExpires: Float!
 }
 
-type Query {
-  swapParams(coinSymbol: String): [Tokens!]!
-}
-
 type Mutation {
-  startSwap(
-    coinSymbol: String!
-    amount: String!
-    inputToken: String!
-    outputToken: String!
-  ): Trade!
+  startSwap(coinSymbol0: String!, coinSymbol1: String!, amount: String!): Trade!
   confirmSwap(
-    coinSymbol: String!
+    coinSymbol0: String!
+    coinSymbol1: String!
     amount: String!
-    inputToken: String!
-    outputToken: String!
     walletPassword: String!
   ): Confirmation!
 }

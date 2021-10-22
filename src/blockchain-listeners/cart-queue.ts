@@ -13,7 +13,7 @@ const redis = require('redis');
 const { promisifyAll } = require('bluebird');
 import axios from 'axios';
 import { subHours } from 'date-fns';
-
+import { convertUSDToCryptoAmount } from '../utils';
 export class CartQueue {
   private client: any;
   private cronTask: any;
@@ -44,9 +44,15 @@ export class CartQueue {
         orderId,
       );
 
-      const tx_json = JSON.parse(orderResponse['tx-json']);
-      data.usdAmount = +tx_json.total;
       data.meprTxData = orderResponse['tx-json'];
+
+      if (!data.usdAmount) {
+        data.usdAmount = +JSON.parse(data.meprTxData).total;
+        if (data.usdAmount) {
+          data.crytoAmount = convertUSDToCryptoAmount(data.usdAmount);
+          data.crytoAmountRemaining = data.crytoAmount;
+        }
+      }
     } catch (err) {
       logger.error(`Can't get transaction from WP error: ${err}`);
     }
@@ -78,8 +84,8 @@ export class CartQueue {
     const currTime = new Date();
     const currTimeNative = currTime.valueOf();
 
-    //const allKeys = await this.client.keysAsync(`${symbol}.${brand}.*`);
-    const allKeys = await this.client.keysAsync(`*`);
+    const allKeys = await this.client.keysAsync(`${symbol}.${brand}.*`);
+    //const allKeys = await this.client.keysAsync(`*`);
 
     // console.log('------------------ HOW MANY KEYS?? ---------------')
     // console.log(allKeys);
@@ -124,17 +130,19 @@ export class CartQueue {
         continue;
       }
 
+      const thisSymbol = keyObj.symbol;
+
       // Query Blockchain for balance
-      const coin = walletApi.coin(symbol);
+      const coin = walletApi.coin(thisSymbol);
       const balance = await coin
-        .getCartBalance(symbol, keyObj.orderId, valueObj.address)
+        .getCartBalance(thisSymbol, keyObj.orderId, valueObj.address)
         .then(
           a => a,
           er2 => {
             logger.error(
               `FAILED WHEN TRYING TO FIND ${
                 keyObj.orderType
-              } CART : ${symbol}/${key.orderId}/${JSON.stringify(
+              } CART : ${thisSymbol}/${key.orderId}/${JSON.stringify(
                 valueObj,
               )} | error: ${er2}`,
             );

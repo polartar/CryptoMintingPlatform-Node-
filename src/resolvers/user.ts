@@ -184,6 +184,21 @@ class Resolvers extends ResolverBase {
         );
       }
 
+      if (!firebaseUser) {
+        const response_error: {
+          twoFaEnabled: boolean;
+          token: string;
+          walletExists: boolean;
+          verificationEmailSent?: boolean;
+        } = {
+          twoFaEnabled: false,
+          token: '',
+          walletExists: false,
+          verificationEmailSent: false,
+        };
+        return response_error;
+      }
+
       const termsTemplateId = await this.getTemplateId('terms-of-service');
       const privacyTemplateId = await this.getTemplateId('privacy-policy');
       const number = await getNextNumber();
@@ -294,20 +309,20 @@ class Resolvers extends ResolverBase {
         verificationEmailSent: false,
       };
 
-      if (config.brand === 'gala') {
-        const verifyEmailToken = this.signVerifyEmailToken(
-          newUser.id,
-          newUser.firebaseUid,
-        );
+      // if (config.brand === 'gala') {
+      //   const verifyEmailToken = this.signVerifyEmailToken(
+      //     newUser.id,
+      //     newUser.firebaseUid,
+      //   );
 
-        await galaEmailer.sendNewUserEmailConfirmation(
-          email,
-          firstName,
-          verifyEmailToken,
-        );
+      //   await galaEmailer.sendNewUserEmailConfirmation(
+      //     email,
+      //     firstName,
+      //     verifyEmailToken,
+      //   );
 
-        response.verificationEmailSent = true;
-      }
+      //   response.verificationEmailSent = true;
+      // }
 
       return response;
     } catch (error) {
@@ -648,24 +663,24 @@ class Resolvers extends ResolverBase {
   ) => {
     this.requireAuth(user);
 
-    const userDoc = await user.findFromDb();
-    const { galaEmailer } = dataSources;
+    // const userDoc = await user.findFromDb();
+    // const { galaEmailer } = dataSources;
 
-    const token = this.signVerifyEmailToken(user.userId, userDoc.firebaseUid);
+    // const token = this.signVerifyEmailToken(user.userId, userDoc.firebaseUid);
 
-    if (newAccount) {
-      await galaEmailer.sendNewUserEmailConfirmation(
-        userDoc.email,
-        userDoc.firstName,
-        token,
-      );
-    } else {
-      await galaEmailer.sendExistingUserEmailConfirmation(
-        userDoc.email,
-        userDoc.firstName,
-        token,
-      );
-    }
+    // if (newAccount) {
+    //   await galaEmailer.sendNewUserEmailConfirmation(
+    //     userDoc.email,
+    //     userDoc.firstName,
+    //     token,
+    //   );
+    // } else {
+    //   await galaEmailer.sendExistingUserEmailConfirmation(
+    //     userDoc.email,
+    //     userDoc.firstName,
+    //     token,
+    //   );
+    // }
     return {
       success: true,
     };

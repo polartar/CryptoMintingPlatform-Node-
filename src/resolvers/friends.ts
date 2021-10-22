@@ -1,12 +1,31 @@
-import { Context } from '../types';
+import { Context, IFriendsNodesReport } from '../types';
 import ResolverBase from '../common/Resolver-Base';
+import { logger } from '../common';
 import config from '../common/config';
 import { User, FriendNudge } from '../models';
 import { getPipeline as getAllowedToNudgePipeline } from '../pipelines/allowed_to_nudge_friend';
 import { getPipeline as getFriendsPipeline } from '../pipelines/get_friends';
 import { getPipeline as getNudgableFriendsPipeline } from '../pipelines/nudgable_friends';
+import { getPipeline as friendNodesReporPipeline } from '../pipelines/friend_nodes_report';
 
 class Resolvers extends ResolverBase {
+  public friendsNodesReport = async (
+    parent: any,
+    args: {},
+    { user }: Context,
+  ): Promise<IFriendsNodesReport> => {
+    this.requireAuth(user);
+    const pipeline = friendNodesReporPipeline(user.userId);
+    let report: IFriendsNodesReport;
+    try {
+      [report] = await User.aggregate<IFriendsNodesReport>(pipeline);
+    } catch (error) {
+      logger.warn(`resolvers.friends.friendsNodesReport.catch:${error}`);
+      throw error;
+    }
+    return report;
+  };
+
   private async verifyNudgableFriend(userId: string, friend: string) {
     const pipeline = getAllowedToNudgePipeline(
       userId,
@@ -15,7 +34,6 @@ class Resolvers extends ResolverBase {
     );
 
     const [result] = await User.aggregate(pipeline);
-
     return result;
   }
 
@@ -74,13 +92,13 @@ class Resolvers extends ResolverBase {
       created: new Date(),
       updated: null,
     });
-    await dataSources.galaEmailer.sendNudgeFriendEmail(
-      email,
-      !!emailVerified,
-      firstName,
-      referrer.firstName,
-      referralLink,
-    );
+    // await dataSources.galaEmailer.sendNudgeFriendEmail(
+    //   email,
+    //   !!emailVerified,
+    //   firstName,
+    //   referrer.firstName,
+    //   referralLink,
+    // );
 
     return { success: true };
   };
@@ -108,13 +126,13 @@ class Resolvers extends ResolverBase {
 
     const nudges = await Promise.all(
       nudgableFriends.map(async ({ referrer, ...friend }) => {
-        await dataSources.galaEmailer.sendNudgeFriendEmail(
-          friend.email,
-          !!friend.emailVerified,
-          friend.firstName,
-          referrer,
-          friend.referralLink,
-        );
+        // await dataSources.galaEmailer.sendNudgeFriendEmail(
+        //   friend.email,
+        //   !!friend.emailVerified,
+        //   friend.firstName,
+        //   referrer,
+        //   friend.referralLink,
+        // );
 
         return new FriendNudge({
           code: config.nudgeCode,
@@ -135,6 +153,7 @@ const resolvers = new Resolvers();
 export default {
   Query: {
     friends: resolvers.getFriends,
+    friendsNodesReport: resolvers.friendsNodesReport,
   },
   Mutation: {
     nudgeFriend: resolvers.nudgeFriend,

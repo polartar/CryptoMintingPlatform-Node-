@@ -10,6 +10,22 @@ type NodesInfo {
   owned: Int
 }
 
+type LastCheckIn {
+  time: Date
+  epochTime: String
+  hashrate: String
+}
+
+type MiningRecord {
+  userId: String
+  hardwareId: String
+  start: Date
+  stop: Date
+  startEpochTime: String
+  stopEpochTime: String
+  lastCheckIn: LastCheckIn
+}
+
 type Query {
   productById(id: String!): Product!
   getAllproducts: [Product]!
@@ -24,4 +40,5 @@ type Mutation {
     walletPassword: String!
     orderContext: OrderContext
   ): TxSendResponse!
+  simulateNodeDistribution(startDate: Date!, endDate: Date!): MiningRecord!
 }

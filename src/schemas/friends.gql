@@ -6,7 +6,19 @@ type Friend {
   canNudge: Boolean!
 }
 
+type FriendsNodesReport {
+  #The number of friends that have an account
+  friendsJoined: Int!
+  #The number of friends that have upgrade their node.
+  nodesUpgraded: Int!
+  #The number of friends that are actively mining.
+  nodesOnline: Int!
+  #The number of licenses adquired by friends.
+  nodesPurchased: Int!
+}
+
 type Query {
+  friendsNodesReport: FriendsNodesReport!
   friends: [Friend!]!
 }
 

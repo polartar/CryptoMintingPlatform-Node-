@@ -11,7 +11,7 @@ export default abstract class CoinWalletBase {
   constructor(
     protected name: string,
     public symbol: string,
-    protected contractAddress: string,
+    public contractAddress: string,
     protected abi: any,
     protected backgroundColor: string,
     protected icon: string,

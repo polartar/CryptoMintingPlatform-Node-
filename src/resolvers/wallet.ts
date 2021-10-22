@@ -65,14 +65,14 @@ class Resolvers extends ResolverBase {
           parentCoin.checkIfWalletExists(user),
         ),
       );
-      if (walletsExist.some(walExists => walExists))
-        throw new Error('Wallet already exists');
+      // if (walletsExist.some(walExists => walExists))
+      //   throw new Error('Wallet already exists');
       const walletsCreated = await Promise.all(
         wallet.parentInterfaces.map(parentCoin =>
           parentCoin.createWallet(user, walletPassword, recoveryPhrase),
         ),
       );
-      
+
       if (walletsCreated.some(createdWallet => !createdWallet))
         throw new Error('Error creating wallet');
       if (config.clientSecretKeyRequired) {
@@ -83,22 +83,22 @@ class Resolvers extends ResolverBase {
         );
       }
 
-      user.findFromDb().then(async referredUser => {
-        if (referredUser && referredUser.referredBy) {
-          user.Model.findOne({ affiliateId: referredUser.referredBy })
-            .exec()
-            .then(referrer => {
-              galaEmailer.sendReferredNewUserEmail(
-                referrer.email,
-                !!referrer.emailVerified,
-                referrer.firstName,
-                referredUser.firstName,
-                referrer?.wallet?.shareLink,
-              );
-              sendEmail.shareAccepted(referrer, referredUser);
-            });
-        }
-      });
+      // user.findFromDb().then(async referredUser => {
+      //   if (referredUser && referredUser.referredBy) {
+      //     user.Model.findOne({ affiliateId: referredUser.referredBy })
+      //       .exec()
+      //       .then(referrer => {
+      //         galaEmailer.sendReferredNewUserEmail(
+      //           referrer.email,
+      //           !!referrer.emailVerified,
+      //           referrer.firstName,
+      //           referredUser.firstName,
+      //           referrer?.wallet?.shareLink,
+      //         );
+      //         sendEmail.shareAccepted(referrer, referredUser);
+      //       });
+      //   }
+      // });
 
       return {
         success: true,

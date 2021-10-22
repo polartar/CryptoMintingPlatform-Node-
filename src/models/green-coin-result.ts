@@ -22,6 +22,9 @@ export const greenCoinResultSchema = new Schema({
   dateMint: Date,
 });
 
-const GreenCoinResult = model<IGreenCoinResultDocument>('green-test-coins-result', greenCoinResultSchema);
+const GreenCoinResult = model<IGreenCoinResultDocument>(
+  'green-coins-result',
+  greenCoinResultSchema,
+);
 
 export default GreenCoinResult;

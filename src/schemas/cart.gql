@@ -5,17 +5,20 @@ type CartAddress {
 }
 
 type CartAddressRequest {
-  userId: String
-  coinSymbol: String
-  amountUsd: String
-  amountCrypto: String
-  orderId: String
+  userId: String!
+  coinSymbol: String!
+  amountUsd: String!
+  amountCrypto: String!
+  quantity: Int!
+  orderId: String!
   affiliateId: String
   affiliateSessionId: String
   utmVariables: String
-  created: Date
-  addresses: [CartAddress!]
+  created: Date!
+  expires: Date!
+  addresses: [CartAddress!]!
 }
+
 type CartTransaction {
   wp_id: String
   status: String
@@ -56,18 +59,30 @@ type Mutation {
   getCartAddress(
     coinSymbol: String!
     orderId: String!
-    amount: String!
+    # This is currently a crypto amount.
+    # This value will be removed in the future when
+    # we finish testing and moving to a new version of the cart.
+    # we keep the current name instead of change it to amountCrypto
+    # to avoid any broke.
+    amount: String
     affiliateId: String
     affiliateSessionId: String
     utmVariables: String
+    # The amount used will be in USD
+    amountUsd: String
+    #quantity > 0
+    quantity: Int! = 1
   ): [CartAddress]!
   sendCartTransaction(
     coinSymbol: String!
     orderId: String!
-    amount: String!
+    amount: String
     walletPassword: String!
     affiliateId: String
     affiliateSessionId: String
     utmVariables: String
+    amountUsd: String
+    #quantity > 0
+    quantity: Int! = 1
   ): TxSendResponse!
 }
