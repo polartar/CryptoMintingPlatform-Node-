@@ -34,7 +34,7 @@ export class WalletApi {
 
   public coin = (symbol: string) => {
     try {
-      logger.debug(`wallet-api.coin-wallet.WalletApi.coin.symbol: ${symbol}`);
+      // logger.debug(`wallet-api.coin-wallet.WalletApi.coin.symbol: ${symbol}`);
       const walletInterface = this.symbolToInterface.get(symbol.toLowerCase());
       if (!walletInterface)
         throw new Error(`coinSymbol: ${symbol} not supported.`);
