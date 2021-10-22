@@ -51,4 +51,5 @@ export interface ICartWatcherData {
   meprTxData?: string;
   wooTxData?: string;
   dbId?: string;
+  quantity?: number;
 }
