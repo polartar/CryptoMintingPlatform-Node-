@@ -671,41 +671,49 @@ class EthWallet extends CoinWalletBase {
   ) => {
     const [{ to, amount }] = outputs;
 
-    this.requireValidAddress(to);
-    const value = utils.parseEther(amount);
+    try{
+      this.requireValidAddress(to);
+      const value = utils.parseEther(amount);
 
-    const { ethAddress, ethNonceFromDb } = await this.getEthAddress(userApi);
-    this.checkIfSendingToSelf(ethAddress, to);
+      const { ethAddress, ethNonceFromDb } = await this.getEthAddress(userApi);
+      this.checkIfSendingToSelf(ethAddress, to);
 
-    const nonce = await this.getNonce(userApi, ethAddress, ethNonceFromDb);
-    await this.requireEnoughBalanceToSendEther(ethAddress, value);
+      const nonce = await this.getNonce(userApi, ethAddress, ethNonceFromDb);
+      await this.requireEnoughBalanceToSendEther(ethAddress, value);
 
-    const gasPrice = await provider.getGasPrice();
+      const gasPrice = await provider.getGasPrice();
 
-    if (s_ChainId === undefined) s_ChainId = config.chainId;
+      if (s_ChainId === undefined) s_ChainId = config.chainId;
+ 
+      const privateKey = await this.getDecryptedPrivateKey(
+        userApi.userId,
+        walletPassword,
+      );
 
-    const privateKey = await this.getDecryptedPrivateKey(
-      userApi.userId,
-      walletPassword,
-    );
+      const wallet = new ethers.Wallet(privateKey, provider);
 
-    const wallet = new ethers.Wallet(privateKey, provider);
+      const transaction = await wallet.signTransaction({
+        to,
+        gasLimit: 21000,
+        value,
+        gasPrice,
+        nonce,
+        chainId: s_ChainId,
+      });
 
-    const transaction = await wallet.signTransaction({
-      to,
-      gasLimit: 21000,
-      value,
-      gasPrice,
-      nonce,
-      chainId: s_ChainId,
-    });
+      await userApi.incrementTxCount();
+      this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
 
-    await userApi.incrementTxCount();
-    this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
+      const { hash } = ethers.utils.parseTransaction(transaction);
 
-    const { hash } = ethers.utils.parseTransaction(transaction);
-
-    return { hash, transaction };
+      return { hash, transaction };
+    }
+    catch(error) {
+      const vals: any = {};
+      vals['to'] = to;
+      vals['amount'] = amount;
+      logger.exceptionContext(error, "signTransaction Failed", vals);
+    }
   };
 
   public sendSignedTransaction = async (transaction: string) => {

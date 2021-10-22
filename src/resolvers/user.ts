@@ -184,6 +184,21 @@ class Resolvers extends ResolverBase {
         );
       }
 
+      if(!firebaseUser){
+        const response_error: {
+          twoFaEnabled: boolean;
+          token: string;
+          walletExists: boolean;
+          verificationEmailSent?: boolean;
+        } = {
+          twoFaEnabled: false,
+          token: '',
+          walletExists: false,
+          verificationEmailSent: false,
+        };
+        return response_error;
+      }
+
       const termsTemplateId = await this.getTemplateId('terms-of-service');
       const privacyTemplateId = await this.getTemplateId('privacy-policy');
       const number = await getNextNumber();
@@ -294,20 +309,20 @@ class Resolvers extends ResolverBase {
         verificationEmailSent: false,
       };
 
-      if (config.brand === 'gala') {
-        const verifyEmailToken = this.signVerifyEmailToken(
-          newUser.id,
-          newUser.firebaseUid,
-        );
+      // if (config.brand === 'gala') {
+      //   const verifyEmailToken = this.signVerifyEmailToken(
+      //     newUser.id,
+      //     newUser.firebaseUid,
+      //   );
 
-        // await galaEmailer.sendNewUserEmailConfirmation(
-        //   email,
-        //   firstName,
-        //   verifyEmailToken,
-        // );
+      //   await galaEmailer.sendNewUserEmailConfirmation(
+      //     email,
+      //     firstName,
+      //     verifyEmailToken,
+      //   );
 
-        response.verificationEmailSent = true;
-      }
+      //   response.verificationEmailSent = true;
+      // }
 
       return response;
     } catch (error) {

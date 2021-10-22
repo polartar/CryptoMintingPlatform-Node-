@@ -98,10 +98,13 @@ class Erc20API extends EthWallet {
       toReturn.amountConfirmed = +ethBalance;
       toReturn.amountUnconfirmed = +ethBalance;
     } catch (err) {
-      logger.error(
-        `coin-wallets.erc20-wallet-getCartBalance : ${symbol}/${orderId}/${address}/${JSON.stringify(
-          toReturn,
-        )}`,
+      const context: any = {};
+      context['symbol'] = symbol;
+      context['orderId'] = orderId;
+      context['address'] = address;
+      logger.exceptionContext(err, 
+        `coin-wallets.erc20-wallet-getCartBalance`,
+        context
       );
     }
     return toReturn;

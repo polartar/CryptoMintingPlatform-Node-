@@ -40,13 +40,17 @@ class Resolvers extends ResolverBase {
       returnItems.push(toAdd.item);
       //}
     } catch (err) {
-      logger.warn(`resolvers.getVaultItems.catch: ${err}`);
+      const context: any = {};
+      context['userId'] = user.userId;
+      logger.exceptionContext(
+        err,
+        'resolvers.getVaultItems.catch',
+      )
       return {
         success: false,
-        message: err,
+        message: err.message,
       };
     }
-
     return returnItems;
   };
 
@@ -199,7 +203,7 @@ class Resolvers extends ResolverBase {
         return errorReturn;
       }
     } catch (err) {
-      logger.exceptionContext(err, 'checking password failed', {
+      logger.exceptionContext(err, 'mint', {
         user: JSON.stringify(user),
       });
       const errorReturn: IVaultRetrieveResponse = {
@@ -220,9 +224,10 @@ class Resolvers extends ResolverBase {
           this.searchForCoinResultsSummary(userId, item.symbol, 'unminted'),
         );
       } catch (err) {
-        logger.error(
+        logger.exceptionContext(
+          err,
           'error when looking for coins to mint : ' +
-            JSON.stringify({ err, user, items }),
+            JSON.stringify({ err, user, items })
         );
       }
     });
@@ -289,14 +294,15 @@ class Resolvers extends ResolverBase {
           }
         });
       } catch (err) {
-        logger.error(
+        logger.exceptionContext(
+          err,
           'error when looking for coins to mint : ' +
-            JSON.stringify({ err, item, readyToMint, user }),
+            JSON.stringify({ item, readyToMint, user })
         );
       }
     });
 
-    logger.warn(
+    logger.debug(
       'checking request : ' +
         JSON.stringify({ items, dbUnmintedItems, readyToMint, user, wallet }),
     );
@@ -365,9 +371,10 @@ class Resolvers extends ResolverBase {
           );
         }
       } catch (err) {
-        logger.error(
+        logger.exceptionContext(
+          err,
           'MINT error : ' +
-            JSON.stringify({ err, currSymbol, currAmount, dataResult, user }),
+            JSON.stringify({ currSymbol, currAmount, dataResult, user })
         );
         currResult.error = {
           code: ErrorResponseCode.InternalError,
