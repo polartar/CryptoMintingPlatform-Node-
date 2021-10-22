@@ -8,13 +8,13 @@ type Friend {
 
 type FriendsNodesReport {
   #The number of friends that have an account
-  friendsJoined:Int!
+  friendsJoined: Int!
   #The number of friends that have upgrade their node.
-  nodesUpgraded:Int!
+  nodesUpgraded: Int!
   #The number of friends that are actively mining.
-  nodesOnline:Int!
+  nodesOnline: Int!
   #The number of licenses adquired by friends.
-  nodesPurchased:Int!
+  nodesPurchased: Int!
 }
 
 type Query {

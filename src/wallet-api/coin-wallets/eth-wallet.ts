@@ -671,7 +671,7 @@ class EthWallet extends CoinWalletBase {
   ) => {
     const [{ to, amount }] = outputs;
 
-    try{
+    try {
       this.requireValidAddress(to);
       const value = utils.parseEther(amount);
 
@@ -684,7 +684,7 @@ class EthWallet extends CoinWalletBase {
       const gasPrice = await provider.getGasPrice();
 
       if (s_ChainId === undefined) s_ChainId = config.chainId;
- 
+
       const privateKey = await this.getDecryptedPrivateKey(
         userApi.userId,
         walletPassword,
@@ -707,12 +707,11 @@ class EthWallet extends CoinWalletBase {
       const { hash } = ethers.utils.parseTransaction(transaction);
 
       return { hash, transaction };
-    }
-    catch(error) {
+    } catch (error) {
       const vals: any = {};
       vals['to'] = to;
       vals['amount'] = amount;
-      logger.exceptionContext(error, "signTransaction Failed", vals);
+      logger.exceptionContext(error, 'signTransaction Failed', vals);
     }
   };
 

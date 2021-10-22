@@ -65,8 +65,8 @@ class Resolvers extends ResolverBase {
           parentCoin.checkIfWalletExists(user),
         ),
       );
-      if (walletsExist.some(walExists => walExists))
-        throw new Error('Wallet already exists');
+      // if (walletsExist.some(walExists => walExists))
+      //   throw new Error('Wallet already exists');
       const walletsCreated = await Promise.all(
         wallet.parentInterfaces.map(parentCoin =>
           parentCoin.createWallet(user, walletPassword, recoveryPhrase),

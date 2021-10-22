@@ -158,7 +158,7 @@ class BtcWallet extends CoinWalletBase {
     } catch (err) {
       logger.exceptionContext(
         err,
-        `failed getCartAddress for btc-wallet - BTC ${orderId}. THIS HAPPENS WHEN THE BTC WALLET HAS NOT BEEN CREATED ON BTC SERVER, OR .ENV IS NOT SET TO CORRECT WALLET/PASSWORD. `
+        `failed getCartAddress for btc-wallet - BTC ${orderId}. THIS HAPPENS WHEN THE BTC WALLET HAS NOT BEEN CREATED ON BTC SERVER, OR .ENV IS NOT SET TO CORRECT WALLET/PASSWORD. `,
       );
       toReturn.address =
         'CRITICAL FAILURE :: SEE TECHNICAL SERVICE FOR BTC ADDRESS';
@@ -171,8 +171,8 @@ class BtcWallet extends CoinWalletBase {
     } catch (err) {
       logger.exceptionContext(
         err,
-        `failed getCartAddress for btc-wallet - QR ${orderId}`
-        );
+        `failed getCartAddress for btc-wallet - QR ${orderId}`,
+      );
     }
 
     return toReturn;

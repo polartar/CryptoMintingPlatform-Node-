@@ -184,7 +184,7 @@ class Resolvers extends ResolverBase {
         );
       }
 
-      if(!firebaseUser){
+      if (!firebaseUser) {
         const response_error: {
           twoFaEnabled: boolean;
           token: string;

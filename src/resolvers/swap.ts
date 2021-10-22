@@ -5,43 +5,6 @@ import { logger, config } from 'src/common';
 import Erc20API from 'src/wallet-api/coin-wallets/erc20-wallet';
 
 class SwapResolvers extends ResolverBase {
-  getSwapParams = async (
-    parent: any,
-    { coinSymbol }: { coinSymbol?: string },
-    { user, wallet }: Context,
-  ) => {
-    this.requireAuth(user);
-    try {
-      if (coinSymbol) {
-        const walletApi = wallet.coin(coinSymbol);
-        const walletResult = await walletApi.getWalletInfo(user);
-        return [walletResult];
-      }
-      const { allCoins } = wallet;
-      const walletData = await Promise.all(
-        allCoins.map(walletCoinApi => walletCoinApi.getWalletInfo(user)),
-      );
-      return [walletData];
-    } catch (error) {
-      logger.warn(`resolvers.swap.getSwapParams.catch: ${error}`);
-      throw error;
-    }
-  };
-
-  getBalance = async (parent: any, args: {}, { user, wallet }: Context) => {
-    this.requireAuth(user);
-    try {
-      const walletApi = wallet.coin(parent.symbol);
-      const walletResult = await walletApi.getBalance(
-        parent.lookupTransactionsBy,
-      );
-      return walletResult;
-    } catch (error) {
-      logger.debug(`resolvers.swap.getBalance.catch: ${error}`);
-      throw error;
-    }
-  };
-
   confirmSwap = async (
     parent: any,
     args: {
@@ -64,7 +27,21 @@ class SwapResolvers extends ResolverBase {
       args.walletPassword,
     );
 
-    if (!validPassword) throw new Error('Invalid Password');
+    if (!validPassword) {
+      return {
+        message: 'Invalid Password',
+        hash: '',
+        blockNumber: 0,
+        confirmations: 0,
+        to: '',
+        midPrice: '',
+        midPriceInverted: '',
+        path: '',
+        liquidityProviderFee: '',
+        liquidityProviderFeePercent: 0,
+        tradeExpires: 0,
+      };
+    }
 
     let passwordDecripted: string;
     try {
@@ -76,7 +53,19 @@ class SwapResolvers extends ResolverBase {
       const { decryptedString } = decryptedPrivateKey;
       passwordDecripted = decryptedString;
     } catch (e) {
-      logger.warn('EncryptedKey no return instead we reach a 401 status' + e);
+      return {
+        message: e.message,
+        hash: '',
+        blockNumber: 0,
+        confirmations: 0,
+        to: '',
+        midPrice: '',
+        midPriceInverted: '',
+        path: '',
+        liquidityProviderFee: '',
+        liquidityProviderFeePercent: 0,
+        tradeExpires: 0,
+      };
     }
 
     try {
@@ -151,14 +140,6 @@ class SwapResolvers extends ResolverBase {
 export const swapResolver = new SwapResolvers();
 
 export default {
-  Query: {
-    swapParams: swapResolver.getSwapParams,
-  },
-
-  Tokens: {
-    balance: swapResolver.getBalance,
-  },
-
   Mutation: {
     startSwap: swapResolver.startSwap,
     confirmSwap: swapResolver.confirmSwap,

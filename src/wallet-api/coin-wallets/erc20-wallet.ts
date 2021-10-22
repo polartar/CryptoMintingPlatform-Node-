@@ -102,9 +102,10 @@ class Erc20API extends EthWallet {
       context['symbol'] = symbol;
       context['orderId'] = orderId;
       context['address'] = address;
-      logger.exceptionContext(err, 
+      logger.exceptionContext(
+        err,
         `coin-wallets.erc20-wallet-getCartBalance`,
-        context
+        context,
       );
     }
     return toReturn;

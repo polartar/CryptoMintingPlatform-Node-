@@ -42,10 +42,7 @@ class Resolvers extends ResolverBase {
     } catch (err) {
       const context: any = {};
       context['userId'] = user.userId;
-      logger.exceptionContext(
-        err,
-        'resolvers.getVaultItems.catch',
-      )
+      logger.exceptionContext(err, 'resolvers.getVaultItems.catch');
       return {
         success: false,
         message: err.message,
@@ -227,7 +224,7 @@ class Resolvers extends ResolverBase {
         logger.exceptionContext(
           err,
           'error when looking for coins to mint : ' +
-            JSON.stringify({ err, user, items })
+            JSON.stringify({ err, user, items }),
         );
       }
     });
@@ -297,7 +294,7 @@ class Resolvers extends ResolverBase {
         logger.exceptionContext(
           err,
           'error when looking for coins to mint : ' +
-            JSON.stringify({ item, readyToMint, user })
+            JSON.stringify({ item, readyToMint, user }),
         );
       }
     });
@@ -374,7 +371,7 @@ class Resolvers extends ResolverBase {
         logger.exceptionContext(
           err,
           'MINT error : ' +
-            JSON.stringify({ currSymbol, currAmount, dataResult, user })
+            JSON.stringify({ currSymbol, currAmount, dataResult, user }),
         );
         currResult.error = {
           code: ErrorResponseCode.InternalError,
