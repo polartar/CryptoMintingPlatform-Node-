@@ -103,9 +103,9 @@ class TransactionService {
   }
 
   getEthBalanceAndTransactions = async (ethAddress: string) => {
-    const [result] = (await WalletTransaction.aggregate(
+    const [result] = await WalletTransaction.aggregate(
       ethBalanceTransactionsPipeline(ethAddress),
-    ));
+    );
 
     return result
       ? result
@@ -120,9 +120,9 @@ class TransactionService {
     tokenAddress: string,
     ethAddress: string,
   ) => {
-    const [result] = (await WalletTransaction.aggregate(
+    const [result] = await WalletTransaction.aggregate(
       tokenBalanceTransactionsPipeline(tokenAddress, ethAddress),
-    ));
+    );
 
     return result
       ? result
@@ -134,9 +134,9 @@ class TransactionService {
   };
 
   getGalaBalanceAndTransactions = async (ethAddress: string) => {
-    const [result] = (await WalletTransaction.aggregate(
+    const [result] = await WalletTransaction.aggregate(
       buildGalaBalanceTransactionsPipeline(ethAddress),
-    ));
+    );
     return result
       ? result
       : ({
