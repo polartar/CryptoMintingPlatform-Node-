@@ -1,6 +1,4 @@
-import { Request } from 'express';
 import { Types } from 'mongoose';
-import { AffiliateAction, AffiliateLink } from 'src/models';
 import { blueUser } from 'tests/mocks/models';
 import { createBitly, createUser } from 'tests/creators/data-sources';
 import { createContext, createDataSources } from 'tests/creators/types';
@@ -17,7 +15,7 @@ jest.mock('src/data-sources', () => ({
   UserApi: userApi,
 }));
 
-import { Bitly, UserApi } from 'src/data-sources';
+import { UserApi } from 'src/data-sources';
 
 const config = {};
 
@@ -31,7 +29,6 @@ jest.mock('src/common', () => ({
   ResolverBase: resolverBase,
 }));
 
-import { DataSources, Context } from 'src/types';
 import affiliateResolver from 'src/resolvers/affiliate';
 import { dbHandler } from 'tests/db';
 
@@ -39,6 +36,7 @@ describe('Affiliate Resolver', () => {
   const brand = 'blue';
   const token = 'token';
   const affiliateId = '6114c774f28b6b4544c3de47';
+  const affiliateLinkUserId = '4224c662f14b6b3922c1de23';
   const sessionId = 'session';
   const pageUrl = 'https://www.tests.com';
   const name = 'name';
@@ -50,12 +48,20 @@ describe('Affiliate Resolver', () => {
 
   const affiliateLink = {
     _id: new Types.ObjectId(affiliateId),
+    id: affiliateId,
     pageUrl: pageUrl,
     name: name,
     brand: brand,
+  };
+
+  const affiliateLinkUser = {
+    _id: new Types.ObjectId(affiliateLinkUserId),
+    id: affiliateLinkUserId,
     userId: blueUser.userId,
+    affiliateLinkId: affiliateId,
     bitlyLink: bitlyLink,
-    affiliateId: affiliateId,
+    longLink: pageUrl,
+    created: new Date(),
   };
 
   beforeAll(async () => {
@@ -99,21 +105,35 @@ describe('Affiliate Resolver', () => {
       args,
       context,
     );
-    console.log(response);
-    console.log(args);
 
     expect(response).not.toBeNull();
     expect(response.pageUrl).toBe(affiliateLink.pageUrl);
     expect(response.name).toBe(affiliateLink.name);
     expect(response.brand).toBe(affiliateLink.brand);
-    expect(response.userId).toBe(affiliateLink.userId);
-    expect(response.bitlyLink).toBe(affiliateLink.bitlyLink);
-    expect(response.affiliateId).toBe(affiliateLink.affiliateId);
+  });
+
+  it('should read user affiliate links', async () => {
+    dbHandler.collection('affiliate-link-users').insertOne(affiliateLinkUser);
+
+    const response = await affiliateResolver.Query.userAffiliateLinks(
+      null,
+      {},
+      context,
+    );
+
+    expect(response).not.toBeNull();
+    expect(response.length).toBe(1);
+    expect(response[0].id).toBe(affiliateLinkUser.id);
+    expect(response[0].userId).toBe(affiliateLinkUser.userId);
+    expect(response[0].affiliateLinkId).toBe(affiliateLinkUser.affiliateLinkId);
+    expect(response[0].bitlyLink).toBe(affiliateLinkUser.bitlyLink);
+    expect(response[0].longLink).toBe(affiliateLinkUser.longLink);
   });
 
   it('should assign a referrer', async () => {
     dbHandler.collection('users').insertOne(blueUser);
     dbHandler.collection('affiliate-links').insertOne(affiliateLink);
+    dbHandler.collection('affiliate-link-users').insertOne(affiliateLinkUser);
 
     const args = {
       affiliateId: affiliateId,
@@ -147,5 +167,26 @@ describe('Affiliate Resolver', () => {
     expect(response.pageUrl).toBe(pageUrl);
     expect(response.name).toBe(name);
     expect(response.brand).toBe(brand);
+  });
+
+  it('should add an affiliate link to user', async () => {
+    dbHandler.collection('users').insertOne(blueUser);
+    dbHandler.collection('affiliate-links').insertOne(affiliateLink);
+
+    const args = {
+      affiliateLinkId: affiliateLink.id,
+    };
+
+    const response = await affiliateResolver.Mutation.addAffiliateLinkToUser(
+      null,
+      args,
+      context,
+    );
+
+    expect(response).not.toBeNull();
+    expect(response.userId).toBe(affiliateLinkUser.userId);
+    expect(response.affiliateLinkId).toBe(affiliateLinkUser.affiliateLinkId);
+    expect(response.bitlyLink).toBe(affiliateLinkUser.bitlyLink);
+    expect(response.longLink).toBe(affiliateLinkUser.longLink);
   });
 });
