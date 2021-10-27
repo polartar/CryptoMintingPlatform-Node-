@@ -3,7 +3,11 @@ import ResolverBase from '../common/Resolver-Base';
 import { cartQueue } from '../blockchain-listeners/cart-queue';
 import { CartService } from '../blockchain-listeners/cart-service';
 import { addHours } from 'date-fns';
-import { CartStatus, ICartAddress } from '../types/ICartAddress';
+import {
+  CartStatus,
+  ICartAddress,
+  ICartAddressResponse,
+} from '../types/ICartAddress';
 import { convertUSDToCryptoAmount, convertCryptoAmountToUSD } from '../utils';
 //const { decycle } = require('../utils/cycle.js');
 // #amount  = amountUsd / (somevalegetFrom the wallet.) keep an eye on precision.
@@ -88,7 +92,7 @@ class Resolvers extends ResolverBase {
     if (amountUsd) amount = convertUSDToCryptoAmount(amountUsd);
     else if (amount) amountUsd = convertCryptoAmountToUSD(amount);
 
-    const addresses: ICartAddress[] = [];
+    const addresses: ICartAddressResponse[] = [];
     try {
       const currTime = new Date();
       //maybe add an .env in order to replace the 1 below.
@@ -118,7 +122,15 @@ class Resolvers extends ResolverBase {
         orderId,
         data,
       );
-      addresses.push(address);
+
+      addresses.push({
+        ...address,
+        pricing: {
+          quantity,
+          amountUsd: valueToAdd.usdAmount,
+          amountCrypto: valueToAdd.crytoAmount,
+        },
+      });
 
       const auditAddressResult = await this.auditAddressRequest({
         userId,
