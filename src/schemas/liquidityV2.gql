@@ -29,30 +29,26 @@ type liquidityRem {
 type Mutation {
   createPair(
     walletPassword: String!
-    tokenA: String!
-    tokenB: String!
+    coinSymbol0: String!
+    coinSymbol1: String!
   ): pairParams
-  approveTokens(walletPassword: String!, token: String!): tokenApprove
+  approveTokens(walletPassword: String!, coinSymbol0: String!): tokenApprove
   addLiquidityV2(
-    tokenA: String!
-    tokenB: String!
+    coinSymbol0: String!
+    coinSymbol1: String!
     amountADesired: Int!
     amountBDesired: Int!
     walletPassword: String!
-    decimalsA: Int!
-    decimalsB: Int!
   ): liquidityAdd
   remLiquidityV2(
-    tokenA: String!
-    tokenB: String!
+    coinSymbol0: String!
+    coinSymbol1: String!
     walletPassword: String!
     percentage: Int!
   ): liquidityRem
   getPairInfo(
-    tokenA: String!
-    tokenB: String!
-    decimalsA: Int!
-    decimalsB: Int!
+    coinSymbol0: String!
+    coinSymbol1: String!
     walletPassword: String!
   ): pairInfo
 }

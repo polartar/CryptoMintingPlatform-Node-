@@ -1,7 +1,7 @@
 import { ResolverBase, config, logger } from 'src/common';
 import { Context } from '../types/context';
 import { ethers, BigNumber } from 'ethers';
-import EthWallet from '../wallet-api/coin-wallets/eth-wallet';
+import Erc20API from 'src/wallet-api/coin-wallets/erc20-wallet';
 import {
   //Percent,
   Token,
@@ -21,18 +21,21 @@ class LiquidityResolverV2 extends ResolverBase {
     parent: any,
     args: {
       walletPassword: string;
-      tokenA: string;
-      tokenB: string;
+      coinSymbol0: string;
+      coinSymbol1: string;
     },
     { user, wallet }: Context,
   ) => {
     this.requireAuth(user);
-    const walletApi = wallet.coin('ETH') as EthWallet;
-    const { receiveAddress } = await walletApi.getWalletInfo(user);
+    const inputToken = wallet.coin(args.coinSymbol0) as Erc20API;
+    const token0 = inputToken.contractAddress;
+    const outputToken = wallet.coin(args.coinSymbol1) as Erc20API;
+    const token1 = outputToken.contractAddress;
+    const { receiveAddress } = await inputToken.getWalletInfo(user);
 
     let passwordDecripted;
     try {
-      const encryptedKey = await walletApi.getEncryptedPrivKey(user.userId);
+      const encryptedKey = await inputToken.getEncryptedPrivKey(user.userId);
       const decryptedPrivateKey = this.decrypt(
         encryptedKey,
         args.walletPassword,
@@ -55,18 +58,11 @@ class LiquidityResolverV2 extends ResolverBase {
     );
 
     try {
-      const pairAddress = await factoryContract.createPair(
-        args.tokenA,
-        args.tokenB,
-      );
+      const pairAddress = await factoryContract.createPair(token0, token1);
       const txPairAddress = await pairAddress.wait();
-      // const feeTo = await factoryContract.feeTo();
-      // const feeToSetter = await factoryContract.feeToSetter();
       return {
         message: 'Pair created',
         pairAddress,
-        // feeTo,
-        // feeToSetter
       };
     } catch (error) {
       logger.warn(
@@ -74,15 +70,10 @@ class LiquidityResolverV2 extends ResolverBase {
           error.message,
       );
       try {
-        const pairAddress = await factoryContract.getPair(
-          args.tokenA,
-          args.tokenB,
-        );
+        const pairAddress = await factoryContract.getPair(token0, token1);
         return {
-          message: error.message, // 'Pair is already created',
+          message: 'Pair is already created',
           pairAddress: pairAddress,
-          // feeTo: "",
-          // feeToSetter: ""
         };
       } catch (error) {
         return {
@@ -97,17 +88,18 @@ class LiquidityResolverV2 extends ResolverBase {
     parent: any,
     args: {
       walletPassword: string;
-      token: string;
+      coinSymbol0: string;
     },
     { user, wallet }: Context,
   ) => {
     this.requireAuth(user);
-    const walletApi = wallet.coin('ETH') as EthWallet;
-    const { receiveAddress } = await walletApi.getWalletInfo(user);
+    const inputToken = wallet.coin(args.coinSymbol0) as Erc20API;
+    const token0 = inputToken.contractAddress;
+    const { receiveAddress } = await inputToken.getWalletInfo(user);
 
     let passwordDecripted;
     try {
-      const encryptedKey = await walletApi.getEncryptedPrivKey(user.userId);
+      const encryptedKey = await inputToken.getEncryptedPrivKey(user.userId);
       const decryptedPrivateKey = this.decrypt(
         encryptedKey,
         args.walletPassword,
@@ -120,7 +112,7 @@ class LiquidityResolverV2 extends ResolverBase {
 
     const ethersWallet = new ethers.Wallet(passwordDecripted, provider);
     const approveContract = new ethers.Contract(
-      args.token,
+      token0,
       IUniswapV2ERC20ABI,
       provider,
     );
@@ -164,23 +156,26 @@ class LiquidityResolverV2 extends ResolverBase {
   addLiquidityV2 = async (
     parent: any,
     args: {
-      tokenA: string;
-      tokenB: string;
+      coinSymbol0: string;
+      coinSymbol1: string;
       amountADesired: number;
       amountBDesired: number;
-      decimalsA: number;
-      decimalsB: number;
       walletPassword: string;
     },
     { user, wallet }: Context,
   ) => {
     this.requireAuth(user);
-    const walletApi = wallet.coin('ETH') as EthWallet;
-    const { receiveAddress } = await walletApi.getWalletInfo(user);
+    const inputToken = wallet.coin(args.coinSymbol0) as Erc20API;
+    const token0 = inputToken.contractAddress;
+    const decimals0 = inputToken.decimalPlaces;
+    const outputToken = wallet.coin(args.coinSymbol1) as Erc20API;
+    const token1 = outputToken.contractAddress;
+    const decimals1 = outputToken.decimalPlaces;
+    const { receiveAddress } = await inputToken.getWalletInfo(user);
 
     let passwordDecripted;
     try {
-      const encryptedKey = await walletApi.getEncryptedPrivKey(user.userId);
+      const encryptedKey = await inputToken.getEncryptedPrivKey(user.userId);
       const decryptedPrivateKey = this.decrypt(
         encryptedKey,
         args.walletPassword,
@@ -203,15 +198,11 @@ class LiquidityResolverV2 extends ResolverBase {
 
     try {
       const [gasPrice] = await Promise.all([provider.getGasPrice()]);
-      const amountA = args.amountADesired
-        .toFixed(args.decimalsA)
-        .replace(/\./g, '');
-      const amountB = args.amountBDesired
-        .toFixed(args.decimalsB)
-        .replace(/\./g, '');
+      const amountA = args.amountADesired.toFixed(decimals0).replace(/\./g, '');
+      const amountB = args.amountBDesired.toFixed(decimals1).replace(/\./g, '');
       const addliquidity = await liquidityContract.addLiquidity(
-        args.tokenA,
-        args.tokenB,
+        token0,
+        token1,
         amountA,
         amountB,
         0,
@@ -238,21 +229,24 @@ class LiquidityResolverV2 extends ResolverBase {
   getPairInfo = async (
     parent: any,
     args: {
-      tokenA: string;
-      tokenB: string;
-      decimalsA: number;
-      decimalsB: number;
+      coinSymbol0: string;
+      coinSymbol1: string;
       walletPassword: string;
     },
     { user, wallet }: Context,
   ) => {
     this.requireAuth(user);
-    const walletApi = wallet.coin('ETH') as EthWallet;
-    const { receiveAddress } = await walletApi.getWalletInfo(user);
+    const inputToken = wallet.coin(args.coinSymbol0) as Erc20API;
+    const token0 = inputToken.contractAddress;
+    const decimals0 = inputToken.decimalPlaces;
+    const outputToken = wallet.coin(args.coinSymbol1) as Erc20API;
+    const token1 = outputToken.contractAddress;
+    const decimals1 = outputToken.decimalPlaces;
+    const { receiveAddress } = await inputToken.getWalletInfo(user);
 
     let passwordDecripted;
     try {
-      const encryptedKey = await walletApi.getEncryptedPrivKey(user.userId);
+      const encryptedKey = await inputToken.getEncryptedPrivKey(user.userId);
       const decryptedPrivateKey = this.decrypt(
         encryptedKey,
         args.walletPassword,
@@ -274,7 +268,7 @@ class LiquidityResolverV2 extends ResolverBase {
       signer,
     );
 
-    const pairAddress = await factoryContract.getPair(args.tokenA, args.tokenB);
+    const pairAddress = await factoryContract.getPair(token0, token1);
 
     const pairContract = new ethers.Contract(
       pairAddress,
@@ -284,15 +278,11 @@ class LiquidityResolverV2 extends ResolverBase {
 
     const { _reserve0, _reserve1 } = await pairContract.getReserves();
 
-    const numbReserve0 = _reserve0.div(Math.pow(10, args.decimalsA)).toString();
-    const remindReserve0 = _reserve0
-      .mod(Math.pow(10, args.decimalsA))
-      .toString();
+    const numbReserve0 = _reserve0.div(Math.pow(10, decimals0)).toString();
+    const remindReserve0 = _reserve0.mod(Math.pow(10, decimals1)).toString();
     const reserve0 = numbReserve0 + '.' + remindReserve0;
-    const numbReserve1 = _reserve1.div(Math.pow(10, args.decimalsA)).toString();
-    const remindReserve1 = _reserve1
-      .mod(Math.pow(10, args.decimalsA))
-      .toString();
+    const numbReserve1 = _reserve1.div(Math.pow(10, decimals0)).toString();
+    const remindReserve1 = _reserve1.mod(Math.pow(10, decimals1)).toString();
     const reserve1 = numbReserve1 + '.' + remindReserve1;
 
     const liquidityBigNumber = await pairContract.balanceOf(receiveAddress);
@@ -308,20 +298,23 @@ class LiquidityResolverV2 extends ResolverBase {
   removeLiquidityV2 = async (
     parent: any,
     args: {
-      tokenA: string;
-      tokenB: string;
+      coinSymbol0: string;
+      coinSymbol1: string;
       walletPassword: string;
       percentage: number;
     },
     { user, wallet }: Context,
   ) => {
     this.requireAuth(user);
-    const walletApi = wallet.coin('ETH') as EthWallet;
-    const { receiveAddress } = await walletApi.getWalletInfo(user);
+    const inputToken = wallet.coin(args.coinSymbol0) as Erc20API;
+    const token0 = inputToken.contractAddress;
+    const outputToken = wallet.coin(args.coinSymbol1) as Erc20API;
+    const token1 = outputToken.contractAddress;
+    const { receiveAddress } = await inputToken.getWalletInfo(user);
 
     let passwordDecripted;
     try {
-      const encryptedKey = await walletApi.getEncryptedPrivKey(user.userId);
+      const encryptedKey = await inputToken.getEncryptedPrivKey(user.userId);
       const decryptedPrivateKey = this.decrypt(
         encryptedKey,
         args.walletPassword,
@@ -348,7 +341,7 @@ class LiquidityResolverV2 extends ResolverBase {
       signer,
     );
 
-    const pairAddress = await factoryContract.getPair(args.tokenA, args.tokenB);
+    const pairAddress = await factoryContract.getPair(token0, token1);
 
     const pairContract = new ethers.Contract(
       pairAddress,
@@ -360,8 +353,8 @@ class LiquidityResolverV2 extends ResolverBase {
     try {
       const [gasPrice] = await Promise.all([provider.getGasPrice()]);
       const removeLiquidity = await liquidityContract.removeLiquidity(
-        args.tokenA,
-        args.tokenB,
+        token0,
+        token1,
         liquidity,
         0,
         0,
