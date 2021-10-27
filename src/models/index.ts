@@ -10,6 +10,7 @@ export { default as Notification } from './notifications';
 export { default as BlockbotReportResult } from './block-bot-report';
 export { default as AffiliateAction } from './affiliate-action';
 export { default as AffiliateLink } from './affiliate-link';
+export { default as AffiliateLinkUser } from './affiliate-link-user';
 export { default as GreenResult } from './green-result';
 export { default as Environment } from './environment';
 export { default as License } from './license';

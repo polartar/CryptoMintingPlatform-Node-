@@ -50,6 +50,52 @@ class Config {
     }
   }
 
+  private getTokensFromHost() {
+    const hostName = env.APP_HOSTNAME.toLowerCase();
+    if (
+      hostName.includes('connectblockchain') ||
+      hostName.includes('connect')
+    ) {
+      const tokens = String(
+        'BTC,ETH,WIN,SWITCH,BLUE,GREEN,LIBERTY,GIVE,ELEVATE,GROW,GALA,AIR,WATER,BAT',
+      )
+        .split(',')
+        .map(symbol => symbol.toLowerCase());
+      return tokens;
+    }
+    if (hostName.includes('green')) {
+      const tokens = String('BTC,ETH,GREEN')
+        .split(',')
+        .map(symbol => symbol.toLowerCase());
+      console.log(tokens);
+      return tokens;
+    }
+    if (hostName.includes('blue')) {
+      const tokens = String('BTC,ETH,BLUE')
+        .split(',')
+        .map(symbol => symbol.toLowerCase());
+      return tokens;
+    }
+    if (hostName.includes('give')) {
+      const tokens = String('BTC,ETH,GIVE')
+        .split(',')
+        .map(symbol => symbol.toLowerCase());
+      return tokens;
+    }
+    if (hostName.includes('liberty')) {
+      const tokens = String('BTC,ETH,LIBERTY')
+        .split(',')
+        .map(symbol => symbol.toLowerCase());
+      return tokens;
+    }
+    if (hostName.includes('switch')) {
+      const tokens = String('BTC,ETH,SWITCH,GREEN,GALA,BAT')
+        .split(',')
+        .map(symbol => symbol.toLowerCase());
+      return tokens;
+    }
+  }
+
   // MONGODB_URI_<brand> Variables are present in the legacy K8S environment.
   // This allows us to dynamically and securly update mongodb URIS.
   // If the brand is not avaialble yet in the K8S environment it is a very
@@ -206,9 +252,7 @@ class Config {
 
   public readonly supportsBtcPubsub = env.SUPPORTS_BTC_PUBSUB === 'true';
 
-  public readonly displayedWallets = env.DISPLAYED_WALLETS.split(
-    ',',
-  ).map(symbol => symbol.toLowerCase());
+  public readonly displayedWallets = this.getTokensFromHost();
   public readonly indexedTransactions = env.INDEXED_TRANSACTIONS === 'true';
   public readonly etherscanNetwork =
     env.CRYPTO_NETWORK === 'testnet' ? 'ropsten' : 'homestead';
