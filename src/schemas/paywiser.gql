@@ -6,6 +6,52 @@ type ReferenceNumber {
   CallerReferenceID: String
 }
 
+type CheckReferenceNumber {
+  StatusCode: Int
+  StatusDescription: String
+  AssignedDateTime: String
+  ReferenceNumberStatus: String
+  PersonID: String
+  KycID: String
+  KycStart: String
+  KycEnd: String
+  KycStatus: String
+  VerificationEnd: String
+  VerificationStatus: String
+  AdditionalData: String
+  ReferenceID: String
+  CallerReferenceID: String
+}
+
+type GetPersonAddress {
+  StatusCode: Int
+  StatusDescription: String
+  Address: PersonAddress
+  ReferenceID: String
+  CallerReferenceID: String
+}
+
+type PersonAddress {
+  FirstName: String
+  MiddleName: String
+  LastName: String
+  Address1: String
+  Address2: String
+  Address3: String
+  ZipCode: String
+  City: String
+  State: String
+  CountryCode: String
+  CountryName: String
+  MobileNumber: String
+  Email: String
+  VerificationDateTime: String
+  VerificationStatus: String
+  VerificationRejectReason: String
+}
+
 type Query {
   referenceNumber: ReferenceNumber!
+  checkReferenceNumber: CheckReferenceNumber!
+  getPersonAddress: GetPersonAddress!
 }
