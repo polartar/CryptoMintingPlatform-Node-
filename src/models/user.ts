@@ -413,6 +413,8 @@ export const userSchema = new mongoose.Schema(
       RequireAddress: Boolean,
       AddressFields: String,
       ReferenceID: String,
+      ReferenceNumber: String,
+      VerificationStatus: String,
     },
   },
   { id: false },
