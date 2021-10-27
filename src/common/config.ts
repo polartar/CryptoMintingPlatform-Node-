@@ -67,7 +67,6 @@ class Config {
       const tokens = String('BTC,ETH,GREEN')
         .split(',')
         .map(symbol => symbol.toLowerCase());
-      console.log(tokens);
       return tokens;
     }
     if (hostName.includes('blue')) {
