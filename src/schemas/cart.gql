@@ -27,7 +27,7 @@ type CartAddressRequest {
   affiliateId: String
   affiliateSessionId: String
   utmVariables: String
-  created: Date!
+  created: Date
   expires: Date!
   addresses: [CartAddress!]!
 }
