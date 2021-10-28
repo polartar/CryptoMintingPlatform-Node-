@@ -13,7 +13,6 @@ const redis = require('redis');
 const { promisifyAll } = require('bluebird');
 import axios from 'axios';
 import { subHours } from 'date-fns';
-import { convertUSDToCryptoAmount } from '../utils';
 export class CartQueue {
   private client: any;
   private cronTask: any;
@@ -46,12 +45,10 @@ export class CartQueue {
 
       data.meprTxData = orderResponse['tx-json'];
 
+      //remove when we move to quantity system.
       if (!data.usdAmount) {
         data.usdAmount = +JSON.parse(data.meprTxData).total;
-        if (data.usdAmount) {
-          data.crytoAmount = convertUSDToCryptoAmount(data.usdAmount);
-          data.crytoAmountRemaining = data.crytoAmount;
-        }
+        data.crytoAmountRemaining = data.crytoAmount;
       }
     } catch (err) {
       logger.error(`Can't get transaction from WP error: ${err}`);
@@ -385,26 +382,30 @@ export class CartQueue {
         email: orderInfo.member.email,
         data: JSON.stringify(orderInfo),
         created: new Date(),
+        redisKey: JSON.stringify(keyObj),
+        redisValue: JSON.stringify(valueObj),
       };
 
-      if (valueObj.dbId) {
-        const previousValue = await CartTransaction.findOne({
-          id: valueObj.dbId,
-        });
-        if (previousValue) {
-          previousValue.status = valueObj.status;
-          previousValue.totalUsd = valueObj.usdAmount.toString();
-          previousValue.totalCrypto = valueObj.crytoAmount.toString();
-          previousValue.totalCryptoReceived = amountCryptoReceived;
-          previousValue.conversionRate = (
-            valueObj.usdAmount / valueObj.crytoAmount
-          ).toString();
-          previousValue.remainingCrypto = valueObj.crytoAmountRemaining.toString();
-          previousValue.data = JSON.stringify(orderInfo);
+      const previousValue = await CartTransaction.findOne({
+        wp_id: keyObj.orderId,
+      });
 
-          previousValue.save();
-        }
-      } else {
+      if (previousValue) {
+        previousValue.status = valueObj.status;
+        previousValue.totalUsd = valueObj.usdAmount.toString();
+        previousValue.totalCrypto = valueObj.crytoAmount.toString();
+        previousValue.totalCryptoReceived = amountCryptoReceived;
+        previousValue.totalCrypto = valueObj.crytoAmount.toString();
+        
+        previousValue.conversionRate = (
+          valueObj.usdAmount / valueObj.crytoAmount
+        ).toString();
+        previousValue.remainingCrypto = valueObj.crytoAmountRemaining.toString();
+        previousValue.data = JSON.stringify(orderInfo);
+
+        previousValue.save();
+      }
+      else {
         return await CartTransaction.create(dbItem);
       }
     } catch (ex) {

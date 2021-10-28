@@ -48,6 +48,12 @@ class CryptoFavorites extends RESTDataSource {
 
     return +price;
   };
+
+  public getEthUsdPrice = async () => {
+    const [{ price }] = await this.getUserFavorites(['ETH']);
+
+    return +price;
+  };
 }
 
 export default CryptoFavorites;
