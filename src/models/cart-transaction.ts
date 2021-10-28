@@ -15,6 +15,8 @@ export interface ICartTransaction {
   email: string;
   data: string;
   created: Date;
+  redisKey: string;
+  redisValue: string;
 }
 
 export interface ICartTransactionDoc extends ICartTransaction, Document {}
