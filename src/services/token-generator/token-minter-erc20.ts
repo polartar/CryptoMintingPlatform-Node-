@@ -34,23 +34,28 @@ class TokenMinter {
       [destinationAddresses, destinationAmount],
     );
 
-    const transaction = await this.signer.signTransaction({
+    const transaction = {
       to: this.contract.address,
       data: contractMethod,
       gasLimit: 1000000,
       value: '0x0',
       nonce: nonce,
       gasPrice: Math.floor(gasPrice.toNumber() * 1.15),
-    });
+    };
 
     //TODO : when we do nodeSelector for the mint, put it in here.
     //const parsedTransaction = utils.parseTransaction(transaction);
     //await nodeSelector.getNodeToMineTransaction(parsedTransaction.hash);
-
-    this.provider.sendTransaction(transaction);
-
-    const { hash } = ethers.utils.parseTransaction(transaction);
-    return { hash, transaction };
+    try {
+      const txResponse = await this.signer.sendTransaction(transaction);
+      const receipt = await txResponse.wait();
+      const hash = txResponse.hash;
+      return { hash, transaction };
+    } catch (error) {
+      throw new Error(
+        'Service.tokengenerator.tokenMinter.FirmAndSend.error' + error,
+      );
+    }
   };
 }
 export interface IMintDestination {
