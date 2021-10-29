@@ -33,6 +33,18 @@ class LiquidityResolverV2 extends ResolverBase {
     const token1 = outputToken.contractAddress;
     const { receiveAddress } = await inputToken.getWalletInfo(user);
 
+    const validPassword = await inputToken.checkPassword(
+      user,
+      args.walletPassword,
+    );
+
+    if (!validPassword) {
+      return {
+        message: 'Invalid Password',
+        pairAddress: "Pair couldn't be created.",
+      };
+    }
+
     let passwordDecripted;
     try {
       const encryptedKey = await inputToken.getEncryptedPrivKey(user.userId);
@@ -96,6 +108,18 @@ class LiquidityResolverV2 extends ResolverBase {
     const inputToken = wallet.coin(args.coinSymbol0) as Erc20API;
     const token0 = inputToken.contractAddress;
     const { receiveAddress } = await inputToken.getWalletInfo(user);
+
+    const validPassword = await inputToken.checkPassword(
+      user,
+      args.walletPassword,
+    );
+
+    if (!validPassword) {
+      return {
+        message: 'Invalid Password',
+        created: false,
+      };
+    }
 
     let passwordDecripted;
     try {
@@ -173,6 +197,17 @@ class LiquidityResolverV2 extends ResolverBase {
     const decimals1 = outputToken.decimalPlaces;
     const { receiveAddress } = await inputToken.getWalletInfo(user);
 
+    const validPassword = await inputToken.checkPassword(
+      user,
+      args.walletPassword,
+    );
+
+    if (!validPassword) {
+      return {
+        message: 'Invalid Password',
+      };
+    }
+
     let passwordDecripted;
     try {
       const encryptedKey = await inputToken.getEncryptedPrivKey(user.userId);
@@ -233,20 +268,36 @@ class LiquidityResolverV2 extends ResolverBase {
       coinSymbol1: string;
       walletPassword: string;
     },
-    { user, wallet }: Context,
+    ctx: Context,
   ) => {
-    this.requireAuth(user);
-    const inputToken = wallet.coin(args.coinSymbol0) as Erc20API;
+    this.requireAuth(ctx.user);
+    const inputToken = ctx.wallet.coin(args.coinSymbol0) as Erc20API;
     const token0 = inputToken.contractAddress;
     const decimals0 = inputToken.decimalPlaces;
-    const outputToken = wallet.coin(args.coinSymbol1) as Erc20API;
+    const outputToken = ctx.wallet.coin(args.coinSymbol1) as Erc20API;
     const token1 = outputToken.contractAddress;
     const decimals1 = outputToken.decimalPlaces;
-    const { receiveAddress } = await inputToken.getWalletInfo(user);
+    const { receiveAddress } = await inputToken.getWalletInfo(ctx.user);
+
+    const validPassword = await inputToken.checkPassword(
+      ctx.user,
+      args.walletPassword,
+    );
+
+    if (!validPassword) {
+      return {
+        message: 'Invalid Password',
+        reserve0: '',
+        reserve1: '',
+        liquidity: '',
+      };
+    }
 
     let passwordDecripted;
     try {
-      const encryptedKey = await inputToken.getEncryptedPrivKey(user.userId);
+      const encryptedKey = await inputToken.getEncryptedPrivKey(
+        ctx.user.userId,
+      );
       const decryptedPrivateKey = this.decrypt(
         encryptedKey,
         args.walletPassword,
@@ -268,7 +319,17 @@ class LiquidityResolverV2 extends ResolverBase {
       signer,
     );
 
-    const pairAddress = await factoryContract.getPair(token0, token1);
+    let pairAddress = await factoryContract.getPair(token0, token1);
+
+    if (pairAddress === '0x0000000000000000000000000000000000000000') {
+      const argsCreatePair = {
+        walletPassword: args.walletPassword,
+        coinSymbol0: args.coinSymbol0,
+        coinSymbol1: args.coinSymbol1,
+      };
+      const res = await this.createPair(parent, argsCreatePair, ctx);
+      pairAddress = res.pairAddress;
+    }
 
     const pairContract = new ethers.Contract(
       pairAddress,
@@ -286,12 +347,15 @@ class LiquidityResolverV2 extends ResolverBase {
     const reserve1 = numbReserve1 + '.' + remindReserve1;
 
     const liquidityBigNumber = await pairContract.balanceOf(receiveAddress);
-    const liquididty = liquidityBigNumber.toString();
+    let liquidity = liquidityBigNumber.toString();
+
+    if (liquidity === '0') liquidity = '0.0';
 
     return {
+      message: 'Success',
       reserve0,
       reserve1,
-      liquididty,
+      liquidity,
     };
   };
 
@@ -311,6 +375,19 @@ class LiquidityResolverV2 extends ResolverBase {
     const outputToken = wallet.coin(args.coinSymbol1) as Erc20API;
     const token1 = outputToken.contractAddress;
     const { receiveAddress } = await inputToken.getWalletInfo(user);
+
+    const validPassword = await inputToken.checkPassword(
+      user,
+      args.walletPassword,
+    );
+
+    if (!validPassword) {
+      return {
+        message: 'Invalid Password',
+        amountA: '',
+        amountB: '',
+      };
+    }
 
     let passwordDecripted;
     try {
@@ -375,11 +452,14 @@ class LiquidityResolverV2 extends ResolverBase {
 export const liquidityResolverV2 = new LiquidityResolverV2();
 
 export default {
+  Query: {
+    getPairInfo: liquidityResolverV2.getPairInfo,
+  },
+
   Mutation: {
     createPair: liquidityResolverV2.createPair,
     approveTokens: liquidityResolverV2.approveTokens,
     addLiquidityV2: liquidityResolverV2.addLiquidityV2,
     remLiquidityV2: liquidityResolverV2.removeLiquidityV2,
-    getPairInfo: liquidityResolverV2.getPairInfo,
   },
 };

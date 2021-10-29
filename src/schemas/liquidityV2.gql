@@ -1,14 +1,13 @@
 type pairParams {
   pairAddress: String!
-  # feeTo: String!
-  # feeToSetter: String!
   message: String!
 }
 
 type pairInfo {
-  reserve0: String
-  reserve1: String
-  liquidity: String
+  message: String!
+  reserve0: String!
+  reserve1: String!
+  liquidity: String!
 }
 
 type tokenApprove {
@@ -24,6 +23,14 @@ type liquidityRem {
   message: String!
   amountA: String
   amountB: String
+}
+
+type Query {
+  getPairInfo(
+    coinSymbol0: String!
+    coinSymbol1: String!
+    walletPassword: String!
+  ): pairInfo
 }
 
 type Mutation {
@@ -46,9 +53,4 @@ type Mutation {
     walletPassword: String!
     percentage: Int!
   ): liquidityRem
-  getPairInfo(
-    coinSymbol0: String!
-    coinSymbol1: String!
-    walletPassword: String!
-  ): pairInfo
 }
