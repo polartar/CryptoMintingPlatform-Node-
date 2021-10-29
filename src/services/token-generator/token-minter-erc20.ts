@@ -54,10 +54,6 @@ class TokenMinter {
     //await nodeSelector.getNodeToMineTransaction(parsedTransaction.hash);
     try {
       const txResponse = await this.signer.sendTransaction(transaction);
-      await GreenCoinResult.updateMany(
-        { userId, status: 'unminted' },
-        { $set: { status: 'begin-mint', dateMint: new Date() } },
-      );
       const receipt = await txResponse.wait();
       const hash = txResponse.hash;
       return { hash, transaction };
