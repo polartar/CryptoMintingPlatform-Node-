@@ -4,6 +4,14 @@ export interface ICartAddress {
   qrCode: string;
 }
 
+export interface ICartAddressResponse extends ICartAddress {
+  pricing: {
+    amountUsd: number;
+    amountCrypto: number;
+    quantity: number;
+  };
+}
+
 export interface ICartBalance {
   coinSymbol: string;
   address: string;
