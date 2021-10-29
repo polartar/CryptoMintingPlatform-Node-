@@ -1,7 +1,9 @@
+import * as vaultResolver from '../../resolvers/vault';
 import { ethers } from 'ethers';
 import * as abi from '../../common/ABI/erc20-green.json';
 import { config } from '../../common';
 import { ContractData } from '../../types/eth-contracts/contract';
+import { GreenCoinResult } from 'src/models';
 
 class TokenMinter {
   private provider = new ethers.providers.JsonRpcProvider(config.ethNodeUrl);
@@ -9,11 +11,13 @@ class TokenMinter {
   private signer: ethers.Wallet;
   private contract: ethers.Contract;
   private decimalPlaces: number;
+  private userId: string;
 
-  constructor(contractData: ContractData) {
+  constructor(contractData: ContractData, userId: string) {
     this.signer = new ethers.Wallet(contractData.privateKey, this.provider);
     this.contract = new ethers.Contract(contractData.address, abi, this.signer);
     this.decimalPlaces = contractData.decimalPlaces;
+    this.userId = userId;
   }
 
   public mintToGetFromVault = async (toMint: IMintDestination) => {
@@ -43,15 +47,25 @@ class TokenMinter {
       gasPrice: Math.floor(gasPrice.toNumber() * 1.15),
     };
 
+    const userId = this.userId;
+
     //TODO : when we do nodeSelector for the mint, put it in here.
     //const parsedTransaction = utils.parseTransaction(transaction);
     //await nodeSelector.getNodeToMineTransaction(parsedTransaction.hash);
     try {
       const txResponse = await this.signer.sendTransaction(transaction);
+      await GreenCoinResult.updateMany(
+        { userId, status: 'unminted' },
+        { $set: { status: 'begin-mint', dateMint: new Date() } },
+      );
       const receipt = await txResponse.wait();
       const hash = txResponse.hash;
       return { hash, transaction };
     } catch (error) {
+      await GreenCoinResult.updateMany(
+        { userId, status: 'begin-mint' },
+        { $set: { status: 'unminted', dateMint: new Date() } },
+      );
       throw new Error(
         'Service.tokengenerator.tokenMinter.FirmAndSend.error' + error,
       );

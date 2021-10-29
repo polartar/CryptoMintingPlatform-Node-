@@ -271,22 +271,6 @@ class Resolvers extends ResolverBase {
               dataResult.push(errorResponse);
             } else {
               readyToMint.push(item);
-              try {
-                updateResult.push(
-                  this.updateMultipleCoinRecords(
-                    userId,
-                    'unminted',
-                    'begin-mint',
-                  ),
-                );
-              } catch (err) {
-                logger.error(
-                  "error when tryign to set to 'begin-mint' : " +
-                    err.message +
-                    ' : ' +
-                    JSON.stringify({ err, dbUnminted }),
-                );
-              }
             }
           }
         });
@@ -318,7 +302,10 @@ class Resolvers extends ResolverBase {
     );
 
     //TODO: store the sendFee in DB
-    const minterGreen = await TokenMinterFactory.getTokenMinter('green');
+    const minterGreen = await TokenMinterFactory.getTokenMinter(
+      'green',
+      userId,
+    );
 
     for (const ready of readyToMint) {
       const currSymbol: string = ready.symbol;

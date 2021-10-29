@@ -5,7 +5,7 @@ import { ContractData } from '../../types/eth-contracts/contract';
 //import { secretsFactory } from '../../common/secret-providers/secret-factory';
 
 class TokenMinterFactory {
-  public getTokenMinter = async (contractName: string) => {
+  public getTokenMinter = async (contractName: string, userId: string) => {
     // if (config.dryRun) {
     //   return new DryRunTokenMinter(contractData);
     // }
@@ -15,7 +15,7 @@ class TokenMinterFactory {
         //Green's ERC-20 contract is different than standard ERC-20 because
         //Green uses 'distributeMinting' function instead of standard 'mint'
         const contract = await this.getGreenContractData();
-        const tokenMint = new TokenMinterErc20Green(contract);
+        const tokenMint = new TokenMinterErc20Green(contract, userId);
         return tokenMint;
         break;
     }
