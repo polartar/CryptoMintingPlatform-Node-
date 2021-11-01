@@ -1,4 +1,3 @@
-import * as vaultResolver from '../../resolvers/vault';
 import { ethers } from 'ethers';
 import * as abi from '../../common/ABI/erc20-green.json';
 import { config } from '../../common';
@@ -55,7 +54,7 @@ class TokenMinter {
     try {
       const txResponse = await this.signer.sendTransaction(transaction);
       const receipt = await txResponse.wait();
-      const hash = txResponse.hash;
+      const { hash } = txResponse;
       return { hash, transaction };
     } catch (error) {
       await GreenCoinResult.updateMany(
@@ -63,7 +62,7 @@ class TokenMinter {
         { $set: { status: 'unminted', dateMint: new Date() } },
       );
       throw new Error(
-        'Service.tokengenerator.tokenMinter.FirmAndSend.error' + error,
+        'Service.tokenGenerator.tokenMinter.mintToGetFromVault.error' + error,
       );
     }
   };
