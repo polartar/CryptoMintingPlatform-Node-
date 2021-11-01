@@ -396,7 +396,7 @@ export class CartQueue {
         previousValue.totalCrypto = valueObj.crytoAmount.toString();
         previousValue.totalCryptoReceived = amountCryptoReceived;
         previousValue.totalCrypto = valueObj.crytoAmount.toString();
-        
+
         previousValue.conversionRate = (
           valueObj.usdAmount / valueObj.crytoAmount
         ).toString();
@@ -404,8 +404,7 @@ export class CartQueue {
         previousValue.data = JSON.stringify(orderInfo);
 
         previousValue.save();
-      }
-      else {
+      } else {
         return await CartTransaction.create(dbItem);
       }
     } catch (ex) {

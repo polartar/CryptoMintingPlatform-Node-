@@ -318,7 +318,10 @@ class Resolvers extends ResolverBase {
     );
 
     //TODO: store the sendFee in DB
-    const minterGreen = await TokenMinterFactory.getTokenMinter('green');
+    const minterGreen = await TokenMinterFactory.getTokenMinter(
+      'green',
+      userId,
+    );
 
     for (const ready of readyToMint) {
       const currSymbol: string = ready.symbol;
