@@ -195,7 +195,7 @@ export const walletConfigurations: ICoinMetadata[] = [
   {
     walletApi: eSupportedInterfaces.doc,
     name: 'Water',
-    symbol: 'WATTER',
+    symbol: 'WATER',
     backgroundColor: '#0066FF',
     icon: '',
     abi: null,

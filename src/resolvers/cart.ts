@@ -3,8 +3,11 @@ import ResolverBase from '../common/Resolver-Base';
 import { cartQueue } from '../blockchain-listeners/cart-queue';
 import { CartService } from '../blockchain-listeners/cart-service';
 import { addHours } from 'date-fns';
-import { CartStatus, ICartAddress } from '../types/ICartAddress';
-import { convertUSDToCryptoAmount, convertCryptoAmountToUSD } from '../utils';
+import {
+  CartStatus,
+  ICartAddress,
+  ICartAddressResponse,
+} from '../types/ICartAddress';
 //const { decycle } = require('../utils/cycle.js');
 // #amount  = amountUsd / (somevalegetFrom the wallet.) keep an eye on precision.
 
@@ -58,11 +61,14 @@ class Resolvers extends ResolverBase {
       utmVariables: string;
       quantity: number;
     },
-    ctx: Context,
+    { wallet, user, dataSources: { cryptoFavorites } }: Context,
   ) => {
     // We don´t require auth here, it is the expected behavior?
-    const { wallet } = ctx;
-    const userId = ctx.user?.userId;
+    let userId = '';
+    if (user) {
+      userId = user.userId;
+    }
+
     const {
       coinSymbol,
       orderId,
@@ -72,7 +78,7 @@ class Resolvers extends ResolverBase {
     } = args;
 
     let quantity = args.quantity;
-    let amount = Number(args.amount);
+    let amountCrypto = Number(args.amount);
     let amountUsd = Number(args.amountUsd);
 
     if (quantity <= 0) quantity = 1;
@@ -80,15 +86,28 @@ class Resolvers extends ResolverBase {
     // handling amounts.
     if (Number.isNaN(amountUsd)) amountUsd = 0;
 
-    if (Number.isNaN(amount)) amount = 0;
+    if (Number.isNaN(amountCrypto)) amountCrypto = 0;
 
     //amount and amounUsd, are dependents, so if one of them exists the
     //other one will be calculated in base of it.
     //in order to avoid any inconsistencies.
-    if (amountUsd) amount = convertUSDToCryptoAmount(amountUsd);
-    else if (amount) amountUsd = convertCryptoAmountToUSD(amount);
+    if (amountUsd) {
+      if (quantity > 0) {
+        amountUsd = amountUsd * quantity;
+      }
+      let conversionAmount = 0;
+      if (coinSymbol.toUpperCase() === 'ETH') {
+        conversionAmount = await cryptoFavorites.getEthUsdPrice();
+      } else {
+        conversionAmount = await cryptoFavorites.getBtcUsdPrice();
+      }
 
-    const addresses: ICartAddress[] = [];
+      amountCrypto = amountUsd / conversionAmount;
+    } else if (amountCrypto) {
+      amountUsd = 0;
+    }
+
+    const addresses: ICartAddressResponse[] = [];
     try {
       const currTime = new Date();
       //maybe add an .env in order to replace the 1 below.
@@ -97,7 +116,7 @@ class Resolvers extends ResolverBase {
       const address = await walletApi.getCartAddress(
         coinSymbol,
         orderId,
-        amount.toString(),
+        amountCrypto.toString(),
       );
 
       const data: ICartWatcherData = {
@@ -107,8 +126,8 @@ class Resolvers extends ResolverBase {
         affiliateSessionId,
         utmVariables,
         status: 'pending',
-        crytoAmount: amount,
-        crytoAmountRemaining: amount,
+        crytoAmount: amountCrypto,
+        crytoAmountRemaining: amountCrypto,
         usdAmount: amountUsd,
         quantity,
       };
@@ -118,7 +137,15 @@ class Resolvers extends ResolverBase {
         orderId,
         data,
       );
-      addresses.push(address);
+
+      addresses.push({
+        ...address,
+        pricing: {
+          quantity,
+          amountUsd: valueToAdd.usdAmount,
+          amountCrypto: valueToAdd.crytoAmount,
+        },
+      });
 
       const auditAddressResult = await this.auditAddressRequest({
         userId,

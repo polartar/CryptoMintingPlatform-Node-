@@ -1,7 +1,20 @@
+# type CartAddress {
+#   coinSymbol: String
+#   address: String
+#   qrCode: String
+# }
+
+type PricingCartAddres {
+  amountUsd: Float!
+  amountCrypto: Float!
+  quantity: Int!
+}
+
 type CartAddress {
-  coinSymbol: String
-  address: String
-  qrCode: String
+  coinSymbol: String!
+  address: String!
+  qrCode: String!
+  pricing: PricingCartAddres!
 }
 
 type CartAddressRequest {
@@ -14,7 +27,7 @@ type CartAddressRequest {
   affiliateId: String
   affiliateSessionId: String
   utmVariables: String
-  created: Date!
+  created: Date
   expires: Date!
   addresses: [CartAddress!]!
 }
