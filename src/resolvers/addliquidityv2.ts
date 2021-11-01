@@ -12,11 +12,35 @@ import { abi as IUniswapV2FactoryABI } from '@uniswap/v2-core/build/IUniswapV2Fa
 import { abi as IUniswapV2ERC20ABI } from '@uniswap/v2-core/build/UniswapV2ERC20.json';
 import * as IUniswapV2Router from 'simple-uniswap-sdk/dist/esm/ABI/uniswap-router-v2.json';
 import { abi as IUniswapV2Pair } from '@uniswap/v2-core/build/UniswapV2Pair.json';
+import { walletApi } from 'src/wallet-api';
 
 const { chainId, ethNodeUrl } = config;
 const provider = new ethers.providers.JsonRpcProvider(ethNodeUrl);
 
 class LiquidityResolverV2 extends ResolverBase {
+  validatePasscode = async (
+    parent: any,
+    args: {
+      walletPasscode: string;
+    },
+    { user, wallet }: Context,
+  ) => {
+    this.requireAuth(user);
+    try {
+      await this.validateWalletPassword({
+        password: args.walletPasscode,
+        symbol: '',
+        walletApi: wallet,
+        user,
+      });
+      return {
+        message: 'Connected',
+      };
+    } catch (error) {
+      throw new Error('Wrong password');
+    }
+  };
+
   createPair = async (
     parent: any,
     args: {
@@ -457,6 +481,7 @@ export default {
   },
 
   Mutation: {
+    validatePasscode: liquidityResolverV2.validatePasscode,
     createPair: liquidityResolverV2.createPair,
     approveTokens: liquidityResolverV2.approveTokens,
     addLiquidityV2: liquidityResolverV2.addLiquidityV2,

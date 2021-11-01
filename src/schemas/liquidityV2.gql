@@ -1,25 +1,29 @@
-type pairParams {
+type ValidePasscode {
+  message: String!
+}
+
+type PairParams {
   pairAddress: String!
   message: String!
 }
 
-type pairInfo {
+type PairInfo {
   message: String!
   reserve0: String!
   reserve1: String!
   liquidity: String!
 }
 
-type tokenApprove {
+type TokenApprove {
   message: String!
   created: Boolean!
 }
 
-type liquidityAdd {
+type LiquidityAdd {
   message: String!
 }
 
-type liquidityRem {
+type LiquidityRem {
   message: String!
   amountA: String
   amountB: String
@@ -30,27 +34,28 @@ type Query {
     coinSymbol0: String!
     coinSymbol1: String!
     walletPassword: String!
-  ): pairInfo
+  ): PairInfo
 }
 
 type Mutation {
+  validatePasscode(walletPasscode: String!): ValidePasscode
   createPair(
     walletPassword: String!
     coinSymbol0: String!
     coinSymbol1: String!
-  ): pairParams
-  approveTokens(walletPassword: String!, coinSymbol0: String!): tokenApprove
+  ): PairParams
+  approveTokens(walletPassword: String!, coinSymbol0: String!): TokenApprove
   addLiquidityV2(
     coinSymbol0: String!
     coinSymbol1: String!
     amountADesired: Int!
     amountBDesired: Int!
     walletPassword: String!
-  ): liquidityAdd
+  ): LiquidityAdd
   remLiquidityV2(
     coinSymbol0: String!
     coinSymbol1: String!
     walletPassword: String!
     percentage: Int!
-  ): liquidityRem
+  ): LiquidityRem
 }
