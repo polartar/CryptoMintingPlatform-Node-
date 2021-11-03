@@ -112,11 +112,12 @@ class EthWallet extends CoinWalletBase {
       toReturn.amountConfirmed = +ethBalance.confirmed;
       toReturn.amountUnconfirmed = +ethBalance.unconfirmed;
     } catch (err) {
-      logger.error(
-        `coin-wallets.eth-wallet-getCartBalance : ${symbol}/${orderId}/${address}/${JSON.stringify(
-          toReturn,
-        )}`,
-      );
+      logger.exceptionContext(err, `coin-wallets.eth-wallet-getCartBalance`, {
+        symbol,
+        orderId,
+        address,
+        toReturn: JSON.stringify(toReturn),
+      });
     }
 
     return toReturn;

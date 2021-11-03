@@ -93,6 +93,10 @@ export class CartQueue {
       const valueObj: ICartWatcherData = await this.getTransactionFromKey(key);
       const keyObj: CartRedisKey = this.parseKey(key);
 
+      if (!valueObj) {
+        continue;
+      }
+
       //Skipping other brands
       if (keyObj.brand !== brand) {
         continue;
@@ -394,7 +398,9 @@ export class CartQueue {
         previousValue.status = valueObj.status;
         previousValue.totalUsd = valueObj.usdAmount.toString();
         previousValue.totalCrypto = valueObj.crytoAmount.toString();
-        previousValue.totalCryptoReceived = amountCryptoReceived;
+        if (amountCryptoReceived > 0) {
+          previousValue.totalCryptoReceived = amountCryptoReceived;
+        }
         previousValue.totalCrypto = valueObj.crytoAmount.toString();
 
         previousValue.conversionRate = (

