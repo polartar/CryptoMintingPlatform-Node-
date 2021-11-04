@@ -19,3 +19,9 @@ export interface State {
   feeProtocol: number;
   unlocked: boolean;
 }
+
+export interface IsTokenApprove {
+  message: string;
+  symbol: string;
+  isApprove: boolean;
+}

@@ -250,7 +250,7 @@ export const walletConfigurations: ICoinMetadata[] = [
     icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1697.png',
     abi: erc20Abi,
     decimalPlaces: 18,
-    contractAddress: contractAddresses.busdMain,
+    contractAddress: contractAddresses.batMain,
     WalletInterface: Erc20Wallet,
   },
 ];
