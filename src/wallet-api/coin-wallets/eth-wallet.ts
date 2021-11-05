@@ -513,37 +513,43 @@ class EthWallet extends CoinWalletBase {
         walletPassword,
       );
       const wallet = new ethers.Wallet(privateKey, provider);
-      const transaction = await wallet.sendTransaction({
+      const transaction = {
         nonce,
         to,
         value,
         gasLimit: 21001,
-      });
-      const receipt = transaction.wait();
-      await userApi.incrementTxCount();
-      this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
-      const response: {
-        message: string;
-        success: boolean;
-        transaction: ITransaction;
-      } = {
-        message: null,
-        success: true,
-        transaction: {
-          amount: this.toEther(transaction.value, true),
-          confirmations: 0,
-          fee: 'TBD',
-          from: transaction.from,
-          to: [transaction.to],
-          id: transaction.hash,
-          link: `${config.ethTxLink}/${transaction.hash}`,
-          status: 'Pending',
-          timestamp: Math.floor(Date.now() / 1000),
-          type: 'Withdrawal',
-          total: value + ' + pending fee',
-        },
       };
-      return response;
+      try {
+        const txResponse = await wallet.sendTransaction(transaction);
+        const receipt = await txResponse.wait();
+        const { hash } = txResponse;
+        await userApi.incrementTxCount();
+        this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
+        const response: {
+          message: string;
+          success: boolean;
+          transaction: ITransaction;
+        } = {
+          message: null,
+          success: true,
+          transaction: {
+            amount: this.toEther(transaction.value, true),
+            confirmations: 0,
+            fee: 'TBD',
+            from: txResponse.from,
+            to: [transaction.to],
+            id: txResponse.hash,
+            link: `${config.ethTxLink}/${txResponse.hash}`,
+            status: 'Pending',
+            timestamp: Math.floor(Date.now() / 1000),
+            type: 'Withdrawal',
+            total: value + ' + pending fee',
+          },
+        };
+        return response;
+      } catch (error) {
+        logger.warn(`walletApi.coin-wallets.EthWallet.send.catch: ${error}`);
+      }
     } catch (error) {
       logger.warn(`walletApi.coin-wallets.EthWallet.send.catch: ${error}`);
       let message;
