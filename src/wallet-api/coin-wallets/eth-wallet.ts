@@ -519,6 +519,7 @@ class EthWallet extends CoinWalletBase {
         value,
         gasLimit: 21001,
       });
+      const receipt = transaction.wait();
       await userApi.incrementTxCount();
       this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
       const response: {
