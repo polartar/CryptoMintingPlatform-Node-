@@ -205,10 +205,11 @@ class BtcWallet extends CoinWalletBase {
         toReturn.amountUnconfirmed = accountReturn.balance.unconfirmed;
       }
     } catch (err) {
-      logger.error(
+      logger.exceptionContext(
+        err,
         `coin-wallets.btc-wallet-getCartBalance : ${symbol}/${orderId}/${address}/${JSON.stringify(
           toReturn,
-        )}/${err}`,
+        )}`,
       );
     }
 
