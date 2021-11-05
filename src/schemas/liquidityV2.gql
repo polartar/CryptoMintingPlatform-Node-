@@ -9,9 +9,16 @@ type PairParams {
 
 type PairInfo {
   message: String!
-  reserve0: String!
-  reserve1: String!
+  reserve0: Float!
+  reserve1: Float!
   liquidity: String!
+  pairAddress: String!
+}
+
+type IsApprove {
+  message: String!
+  symbol: String!
+  isApprove: Boolean!
 }
 
 type TokenApprove {
@@ -35,6 +42,11 @@ type Query {
     coinSymbol1: String!
     walletPassword: String!
   ): PairInfo
+  checkApprove(
+    coinSymbol: [String!]!
+    walletPassword: String!
+    address: String
+  ): [IsApprove]
 }
 
 type Mutation {
@@ -44,18 +56,22 @@ type Mutation {
     coinSymbol0: String!
     coinSymbol1: String!
   ): PairParams
-  approveTokens(walletPassword: String!, coinSymbol0: String!): TokenApprove
+  approveTokens(
+    walletPassword: String!
+    coinSymbol0: String!
+    address: String
+  ): TokenApprove
   addLiquidityV2(
     coinSymbol0: String!
     coinSymbol1: String!
-    amountADesired: Int!
-    amountBDesired: Int!
+    amountADesired: String!
+    amountBDesired: String!
     walletPassword: String!
   ): LiquidityAdd
   remLiquidityV2(
     coinSymbol0: String!
     coinSymbol1: String!
     walletPassword: String!
-    percentage: Int!
+    percentage: String!
   ): LiquidityRem
 }
