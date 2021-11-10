@@ -1,7 +1,7 @@
 import { startOfDay, endOfDay } from 'date-fns';
 import { Context } from 'src/types/context';
 import ResolverBase from 'src/common/Resolver-Base';
-import { User, GreenResult } from 'src/models';
+import { User, GreenCoinResult } from 'src/models';
 import { ProcessLog } from 'src/models/process-log';
 import { DistributionResult } from 'src/models/distribution-result';
 import PromotionalReward from 'src/models/promotional-rewards';
@@ -118,16 +118,20 @@ class Resolvers extends ResolverBase {
       },
     };
 
-    const results = await GreenResult.find(query).exec();
+    const results = await GreenCoinResult.find(query).exec();
 
-    return results.map(res => {
-      return {
-        runTime: res.runTime,
-        address: res.address,
-        coinAmount: res.greenDecimal,
-        pointAmount: 0,
-      };
-    });
+    const model = JSON.parse(JSON.stringify(results));
+
+    return model.map(
+      (res: { runTime: Date; address: string; greenDecimal: number }) => {
+        return {
+          runTime: res.runTime,
+          address: res.address,
+          coinAmount: res.greenDecimal,
+          pointAmount: 0,
+        };
+      },
+    );
   };
 
   public getGlobalResults = async (
