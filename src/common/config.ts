@@ -162,6 +162,8 @@ class Config {
     busdMain: env.CONTRACT_ADDRESS_BUSD,
     batMain: env.CONTRACT_ADDRESS_BAT,
   };
+  public readonly uniswapv2router = env.UNISWAPV2ROUTER;
+  public readonly uniswapv2factory = env.UNISWAPV2FACTORY;
 
   public readonly tokenIds: { [key: string]: string } = {
     gala: env.GALA_TOKEN_ID,
