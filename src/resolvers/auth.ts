@@ -7,6 +7,8 @@ import { UserApi } from '../data-sources/';
 const autoBind = require('auto-bind');
 import { userResolver } from './user';
 import galaGamingApiService from '../services/gala-gaming-api';
+import { paywiser } from '../services/paywiser';
+import { IPaywiserCheckReferenceNumberResponse } from '../types/IPaywiser';
 
 interface ITwoFaSetup {
   twoFaSecret: string | null;
@@ -38,6 +40,42 @@ class Resolvers extends ResolverBase {
     } catch (error) {
       logger.warn(`resolvers.auth.verifyWalletsExist.catch:${error}`);
       return false;
+    }
+  }
+
+  private async checkKycVerificationStatus(user: UserApi) {
+    const userDbObject = await user.findFromDb();
+
+    if (!userDbObject.kyc.ReferenceID) {
+      return;
+    }
+
+    const verificationStatuses = {
+      SUCCESSFUL: 'Successful',
+      PENDING: 'Pending',
+      FAILED: 'Failed',
+      NOTSTARTED: 'NotStarted',
+    };
+
+    const verificationStatus =
+      userDbObject.kyc.VerificationStatus || verificationStatuses.NOTSTARTED;
+
+    switch (verificationStatus) {
+      case verificationStatuses.SUCCESSFUL:
+        // return
+        break;
+      case verificationStatuses.FAILED:
+        // return or something
+        break;
+      case verificationStatuses.PENDING:
+      case verificationStatuses.NOTSTARTED:
+      default:
+        //Pending or doesn't exist
+        const result: IPaywiserCheckReferenceNumberResponse = await paywiser.checkReferenceNumber(
+          user,
+        );
+
+        return result.VerificationStatus;
     }
   }
 
@@ -85,6 +123,9 @@ class Resolvers extends ResolverBase {
         context.wallet,
       );
       logger.debug(`resolvers.auth.login.walletExists:${walletExists}`);
+
+      await this.checkKycVerificationStatus(tempUserApi);
+
       context.user = tempUserApi;
       return {
         twoFaEnabled: tempUserApi.claims.twoFaEnabled,

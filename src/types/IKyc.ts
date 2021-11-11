@@ -16,4 +16,6 @@ export default interface IKyc {
   RequireAddress: boolean;
   AddressFields: string;
   ReferenceID: string;
+  ReferenceNumber: string;
+  VerificationStatus: string;
 }

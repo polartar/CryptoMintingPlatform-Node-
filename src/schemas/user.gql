@@ -77,6 +77,8 @@ type Kyc {
   RequireAddress: Boolean
   AddressFields: String
   ReferenceID: String
+  ReferenceNumber: String
+  VerificationStatus: String
 }
 
 input KycInput {
@@ -97,6 +99,8 @@ input KycInput {
   RequireAddress: Boolean
   AddressFields: String
   ReferenceID: String
+  ReferenceNumber: String
+  VerificationStatus: String
 }
 
 input CreateUserInput {

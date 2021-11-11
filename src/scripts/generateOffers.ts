@@ -8,6 +8,7 @@ const {
   MONGODB_URI_CODEX: mongoCodex,
   MONGODB_URI_ARCADE: mongoArcade,
   MONGODB_URI_GREEN: mongoGreen,
+  MONGODB_URI_SWITCH: mongoSwitch,
 } = process.env;
 
 function buildModel(connection: Connection) {
@@ -38,17 +39,30 @@ const greenOffer = {
   title: 'Green Wallet',
 };
 
+const switchOffer = {
+  name: 'switch_wallet',
+  enabled: false,
+  title: 'Switch Wallet',
+};
+
 void (async () => {
-  const [connectConx, codexConx, arcadeConx, greenConx] = await Promise.all([
+  const [
+    connectConx,
+    codexConx,
+    arcadeConx,
+    greenConx,
+    switchConx,
+  ] = await Promise.all([
     createConnection(mongoConnect),
     createConnection(mongoCodex),
     createConnection(mongoArcade),
     createConnection(mongoGreen),
+    createConnection(mongoSwitch),
   ]);
   const update = [
     {
       model: buildModel(connectConx),
-      offers: [connectOffer, codexOffer, greenOffer, arcadeOffer],
+      offers: [connectOffer, codexOffer, greenOffer, arcadeOffer, switchOffer],
     },
     {
       model: buildModel(codexConx),
@@ -61,6 +75,10 @@ void (async () => {
     {
       model: buildModel(greenConx),
       offers: [greenOffer],
+    },
+    {
+      model: buildModel(switchConx),
+      offers: [switchOffer],
     },
   ];
   const results = await Promise.all(
