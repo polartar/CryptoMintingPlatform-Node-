@@ -18,7 +18,7 @@ type CartAddress {
 }
 
 type CartAddressRequest {
-  userId: String!
+  userId: String
   coinSymbol: String!
   amountUsd: String!
   amountCrypto: String!
