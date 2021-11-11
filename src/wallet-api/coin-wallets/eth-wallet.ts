@@ -521,8 +521,8 @@ class EthWallet extends CoinWalletBase {
       };
       try {
         const txResponse = await wallet.sendTransaction(transaction);
-        const receipt = await txResponse.wait();
         const { hash } = txResponse;
+        const receipt = await txResponse.wait();
         await userApi.incrementTxCount();
         this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
         const response: {
@@ -539,7 +539,7 @@ class EthWallet extends CoinWalletBase {
             from: txResponse.from,
             to: [transaction.to],
             id: txResponse.hash,
-            link: `${config.ethTxLink}/${txResponse.hash}`,
+            link: `${config.ethTxLink}/${hash}`,
             status: 'Pending',
             timestamp: Math.floor(Date.now() / 1000),
             type: 'Withdrawal',
