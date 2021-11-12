@@ -74,7 +74,7 @@ class Resolvers extends ResolverBase {
     args: { email: string },
     context: Context,
   ) => {
-    return this.doesUserAlreadyExist(args.email);
+    return await this.doesUserAlreadyExist(args.email);
   };
 
   public createUser = async (
