@@ -445,6 +445,8 @@ class Erc20API extends EthWallet {
       overrides.nonce = nonce;
 
       const transaction = await contract.transfer(to, amount, overrides);
+      const { hash } = transaction;
+      const receipt = await transaction.wait();
       await userApi.incrementTxCount();
       this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
 
@@ -462,7 +464,7 @@ class Erc20API extends EthWallet {
           from: transaction.from,
           to: [transaction.to],
           id: transaction.hash,
-          link: `${config.ethTxLink}/${transaction.hash}`,
+          link: `${config.ethTxLink}/${hash}`,
           status: 'Pending',
           timestamp: Math.floor(Date.now() / 1000),
           type: 'Withdrawal',
