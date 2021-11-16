@@ -46,7 +46,7 @@ class Resolvers extends ResolverBase {
   private async checkKycVerificationStatus(user: UserApi) {
     const userDbObject = await user.findFromDb();
 
-    if (!userDbObject.kyc.ReferenceID) {
+    if (!userDbObject.kyc?.ReferenceID) {
       return;
     }
 
