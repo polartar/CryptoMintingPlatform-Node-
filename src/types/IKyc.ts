@@ -18,4 +18,5 @@ export default interface IKyc {
   ReferenceID: string;
   ReferenceNumber: string;
   VerificationStatus: string;
+  KycStatus: string;
 }

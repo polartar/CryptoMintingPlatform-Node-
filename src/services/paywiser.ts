@@ -87,11 +87,20 @@ class PaywiserService {
 
       user.update({
         $set: {
-          'kyc.VerificationStatus': resp.data.VerificationStatus,
           'kyc.StatusCode': resp.data.StatusCode,
           'kyc.StatusDescription': resp.data.StatusDescription,
+          'kyc.AssignedDateTime': resp.data.AssignedDateTime,
+          'kyc.ReferenceNumberStatus': resp.data.ReferenceNumberStatus,
           'kyc.PersonID': resp.data.PersonID,
           'kyc.KycID': resp.data.KycID,
+          'kyc.KycStart': resp.data.KycStart,
+          'kyc.KycEnd': resp.data.KycEnd,
+          'kyc.KycStatus': resp.data.KycStatus,
+          'kyc.VerificationEnd': resp.data.VerificationEnd,
+          'kyc.VerificationStatus': resp.data.VerificationStatus,
+          'kyc.AdditionalData': resp.data.AdditionalData,
+          'kyc.ReferenceID': resp.data.ReferenceID,
+          'kyc.CallerReferenceID': resp.data.CallerReferenceID,
         },
       });
 
