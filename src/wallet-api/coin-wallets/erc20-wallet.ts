@@ -446,7 +446,6 @@ class Erc20API extends EthWallet {
 
       const transaction = await contract.transfer(to, amount, overrides);
       const { hash } = transaction;
-      const receipt = await transaction.wait();
       await userApi.incrementTxCount();
       this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
 

@@ -521,7 +521,6 @@ class EthWallet extends CoinWalletBase {
       };
       const txResponse = await wallet.sendTransaction(transaction);
       const { hash } = txResponse;
-      const receipt = await txResponse.wait();
       await userApi.incrementTxCount();
       this.ensureEthAddressMatchesPkey(wallet, ethAddress, userApi);
       const response: {
