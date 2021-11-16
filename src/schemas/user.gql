@@ -79,6 +79,7 @@ type Kyc {
   ReferenceID: String
   ReferenceNumber: String
   VerificationStatus: String
+  KycStatus: String
 }
 
 input KycInput {
@@ -101,6 +102,7 @@ input KycInput {
   ReferenceID: String
   ReferenceNumber: String
   VerificationStatus: String
+  KycStatus: String
 }
 
 input CreateUserInput {
