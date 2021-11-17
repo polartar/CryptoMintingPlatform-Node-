@@ -45,12 +45,12 @@ export interface IPaywiserGetPersonAddressRequest {
 export interface IPaywiserGetPersonAddressResponse {
   StatusCode?: number;
   StatusDescription?: string;
-  Address?: PaywiserPersonAddress;
+  Address?: IPaywiserPersonAddress;
   ReferenceID?: string;
   CallerReferenceID?: string;
 }
 
-export interface PaywiserPersonAddress {
+export interface IPaywiserPersonAddress {
   FirstName?: string;
   MiddleName?: string;
   LastName?: string;
