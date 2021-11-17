@@ -11,25 +11,25 @@ type PricingCartAddres {
 }
 
 type CartAddress {
-  coinSymbol: String!
-  address: String!
-  qrCode: String!
-  pricing: PricingCartAddres!
+  coinSymbol: String
+  address: String
+  qrCode: String
+  pricing: PricingCartAddres
 }
 
 type CartAddressRequest {
   userId: String
-  coinSymbol: String!
-  amountUsd: String!
-  amountCrypto: String!
-  quantity: Int!
-  orderId: String!
+  coinSymbol: String
+  amountUsd: String
+  amountCrypto: String
+  quantity: Int
+  orderId: String
   affiliateId: String
   affiliateSessionId: String
   utmVariables: String
   created: Date
-  expires: Date!
-  addresses: [CartAddress!]!
+  expires: Date
+  addresses: [CartAddress]
 }
 
 type CartTransaction {
@@ -44,7 +44,7 @@ type CartTransaction {
   address: String
   name: String
   email: String
-  data: String!
+  data: String
   created: Date
 }
 
@@ -59,8 +59,8 @@ type CartOrderStatusResponse {
 }
 
 type Query {
-  getAllCartAddressRequests: [CartAddressRequest!]!
-  getAllCartTransactions: [CartTransaction!]!
+  getAllCartAddressRequests: [CartAddressRequest]
+  getAllCartTransactions: [CartTransaction]
   getCartOrderStatus(
     orderId: String!
     orderType: String!
