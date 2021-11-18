@@ -1,15 +1,14 @@
-import { Context, ICartWatcherData } from '../types';
+import { Context, ICartWatcherData, ENodelicenseTypeBrands } from '../types';
 import ResolverBase from '../common/Resolver-Base';
 import { cartQueue } from '../blockchain-listeners/cart-queue';
-import { CartService } from '../blockchain-listeners/cart-service';
+// import { CartService } from '../blockchain-listeners/cart-service';
 import { addHours } from 'date-fns';
 import {
   CartStatus,
-  ICartAddress,
+  // ICartAddress,
   ICartAddressResponse,
 } from '../types/ICartAddress';
 //const { decycle } = require('../utils/cycle.js');
-// #amount  = amountUsd / (somevalegetFrom the wallet.) keep an eye on precision.
 
 import addressRequestModel, {
   ICartAddressRequest,
@@ -34,6 +33,7 @@ class Resolvers extends ResolverBase {
     addressRequest.orderId = request.orderId;
     addressRequest.created = new Date();
     addressRequest.expires = request.expires;
+    addressRequest.nodeLicenseType = request.nodeLicenseType;
 
     try {
       const savedRequest = await addressRequest.save();
@@ -50,7 +50,7 @@ class Resolvers extends ResolverBase {
   };
 
   getCartAddress = async (
-    parent: any,
+    _parent: any,
     args: {
       coinSymbol: string;
       orderId: string;
@@ -60,6 +60,7 @@ class Resolvers extends ResolverBase {
       affiliateSessionId: string;
       utmVariables: string;
       quantity: number;
+      nodeLicenseType?: ENodelicenseTypeBrands;
     },
     { wallet, user, dataSources: { cryptoFavorites } }: Context,
   ) => {
@@ -75,6 +76,7 @@ class Resolvers extends ResolverBase {
       affiliateId,
       affiliateSessionId,
       utmVariables,
+      nodeLicenseType,
     } = args;
 
     let quantity = args.quantity;
@@ -107,7 +109,6 @@ class Resolvers extends ResolverBase {
       amountUsd = 0;
     }
 
-    const addresses: ICartAddressResponse[] = [];
     try {
       const currTime = new Date();
       //maybe add an .env in order to replace the 1 below.
@@ -130,6 +131,7 @@ class Resolvers extends ResolverBase {
         crytoAmountRemaining: amountCrypto,
         usdAmount: amountUsd,
         quantity,
+        nodeLicenseType,
       };
 
       const { keyToAdd, valueToAdd } = await cartQueue.setCartWatcher(
@@ -138,14 +140,15 @@ class Resolvers extends ResolverBase {
         data,
       );
 
-      addresses.push({
-        ...address,
+      const addressResponse: ICartAddressResponse = {
+        cartAddress: address,
         pricing: {
           quantity,
           amountUsd: valueToAdd.usdAmount,
           amountCrypto: valueToAdd.crytoAmount,
         },
-      });
+        nodeLicenseType,
+      };
 
       const auditAddressResult = await this.auditAddressRequest({
         userId,
@@ -156,10 +159,11 @@ class Resolvers extends ResolverBase {
         affiliateId,
         affiliateSessionId,
         utmVariables,
-        addresses,
+        addresses: [address],
         created: new Date(),
         expires: expDate,
         quantity,
+        nodeLicenseType,
       });
 
       //Todo: Maybe add some action besides logger.warn
@@ -168,7 +172,7 @@ class Resolvers extends ResolverBase {
           `cart.auditAddressRequest, Error:${auditAddressResult.message}`,
         );
 
-      return addresses;
+      return addressResponse;
     } catch (error) {
       // logger.warn(`resolvers.wallet.getTransactions.catch: ${error}`);
       throw error;
@@ -235,6 +239,7 @@ class Resolvers extends ResolverBase {
       utmVariables: string;
       amountUsd?: string;
       quantity: number;
+      nodeLicenseType?: ENodelicenseTypeBrands;
     },
     ctx: Context,
   ) => {
@@ -250,10 +255,11 @@ class Resolvers extends ResolverBase {
       utmVariables,
       amountUsd,
       quantity,
+      nodeLicenseType,
     } = args;
 
     const walletApi = wallet.coin(parent.symbol);
-    const addressArry = await this.getCartAddress(
+    const addressResponse = await this.getCartAddress(
       parent,
       {
         coinSymbol,
@@ -264,10 +270,11 @@ class Resolvers extends ResolverBase {
         utmVariables,
         amountUsd,
         quantity,
+        nodeLicenseType,
       },
       ctx,
     );
-    const addressToSend = addressArry[0].address;
+    const addressToSend = addressResponse.cartAddress.address;
     const result = await walletApi.send(
       user,
       [{ to: addressToSend, amount }],
@@ -278,8 +285,8 @@ class Resolvers extends ResolverBase {
   };
 
   getAllCartAddressRequests = async (
-    parent: any,
-    args: {},
+    _parent: any,
+    _args: {},
     ctx: Context,
   ): Promise<ICartAddressRequest[]> => {
     const { user } = ctx;

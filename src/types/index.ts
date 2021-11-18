@@ -69,3 +69,4 @@ export * from './ILicenseTypeMapping';
 export * from './ILicenseType';
 export * from './IDependent';
 export * from './IFriend';
+export * from './EBrands';

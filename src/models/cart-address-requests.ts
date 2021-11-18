@@ -1,5 +1,6 @@
 import { model, Schema, Document } from 'mongoose';
 import { ICartAddress } from 'src/types/ICartAddress';
+import { ENodelicenseTypeBrands } from 'src/types';
 
 export interface ICartAddressRequest {
   userId: string;
@@ -14,6 +15,7 @@ export interface ICartAddressRequest {
   created: Date;
   expires: Date;
   addresses: ICartAddress[];
+  nodeLicenseType?: ENodelicenseTypeBrands;
 }
 
 export interface ICartAddressRequestDocument
@@ -39,6 +41,7 @@ export const cartAddresRequestSchema = new Schema({
   created: Date,
   expires: Date,
   addresses: [cartAddressSchema],
+  nodeLicenseType: { type: String, required: false },
 });
 
 const cartAddresRequestModel = model<ICartAddressRequestDocument>(
