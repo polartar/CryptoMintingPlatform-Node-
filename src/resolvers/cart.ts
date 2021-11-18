@@ -1,4 +1,4 @@
-import { Context, ICartWatcherData, ENodelicenseTypeBrands } from '../types';
+import { Context, ICartWatcherData } from '../types';
 import ResolverBase from '../common/Resolver-Base';
 import { cartQueue } from '../blockchain-listeners/cart-queue';
 // import { CartService } from '../blockchain-listeners/cart-service';
@@ -60,11 +60,11 @@ class Resolvers extends ResolverBase {
       affiliateSessionId: string;
       utmVariables: string;
       quantity: number;
-      nodeLicenseType?: ENodelicenseTypeBrands;
+      nodeLicenseType?: string;
     },
     { wallet, user, dataSources: { cryptoFavorites } }: Context,
   ) => {
-    // We don´t require auth here, it is the expected behavior?
+    // We don´t requireAuth here, is this the expected behavior?
     let userId = '';
     if (user) {
       userId = user.userId;
@@ -239,7 +239,7 @@ class Resolvers extends ResolverBase {
       utmVariables: string;
       amountUsd?: string;
       quantity: number;
-      nodeLicenseType?: ENodelicenseTypeBrands;
+      nodeLicenseType?: string;
     },
     ctx: Context,
   ) => {

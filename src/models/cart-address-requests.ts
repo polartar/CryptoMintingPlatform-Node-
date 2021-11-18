@@ -1,6 +1,5 @@
 import { model, Schema, Document } from 'mongoose';
 import { ICartAddress } from 'src/types/ICartAddress';
-import { ENodelicenseTypeBrands } from 'src/types';
 
 export interface ICartAddressRequest {
   userId: string;
@@ -15,7 +14,7 @@ export interface ICartAddressRequest {
   created: Date;
   expires: Date;
   addresses: ICartAddress[];
-  nodeLicenseType?: ENodelicenseTypeBrands;
+  nodeLicenseType?: string;
 }
 
 export interface ICartAddressRequestDocument

@@ -1,13 +1,3 @@
-import { EBrands } from './EBrands';
-
-export enum ENodelicenseTypeBrands {
-  CONNECT = EBrands.CONNECT,
-  GREEN = EBrands.GREEN,
-  SWITCH = EBrands.SWITCH,
-  LIBERTY = EBrands.LIBERTY,
-  BLUE = EBrands.BLUE,
-}
-
 export interface ICartAddress {
   coinSymbol: string;
   address: string;
@@ -21,7 +11,7 @@ export interface ICartAddressResponse {
     amountCrypto: number;
     quantity: number;
   };
-  nodeLicenseType: ENodelicenseTypeBrands;
+  nodeLicenseType: string;
 }
 
 export interface ICartBalance {
@@ -72,5 +62,5 @@ export interface ICartWatcherData {
   wooTxData?: string;
   dbId?: string;
   quantity?: number;
-  nodeLicenseType?: ENodelicenseTypeBrands;
+  nodeLicenseType?: string;
 }

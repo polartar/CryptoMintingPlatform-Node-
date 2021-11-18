@@ -3,16 +3,8 @@
 #   address: String
 #   qrCode: String
 #   pricing: PricingCartAddres
-#   nodeLicenseType:NodeLicenseTypeBrandsEnum
+#   nodeLicenseType:String
 # }
-
-enum NodeLicenseTypeBrandsEnum {
-  CONNECT
-  GREEN
-  BLUE
-  SWITCH
-  LIBERTY
-}
 
 type PricingCartAddres {
   amountUsd: Float!
@@ -29,7 +21,7 @@ type CartAddress {
 type CartAddressResponse {
   cartAddress: CartAddress
   pricing: PricingCartAddres
-  nodeLicenseType: NodeLicenseTypeBrandsEnum
+  nodeLicenseType: String
 }
 
 type CartAddressRequest {
@@ -45,7 +37,7 @@ type CartAddressRequest {
   created: Date
   expires: Date
   addresses: [CartAddress]
-  nodeLicenseType: NodeLicenseTypeBrandsEnum
+  nodeLicenseType: String
 }
 
 type CartTransaction {
@@ -101,7 +93,7 @@ type Mutation {
     amountUsd: String
     #quantity > 0
     quantity: Int! = 1
-    nodeLicenseType: NodeLicenseTypeBrandsEnum
+    nodeLicenseType: String
   ): CartAddressResponse!
   sendCartTransaction(
     coinSymbol: String!
@@ -114,6 +106,6 @@ type Mutation {
     amountUsd: String
     #quantity > 0
     quantity: Int! = 1
-    nodeLicenseType: NodeLicenseTypeBrandsEnum
+    nodeLicenseType: String
   ): TxSendResponse!
 }
