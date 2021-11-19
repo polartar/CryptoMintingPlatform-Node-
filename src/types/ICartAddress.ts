@@ -4,12 +4,14 @@ export interface ICartAddress {
   qrCode: string;
 }
 
-export interface ICartAddressResponse extends ICartAddress {
+export interface ICartAddressResponse {
+  cartAddress: ICartAddress;
   pricing: {
     amountUsd: number;
     amountCrypto: number;
     quantity: number;
   };
+  nodeLicenseType: string;
 }
 
 export interface ICartBalance {
@@ -60,4 +62,5 @@ export interface ICartWatcherData {
   wooTxData?: string;
   dbId?: string;
   quantity?: number;
+  nodeLicenseType?: string;
 }

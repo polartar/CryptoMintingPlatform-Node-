@@ -14,6 +14,7 @@ export interface ICartAddressRequest {
   created: Date;
   expires: Date;
   addresses: ICartAddress[];
+  nodeLicenseType?: string;
 }
 
 export interface ICartAddressRequestDocument
@@ -39,6 +40,7 @@ export const cartAddresRequestSchema = new Schema({
   created: Date,
   expires: Date,
   addresses: [cartAddressSchema],
+  nodeLicenseType: { type: String, required: false },
 });
 
 const cartAddresRequestModel = model<ICartAddressRequestDocument>(

@@ -2,6 +2,8 @@
 #   coinSymbol: String
 #   address: String
 #   qrCode: String
+#   pricing: PricingCartAddres
+#   nodeLicenseType:String
 # }
 
 type PricingCartAddres {
@@ -14,7 +16,12 @@ type CartAddress {
   coinSymbol: String
   address: String
   qrCode: String
+}
+
+type CartAddressResponse {
+  cartAddress: CartAddress
   pricing: PricingCartAddres
+  nodeLicenseType: String
 }
 
 type CartAddressRequest {
@@ -30,6 +37,7 @@ type CartAddressRequest {
   created: Date
   expires: Date
   addresses: [CartAddress]
+  nodeLicenseType: String
 }
 
 type CartTransaction {
@@ -85,7 +93,8 @@ type Mutation {
     amountUsd: String
     #quantity > 0
     quantity: Int! = 1
-  ): [CartAddress]!
+    nodeLicenseType: String
+  ): CartAddressResponse!
   sendCartTransaction(
     coinSymbol: String!
     orderId: String!
@@ -97,5 +106,6 @@ type Mutation {
     amountUsd: String
     #quantity > 0
     quantity: Int! = 1
+    nodeLicenseType: String
   ): TxSendResponse!
 }
