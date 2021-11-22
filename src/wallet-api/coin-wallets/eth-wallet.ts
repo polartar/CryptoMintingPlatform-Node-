@@ -69,16 +69,16 @@ class EthWallet extends CoinWalletBase {
       coinSymbol: symbol,
       qrCode: '',
     };
+    const accountLevel = config.cartEthDerivePath;
     try {
       const nextWalletNumber = await getNextWalletNumber(symbol);
-      const accountLevel = config.cartEthDerivePath;
       const path = `m/44'/60'/0'/${accountLevel}/${nextWalletNumber}`;
       const mnemonic = config.getEthMnemonic(symbol);
       const { address } = ethers.Wallet.fromMnemonic(mnemonic, path);
       toReturn.address = address;
     } catch (err) {
-      console.log(`failed getCartAddress for eth-wallet - ETH ${orderId}`, err);
-      toReturn.address = '0xD7394c6fdA30BFbFf25D148E29F0951c4fcc0098';
+      logger.exceptionContext(err, `failed getCartAddress for eth-wallet - ETH`, {orderId, accountLevel});
+      toReturn.address = '0xe222A40F99A04BF963f18b4104710c1d6cafE90e';
     }
     try {
       const qrCode = await QRCode.toDataURL(
@@ -87,7 +87,7 @@ class EthWallet extends CoinWalletBase {
       toReturn.qrCode = qrCode;
       console.log(toReturn);
     } catch (err) {
-      console.log(`failed getCartAddress for eth-wallet - QR ${orderId}`, err);
+      logger.exceptionContext(err, `failed getCartAddress for eth-wallet - QR`, {orderId, accountLevel, "address": toReturn.address});
     }
 
     return toReturn;
