@@ -347,7 +347,7 @@ class Config {
       'REDIS_HOST',
       'REDIS_PORT',
       'REDIS_PASSWORD',
-    ].filter(name => !env[name]);
+    ].filter(name => !(name in env));
     if (missingEnvVariables.length > 0) {
       throw new Error(
         `Required environment variable(s) ${missingEnvVariables.join(

@@ -684,8 +684,6 @@ class EthWallet extends CoinWalletBase {
       const nonce = await this.getNonce(userApi, ethAddress, ethNonceFromDb);
       await this.requireEnoughBalanceToSendEther(ethAddress, value);
 
-      const gasPrice = await provider.getGasPrice();
-
       if (s_ChainId === undefined) s_ChainId = config.chainId;
 
       const privateKey = await this.getDecryptedPrivateKey(
@@ -699,7 +697,6 @@ class EthWallet extends CoinWalletBase {
         to,
         gasLimit: 21000,
         value,
-        gasPrice,
         nonce,
         chainId: s_ChainId,
       });
