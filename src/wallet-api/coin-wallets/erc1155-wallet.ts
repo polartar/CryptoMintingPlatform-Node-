@@ -325,11 +325,9 @@ class Erc1155API extends EthWallet {
       const [
         { ethNonceFromDb, ethAddress },
         privateKey,
-        gasPrice,
       ] = await Promise.all([
         this.getEthAddress(userApi),
         this.getDecryptedPrivateKey(userApi.userId, walletPassword),
-        provider.getGasPrice(),
       ]);
       this.checkIfSendingToSelf(ethAddress, to);
       const nonce = await this.getNonce(userApi, ethAddress, ethNonceFromDb);
@@ -344,19 +342,18 @@ class Erc1155API extends EthWallet {
       if (s_ChainId === undefined)
         s_ChainId = (await provider.getNetwork()).chainId;
 
-      const contractMethod = this.contract.interface.encodeFunctionData(
+      const data = this.contract.interface.encodeFunctionData(
         'safeBatchTransferFrom',
         [ethAddress, to, tokenIds, amounts, '0x'],
       );
 
       const rawTransaction = await wallet.signTransaction({
         to: this.contract.address,
-        data: contractMethod,
+        data,
         gasLimit: 150000,
         value: '0x0',
         nonce,
         chainId: s_ChainId,
-        gasPrice,
       });
 
       //const { hash } = utils.parseTransaction(rawTransaction);
@@ -421,11 +418,9 @@ class Erc1155API extends EthWallet {
       const [
         { ethNonceFromDb, ethAddress },
         privateKey,
-        gasPrice,
       ] = await Promise.all([
         this.getEthAddress(userApi),
         this.getDecryptedPrivateKey(userApi.userId, walletPassword),
-        provider.getGasPrice(),
       ]);
 
       const amount = this.integerize(value);
@@ -450,7 +445,6 @@ class Erc1155API extends EthWallet {
         value: '0x0',
         nonce,
         chainId,
-        gasPrice,
       });
 
       //const { hash } = utils.parseTransaction(rawTransaction);

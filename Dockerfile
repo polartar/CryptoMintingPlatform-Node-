@@ -1,4 +1,4 @@
-FROM node:12 AS builder
+FROM node:16 AS builder
 LABEL maintainer="Phillip Thurston <phil@goinvictus.com>"
 
 WORKDIR /opt/app
@@ -16,7 +16,7 @@ RUN npm run build
 
 ## Build out production
 ##
-FROM node:12-stretch-slim AS prod
+FROM node:16-stretch-slim AS prod
 WORKDIR /opt/app
 RUN mkdir -p /opt/app/node_modules && chown -R node:node /opt/app
 COPY --from=builder --chown=node:node /opt/app/lib ./lib
@@ -30,7 +30,7 @@ CMD ["node", "./lib/index.js"]
 
 ## Build out development
 ##
-FROM node:12-stretch-slim AS dev
+FROM node:16-stretch-slim AS dev
 WORKDIR /opt/app
 RUN mkdir -p /opt/app/node_modules && chown -R node:node /opt/app
 COPY --from=builder --chown=node:node /opt/app/lib ./lib
